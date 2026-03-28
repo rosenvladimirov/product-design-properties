@@ -328,7 +328,7 @@ mrp_design_matrix_{industry}/
 
 ## Credits
 
-**Author:** BL Consulting | Odoo Silver Partner
+**Author:** Rosen Vladimirov \<vladimirov.rosen@gmail.com\> | BL Consulting | Odoo Silver Partner
 
 **Inspired by:** [product_electrical_properties](https://github.com/OCA/product-attribute) (Properties pattern)
 

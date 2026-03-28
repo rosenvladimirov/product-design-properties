@@ -1,6 +1,6 @@
 # MRP Design Matrix — Business Requirements Document (BRD)
 
-**Версия:** 1.0 | **Дата:** Март 2026 | **Автор:** BL Consulting | Odoo Silver Partner
+**Версия:** 1.0 | **Дата:** Март 2026 | **Автор:** Росен Владимиров \<vladimirov.rosen@gmail.com\> | BL Consulting | Odoo Silver Partner
 
 ---
 
