@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="formula_editor_wizard_form" model="ir.ui.view">
+        <field name="name">mrp.bom.line.formula.wizard.form</field>
+        <field name="model">mrp.bom.line.formula.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Quantity Formula Editor">
+                <group>
+                    <group>
+                        <field name="bom_line_id" invisible="1"/>
+                        <field name="product_name"/>
+                    </group>
+                </group>
+                <separator string="Formula"/>
+                <field name="quantity_formula"
+                       placeholder="quantity = product_uom_qty * 1.0"
+                       widget="code"/>
+                <separator string="Available Variables Reference"/>
+                <field name="formula_help_text" widget="code" readonly="1"/>
+                <footer>
+                    <button name="action_apply"
+                            string="Apply"
+                            type="object"
+                            class="btn-primary"/>
+                    <button name="action_clear"
+                            string="Clear Formula"
+                            type="object"
+                            class="btn-secondary"/>
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

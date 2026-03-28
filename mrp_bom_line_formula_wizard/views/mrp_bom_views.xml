@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Replace inline quantity_formula column with edit button in BoM line list -->
+    <record id="mrp_bom_form_view_formula_wizard" model="ir.ui.view">
+        <field name="name">mrp.bom.form.formula.wizard</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp_bom_line_formula_quantity.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Hide the inline text field -->
+            <xpath expr="//field[@name='bom_line_ids']/list/field[@name='quantity_formula']"
+                   position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+            <!-- Add edit button + indicator after product_qty -->
+            <xpath expr="//field[@name='bom_line_ids']/list/field[@name='product_qty']"
+                   position="after">
+                <field name="has_quantity_formula" column_invisible="True"/>
+                <button name="action_edit_formula"
+                        type="object"
+                        icon="fa-code"
+                        title="Edit Quantity Formula"
+                        class="btn-link btn-sm"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Also improve the BoM line form popup -->
+    <record id="mrp_bom_line_form_formula_wizard" model="ir.ui.view">
+        <field name="name">mrp.bom.line.form.formula.wizard</field>
+        <field name="model">mrp.bom.line</field>
+        <field name="inherit_id" ref="mrp_bom_line_formula_quantity.mrp_bom_line_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Hide inline text, show button instead -->
+            <field name="quantity_formula" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </field>
+            <field name="quantity_formula" position="after">
+                <button name="action_edit_formula"
+                        string="Edit Formula"
+                        type="object"
+                        icon="fa-code"
+                        class="btn-secondary btn-sm"/>
+                <span class="text-muted ms-2"
+                      invisible="not has_quantity_formula">
+                    Formula defined
+                </span>
+                <field name="has_quantity_formula" invisible="True"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

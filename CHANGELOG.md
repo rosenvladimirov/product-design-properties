@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [18.0.1.2.0] - 2026-03-28
+
+### Added
+- **mrp_bom_line_formula_template** (18.0.1.0.0) — Ported from 19.0 to 18.0
+  - Reusable formula templates for BoM line quantities
+  - `mrp.bom.line.formula.template` model with syntax validation
+  - `formula_template_id` on BoM line — select template, formula auto-fills
+  - Menu under MRP > Configuration > BoM Line Formula Templates
+- **mrp_bom_line_formula_wizard** (18.0.1.0.0) — New formula editor wizard
+  - Replaces inline text column with a dedicated popup editor
+  - `widget=code` for Python syntax highlighting
+  - Available variables reference panel in the wizard
+  - Apply / Clear / Cancel buttons
+  - `fa-code` button in BoM line list opens the wizard
+
 ## [18.0.1.1.0] - 2026-03-28
 
 ### Added
