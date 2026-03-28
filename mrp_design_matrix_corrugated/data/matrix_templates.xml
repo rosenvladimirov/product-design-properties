@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo><data noupdate="1">
+  <record id="matrix_template_corrugated_standard" model="mrp.matrix.template">
+    <field name="name">Corrugated Box — Standard</field>
+    <field name="industry">corrugated</field>
+    <field name="description">C/B/E/BC flute carton. T1 chained: dims+board_type to effective_area
+and liner_combo; liner_combo to grammages. T2: kg liner outer/inner/medium.
+T3: print (has_print), die-cut (die_cut). Trim optimizer is external.</field>
+    <field name="constraint_table" eval="{}"/>
+    <field name="geometry_table"   eval="{}"/>
+    <field name="material_table"   eval="{}"/>
+    <field name="operation_table"  eval="{}"/>
+  </record>
+</data></odoo>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<records>
+  <properties code="roller_door" name="Roller Door" industry="doors">
+    <items name="slat_type">
+      <item name="type">selection</item>
+      <item name="selection">[["AL","Aluminium"],["steel","Steel"],["PC","Polycarbonate"]]</item>
+      <item name="default">AL</item>
+    </items>
+    <items name="drive_type">
+      <item name="type">selection</item>
+      <item name="selection">[["manual","Manual"],["chain","Chain"],["electric","Electric"]]</item>
+      <item name="default">manual</item>
+    </items>
+    <items name="has_insulation"><item name="type">boolean</item><item name="default">false</item></items>
+    <items name="has_perforation"><item name="type">boolean</item><item name="default">false</item></items>
+    <items name="RAL_code"><item name="type">char</item><item name="default"></item></items>
+  </properties>
+</records>

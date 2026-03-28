@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Workcenters -->
+        <record id="wc_sheet_cutting" model="mrp.workcenter">
+            <field name="name">Sheet Cutting &amp; Bending</field>
+            <field name="code">SDCUT</field>
+        </record>
+        <record id="wc_assembly" model="mrp.workcenter">
+            <field name="name">Door Assembly</field>
+            <field name="code">SDASM</field>
+        </record>
+        <record id="wc_rc_test" model="mrp.workcenter">
+            <field name="name">RC Certification Test</field>
+            <field name="code">RCTEST</field>
+        </record>
+        <record id="wc_programming" model="mrp.workcenter">
+            <field name="name">Electronic Lock Programming</field>
+            <field name="code">EPROG</field>
+        </record>
+        <record id="wc_finishing" model="mrp.workcenter">
+            <field name="name">Surface Finishing (RAL / Galv.)</field>
+            <field name="code">SDFIN</field>
+        </record>
+
+        <!-- Product stubs -->
+        <record id="product_tmpl_steel_sheet" model="product.template">
+            <field name="name">Steel Sheet (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_kg"/>
+        </record>
+        <record id="product_tmpl_ribs" model="product.template">
+            <field name="name">Structural Ribs (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_tmpl_fill" model="product.template">
+            <field name="name">Security Fill (RC3+, O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_kg"/>
+        </record>
+        <record id="product_tmpl_lock" model="product.template">
+            <field name="name">Lock Set (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_tmpl_elock" model="product.template">
+            <field name="name">Electronic Lock (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Matrix template — RC3 -->
+        <record id="matrix_template_security_door_rc3" model="mrp.matrix.template">
+            <field name="name">Security Door — RC3</field>
+            <field name="industry">doors</field>
+            <field name="description">
+                Template for RC1–RC4 security doors.
+                T1 forces min sheet_thickness and lock_type from RC_class.
+                T0 blocks glass on RC4+ and RC5/6 entirely.
+                T2 activates fill (RC3+) and electronic lock when selected.
+                T3 adds RC test (RC3+) and programming (electronic lock).
+            </field>
+            <!-- Inline JSON mirrors security_door_rc3.json -->
+            <field name="constraint_table" eval="
+                {'nodes': [{'id': 't0', 'type': 'decisionTable', 'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [
+                        {'id': 'has_glass', 'name': 'has_glass'},
+                        {'id': 'RC_class',  'name': 'RC_class'}
+                    ],
+                    'outputs': [
+                        {'id': 'level',   'name': 'level'},
+                        {'id': 'message', 'name': 'message'}
+                    ],
+                    'rules': [
+                        {'has_glass': 'true', 'RC_class': '&gt;= &quot;RC4&quot;',
+                         'level': '&quot;error&quot;',
+                         'message': '&quot;Glass not permitted for RC4+.&quot;'},
+                        {'has_glass': '', 'RC_class': '&gt;= &quot;RC5&quot;',
+                         'level': '&quot;error&quot;',
+                         'message': '&quot;RC5/RC6 require individual design.&quot;'}
+                    ]
+                }}]}
+            "/>
+            <field name="geometry_table"   eval="{}"/>
+            <field name="material_table"   eval="{}"/>
+            <field name="operation_table"  eval="{}"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Matrix template records for the bags industry.
+    The JSON content mirrors data/matrix_templates/bags_standard.json.
+    Stored here as Odoo data so the template is available immediately
+    after installation without a separate file-read step.
+-->
+<odoo>
+    <data noupdate="1">
+
+        <!-- ── Workcenter stubs (demo/reference) ─────────────────────── -->
+        <record id="wc_extrusion" model="mrp.workcenter">
+            <field name="name">Extrusion Line</field>
+            <field name="code">EXTR</field>
+        </record>
+        <record id="wc_slitting" model="mrp.workcenter">
+            <field name="name">Slitting Machine</field>
+            <field name="code">SLIT</field>
+        </record>
+        <record id="wc_tie_insertion" model="mrp.workcenter">
+            <field name="name">Tie Insertion</field>
+            <field name="code">TIE</field>
+        </record>
+
+        <!-- ── Product stubs ─────────────────────────────────────────── -->
+        <record id="product_tmpl_resin_hdpe" model="product.template">
+            <field name="name">Resin HDPE (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_kg"/>
+        </record>
+        <record id="product_tmpl_ink" model="product.template">
+            <field name="name">Flexo Ink</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_kg"/>
+        </record>
+        <record id="product_tmpl_tie" model="product.template">
+            <field name="name">Tie Band</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- ── Color attribute (for PTAV resolution) ─────────────────── -->
+        <record id="attr_color" model="product.attribute">
+            <field name="name">Color</field>
+            <field name="create_variant">no_variant</field>
+        </record>
+        <record id="attr_val_black" model="product.attribute.value">
+            <field name="name">black</field>
+            <field name="attribute_id" ref="attr_color"/>
+        </record>
+        <record id="attr_val_green" model="product.attribute.value">
+            <field name="name">green</field>
+            <field name="attribute_id" ref="attr_color"/>
+        </record>
+        <record id="attr_val_white" model="product.attribute.value">
+            <field name="name">white</field>
+            <field name="attribute_id" ref="attr_color"/>
+        </record>
+
+        <!-- ── Matrix template ───────────────────────────────────────── -->
+        <record id="matrix_template_bags_standard" model="mrp.matrix.template">
+            <field name="name">Bags — Standard</field>
+            <field name="industry">bags</field>
+            <field name="description">
+                Standard template for sleeve/sheet garbage bags.
+                Supports: tie band, flexo print, HDPE/LDPE/LLDPE resin.
+                O-variants: ink (activated when has_print=true).
+                Ad-hoc: tie band (injected when has_tie=true).
+            </field>
+            <field name="constraint_table" eval="
+                {
+                    'nodes': [{
+                        'id': 't0-bags',
+                        'name': 'T0 Constraints',
+                        'type': 'decisionTable',
+                        'content': {
+                            'hitPolicy': 'collect',
+                            'inputs': [
+                                {'id': 'bag_type', 'name': 'bag_type'},
+                                {'id': 'has_tie',  'name': 'has_tie'}
+                            ],
+                            'outputs': [
+                                {'id': 'level',   'name': 'level'},
+                                {'id': 'message', 'name': 'message'}
+                            ],
+                            'rules': [{
+                                'bag_type': '&quot;sheet&quot;',
+                                'has_tie':  'true',
+                                'level':    '&quot;warning&quot;',
+                                'message':  '&quot;Sheet bag with tie: splitting skipped.&quot;'
+                            }]
+                        }
+                    }]
+                }
+            "/>
+            <field name="geometry_table" eval="
+                {
+                    'nodes': [{
+                        'id': 't1-bags',
+                        'name': 'T1 Geometry',
+                        'type': 'decisionTable',
+                        'content': {
+                            'hitPolicy': 'first',
+                            'inputs': [
+                                {'id': 'bag_type', 'name': 'bag_type'},
+                                {'id': 'has_tie',  'name': 'has_tie'}
+                            ],
+                            'outputs': [
+                                {'id': 'effective_length_expr', 'name': 'effective_length_expr'},
+                                {'id': 'layers',                'name': 'layers'}
+                            ],
+                            'rules': [
+                                {'bag_type': '&quot;sleeve&quot;', 'has_tie': 'true',
+                                 'effective_length_expr': '&quot;(height + 50) * 2&quot;', 'layers': '2'},
+                                {'bag_type': '&quot;sleeve&quot;', 'has_tie': 'false',
+                                 'effective_length_expr': '&quot;height * 2&quot;', 'layers': '2'},
+                                {'bag_type': '&quot;sheet&quot;',  'has_tie': 'true',
+                                 'effective_length_expr': '&quot;(height + 50) * 1&quot;', 'layers': '1'},
+                                {'bag_type': '&quot;sheet&quot;',  'has_tie': 'false',
+                                 'effective_length_expr': '&quot;height * 1&quot;', 'layers': '1'}
+                            ]
+                        }
+                    }]
+                }
+            "/>
+            <field name="material_table" eval="{}"/>
+            <field name="operation_table" eval="{}"/>
+        </record>
+
+    </data>
+</odoo>

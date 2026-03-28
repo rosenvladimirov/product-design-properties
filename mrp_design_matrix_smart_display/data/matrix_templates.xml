@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Matrix template records for smart home display panel manufacturing.
+    Based on real-world product lines: Sonoff NSPanel Pro, Shelly Wall Display,
+    Tuya/Smatek T6E/S8E/T8E.
+
+    T0: Validates hardware compatibility (platform vs display, relay vs power, etc.)
+    T1: Derives PCB variant, connector count, power module from platform + features
+    T2: Activates O-variant components (Zigbee module, relays, sensors, speakers, etc.)
+    T3: Conditional operations (SMT Zigbee, relay soldering, mic calibration, firmware flash, logo print)
+-->
+<odoo>
+    <data noupdate="1">
+
+        <!-- ── Workcenter stubs ────────────────────────────────────── -->
+        <record id="wc_smt" model="mrp.workcenter">
+            <field name="name">SMT Assembly Line</field>
+            <field name="code">SMT</field>
+        </record>
+        <record id="wc_display_bond" model="mrp.workcenter">
+            <field name="name">Display Bonding</field>
+            <field name="code">DBOND</field>
+        </record>
+        <record id="wc_housing_assembly" model="mrp.workcenter">
+            <field name="name">Housing Assembly</field>
+            <field name="code">HASM</field>
+        </record>
+        <record id="wc_firmware_flash" model="mrp.workcenter">
+            <field name="name">Firmware Flashing</field>
+            <field name="code">FWFL</field>
+        </record>
+        <record id="wc_logo_print" model="mrp.workcenter">
+            <field name="name">Logo Printing</field>
+            <field name="code">LOGO</field>
+        </record>
+        <record id="wc_rf_calibration" model="mrp.workcenter">
+            <field name="name">RF Calibration &amp; Test</field>
+            <field name="code">RFCAL</field>
+        </record>
+        <record id="wc_mic_calibration" model="mrp.workcenter">
+            <field name="name">Microphone Calibration</field>
+            <field name="code">MCAL</field>
+        </record>
+        <record id="wc_qc" model="mrp.workcenter">
+            <field name="name">Quality Control &amp; Burn-in</field>
+            <field name="code">QC</field>
+        </record>
+        <record id="wc_packaging" model="mrp.workcenter">
+            <field name="name">Packaging Line</field>
+            <field name="code">PACK</field>
+        </record>
+
+        <!-- ── Product stubs (O-variants) ──────────────────────────── -->
+
+        <!-- PCBA / Main boards -->
+        <record id="product_pcba_esp32" model="product.template">
+            <field name="name">PCBA ESP32 (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_pcba_px30" model="product.template">
+            <field name="name">PCBA Rockchip PX30 (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_pcba_rk3326" model="product.template">
+            <field name="name">PCBA Rockchip RK3326-S (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_pcba_rk3566" model="product.template">
+            <field name="name">PCBA Rockchip RK3566 (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Display panels -->
+        <record id="product_tmpl_display_panel" model="product.template">
+            <field name="name">Display Panel (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Connectivity modules -->
+        <record id="product_zigbee_module" model="product.template">
+            <field name="name">Zigbee 3.0 Module (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_zwave_module" model="product.template">
+            <field name="name">Z-Wave Module (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Relay board -->
+        <record id="product_relay_module" model="product.template">
+            <field name="name">Relay Module (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Sensors -->
+        <record id="product_temp_humidity_sensor" model="product.template">
+            <field name="name">Temperature + Humidity Sensor (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_lux_sensor" model="product.template">
+            <field name="name">Ambient Light Sensor (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_proximity_sensor" model="product.template">
+            <field name="name">Proximity / Gesture Sensor (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Audio -->
+        <record id="product_speaker" model="product.template">
+            <field name="name">Speaker (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_mems_mic" model="product.template">
+            <field name="name">MEMS Microphone (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Housing -->
+        <record id="product_tmpl_housing" model="product.template">
+            <field name="name">Housing Enclosure (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_front_glass" model="product.template">
+            <field name="name">Front Glass Panel (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Power -->
+        <record id="product_psu_mains" model="product.template">
+            <field name="name">PSU Module Mains AC (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_psu_usbc" model="product.template">
+            <field name="name">USB-C Power Board (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_psu_poe" model="product.template">
+            <field name="name">PoE Splitter Module (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Attributes for PTAV resolution -->
+        <record id="attr_display_size" model="product.attribute">
+            <field name="name">Display Size</field>
+            <field name="create_variant">no_variant</field>
+        </record>
+        <record id="attr_val_disp_35" model="product.attribute.value">
+            <field name="name">3.5</field>
+            <field name="attribute_id" ref="attr_display_size"/>
+        </record>
+        <record id="attr_val_disp_40" model="product.attribute.value">
+            <field name="name">4.0</field>
+            <field name="attribute_id" ref="attr_display_size"/>
+        </record>
+        <record id="attr_val_disp_47" model="product.attribute.value">
+            <field name="name">4.7</field>
+            <field name="attribute_id" ref="attr_display_size"/>
+        </record>
+        <record id="attr_val_disp_60" model="product.attribute.value">
+            <field name="name">6.0</field>
+            <field name="attribute_id" ref="attr_display_size"/>
+        </record>
+        <record id="attr_val_disp_686" model="product.attribute.value">
+            <field name="name">6.86</field>
+            <field name="attribute_id" ref="attr_display_size"/>
+        </record>
+        <record id="attr_val_disp_80" model="product.attribute.value">
+            <field name="name">8.0</field>
+            <field name="attribute_id" ref="attr_display_size"/>
+        </record>
+        <record id="attr_val_disp_101" model="product.attribute.value">
+            <field name="name">10.1</field>
+            <field name="attribute_id" ref="attr_display_size"/>
+        </record>
+
+        <record id="attr_housing_color" model="product.attribute">
+            <field name="name">Housing Color</field>
+            <field name="create_variant">no_variant</field>
+        </record>
+        <record id="attr_val_white" model="product.attribute.value">
+            <field name="name">white</field>
+            <field name="attribute_id" ref="attr_housing_color"/>
+        </record>
+        <record id="attr_val_black" model="product.attribute.value">
+            <field name="name">black</field>
+            <field name="attribute_id" ref="attr_housing_color"/>
+        </record>
+        <record id="attr_val_gray" model="product.attribute.value">
+            <field name="name">gray</field>
+            <field name="attribute_id" ref="attr_housing_color"/>
+        </record>
+        <record id="attr_val_silver" model="product.attribute.value">
+            <field name="name">silver</field>
+            <field name="attribute_id" ref="attr_housing_color"/>
+        </record>
+
+        <!-- ── Matrix template ─────────────────────────────────────── -->
+        <record id="matrix_template_smart_display_standard"
+                model="mrp.matrix.template">
+            <field name="name">Smart Home Display — Standard</field>
+            <field name="industry">electronics</field>
+            <field name="description">
+                Standard template for smart home wall-mount display panels.
+                Covers: ESP32/PX30/RK3326/RK3566 platforms, 3.5" to 10.1" displays,
+                WiFi/Zigbee/BLE/Z-Wave connectivity, 0-2 relays, sensors,
+                audio, housing variants, branding/OEM options.
+
+                T0: Platform-display compatibility, relay-power constraints,
+                    ESP32 feature limits.
+                T1: Derives PCB variant, power module, connector count.
+                T2: O-variant activation for all optional components.
+                T3: Conditional operations (RF cal, mic cal, firmware, logo, packaging).
+            </field>
+            <field name="constraint_table" eval="
+                {
+                    'nodes': [{
+                        'id': 't0-smart-display',
+                        'name': 'T0 Constraints',
+                        'type': 'decisionTable',
+                        'content': {
+                            'hitPolicy': 'collect',
+                            'inputs': [
+                                {'id': 'platform',      'name': 'platform'},
+                                {'id': 'display_size',  'name': 'display_size'},
+                                {'id': 'has_zigbee',    'name': 'has_zigbee'},
+                                {'id': 'has_zwave',     'name': 'has_zwave'},
+                                {'id': 'relay_count',   'name': 'relay_count'},
+                                {'id': 'power_type',    'name': 'power_type'},
+                                {'id': 'mic_count',     'name': 'mic_count'},
+                                {'id': 'ram_gb',        'name': 'ram_gb'}
+                            ],
+                            'outputs': [
+                                {'id': 'level',   'name': 'level'},
+                                {'id': 'message', 'name': 'message'}
+                            ],
+                            'rules': [
+                                {
+                                    'platform':     '&quot;esp32&quot;',
+                                    'display_size': '[&quot;6.0&quot;,&quot;6.86&quot;,&quot;8.0&quot;,&quot;10.1&quot;]',
+                                    'level':   '&quot;error&quot;',
+                                    'message': '&quot;ESP32 cannot drive displays larger than 4.7 inch. Use PX30 or RK platform.&quot;'
+                                },
+                                {
+                                    'platform':   '&quot;esp32&quot;',
+                                    'has_zigbee': 'true',
+                                    'has_zwave':  'true',
+                                    'level':   '&quot;error&quot;',
+                                    'message': '&quot;ESP32 does not support simultaneous Zigbee + Z-Wave. Choose one.&quot;'
+                                },
+                                {
+                                    'relay_count': '&quot;2&quot;',
+                                    'power_type':  '&quot;usb_c&quot;',
+                                    'level':   '&quot;error&quot;',
+                                    'message': '&quot;USB-C power insufficient for 2 relays. Use mains or PoE.&quot;'
+                                },
+                                {
+                                    'platform':  '&quot;esp32&quot;',
+                                    'mic_count': '[&quot;2&quot;,&quot;4&quot;]',
+                                    'level':   '&quot;error&quot;',
+                                    'message': '&quot;ESP32 supports max 1 microphone. Use Android platform for mic array.&quot;'
+                                },
+                                {
+                                    'platform': '&quot;esp32&quot;',
+                                    'ram_gb':   '[&quot;2&quot;,&quot;4&quot;]',
+                                    'level':   '&quot;error&quot;',
+                                    'message': '&quot;ESP32 has fixed 512KB SRAM. RAM selection applies only to Android platforms.&quot;'
+                                },
+                                {
+                                    'display_size': '[&quot;8.0&quot;,&quot;10.1&quot;]',
+                                    'power_type':   '&quot;usb_c&quot;',
+                                    'level':   '&quot;warning&quot;',
+                                    'message': '&quot;Large display with USB-C: verify power budget. Mains recommended.&quot;'
+                                },
+                                {
+                                    'has_zigbee': 'true',
+                                    'has_zwave':  'true',
+                                    'level':   '&quot;warning&quot;',
+                                    'message': '&quot;Zigbee + Z-Wave: verify antenna isolation on PCB layout.&quot;'
+                                }
+                            ]
+                        }
+                    }]
+                }
+            "/>
+            <field name="geometry_table" eval="
+                {
+                    'nodes': [{
+                        'id': 't1-smart-display',
+                        'name': 'T1 Geometry / Derived',
+                        'type': 'decisionTable',
+                        'content': {
+                            'hitPolicy': 'first',
+                            'inputs': [
+                                {'id': 'platform',     'name': 'platform'},
+                                {'id': 'has_zigbee',   'name': 'has_zigbee'},
+                                {'id': 'has_zwave',    'name': 'has_zwave'},
+                                {'id': 'relay_count',  'name': 'relay_count'},
+                                {'id': 'power_type',   'name': 'power_type'}
+                            ],
+                            'outputs': [
+                                {'id': 'radio_module_count', 'name': 'radio_module_count'},
+                                {'id': 'needs_rf_shielding', 'name': 'needs_rf_shielding'},
+                                {'id': 'total_antenna_count', 'name': 'total_antenna_count'}
+                            ],
+                            'rules': [
+                                {
+                                    'has_zigbee': 'true', 'has_zwave': 'true',
+                                    'radio_module_count': '3',
+                                    'needs_rf_shielding': 'true',
+                                    'total_antenna_count': '3'
+                                },
+                                {
+                                    'has_zigbee': 'true', 'has_zwave': 'false',
+                                    'radio_module_count': '2',
+                                    'needs_rf_shielding': 'false',
+                                    'total_antenna_count': '2'
+                                },
+                                {
+                                    'has_zigbee': 'false', 'has_zwave': 'true',
+                                    'radio_module_count': '2',
+                                    'needs_rf_shielding': 'false',
+                                    'total_antenna_count': '2'
+                                },
+                                {
+                                    'has_zigbee': 'false', 'has_zwave': 'false',
+                                    'radio_module_count': '1',
+                                    'needs_rf_shielding': 'false',
+                                    'total_antenna_count': '1'
+                                }
+                            ]
+                        }
+                    }]
+                }
+            "/>
+            <field name="material_table" eval="
+                {
+                    'nodes': [{
+                        'id': 't2-smart-display',
+                        'name': 'T2 Materials',
+                        'type': 'decisionTable',
+                        'content': {
+                            'hitPolicy': 'collect',
+                            'inputs': [
+                                {'id': 'has_zigbee',         'name': 'has_zigbee'},
+                                {'id': 'has_zwave',          'name': 'has_zwave'},
+                                {'id': 'relay_count',        'name': 'relay_count'},
+                                {'id': 'has_temp_sensor',    'name': 'has_temp_sensor'},
+                                {'id': 'has_humidity_sensor','name': 'has_humidity_sensor'},
+                                {'id': 'has_lux_sensor',     'name': 'has_lux_sensor'},
+                                {'id': 'has_proximity',      'name': 'has_proximity'},
+                                {'id': 'speaker_count',      'name': 'speaker_count'},
+                                {'id': 'mic_count',          'name': 'mic_count'}
+                            ],
+                            'outputs': [
+                                {'id': 'bom_line_coeff_key', 'name': 'bom_line_coeff_key'},
+                                {'id': 'coefficient',        'name': 'coefficient'}
+                            ],
+                            'rules': [
+                                {'has_zigbee': 'true',
+                                 'bom_line_coeff_key': '&quot;zigbee-o&quot;', 'coefficient': '1.0'},
+                                {'has_zwave': 'true',
+                                 'bom_line_coeff_key': '&quot;zwave-o&quot;', 'coefficient': '1.0'},
+                                {'relay_count': '&quot;1&quot;',
+                                 'bom_line_coeff_key': '&quot;relay-o&quot;', 'coefficient': '1.0'},
+                                {'relay_count': '&quot;2&quot;',
+                                 'bom_line_coeff_key': '&quot;relay-o&quot;', 'coefficient': '2.0'},
+                                {'has_temp_sensor': 'true',
+                                 'bom_line_coeff_key': '&quot;temp-humidity-o&quot;', 'coefficient': '1.0'},
+                                {'has_lux_sensor': 'true',
+                                 'bom_line_coeff_key': '&quot;lux-o&quot;', 'coefficient': '1.0'},
+                                {'has_proximity': 'true',
+                                 'bom_line_coeff_key': '&quot;proximity-o&quot;', 'coefficient': '1.0'},
+                                {'speaker_count': '&quot;1&quot;',
+                                 'bom_line_coeff_key': '&quot;speaker-o&quot;', 'coefficient': '1.0'},
+                                {'speaker_count': '&quot;2&quot;',
+                                 'bom_line_coeff_key': '&quot;speaker-o&quot;', 'coefficient': '2.0'},
+                                {'mic_count': '&quot;1&quot;',
+                                 'bom_line_coeff_key': '&quot;mic-o&quot;', 'coefficient': '1.0'},
+                                {'mic_count': '&quot;2&quot;',
+                                 'bom_line_coeff_key': '&quot;mic-o&quot;', 'coefficient': '2.0'},
+                                {'mic_count': '&quot;4&quot;',
+                                 'bom_line_coeff_key': '&quot;mic-o&quot;', 'coefficient': '4.0'}
+                            ]
+                        }
+                    }]
+                }
+            "/>
+            <field name="operation_table" eval="
+                {
+                    'nodes': [{
+                        'id': 't3-smart-display',
+                        'name': 'T3 Operations',
+                        'type': 'decisionTable',
+                        'content': {
+                            'hitPolicy': 'collect',
+                            'inputs': [
+                                {'id': 'has_zigbee',        'name': 'has_zigbee'},
+                                {'id': 'has_zwave',         'name': 'has_zwave'},
+                                {'id': 'mic_count',         'name': 'mic_count'},
+                                {'id': 'has_custom_logo',   'name': 'has_custom_logo'},
+                                {'id': 'has_custom_firmware','name': 'has_custom_firmware'},
+                                {'id': 'has_custom_packaging','name': 'has_custom_packaging'}
+                            ],
+                            'outputs': [
+                                {'id': 'workcenter_ref',   'name': 'workcenter_ref'},
+                                {'id': 'duration_formula', 'name': 'duration_formula'},
+                                {'id': 'sequence',         'name': 'sequence'}
+                            ],
+                            'rules': [
+                                {
+                                    'has_zigbee': 'true',
+                                    'workcenter_ref': '&quot;mrp_design_matrix_smart_display.wc_rf_calibration&quot;',
+                                    'duration_formula': '&quot;2.0&quot;',
+                                    'sequence': '30'
+                                },
+                                {
+                                    'has_zwave': 'true',
+                                    'workcenter_ref': '&quot;mrp_design_matrix_smart_display.wc_rf_calibration&quot;',
+                                    'duration_formula': '&quot;3.0&quot;',
+                                    'sequence': '31'
+                                },
+                                {
+                                    'mic_count': '[&quot;2&quot;,&quot;4&quot;]',
+                                    'workcenter_ref': '&quot;mrp_design_matrix_smart_display.wc_mic_calibration&quot;',
+                                    'duration_formula': '&quot;1.5&quot;',
+                                    'sequence': '35'
+                                },
+                                {
+                                    'has_custom_firmware': 'true',
+                                    'workcenter_ref': '&quot;mrp_design_matrix_smart_display.wc_firmware_flash&quot;',
+                                    'duration_formula': '&quot;5.0&quot;',
+                                    'sequence': '40'
+                                },
+                                {
+                                    'has_custom_logo': 'true',
+                                    'workcenter_ref': '&quot;mrp_design_matrix_smart_display.wc_logo_print&quot;',
+                                    'duration_formula': '&quot;1.0&quot;',
+                                    'sequence': '50'
+                                },
+                                {
+                                    'has_custom_packaging': 'true',
+                                    'workcenter_ref': '&quot;mrp_design_matrix_smart_display.wc_packaging&quot;',
+                                    'duration_formula': '&quot;2.0&quot;',
+                                    'sequence': '60'
+                                }
+                            ]
+                        }
+                    }]
+                }
+            "/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo><data noupdate="1">
+  <record id="matrix_template_roller_door_manual" model="mrp.matrix.template">
+    <field name="name">Roller Door — Manual</field>
+    <field name="industry">doors</field>
+    <field name="description">T0 ERROR: perforation+insulation; PC+RAL.
+T0 WARNING: width>4000+manual. T1 derive: area; slat_weight; motor_class.
+T2: slat/guide/shaft/spring O-variants; motor-O coeff=0 if manual; insulation-O.
+T3: motor install+programming+test if electric.</field>
+    <field name="constraint_table" eval="{}"/>
+    <field name="geometry_table"   eval="{}"/>
+    <field name="material_table"   eval="{}"/>
+    <field name="operation_table"  eval="{}"/>
+  </record>
+</data></odoo>

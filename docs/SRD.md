@@ -1,117 +1,117 @@
 # MRP Design Matrix — System Requirements Document (SRD)
 
-**Версия:** 1.0 | **Дата:** Март 2026 | **Автор:** Росен Владимиров \<vladimirov.rosen@gmail.com\> | BL Consulting | Odoo Silver Partner
+**Version:** 1.0 | **Date:** March 2026 | **Author:** Rosen Vladimirov \<vladimirov.rosen@gmail.com\> | BL Consulting | Odoo Silver Partner
 
 ---
 
-## 1. Архитектурен преглед
+## 1. Architecture Overview
 
-Системата се реализира като стек от Odoo модули с ясна йерархия на зависимости. Ядрото е generic — индустриалните специфики живеят в отделни субмодули.
+The system is implemented as a stack of Odoo modules with a clear dependency hierarchy. The core is generic — industry-specific logic lives in separate submodules.
 
-| Модул | Тип | Описание |
+| Module | Type | Description |
 |---|---|---|
-| `mrp_bom_line_formula_quantity` | OCA (съществува) | Формула за количество в BoM ред. |
-| `stock_move_forced_lot_multi` | Твой (PR кандидат) | Принудително задаване на лотове на суровинни движения. Propagation до PO. |
-| `stock_move_forced_lot_multi_dim` | Субмодул | `width/height/thickness` на `stock.lot`. |
-| `mrp_bom_formula_lot_dimension` | **НОВ — мост** | Инжектира lot dims + Properties в formula контекста. ~50 реда. |
-| `mrp_design_matrix` | **НОВ — ядро** | Главният модул: дефиниции, шаблони, матрици, MO генерация. |
-| `mrp_design_matrix_bags` | Субмодул | Торби за смет. |
-| `mrp_design_matrix_corrugated` | Субмодул | Кашони + велпапе. |
-| `mrp_design_matrix_roller_door` | Субмодул | Ролетни врати. |
-| `mrp_design_matrix_security_door` | Субмодул | Блиндирани врати (RC логика). |
-| `mrp_design_matrix_interior_door` | Субмодул | Интериорни врати. |
+| `mrp_bom_line_formula_quantity` | OCA (existing) | Formula-based quantity on BoM line. |
+| `stock_move_forced_lot_multi` | Own (PR candidate) | Forced lot assignment on raw material moves. Propagation to PO. |
+| `stock_move_forced_lot_multi_dim` | Submodule | `width/height/thickness` on `stock.lot`. |
+| `mrp_bom_formula_lot_dimension` | **NEW — bridge** | Injects lot dims + Properties into the formula context. ~50 lines. |
+| `mrp_design_matrix` | **NEW — core** | Main module: definitions, templates, matrices, MO generation. |
+| `mrp_design_matrix_bags` | Submodule | Garbage bags. |
+| `mrp_design_matrix_corrugated` | Submodule | Boxes + corrugated board. |
+| `mrp_design_matrix_roller_door` | Submodule | Roller doors. |
+| `mrp_design_matrix_security_door` | Submodule | Security doors (RC logic). |
+| `mrp_design_matrix_interior_door` | Submodule | Interior doors. |
 
 ---
 
-## 2. Модели на данните
+## 2. Data Models
 
 ### 2.1 `mrp.design.param.definition`
 
-Групира дефиниции на параметри. Аналог на `component.definition.properties` от `product_electrical_properties`.
+Groups parameter definitions. Analogous to `component.definition.properties` from `product_electrical_properties`.
 
-| Поле | Описание |
+| Field | Description |
 |---|---|
-| `code` | Уникален код: `'bags'`, `'roller_door'` |
-| `name` | Четимо наименование |
-| `industry` | Групиране: `'bags'`, `'doors'`, `'corrugated'` |
-| `parent_id` | `Many2one → self` (наследяване) |
-| `design_params_definition` | `PropertiesDefinition` — схемата на параметрите |
+| `code` | Unique code: `'bags'`, `'roller_door'` |
+| `name` | Human-readable name |
+| `industry` | Grouping: `'bags'`, `'doors'`, `'corrugated'` |
+| `parent_id` | `Many2one → self` (inheritance) |
+| `design_params_definition` | `PropertiesDefinition` — the parameter schema |
 
-Дефинициите се зареждат от custom XML при инсталация чрез `create_design_param_definitions()`. Форматът следва паттерна на `component_definition.xml`.
+Definitions are loaded from custom XML on installation via `create_design_param_definitions()`. The format follows the pattern of `component_definition.xml`.
 
 ### 2.2 `mrp.matrix.template`
 
-Шаблони с правила. Клиентът никога не редактира шаблона директно.
+Templates with rules. The client never edits the template directly.
 
-| Поле | Описание |
+| Field | Description |
 |---|---|
-| `name` | Наименование: `'Торби - стандарт с печат'` |
-| `industry` | За филтриране |
-| `constraint_table` | `Json` (JSONB) — T0 правила в GoRules формат |
-| `geometry_table` | `Json` — T1 правила |
-| `material_table` | `Json` — T2 правила |
-| `operation_table` | `Json` — T3 правила |
+| `name` | Name: `'Bags - standard with print'` |
+| `industry` | For filtering |
+| `constraint_table` | `Json` (JSONB) — T0 rules in GoRules format |
+| `geometry_table` | `Json` — T1 rules |
+| `material_table` | `Json` — T2 rules |
+| `operation_table` | `Json` — T3 rules |
 
-### 2.3 `mrp.bom` (разширен)
+### 2.3 `mrp.bom` (extended)
 
-| Поле | Описание |
+| Field | Description |
 |---|---|
 | `design_param_definition_id` | `Many2one → mrp.design.param.definition` |
-| `matrix_template_id` | `Many2one → mrp.matrix.template` (само reference) |
-| `constraint_table` | `Json` — T0 копие, редактируемо |
-| `geometry_table` | `Json` — T1 копие |
-| `material_table` | `Json` — T2 копие |
-| `operation_table` | `Json` — T3 копие |
+| `matrix_template_id` | `Many2one → mrp.matrix.template` (reference only) |
+| `constraint_table` | `Json` — T0 copy, editable |
+| `geometry_table` | `Json` — T1 copy |
+| `material_table` | `Json` — T2 copy |
+| `operation_table` | `Json` — T3 copy |
 
-### 2.4 `mrp.bom.line` (разширен)
+### 2.4 `mrp.bom.line` (extended)
 
-| Поле | Описание |
+| Field | Description |
 |---|---|
-| `quantity_formula` | `Text` — формула (от OCA модула, съществува) |
-| `matrix_coeff_rule` | `Char` — референция към T2 ред за коефициент |
-| `coeff_default` | `Float` — `0.0` за O-варианти, `1.0` за реални |
-| `product_tmpl_id` | `Many2one → product.template` (за PTAV resolution) |
+| `quantity_formula` | `Text` — formula (from OCA module, existing) |
+| `matrix_coeff_rule` | `Char` — reference to T2 row for coefficient |
+| `coeff_default` | `Float` — `0.0` for O-variants, `1.0` for real ones |
+| `product_tmpl_id` | `Many2one → product.template` (for PTAV resolution) |
 | `param_attribute_map` | `Json` — `{design_key: attr_external_id}` |
-| `param_extraction_map` | `Json` — `{child_key: source_или_формула}` |
+| `param_extraction_map` | `Json` — `{child_key: source_or_formula}` |
 | `child_definition_id` | `Many2one → mrp.design.param.definition` |
-| `mto_stop` | `Boolean` — спира MTO chain на това ниво |
+| `mto_stop` | `Boolean` — stops the MTO chain at this level |
 
-### 2.5 `stock.lot` (разширен)
+### 2.5 `stock.lot` (extended)
 
-| Поле | Описание |
+| Field | Description |
 |---|---|
-| `width / height / thickness` | `Float` — реални полета (от `_dim` модул) |
+| `width / height / thickness` | `Float` — real fields (from `_dim` module) |
 | `design_param_definition_id` | `Many2one → mrp.design.param.definition` |
-| `design_params` | `Properties` — всички индустриални параметри |
-| `bom_id` | `Many2one → mrp.bom` (за context на Properties) |
+| `design_params` | `Properties` — all industry parameters |
+| `bom_id` | `Many2one → mrp.bom` (for Properties context) |
 
 ---
 
 ## 3. Design Parameters — Properties Engine
 
-Следва паттерна на `product_electrical_properties`. Параметрите са типизирани, дефинирани чрез XML, съхранявани като JSONB, с автоматично генериран UI.
+Follows the pattern of `product_electrical_properties`. Parameters are typed, defined via XML, stored as JSONB, with auto-generated UI.
 
-**Поддържани типове:** `char`, `float`, `boolean`, `selection`.
+**Supported types:** `char`, `float`, `boolean`, `selection`.
 
-**Наследяване:** чрез `parent_id` — базовата дефиниция съдържа общи параметри, разширената добавя специфичните.
+**Inheritance:** via `parent_id` — the base definition contains common parameters, the extended one adds the specific ones.
 
-| Дефиниция | Параметри |
+| Definition | Parameters |
 |---|---|
-| Торби | `bag_type, has_tie, has_print, density, resin_type, color` |
-| Кашони | `board_type, has_print, die_cut` |
-| Велпапе | `grammage, flute_type, board_grade` |
-| Ролетна врата | `slat_type, drive_type, has_insulation, has_perforation` |
-| Блиндирана врата | `RC_class, sheet_thickness, lock_type, has_glass, has_electronic_lock` |
-| Интериорна врата | `construction, opening, leaf_type, finish, has_glass_panel, has_soundproof, wall_width` |
+| Bags | `bag_type, has_tie, has_print, density, resin_type, color` |
+| Boxes | `board_type, has_print, die_cut` |
+| Corrugated | `grammage, flute_type, board_grade` |
+| Roller door | `slat_type, drive_type, has_insulation, has_perforation` |
+| Security door | `RC_class, sheet_thickness, lock_type, has_glass, has_electronic_lock` |
+| Interior door | `construction, opening, leaf_type, finish, has_glass_panel, has_soundproof, wall_width` |
 
-### XML формат за дефиниции
+### XML Format for Definitions
 
 ```xml
 <records>
     <properties code="bags" name="Bags - Standard">
         <items name="bag_type">
             <item name="type">selection</item>
-            <item name="selection">[["sleeve","Ръкав"],["sheet","Лист"]]</item>
+            <item name="selection">[["sleeve","Sleeve"],["sheet","Sheet"]]</item>
             <item name="default">sleeve</item>
         </items>
         <items name="has_tie">
@@ -122,7 +122,7 @@
 </records>
 ```
 
-### Четене в Python
+### Reading in Python
 
 ```python
 design_context = {
@@ -137,65 +137,65 @@ design_context = {
 
 ---
 
-## 4. Матрица — GoRules ZEN Engine
+## 4. Matrix — GoRules ZEN Engine
 
-**Библиотека:** `zen-engine` (`pip install zen-engine`). Rust + Python bindings. <1ms latency. Embeddable — без external calls.
+**Library:** `zen-engine` (`pip install zen-engine`). Rust + Python bindings. <1ms latency. Embeddable — no external calls.
 
-Матриците се съхраняват като JSONB в `mrp.bom`. Редактират се чрез `ace_editor` widget в Odoo UI.
+Matrices are stored as JSONB in `mrp.bom`. They are edited via the `ace_editor` widget in the Odoo UI.
 
-### T0 — Ограничения
+### T0 — Constraints
 
 - Hit policy: `Collect`
-- Изпълнява се ПРЕДИ всичко
-- `ERROR` → `UserError`, МО не се създава
-- `WARNING` → `message_post`, продължава
+- Executed BEFORE everything
+- `ERROR` → `UserError`, MO is not created
+- `WARNING` → `message_post`, continues
 
 ```
-ERROR:   перфорация + has_insulation    (ролетна)
-         стъкло + RC_class >= RC4       (блиндирана)
-         лист + цепене операция         (торба)
+ERROR:   perforation + has_insulation    (roller shutter)
+         glass + RC_class >= RC4         (security door)
+         sheet + slitting operation      (bag)
 
-WARNING: width > 4000 + manual          (ролетна)
-         solid + width > 900            (интериорна)
+WARNING: width > 4000 + manual           (roller shutter)
+         solid + width > 900             (interior door)
 ```
 
-### T1 — Геометрия
+### T1 — Geometry
 
 - Hit policy: `Unique`
-- Три типа ефекти:
-  - `context_modify` — изчислява intermediate var (`effective_length`)
-  - `context_force` — override с минимум (`sheet_thickness = max(user, RC_min[RC_class])`)
-  - `context_derive` — от физика (`motor_class = f(area × slat_weight_per_m2)`)
-- Изходът обогатява `full_context` за T2, T3 и formula модула
+- Three effect types:
+  - `context_modify` — computes an intermediate var (`effective_length`)
+  - `context_force` — override with minimum (`sheet_thickness = max(user, RC_min[RC_class])`)
+  - `context_derive` — from physics (`motor_class = f(area × slat_weight_per_m2)`)
+- Output enriches `full_context` for T2, T3, and the formula module
 
-### T2 — Материали
+### T2 — Materials
 
 - Hit policy: `Collect (sum)`
-- **Тип 1 — O-variant activation:** `{"bom_line_coeff_key": "...", "coefficient": 1.15}`
-- **Тип 2 — Direct ref:** `{"product_ref": "module.product_xmlid", "quantity": "...", ...}`
-- **Тип 3 — PTAV resolution:** `{"product_tmpl_ref": "...", "param_attribute_map": {"color": "module.attr_color"}, ...}`
+- **Type 1 — O-variant activation:** `{"bom_line_coeff_key": "...", "coefficient": 1.15}`
+- **Type 2 — Direct ref:** `{"product_ref": "module.product_xmlid", "quantity": "...", ...}`
+- **Type 3 — PTAV resolution:** `{"product_tmpl_ref": "...", "param_attribute_map": {"color": "module.attr_color"}, ...}`
 
-### T3 — Операции
+### T3 — Operations
 
 - Hit policy: `Any`
-- Условно добавя workorders
-- Изход: `{"workcenter_ref": "...", "duration_formula": "...", "sequence": int}`
+- Conditionally adds workorders
+- Output: `{"workcenter_ref": "...", "duration_formula": "...", "sequence": int}`
 
 ---
 
 ## 5. PTAV Resolution
 
-Design параметър → `product.attribute` → `product.attribute.value` → `product.product` variant.
+Design parameter → `product.attribute` → `product.attribute.value` → `product.product` variant.
 
 ```
 design_params.color = "FF0000"
     ↓ param_attribute_map: {"color": "module.attr_color"}
 attribute: Color / value: "FF0000"
     ↓ _get_variant_for_combination(ptav)
-product.product: Мастило + Color/FF0000
+product.product: Ink + Color/FF0000
 ```
 
-**Изискване:** стойностите на `design_params` трябва да съответстват точно на `product.attribute.value.name`.
+**Requirement:** `design_params` values must match `product.attribute.value.name` exactly.
 
 ```python
 def _resolve_variant_by_ptav(self, tmpl, param_attr_map, design_ctx):
@@ -217,23 +217,23 @@ def _resolve_variant_by_ptav(self, tmpl, param_attr_map, design_ctx):
 
 ---
 
-## 6. Полуфабрикати — рекурсивна верига
+## 6. Semi-Finished Products — Recursive Chain
 
 ```
-Краен продукт lot_1: {bag_type, has_tie, width, color, thickness}
-    МО Level 1
-        ├── Фолио (полуфабрикат)
+End product lot_1: {bag_type, has_tie, width, color, thickness}
+    MO Level 1
+        ├── Film (semi-finished)
         │       lot_2: {bag_type, width, color, thickness}
-        │       ← param_extraction_map от BoM линията
-        │       МО Level 2 → смола (mto_stop=True → PO)
+        │       ← param_extraction_map from BoM line
+        │       MO Level 2 → resin (mto_stop=True → PO)
         │
-        └── Връзка
+        └── Tie band
                 lot_3: {tie_length: height+50}
-                ← трансформация чрез safe_eval
-                mto_stop=True → PO или stock
+                ← transformation via safe_eval
+                mto_stop=True → PO or stock
 ```
 
-### param_extraction_map формат
+### param_extraction_map Format
 
 ```json
 {
@@ -243,24 +243,24 @@ def _resolve_variant_by_ptav(self, tmpl, param_attr_map, design_ctx):
 }
 ```
 
-Прост ключ → директно копие. Израз → `safe_eval` срещу parent lot context.
+Simple key → direct copy. Expression → `safe_eval` against the parent lot context.
 
-### MTO Stop логика
+### MTO Stop Logic
 
-| `mto_stop` | Действие |
+| `mto_stop` | Action |
 |---|---|
-| `False` | Създава нов МО + `_create_child_lot()` |
-| `True` | `_find_matching_lot()` от stock → ако няма → PO с параметрите |
+| `False` | Creates a new MO + `_create_child_lot()` |
+| `True` | `_find_matching_lot()` from stock → if not found → PO with parameters |
 
 ---
 
-## 7. Конструиране на МО — алгоритъм
+## 7. MO Construction — Algorithm
 
 ```python
 def _generate_design_matrix_moves(self):
     bom = self.bom_id
     if not bom.constraint_table:
-        return  # стандартен BoM
+        return  # standard BoM
 
     lot = self.lot_producing_id
     ctx = {
@@ -280,14 +280,14 @@ def _generate_design_matrix_moves(self):
     t1 = engine.create_decision(bom.geometry_table).evaluate(ctx)
     full_ctx = {**ctx, **t1}
 
-    # T2 — BoM lines × (formula × coeff) [Тип 1: O-variants]
+    # T2 — BoM lines × (formula × coeff) [Type 1: O-variants]
     for line in bom.bom_line_ids:
         qty_base = line._eval_quantity_formula(..., context=full_ctx)
         coeff = self._eval_matrix_coeff(line, full_ctx)
         if qty_base * coeff > 0.0:
             self._create_matrix_move_raw(line.product_id, qty_base * coeff, ...)
 
-    # T2 — ad-hoc [Тип 2: direct / Тип 3: PTAV]
+    # T2 — ad-hoc [Type 2: direct / Type 3: PTAV]
     for item in engine.create_decision(bom.material_table).evaluate(full_ctx).get("result", []):
         if item.get("coefficient", 0.0) > 0.0:
             product = self._resolve_t2_product(item, full_ctx)
@@ -311,7 +311,7 @@ def _generate_design_matrix_moves(self):
 
 ---
 
-## 8. Структура на repo
+## 8. Repository Structure
 
 ```
 mrp_design_matrix/
@@ -323,7 +323,7 @@ mrp_design_matrix/
         mrp_production.py
         stock_lot.py
     views/
-        mrp_bom_views.xml           ← таб "Design Matrix" + ace_editor
+        mrp_bom_views.xml           ← "Design Matrix" tab + ace_editor
         mrp_matrix_template_views.xml
         mrp_design_param_definition_views.xml
     data/
@@ -341,12 +341,12 @@ mrp_design_matrix_{industry}/
 
 ---
 
-## 9. OCA изисквания
+## 9. OCA Requirements
 
-- Лиценз: AGPL-3
-- Зависимости само от OCA/Odoo CE
-- `zen-engine` в `external_dependencies`
-- Тестове: поне един на функционалност
+- License: AGPL-3
+- Dependencies only from OCA/Odoo CE
+- `zen-engine` in `external_dependencies`
+- Tests: at least one per feature
 - Pre-commit: `ruff`, `black`, OCA checks
 - Towncrier changelog
-- `README.rst` с DESCRIPTION, USAGE, CONFIGURE
+- `README.rst` with DESCRIPTION, USAGE, CONFIGURE

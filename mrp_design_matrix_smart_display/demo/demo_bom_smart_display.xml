@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Demo finished product: Smart Home Display 4" WiFi+Zigbee -->
+        <record id="product_tmpl_smart_display_4" model="product.template">
+            <field name="name">Smart Home Display 4" WiFi+Zigbee</field>
+            <field name="type">product</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="tracking">lot</field>
+        </record>
+        <record id="product_smart_display_4" model="product.product">
+            <field name="product_tmpl_id" ref="product_tmpl_smart_display_4"/>
+        </record>
+
+        <!-- Demo BoM with design matrix -->
+        <record id="bom_smart_display_4" model="mrp.bom">
+            <field name="product_tmpl_id" ref="product_tmpl_smart_display_4"/>
+            <field name="product_qty">100</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="type">normal</field>
+            <field name="design_param_definition_id"
+                   ref="mrp_design_matrix_smart_display.smart_display"/>
+            <field name="matrix_template_id"
+                   ref="matrix_template_smart_display_standard"/>
+            <!-- Tables copied from template -->
+            <field name="constraint_table" eval="
+                ref('matrix_template_smart_display_standard').constraint_table
+            "/>
+            <field name="geometry_table" eval="
+                ref('matrix_template_smart_display_standard').geometry_table
+            "/>
+            <field name="material_table" eval="
+                ref('matrix_template_smart_display_standard').material_table
+            "/>
+            <field name="operation_table" eval="
+                ref('matrix_template_smart_display_standard').operation_table
+            "/>
+        </record>
+
+        <!-- BoM lines: always-present + O-variants -->
+
+        <!-- PCBA — always present, PTAV resolves by platform -->
+        <record id="bom_line_pcba" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_smart_display_4"/>
+            <field name="product_id" ref="product_pcba_px30"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">1.0</field>
+        </record>
+
+        <!-- Display panel — always present, PTAV by display_size -->
+        <record id="bom_line_display" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_smart_display_4"/>
+            <field name="product_id" ref="product_tmpl_display_panel"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">1.0</field>
+            <field name="product_tmpl_id" ref="product_tmpl_display_panel"/>
+            <field name="param_attribute_map" eval="
+                {'display_size': 'mrp_design_matrix_smart_display.attr_display_size'}
+            "/>
+        </record>
+
+        <!-- Housing — always present, PTAV by housing_color -->
+        <record id="bom_line_housing" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_smart_display_4"/>
+            <field name="product_id" ref="product_tmpl_housing"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">1.0</field>
+            <field name="product_tmpl_id" ref="product_tmpl_housing"/>
+            <field name="param_attribute_map" eval="
+                {'housing_color': 'mrp_design_matrix_smart_display.attr_housing_color'}
+            "/>
+        </record>
+
+        <!-- Front glass — always present -->
+        <record id="bom_line_front_glass" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_smart_display_4"/>
+            <field name="product_id" ref="product_front_glass"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">1.0</field>
+        </record>
+
+        <!-- PSU mains — always present (default power) -->
+        <record id="bom_line_psu" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_smart_display_4"/>
+            <field name="product_id" ref="product_psu_mains"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">1.0</field>
+        </record>
+
+        <!-- ── O-variants (coeff=0, activated by matrix) ──── -->
+
+        <!-- Zigbee module -->
+        <record id="bom_line_zigbee" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_smart_display_4"/>
+            <field name="product_id" ref="product_zigbee_module"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">zigbee-o</field>
+        </record>
+
+        <!-- Z-Wave module -->
+        <record id="bom_line_zwave" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_smart_display_4"/>
+            <field name="product_id" ref="product_zwave_module"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">zwave-o</field>
+        </record>
+
+        <!-- Relay module (qty scaled by coeff: 1.0=1pc, 2.0=2pcs) -->
+        <record id="bom_line_relay" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_smart_display_4"/>
+            <field name="product_id" ref="product_relay_module"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">relay-o</field>
+        </record>
+
+        <!-- Temp+Humidity sensor -->
+        <record id="bom_line_temp_humidity" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_smart_display_4"/>
+            <field name="product_id" ref="product_temp_humidity_sensor"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">temp-humidity-o</field>
+        </record>
+
+        <!-- Ambient light sensor -->
+        <record id="bom_line_lux" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_smart_display_4"/>
+            <field name="product_id" ref="product_lux_sensor"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">lux-o</field>
+        </record>
+
+        <!-- Proximity sensor -->
+        <record id="bom_line_proximity" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_smart_display_4"/>
+            <field name="product_id" ref="product_proximity_sensor"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">proximity-o</field>
+        </record>
+
+        <!-- Speaker (qty scaled by coeff: 1.0=mono, 2.0=stereo) -->
+        <record id="bom_line_speaker" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_smart_display_4"/>
+            <field name="product_id" ref="product_speaker"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">speaker-o</field>
+        </record>
+
+        <!-- MEMS Microphone (qty scaled by coeff: 1/2/4) -->
+        <record id="bom_line_mic" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_smart_display_4"/>
+            <field name="product_id" ref="product_mems_mic"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">mic-o</field>
+        </record>
+
+    </data>
+</odoo>

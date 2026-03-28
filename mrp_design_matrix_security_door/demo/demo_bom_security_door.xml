@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="product_tmpl_security_door" model="product.template">
+            <field name="name">Security Door RC3</field>
+            <field name="type">product</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="tracking">lot</field>
+        </record>
+
+        <record id="bom_security_door_rc3" model="mrp.bom">
+            <field name="product_tmpl_id" ref="product_tmpl_security_door"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="type">normal</field>
+            <field name="design_param_definition_id"
+                   ref="mrp_design_matrix_security_door.security_door"/>
+            <field name="matrix_template_id"
+                   ref="matrix_template_security_door_rc3"/>
+        </record>
+
+        <!-- O-variant: steel sheet — always present, qty from formula -->
+        <record id="bom_line_steel_sheet" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_security_door_rc3"/>
+            <field name="product_id" ref="product_tmpl_steel_sheet"/>
+            <field name="product_qty">1.0</field>
+            <field name="product_uom_id" ref="uom.product_uom_kg"/>
+            <!-- kg = area_m2 * sheet_thickness_mm * 7.85 (steel density) -->
+            <field name="quantity_formula">
+quantity = (width / 1000) * (height / 1000) * (sheet_thickness / 1000) * 7850
+            </field>
+            <field name="coeff_default">1.0</field>
+        </record>
+
+        <!-- O-variant: fill — coeff=0 unless RC3+ activates it -->
+        <record id="bom_line_fill" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_security_door_rc3"/>
+            <field name="product_id" ref="product_tmpl_fill"/>
+            <field name="product_qty">0.0</field>
+            <field name="product_uom_id" ref="uom.product_uom_kg"/>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">fill-o</field>
+        </record>
+
+        <!-- O-variant: electronic lock — coeff=0 unless activated -->
+        <record id="bom_line_elock" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_security_door_rc3"/>
+            <field name="product_id" ref="product_tmpl_elock"/>
+            <field name="product_qty">0.0</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">elock-o</field>
+        </record>
+    </data>
+</odoo>

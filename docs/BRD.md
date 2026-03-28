@@ -1,129 +1,129 @@
 # MRP Design Matrix — Business Requirements Document (BRD)
 
-**Версия:** 1.0 | **Дата:** Март 2026 | **Автор:** Росен Владимиров \<vladimirov.rosen@gmail.com\> | BL Consulting | Odoo Silver Partner
+**Version:** 1.0 | **Date:** March 2026 | **Author:** Rosen Vladimirov \<vladimirov.rosen@gmail.com\> | BL Consulting | Odoo Silver Partner
 
 ---
 
-## 1. Резюме
+## 1. Executive Summary
 
-Производствените предприятия в България и региона, работещи по индивидуални клиентски поръчки (make-to-order), се сблъскват с фундаментален проблем в Odoo: стандартната система управлява продукти като категории, но не може да опише конкретното физическо изделие, което трябва да бъде произведено точно сега, за точно този клиент, с точно тези параметри.
+Manufacturing enterprises in Bulgaria and the region operating on a make-to-order basis face a fundamental problem in Odoo: the standard system manages products as categories but cannot describe the specific physical item that needs to be produced right now, for this exact customer, with these exact parameters.
 
-Резултатът е двоен: технологичният отдел поддържа хиляди варианти на продукти в системата (по един за всяка комбинация от параметри), или — по-лошото — разчита на хартиени спецификации извън системата. И в двата случая планирането, проследимостта и себестойността са непълни.
+The result is twofold: the engineering department maintains thousands of product variants in the system (one for each combination of parameters), or — worse — relies on paper-based specifications outside the system. In both cases, planning, traceability, and costing are incomplete.
 
-**MRP Design Matrix** решава проблема като въвежда нов концептуален слой: производственият лот (партидата) носи дизайн спецификацията на изделието. Рецептата (BoM) е параметрична — материалите и количествата се изчисляват автоматично от параметрите на лота. Система от правила (матрица) управлява тази трансформация.
+**MRP Design Matrix** solves this problem by introducing a new conceptual layer: the production lot (batch) carries the design specification of the item. The recipe (BoM) is parametric — materials and quantities are calculated automatically from the lot parameters. A system of rules (matrix) governs this transformation.
 
 ---
 
-## 2. Контекст и проблематика
+## 2. Context and Problem Statement
 
-### 2.1 Целеви индустрии
+### 2.1 Target Industries
 
-Решението е разработено като универсален модел, валиден за производители в следните сектори:
+The solution is designed as a universal model applicable to manufacturers in the following sectors:
 
-| Индустрия | Специфика | Ключов проблем |
+| Industry | Specifics | Key Problem |
 |---|---|---|
-| Торби за смет | Ръкав/лист, различни дебелини и размери | Консумацията на смола зависи от геометрията |
-| Кашони и велпапе | Board grade, flute type, liner combo | Trim оптимизация, roll stock планиране |
-| Ролетни врати | Ламела, задвижване, изолация | Моторът се избира от теглото на вратата |
-| Блиндирани врати | RC клас като master параметър | RC клас форсира минимуми на всички компоненти |
-| Интериорни врати | Конструкция, финал, каса | Двукрилите имат различна геометрия |
+| Garbage bags | Tube/sheet, various thicknesses and sizes | Resin consumption depends on geometry |
+| Corrugated boxes | Board grade, flute type, liner combo | Trim optimization, roll stock planning |
+| Roller shutters | Slat, drive mechanism, insulation | Motor is selected based on door weight |
+| Security doors | RC class as master parameter | RC class enforces minimums on all components |
+| Interior doors | Construction, finish, frame | Double-leaf doors have different geometry |
 
-### 2.2 Болните точки
+### 2.2 Pain Points
 
-- Стандартният Odoo вариант не може да носи производствена спецификация — той е категория, не физически обект
-- BoM редовете са с фиксирани количества — не зависят от размерите или параметрите на конкретната поръчка
-- Няма механизъм за условно включване на материали ("ако има печат, добави мастило")
-- Невалидни комбинации от параметри не се блокират автоматично ("перфорация + изолация" е физически невъзможно)
-- Планирането на суровини и полуфабрикати не може да следва веригата надолу
-- Проследимостта от крайното изделие до суровинния лот е непълна
-
----
-
-## 3. Бизнес цели
-
-1. Елиминиране на ръчното въвеждане на технически спецификации извън системата
-2. Автоматично изчисление на материалните нужди на база физическите параметри на изделието
-3. Пълна проследимост от крайното изделие до суровинния лот на всяко ниво от производствената верига
-4. Автоматична валидация на дизайна преди стартиране на производство
-5. Планиране на закупуването на суровини, обвързано с реалните параметри на поръчките
-6. Универсален модел, приложим в различни индустрии без промяна на ядрото
+- The standard Odoo variant cannot carry a production specification — it is a category, not a physical object
+- BoM lines have fixed quantities — they do not depend on the dimensions or parameters of a specific order
+- There is no mechanism for conditional inclusion of materials ("if printing is required, add ink")
+- Invalid parameter combinations are not blocked automatically ("perforation + insulation" is physically impossible)
+- Raw material and semi-finished goods planning cannot follow the chain downstream
+- Traceability from the finished product to the raw material lot is incomplete
 
 ---
 
-## 4. Функционални изисквания
+## 3. Business Objectives
 
-### 4.1 Дизайн параметри
+1. Eliminate manual entry of technical specifications outside the system
+2. Automatic calculation of material requirements based on the physical parameters of the item
+3. Full traceability from the finished product to the raw material lot at every level of the production chain
+4. Automatic design validation before starting production
+5. Procurement planning for raw materials linked to the actual parameters of orders
+6. A universal model applicable across different industries without changing the core
 
-Системата трябва да позволява описание на произволен набор от типизирани параметри за всяко конкретно производство:
+---
 
-- **Числови:** ширина, височина, дебелина, плътност, грамаж
-- **Текстови:** цвят (RAL код), референция, артикулен номер
-- **Булеви:** има ли печат, има ли армировка, има ли изолация
-- **С избор:** тип торба (ръкав/лист), RC клас, тип финал
+## 4. Functional Requirements
 
-Параметрите трябва да се конфигурират чрез потребителски интерфейс, без промяна на код. Различни видове изделия имат различни набори параметри. Системата трябва да поддържа наследяване (базов набор + разширения).
+### 4.1 Design Parameters
 
-### 4.2 Параметрична рецепта (BoM)
+The system must allow the description of an arbitrary set of typed parameters for each specific production run:
 
-Рецептата трябва да поддържа:
+- **Numeric:** width, height, thickness, density, grammage
+- **Text:** color (RAL code), reference, article number
+- **Boolean:** has printing, has reinforcement, has insulation
+- **Selection:** bag type (tube/sheet), RC class, finish type
 
-- Фиксирани материали с количество, изчислено по формула от дизайн параметрите
-- **O-варианти** (условни материали): присъстват за MRP планиране, но влизат в МО само ако условието е изпълнено
-- Динамичен избор на конкретен вариант на материала чрез съответствие на параметри (PTAV)
-- Коефициент за скалиране на количество и цена едновременно
+Parameters must be configurable through the user interface without code changes. Different types of products have different sets of parameters. The system must support inheritance (base set + extensions).
 
-### 4.3 Система от правила (матрица)
+### 4.2 Parametric Recipe (BoM)
 
-Матрицата съдържа четири типа таблици:
+The recipe must support:
 
-| Таблица | Описание |
+- Fixed materials with quantity calculated by a formula from the design parameters
+- **O-variants** (conditional materials): present for MRP planning but included in MO only if the condition is met
+- Dynamic selection of a specific material variant through parameter matching (PTAV)
+- A scaling coefficient for quantity and price simultaneously
+
+### 4.3 Rule System (Matrix)
+
+The matrix contains four types of tables:
+
+| Table | Description |
 |---|---|
-| **T0 — Ограничения** | Блокира невалидни комбинации преди производство. Два вида: грешка (спира МО) и предупреждение (информира). |
-| **T1 — Геометрия** | Изчислява производни параметри. Може да форсира минимални стойности (RC клас). |
-| **T2 — Материали** | Определя кои материали се използват и в какви количества. Три механизма: O-вариант, директен избор, избор по параметри. |
-| **T3 — Операции** | Определя кои производствени операции се изпълняват условно. |
+| **T0 — Constraints** | Blocks invalid combinations before production. Two types: error (stops MO) and warning (informs). |
+| **T1 — Geometry** | Calculates derived parameters. Can enforce minimum values (RC class). |
+| **T2 — Materials** | Determines which materials are used and in what quantities. Three mechanisms: O-variant, direct selection, selection by parameters. |
+| **T3 — Operations** | Determines which manufacturing operations are executed conditionally. |
 
-### 4.4 Полуфабрикати и производствена верига
+### 4.4 Semi-Finished Products and Production Chain
 
-- Всеки полуфабрикат получава собствен лот с **извлечени параметри** от родителското изделие
-- Извличането се конфигурира на ниво рецепта: кои параметри се предават надолу и как
-- Параметрите могат да се трансформират при предаване (пример: дължината се удължава с 50 мм за връзката)
-- Флагът **MTO Stop** контролира дали веригата продължава надолу или спира при търсене от склад
+- Each semi-finished product receives its own lot with **extracted parameters** from the parent item
+- Extraction is configured at the recipe level: which parameters are passed downstream and how
+- Parameters can be transformed during handoff (example: length is extended by 50 mm for the joint)
+- The **MTO Stop** flag controls whether the chain continues downstream or stops with a stock lookup
 
-### 4.5 Шаблони
+### 4.5 Templates
 
-- Системата доставя готови шаблони с правила за всяка индустрия
-- Клиентът копира шаблона и го адаптира — оригиналът не се пипа
-- Шаблоните се зареждат в рецептата с един бутон
-
----
-
-## 5. Нефункционални изисквания
-
-- Съвместимост с Odoo 18 Community и Enterprise
-- Лиценз AGPL-3, публикуван в OCA (Odoo Community Association)
-- Без зависимости от платени библиотеки при изпълнение
-- Обработка на матрицата при създаване на МО под 2 секунди
-- Поддръжка на стандартните Odoo функционалности: MRP планиране, себестойност, проследимост
+- The system ships ready-made templates with rules for each industry
+- The customer copies the template and adapts it — the original is not modified
+- Templates are loaded into the recipe with a single button
 
 ---
 
-## 6. Извън обхвата
+## 5. Non-Functional Requirements
 
-- Trim оптимизация за велпапе (scheduling слой — отделен проект)
-- Интеграция с машинни системи (SCADA, PLC)
-- Мобилен интерфейс за оператори
-- BI отчети и дашборди
+- Compatibility with Odoo 18 Community and Enterprise
+- AGPL-3 license, published in OCA (Odoo Community Association)
+- No dependencies on paid libraries at runtime
+- Matrix processing during MO creation under 2 seconds
+- Support for standard Odoo functionalities: MRP planning, costing, traceability
 
 ---
 
-## 7. Заинтересовани страни
+## 6. Out of Scope
 
-| Роля | Интерес | Влияние |
+- Trim optimization for corrugated board (scheduling layer — separate project)
+- Integration with machine systems (SCADA, PLC)
+- Mobile interface for operators
+- BI reports and dashboards
+
+---
+
+## 7. Stakeholders
+
+| Role | Interest | Influence |
 |---|---|---|
-| Производствен директор | Точно планиране, без ръчни корекции | Висок |
-| Технолог | Лесно въвеждане на дизайн спецификации | Висок |
-| Счетоводител | Точна себестойност по партида | Среден |
-| Складов служител | Ясна проследимост на суровини | Среден |
-| IT администратор | Лесна поддръжка, без custom код | Среден |
-| Клиент на производителя | Навременна доставка, качество | Нисък (indirect) |
+| Production Director | Accurate planning, no manual corrections | High |
+| Process Engineer | Easy entry of design specifications | High |
+| Accountant | Accurate costing per batch | Medium |
+| Warehouse Clerk | Clear traceability of raw materials | Medium |
+| IT Administrator | Easy maintenance, no custom code | Medium |
+| Manufacturer's Customer | Timely delivery, quality | Low (indirect) |

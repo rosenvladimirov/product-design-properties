@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrp_bom_form_view_design_matrix" model="ir.ui.view">
+        <field name="name">mrp.bom.form.design.matrix</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+
+            <notebook position="inside">
+                <page string="Design Matrix" name="design_matrix">
+                    <group>
+                        <group string="Configuration">
+                            <field name="design_param_definition_id"/>
+                            <field name="matrix_template_id"/>
+                            <button name="action_load_from_template"
+                                    string="Load from Template"
+                                    type="object"
+                                    icon="fa-download"
+                                    attrs="{'invisible': [('matrix_template_id', '=', False)]}"/>
+                        </group>
+                    </group>
+
+                    <separator string="T0 — Constraints (ERROR / WARNING)"/>
+                    <field name="constraint_table"
+                           widget="ace"
+                           options="{'mode': 'json'}"
+                           nolabel="1"/>
+
+                    <separator string="T1 — Geometry (intermediate variables)"/>
+                    <field name="geometry_table"
+                           widget="ace"
+                           options="{'mode': 'json'}"
+                           nolabel="1"/>
+
+                    <separator string="T2 — Materials"/>
+                    <field name="material_table"
+                           widget="ace"
+                           options="{'mode': 'json'}"
+                           nolabel="1"/>
+
+                    <separator string="T3 — Operations"/>
+                    <field name="operation_table"
+                           widget="ace"
+                           options="{'mode': 'json'}"
+                           nolabel="1"/>
+                </page>
+            </notebook>
+
+        </field>
+    </record>
+
+    <!-- Extend BoM line tree with matrix fields -->
+    <record id="mrp_bom_line_tree_design_matrix" model="ir.ui.view">
+        <field name="name">mrp.bom.line.tree.design.matrix</field>
+        <field name="model">mrp.bom.line</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_line_view_form"/>
+        <field name="arch" type="xml">
+            <field name="product_qty" position="after">
+                <field name="coeff_default" optional="hide"/>
+            </field>
+            <field name="product_qty" position="after">
+                <field name="matrix_coeff_rule" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Extend BoM line form -->
+    <record id="mrp_bom_line_form_design_matrix" model="ir.ui.view">
+        <field name="name">mrp.bom.line.form.design.matrix</field>
+        <field name="model">mrp.bom.line</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_line_view_form2"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="Design Matrix" name="bom_line_matrix">
+                    <group string="Coefficient">
+                        <field name="coeff_default"/>
+                        <field name="matrix_coeff_rule"/>
+                    </group>
+                    <group string="PTAV Resolution">
+                        <field name="product_tmpl_id"/>
+                        <field name="param_attribute_map"
+                               widget="ace"
+                               options="{'mode': 'json'}"
+                               attrs="{'invisible': [('product_tmpl_id', '=', False)]}"/>
+                    </group>
+                    <group string="Semi-finished Chain">
+                        <field name="child_definition_id"/>
+                        <field name="mto_stop"/>
+                        <field name="param_extraction_map"
+                               widget="ace"
+                               options="{'mode': 'json'}"
+                               attrs="{'invisible': [('child_definition_id', '=', False)]}"/>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Demo finished product -->
+        <record id="product_tmpl_bag_60l" model="product.template">
+            <field name="name">Garbage Bag 60L</field>
+            <field name="type">product</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="tracking">lot</field>
+        </record>
+        <record id="product_bag_60l" model="product.product">
+            <field name="product_tmpl_id" ref="product_tmpl_bag_60l"/>
+        </record>
+
+        <!-- Demo BoM with design matrix -->
+        <record id="bom_bag_60l" model="mrp.bom">
+            <field name="product_tmpl_id" ref="product_tmpl_bag_60l"/>
+            <field name="product_qty">1000</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="type">normal</field>
+            <field name="design_param_definition_id"
+                   ref="mrp_design_matrix_bags.bags"/>
+            <field name="matrix_template_id"
+                   ref="matrix_template_bags_standard"/>
+            <!-- Tables copied from template -->
+            <field name="constraint_table" eval="
+                ref('matrix_template_bags_standard').constraint_table
+            "/>
+            <field name="geometry_table" eval="
+                ref('matrix_template_bags_standard').geometry_table
+            "/>
+            <field name="material_table"  eval="{}"/>
+            <field name="operation_table" eval="{}"/>
+        </record>
+
+        <!-- BoM lines: O-variants for MRP planning -->
+        <record id="bom_line_resin" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_bag_60l"/>
+            <field name="product_id" ref="product_tmpl_resin_hdpe"/>
+            <field name="product_qty">1.0</field>
+            <field name="product_uom_id" ref="uom.product_uom_kg"/>
+            <!-- Formula: width(mm) * effective_length(mm) * thickness(μm) * density / 1e9 * qty -->
+            <field name="quantity_formula">
+quantity = (width / 1000) * (effective_length / 1000) * (thickness / 1000000) * density * product_uom_qty
+            </field>
+            <field name="coeff_default">1.0</field>
+        </record>
+
+        <record id="bom_line_ink" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_bag_60l"/>
+            <field name="product_id" ref="product_tmpl_ink"/>
+            <field name="product_qty">0.0</field>
+            <field name="product_uom_id" ref="uom.product_uom_kg"/>
+            <!-- Activated by matrix when has_print=True -->
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">ink-o</field>
+            <field name="product_tmpl_id" ref="product_tmpl_ink"/>
+            <field name="param_attribute_map" eval="
+                {'color': 'mrp_design_matrix_bags.attr_color'}
+            "/>
+        </record>
+    </data>
+</odoo>

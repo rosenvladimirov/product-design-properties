@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Design parameter definitions for smart home display panel manufacturers.
+    Loaded by install_design_params.xml via create_design_param_definitions().
+
+    Based on real-world specs: Sonoff NSPanel Pro, Shelly Wall Display,
+    Tuya/Smatek T6E/S8E/T8E, MOES panels.
+
+    Types supported: char, float, boolean, selection
+    Selection format: [["value","Label"], ...]
+-->
+<records>
+    <properties code="smart_display" name="Smart Home Display" industry="electronics">
+        <!-- ── Display ──────────────────────────────────────── -->
+        <items name="display_size">
+            <item name="type">selection</item>
+            <item name="selection">[["3.5","3.5 inch"],["4.0","4.0 inch"],["4.7","4.7 inch"],["6.0","6.0 inch"],["6.86","6.86 inch"],["8.0","8.0 inch"],["10.1","10.1 inch"]]</item>
+            <item name="default">4.0</item>
+        </items>
+        <items name="display_type">
+            <item name="type">selection</item>
+            <item name="selection">[["TFT","TFT"],["IPS","IPS LCD"]]</item>
+            <item name="default">IPS</item>
+        </items>
+        <items name="display_resolution">
+            <item name="type">selection</item>
+            <item name="selection">[["480x320","480x320"],["480x480","480x480"],["720x1440","720x1440"],["750x1334","750x1334"],["800x1280","800x1280"],["1280x752","1280x752"],["1920x1080","1920x1080"]]</item>
+            <item name="default">480x480</item>
+        </items>
+        <items name="touch_type">
+            <item name="type">selection</item>
+            <item name="selection">[["capacitive","Capacitive"],["capacitive_multi","Capacitive Multi-touch"],["capacitive_gff","Capacitive G+FF 5-point"]]</item>
+            <item name="default">capacitive</item>
+        </items>
+
+        <!-- ── Platform / MCU ───────────────────────────────── -->
+        <items name="platform">
+            <item name="type">selection</item>
+            <item name="selection">[["esp32","ESP32 (RTOS)"],["px30","Rockchip PX30 (Android 8)"],["rk3326","Rockchip RK3326-S (Android 11)"],["rk3566","Rockchip RK3566 (Android 11)"]]</item>
+            <item name="default">px30</item>
+        </items>
+        <items name="ram_gb">
+            <item name="type">selection</item>
+            <item name="selection">[["0.5","512MB"],["1","1GB"],["2","2GB"],["4","4GB"]]</item>
+            <item name="default">2</item>
+        </items>
+        <items name="flash_gb">
+            <item name="type">selection</item>
+            <item name="selection">[["4","4GB"],["8","8GB"],["16","16GB"],["32","32GB"]]</item>
+            <item name="default">8</item>
+        </items>
+
+        <!-- ── Connectivity ─────────────────────────────────── -->
+        <items name="wifi_version">
+            <item name="type">selection</item>
+            <item name="selection">[["wifi4","WiFi 4 (2.4GHz)"],["wifi6","WiFi 6 (2.4+5GHz)"]]</item>
+            <item name="default">wifi4</item>
+        </items>
+        <items name="has_zigbee">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="has_ble">
+            <item name="type">boolean</item>
+            <item name="default">true</item>
+        </items>
+        <items name="ble_version">
+            <item name="type">selection</item>
+            <item name="selection">[["4.2","BT 4.2"],["5.0","BT 5.0"],["5.4","BT 5.4"]]</item>
+            <item name="default">5.0</item>
+        </items>
+        <items name="has_zwave">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+
+        <!-- ── Housing / Enclosure ──────────────────────────── -->
+        <items name="form_factor">
+            <item name="type">selection</item>
+            <item name="selection">[["eu86","EU 86mm"],["us120","US 120mm"],["custom","Custom"]]</item>
+            <item name="default">eu86</item>
+        </items>
+        <items name="housing_material">
+            <item name="type">selection</item>
+            <item name="selection">[["abs","ABS Plastic"],["pc","PC Plastic"],["aluminum","Aluminum + Glass"],["metal_pc","Metal + PC"]]</item>
+            <item name="default">pc</item>
+        </items>
+        <items name="housing_color">
+            <item name="type">selection</item>
+            <item name="selection">[["white","White"],["black","Black"],["gray","Gray"],["silver","Silver"]]</item>
+            <item name="default">white</item>
+        </items>
+        <items name="front_glass">
+            <item name="type">selection</item>
+            <item name="selection">[["tempered","Tempered Glass"],["acrylic","Acrylic"],["none","None"]]</item>
+            <item name="default">tempered</item>
+        </items>
+
+        <!-- ── Relay outputs ────────────────────────────────── -->
+        <items name="relay_count">
+            <item name="type">selection</item>
+            <item name="selection">[["0","None"],["1","1 Relay"],["2","2 Relays"]]</item>
+            <item name="default">0</item>
+        </items>
+        <items name="relay_rating_a">
+            <item name="type">selection</item>
+            <item name="selection">[["0","N/A"],["2","2A"],["5","5A"],["10","10A"]]</item>
+            <item name="default">0</item>
+        </items>
+
+        <!-- ── Sensors ──────────────────────────────────────── -->
+        <items name="has_temp_sensor">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="has_humidity_sensor">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="has_lux_sensor">
+            <item name="type">boolean</item>
+            <item name="default">true</item>
+        </items>
+        <items name="has_proximity">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+
+        <!-- ── Audio ────────────────────────────────────────── -->
+        <items name="speaker_count">
+            <item name="type">selection</item>
+            <item name="selection">[["0","None"],["1","1x Mono"],["2","2x Stereo"]]</item>
+            <item name="default">1</item>
+        </items>
+        <items name="speaker_power_w">
+            <item name="type">float</item>
+            <item name="default">1.0</item>
+        </items>
+        <items name="mic_count">
+            <item name="type">selection</item>
+            <item name="selection">[["0","None"],["1","1x"],["2","2x"],["4","4x Array"]]</item>
+            <item name="default">0</item>
+        </items>
+
+        <!-- ── Power ────────────────────────────────────────── -->
+        <items name="power_type">
+            <item name="type">selection</item>
+            <item name="selection">[["mains","Mains 100-240V AC"],["usb_c","USB-C 5V"],["poe","PoE 802.3af"]]</item>
+            <item name="default">mains</item>
+        </items>
+
+        <!-- ── Branding / OEM ───────────────────────────────── -->
+        <items name="has_custom_logo">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="logo_method">
+            <item name="type">selection</item>
+            <item name="selection">[["none","None"],["silkscreen","Silk Screen"],["pad_print","Pad Printing"],["laser","Laser Engraving"]]</item>
+            <item name="default">none</item>
+        </items>
+        <items name="has_custom_firmware">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="has_custom_packaging">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+    </properties>
+</records>

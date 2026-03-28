@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo><data noupdate="1">
+  <record id="matrix_template_interior_door_standard" model="mrp.matrix.template">
+    <field name="name">Interior Door — Standard</field>
+    <field name="industry">doors</field>
+    <field name="description">T0 ERROR: double+opening!=none.
+T0 WARNING: solid+width>900. T1: effective_area=w*h*(2 if double); case_depth.
+T2: panel-O, glass-O(coeff=0 if no glass), finish-O, soundproof-O, case-O, hinges-O.
+T3: glazing; surface finish.</field>
+    <field name="constraint_table" eval="{}"/>
+    <field name="geometry_table"   eval="{}"/>
+    <field name="material_table"   eval="{}"/>
+    <field name="operation_table"  eval="{}"/>
+  </record>
+</data></odoo>

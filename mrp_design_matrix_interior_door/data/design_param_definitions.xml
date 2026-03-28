@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<records>
+  <properties code="interior_door" name="Interior Door" industry="doors">
+    <items name="construction">
+      <item name="type">selection</item>
+      <item name="selection">[["HDF","HDF"],["solid","Solid wood"],["MDF","MDF"],["glass","Full glass"]]</item>
+      <item name="default">HDF</item>
+    </items>
+    <items name="opening">
+      <item name="type">selection</item>
+      <item name="selection">[["left","Left"],["right","Right"],["none","None (double)"]]</item>
+      <item name="default">left</item>
+    </items>
+    <items name="leaf_type">
+      <item name="type">selection</item>
+      <item name="selection">[["single","Single"],["double","Double"]]</item>
+      <item name="default">single</item>
+    </items>
+    <items name="finish">
+      <item name="type">selection</item>
+      <item name="selection">[["veneer","Veneer"],["lacquer","Lacquer"],["RAL","RAL"],["foil","Foil"]]</item>
+      <item name="default">veneer</item>
+    </items>
+    <items name="has_glass_panel"><item name="type">boolean</item><item name="default">false</item></items>
+    <items name="has_soundproof"><item name="type">boolean</item><item name="default">false</item></items>
+    <items name="wall_width"><item name="type">float</item><item name="default">100.0</item></items>
+  </properties>
+</records>

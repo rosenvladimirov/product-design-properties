@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Design parameter definitions for garbage bag manufacturers.
+    Loaded by install_design_params.xml via create_design_param_definitions().
+
+    Types supported: char, float, boolean, selection
+    Selection format: [["value","Label"], ...]
+-->
+<records>
+    <properties code="bags" name="Bags - Standard" industry="bags">
+        <items name="bag_type">
+            <item name="type">selection</item>
+            <item name="selection">[["sleeve","Sleeve"],["sheet","Sheet"]]</item>
+            <item name="default">sleeve</item>
+        </items>
+        <items name="has_tie">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="has_print">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="color">
+            <item name="type">char</item>
+            <item name="default">black</item>
+        </items>
+        <items name="resin_type">
+            <item name="type">selection</item>
+            <item name="selection">[["HDPE","HDPE"],["LDPE","LDPE"],["LLDPE","LLDPE"]]</item>
+            <item name="default">HDPE</item>
+        </items>
+        <items name="density">
+            <item name="type">float</item>
+            <item name="default">0.95</item>
+        </items>
+    </properties>
+</records>

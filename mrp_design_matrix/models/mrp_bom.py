@@ -1,0 +1,60 @@
+# Copyright 2026 BL Consulting
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+from odoo import fields, models
+
+
+class MrpBom(models.Model):
+    _inherit = "mrp.bom"
+
+    design_param_definition_id = fields.Many2one(
+        "mrp.design.param.definition",
+        string="Design Parameter Set",
+        help=(
+            "Defines which Properties fields appear on production lots "
+            "created from this BoM."
+        ),
+    )
+    matrix_template_id = fields.Many2one(
+        "mrp.matrix.template",
+        string="Matrix Template",
+        help=(
+            "Reference to the source template. "
+            "Use 'Load from Template' to copy the four rule tables. "
+            "Editing the tables below does NOT affect the template."
+        ),
+    )
+
+    # ── Rule tables (JSONB copies owned by this BoM) ─────────────────────
+
+    constraint_table = fields.Json(
+        "T0 — Constraints",
+        help="GoRules JDM. Evaluated before MO confirmation.",
+    )
+    geometry_table = fields.Json(
+        "T1 — Geometry",
+        help="GoRules JDM. Produces intermediate context variables.",
+    )
+    material_table = fields.Json(
+        "T2 — Materials",
+        help="GoRules JDM. Produces (product, qty, uom, coeff) rows.",
+    )
+    operation_table = fields.Json(
+        "T3 — Operations",
+        help="GoRules JDM. Produces conditional workorders.",
+    )
+
+    # ── Actions ──────────────────────────────────────────────────────────
+
+    def action_load_from_template(self):
+        """Copy the four rule tables from ``matrix_template_id`` into this BoM."""
+        self.ensure_one()
+        if not self.matrix_template_id:
+            return
+        t = self.matrix_template_id
+        self.write({
+            "constraint_table": t.constraint_table,
+            "geometry_table":   t.geometry_table,
+            "material_table":   t.material_table,
+            "operation_table":  t.operation_table,
+        })

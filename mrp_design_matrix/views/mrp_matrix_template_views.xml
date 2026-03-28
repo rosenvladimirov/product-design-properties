@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrp_matrix_template_view_list" model="ir.ui.view">
+        <field name="name">mrp.matrix.template.list</field>
+        <field name="model">mrp.matrix.template</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="industry"/>
+                <field name="description"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="mrp_matrix_template_view_form" model="ir.ui.view">
+        <field name="name">mrp.matrix.template.form</field>
+        <field name="model">mrp.matrix.template</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="industry"/>
+                        </group>
+                        <group>
+                            <field name="description"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="T0 — Constraints">
+                            <field name="constraint_table"
+                                   widget="ace"
+                                   options="{'mode': 'json'}"
+                                   nolabel="1"/>
+                        </page>
+                        <page string="T1 — Geometry">
+                            <field name="geometry_table"
+                                   widget="ace"
+                                   options="{'mode': 'json'}"
+                                   nolabel="1"/>
+                        </page>
+                        <page string="T2 — Materials">
+                            <field name="material_table"
+                                   widget="ace"
+                                   options="{'mode': 'json'}"
+                                   nolabel="1"/>
+                        </page>
+                        <page string="T3 — Operations">
+                            <field name="operation_table"
+                                   widget="ace"
+                                   options="{'mode': 'json'}"
+                                   nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="mrp_matrix_template_action" model="ir.actions.act_window">
+        <field name="name">Matrix Templates</field>
+        <field name="res_model">mrp.matrix.template</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_mrp_matrix_template"
+              name="Matrix Templates"
+              parent="mrp.menu_mrp_configuration"
+              action="mrp_matrix_template_action"
+              sequence="51"/>
+</odoo>

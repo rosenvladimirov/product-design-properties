@@ -1,0 +1,154 @@
+{
+  "nodes": [
+    {
+      "id": "t0-security",
+      "name": "T0 Constraints",
+      "type": "decisionTable",
+      "content": {
+        "hitPolicy": "collect",
+        "inputs": [
+          {"id": "has_glass", "name": "has_glass"},
+          {"id": "RC_class",  "name": "RC_class"},
+          {"id": "width",     "name": "width"}
+        ],
+        "outputs": [
+          {"id": "level",   "name": "level"},
+          {"id": "message", "name": "message"}
+        ],
+        "rules": [
+          {
+            "has_glass": "true",
+            "RC_class":  ">= \"RC4\"",
+            "width":     "",
+            "level":     "\"error\"",
+            "message":   "\"Glass panel is not permitted for RC4 and above.\""
+          },
+          {
+            "has_glass": "",
+            "RC_class":  ">= \"RC5\"",
+            "width":     "",
+            "level":     "\"error\"",
+            "message":   "\"RC5 and RC6 require individual project design — not configurable as standard.\""
+          },
+          {
+            "has_glass": "",
+            "RC_class":  "",
+            "width":     "> 1200",
+            "level":     "\"warning\"",
+            "message":   "\"Width > 1200 mm: verify structural reinforcement and hinge count.\""
+          }
+        ]
+      }
+    },
+    {
+      "id": "t1-security",
+      "name": "T1 Geometry + RC forced values",
+      "type": "decisionTable",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          {"id": "RC_class", "name": "RC_class"}
+        ],
+        "outputs": [
+          {"id": "min_sheet_thickness",   "name": "min_sheet_thickness"},
+          {"id": "min_lock_type",         "name": "min_lock_type"},
+          {"id": "required_fill",         "name": "required_fill"},
+          {"id": "rib_count_per_meter",   "name": "rib_count_per_meter"}
+        ],
+        "rules": [
+          {
+            "RC_class": "\"RC1\"",
+            "min_sheet_thickness": "1.5",
+            "min_lock_type":       "\"standard\"",
+            "required_fill":       "false",
+            "rib_count_per_meter": "1"
+          },
+          {
+            "RC_class": "\"RC2\"",
+            "min_sheet_thickness": "2.0",
+            "min_lock_type":       "\"certified\"",
+            "required_fill":       "false",
+            "rib_count_per_meter": "2"
+          },
+          {
+            "RC_class": "\"RC3\"",
+            "min_sheet_thickness": "3.0",
+            "min_lock_type":       "\"multipoint\"",
+            "required_fill":       "true",
+            "rib_count_per_meter": "3"
+          },
+          {
+            "RC_class": "\"RC4\"",
+            "min_sheet_thickness": "4.0",
+            "min_lock_type":       "\"multipoint_ind\"",
+            "required_fill":       "true",
+            "rib_count_per_meter": "4"
+          }
+        ]
+      }
+    },
+    {
+      "id": "t2-security",
+      "name": "T2 Materials",
+      "type": "decisionTable",
+      "content": {
+        "hitPolicy": "collect",
+        "inputs": [
+          {"id": "required_fill",      "name": "required_fill"},
+          {"id": "has_electronic_lock","name": "has_electronic_lock"}
+        ],
+        "outputs": [
+          {"id": "bom_line_coeff_key", "name": "bom_line_coeff_key"},
+          {"id": "coefficient",        "name": "coefficient"}
+        ],
+        "rules": [
+          {
+            "required_fill":       "true",
+            "has_electronic_lock": "",
+            "bom_line_coeff_key":  "\"fill-o\"",
+            "coefficient":         "1.0"
+          },
+          {
+            "required_fill":       "",
+            "has_electronic_lock": "true",
+            "bom_line_coeff_key":  "\"elock-o\"",
+            "coefficient":         "1.0"
+          }
+        ]
+      }
+    },
+    {
+      "id": "t3-security",
+      "name": "T3 Operations",
+      "type": "decisionTable",
+      "content": {
+        "hitPolicy": "collect",
+        "inputs": [
+          {"id": "RC_class",           "name": "RC_class"},
+          {"id": "has_electronic_lock","name": "has_electronic_lock"}
+        ],
+        "outputs": [
+          {"id": "workcenter_ref",   "name": "workcenter_ref"},
+          {"id": "name",             "name": "name"},
+          {"id": "duration_formula", "name": "duration_formula"}
+        ],
+        "rules": [
+          {
+            "RC_class":           ">= \"RC3\"",
+            "has_electronic_lock": "",
+            "workcenter_ref":   "\"mrp_design_matrix_security_door.wc_rc_test\"",
+            "name":             "\"RC certification test\"",
+            "duration_formula": "\"120\""
+          },
+          {
+            "RC_class":           "",
+            "has_electronic_lock": "true",
+            "workcenter_ref":   "\"mrp_design_matrix_security_door.wc_programming\"",
+            "name":             "\"Electronic lock programming\"",
+            "duration_formula": "\"30\""
+          }
+        ]
+      }
+    }
+  ]
+}

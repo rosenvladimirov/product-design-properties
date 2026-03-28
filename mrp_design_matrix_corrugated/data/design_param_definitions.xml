@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<records>
+  <properties code="corrugated" name="Corrugated / Cartons" industry="corrugated">
+    <items name="board_type">
+      <item name="type">selection</item>
+      <item name="selection">[["BC","BC Double Wall"],["C","C Flute"],["B","B Flute"],["E","E Flute"]]</item>
+      <item name="default">C</item>
+    </items>
+    <items name="has_print"><item name="type">boolean</item><item name="default">false</item></items>
+    <items name="die_cut"><item name="type">boolean</item><item name="default">false</item></items>
+    <items name="grammage_outer"><item name="type">float</item><item name="default">125.0</item></items>
+    <items name="grammage_medium"><item name="type">float</item><item name="default">112.0</item></items>
+    <items name="grammage_inner"><item name="type">float</item><item name="default">125.0</item></items>
+    <items name="box_l"><item name="type">float</item><item name="default">0.0</item></items>
+    <items name="box_w"><item name="type">float</item><item name="default">0.0</item></items>
+    <items name="box_d"><item name="type">float</item><item name="default">0.0</item></items>
+  </properties>
+</records>
