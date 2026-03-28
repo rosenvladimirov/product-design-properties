@@ -3,7 +3,7 @@
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
 
-    <!-- Smart button on product form for design assets -->
+    <!-- Smart button on product.product form -->
     <record id="product_product_form_design_assets" model="ir.ui.view">
         <field name="name">product.product.form.design.assets</field>
         <field name="model">product.product</field>
@@ -18,10 +18,21 @@
                     <field name="design_asset_count" widget="statinfo" string="Design Assets"/>
                 </button>
             </div>
+            <notebook position="inside">
+                <page string="Design Assets" name="design_assets">
+                    <field name="design_asset_ids" widget="many2many_binary">
+                        <list>
+                            <field name="name"/>
+                            <field name="mimetype"/>
+                            <field name="file_size"/>
+                        </list>
+                    </field>
+                </page>
+            </notebook>
         </field>
     </record>
 
-    <!-- Also extend product.template form (product variant kanban inside) -->
+    <!-- product.template form: Design Assets tab with info -->
     <record id="product_template_form_design_assets" model="ir.ui.view">
         <field name="name">product.template.form.design.assets</field>
         <field name="model">product.template</field>
@@ -29,13 +40,12 @@
         <field name="arch" type="xml">
             <notebook position="inside">
                 <page string="Design Assets" name="design_assets">
-                    <group>
-                        <div class="text-muted">
-                            Attach GLB (3D models), SVG (profiles), PNG/JPG (textures) files
-                            to product variants. These are used by the design configurator
-                            for 3D visualization.
-                        </div>
-                    </group>
+                    <div class="alert alert-info" role="alert">
+                        <i class="fa fa-info-circle"/>
+                        Attach GLB (3D models), SVG (profiles), PNG/JPG (textures) files
+                        to each <strong>product variant</strong>. Open the variant form to manage assets.
+                        These files are used by the design configurator for 3D visualization.
+                    </div>
                 </page>
             </notebook>
         </field>

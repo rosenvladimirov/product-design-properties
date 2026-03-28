@@ -15,19 +15,22 @@ DESIGN_MIMETYPES = [
 class ProductProduct(models.Model):
     _inherit = "product.product"
 
+    design_asset_ids = fields.Many2many(
+        "ir.attachment",
+        "product_design_asset_rel",
+        "product_id",
+        "attachment_id",
+        string="Design Assets",
+        help="GLB (3D models), SVG (profiles), PNG/JPG (textures) for design configurator.",
+    )
     design_asset_count = fields.Integer(
         compute="_compute_design_asset_count",
         string="Design Assets",
     )
 
     def _compute_design_asset_count(self):
-        Att = self.env["ir.attachment"]
         for product in self:
-            product.design_asset_count = Att.search_count([
-                ("res_model", "=", "product.product"),
-                ("res_id", "=", product.id),
-                ("mimetype", "in", DESIGN_MIMETYPES),
-            ])
+            product.design_asset_count = len(product.design_asset_ids)
 
     @api.model
     def get_design_assets_by_type(self, product_id):
@@ -40,20 +43,16 @@ class ProductProduct(models.Model):
         if not product.exists():
             return {"models_3d": [], "profiles_svg": [], "textures": []}
 
-        Att = self.env["ir.attachment"]
-        atts = Att.search_read([
-            ("res_model", "=", "product.product"),
-            ("res_id", "=", product_id),
-            ("mimetype", "in", DESIGN_MIMETYPES),
-        ], ["id", "name", "mimetype", "file_size"])
+        atts = product.design_asset_ids.read(["id", "name", "mimetype", "file_size"])
 
         result = {"models_3d": [], "profiles_svg": [], "textures": []}
         for a in atts:
-            if a["mimetype"] == "model/gltf-binary":
+            mime = a.get("mimetype", "")
+            if mime == "model/gltf-binary":
                 result["models_3d"].append(a)
-            elif a["mimetype"] == "image/svg+xml":
+            elif mime == "image/svg+xml":
                 result["profiles_svg"].append(a)
-            elif a["mimetype"] in ("image/jpeg", "image/png"):
+            elif mime in ("image/jpeg", "image/png"):
                 result["textures"].append(a)
         return result
 
@@ -65,11 +64,7 @@ class ProductProduct(models.Model):
             "name": "Design Assets",
             "res_model": "ir.attachment",
             "view_mode": "list,form",
-            "domain": [
-                ("res_model", "=", "product.product"),
-                ("res_id", "=", self.id),
-                ("mimetype", "in", DESIGN_MIMETYPES),
-            ],
+            "domain": [("id", "in", self.design_asset_ids.ids)],
             "context": {
                 "default_res_model": "product.product",
                 "default_res_id": self.id,
