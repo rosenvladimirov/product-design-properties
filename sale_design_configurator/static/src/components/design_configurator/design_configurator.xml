@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+<t t-name="sale_design_configurator.DesignConfiguratorWidget">
+    <div class="o_design_configurator">
+
+        <!-- Left panel: parameters -->
+        <div class="o_cfg_panel">
+
+            <!-- Dynamic parameter controls generated from paramDefinition -->
+            <div class="o_cfg_params">
+                <t t-foreach="displayParams" t-as="param" t-key="param.name">
+
+                    <!-- Float / range slider -->
+                    <t t-if="param.type === 'float'">
+                        <div class="o_cfg_param_row">
+                            <div class="o_cfg_param_label">
+                                <span><t t-esc="param.string"/></span>
+                                <strong><t t-esc="param.value"/></strong>
+                            </div>
+                            <input
+                                type="range"
+                                t-att-min="param.min || 0"
+                                t-att-max="param.max || 9999"
+                                t-att-step="param.step || 1"
+                                t-att-value="param.value"
+                                t-on-input="(e) => onRangeChange(param.name, e)"
+                            />
+                        </div>
+                    </t>
+
+                    <!-- Selection: segmented buttons -->
+                    <t t-if="param.type === 'selection' and param.selection">
+                        <div class="o_cfg_param_row">
+                            <div class="o_cfg_param_label">
+                                <span><t t-esc="param.string"/></span>
+                            </div>
+                            <div class="o_cfg_seg">
+                                <t t-foreach="param.selection" t-as="opt" t-key="opt[0]">
+                                    <button
+                                        t-att-class="'o_cfg_seg_btn' + (params[param.name] === opt[0] ? ' active' : '')"
+                                        t-on-click="() => onSelectionChange(param.name, opt[0])"
+                                    >
+                                        <t t-esc="opt[1]"/>
+                                    </button>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Boolean: checkbox -->
+                    <t t-if="param.type === 'boolean'">
+                        <label class="o_cfg_check">
+                            <input
+                                type="checkbox"
+                                t-att-checked="params[param.name]"
+                                t-on-change="(e) => onBoolChange(param.name, e)"
+                            />
+                            <span><t t-esc="param.string"/></span>
+                        </label>
+                    </t>
+
+                    <!-- Char: text input -->
+                    <t t-if="param.type === 'char'">
+                        <div class="o_cfg_param_row">
+                            <div class="o_cfg_param_label">
+                                <span><t t-esc="param.string"/></span>
+                            </div>
+                            <input
+                                type="text"
+                                class="o_input"
+                                t-att-value="params[param.name]"
+                                t-on-input="(e) => onParamChange(param.name, e.target.value)"
+                                style="width: 100%;"
+                            />
+                        </div>
+                    </t>
+
+                </t>
+            </div>
+
+            <!-- Validation messages -->
+            <div class="o_cfg_validation" t-if="ui.validErrors.length or ui.validWarns.length">
+                <t t-foreach="ui.validErrors" t-as="err" t-key="err">
+                    <div class="o_cfg_msg o_cfg_msg_error">
+                        <i class="fa fa-times-circle"/> <t t-esc="err"/>
+                    </div>
+                </t>
+                <t t-foreach="ui.validWarns" t-as="warn" t-key="warn">
+                    <div class="o_cfg_msg o_cfg_msg_warn">
+                        <i class="fa fa-exclamation-triangle"/> <t t-esc="warn"/>
+                    </div>
+                </t>
+            </div>
+
+            <!-- Lot preview (design_params dict) -->
+            <div class="o_cfg_lot_preview">
+                <div class="o_cfg_lot_label">Design Lot &#8212; Parameters</div>
+                <pre class="o_cfg_lot_json"><t t-esc="lotPreview"/></pre>
+            </div>
+
+            <!-- Footer buttons -->
+            <div class="o_cfg_footer">
+                <button
+                    class="btn btn-primary"
+                    t-att-disabled="hasErrors or ui.saving"
+                    t-on-click="onConfirm"
+                >
+                    <t t-if="ui.saving">
+                        <i class="fa fa-spinner fa-spin"/> Saving...
+                    </t>
+                    <t t-else="">
+                        <t t-if="props.existingLotId">Update Lot</t>
+                        <t t-else="">Create Design Lot</t>
+                    </t>
+                </button>
+                <button class="btn btn-secondary ms-2" t-on-click="props.onClose">
+                    Cancel
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Right panel: 3D viewport -->
+        <div class="o_cfg_viewport">
+            <canvas t-ref="canvas"/>
+            <div class="o_cfg_rotate_hint">Drag to rotate</div>
+        </div>
+
+    </div>
+</t>
+
+</templates>

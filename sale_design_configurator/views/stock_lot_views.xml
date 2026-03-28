@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Extend stock.lot form: add definition field, design params page, configure button -->
+    <record id="stock_lot_form_design_configurator" model="ir.ui.view">
+        <field name="name">stock.lot.form.design.configurator</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.view_lot_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Configure Design button in header -->
+            <header position="inside">
+                <button name="action_open_design_configurator"
+                        string="Configure Design"
+                        type="object"
+                        class="btn-primary"
+                        icon="fa-cube"
+                        invisible="not design_param_definition_id"/>
+            </header>
+
+            <!-- Add definition field after ref -->
+            <field name="ref" position="after">
+                <field name="design_param_definition_id"/>
+            </field>
+
+            <!-- Design Parameters notebook page -->
+            <notebook position="inside">
+                <page string="Design Parameters"
+                      name="design_params"
+                      invisible="not design_param_definition_id">
+                    <field name="design_params" nolabel="1"/>
+                </page>
+            </notebook>
+
+        </field>
+    </record>
+
+</odoo>

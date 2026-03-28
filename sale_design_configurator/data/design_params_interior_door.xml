@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Interior door design parameter definitions.
+-->
+<records>
+    <properties code="interior_door" name="Interior Door" industry="doors">
+        <items name="construction">
+            <item name="type">selection</item>
+            <item name="selection">[["HDF","HDF"],["solid","Solid Wood"],["MDF","MDF"],["glass","Full Glass"]]</item>
+            <item name="default">HDF</item>
+        </items>
+        <items name="opening">
+            <item name="type">selection</item>
+            <item name="selection">[["left","Left"],["right","Right"],["none","None (double)"]]</item>
+            <item name="default">left</item>
+        </items>
+        <items name="leaf_type">
+            <item name="type">selection</item>
+            <item name="selection">[["single","Single"],["double","Double"]]</item>
+            <item name="default">single</item>
+        </items>
+        <items name="finish">
+            <item name="type">selection</item>
+            <item name="selection">[["veneer","Veneer"],["lacquer","Lacquer"],["RAL","RAL Paint"],["foil","Foil"]]</item>
+            <item name="default">veneer</item>
+        </items>
+        <items name="has_glass_panel">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="has_soundproof">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="wall_width">
+            <item name="type">float</item>
+            <item name="default">100.0</item>
+        </items>
+    </properties>
+</records>

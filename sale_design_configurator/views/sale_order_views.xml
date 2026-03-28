@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================== -->
+    <!--  SO form: extend order_line tree to show design configurator        -->
+    <!-- ================================================================== -->
+
+    <record id="sale_order_form_design_configurator" model="ir.ui.view">
+        <field name="name">sale.order.form.design.configurator</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Add hidden helper fields and design columns to the order line tree -->
+            <xpath expr="//field[@name='order_line']//list//field[@name='product_id']" position="after">
+                <!-- Hidden helper fields -->
+                <field name="has_design_definition" column_invisible="True"/>
+                <field name="design_param_definition_id" column_invisible="True"/>
+
+                <!-- Configure button: visible only when product has a definition -->
+                <button
+                    name="action_open_design_configurator"
+                    type="object"
+                    icon="fa-cube"
+                    title="Configure Design"
+                    class="btn-sm"
+                    invisible="not has_design_definition"/>
+
+                <!-- Design lot badge: lot name if configured -->
+                <field
+                    name="design_lot_id"
+                    optional="show"
+                    invisible="not has_design_definition"/>
+
+                <!-- Compact params summary -->
+                <field
+                    name="design_params_summary"
+                    optional="show"
+                    string="Parameters"
+                    invisible="not design_lot_id"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  SO line form popup: design parameters tab                          -->
+    <!-- ================================================================== -->
+
+    <record id="sale_order_line_form_design_configurator" model="ir.ui.view">
+        <field name="name">sale.order.line.form.design.configurator</field>
+        <field name="model">sale.order.line</field>
+        <field name="inherit_id" ref="sale.view_order_line_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page
+                    string="Design Parameters"
+                    name="design_params"
+                    invisible="not has_design_definition">
+                    <field name="has_design_definition" invisible="1"/>
+                    <field name="design_param_definition_id" invisible="1"/>
+                    <group>
+                        <group>
+                            <field name="design_lot_id"/>
+                            <field name="design_params_summary" readonly="1"/>
+                        </group>
+                        <group>
+                            <button
+                                name="action_open_design_configurator"
+                                type="object"
+                                string="Open Configurator"
+                                icon="fa-cube"
+                                class="btn-primary"/>
+                        </group>
+                    </group>
+                    <!-- Show design lot details if lot exists -->
+                    <group
+                        string="Detailed Parameters"
+                        invisible="not design_lot_id">
+                        <field
+                            name="design_lot_id"
+                            widget="many2one_avatar"
+                            readonly="1"
+                            nolabel="1"/>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  mrp.bom: add design_param_definition_id field                      -->
+    <!-- ================================================================== -->
+
+    <record id="mrp_bom_form_design_configurator" model="ir.ui.view">
+        <field name="name">mrp.bom.form.design.configurator</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <field name="product_qty" position="after">
+                <field name="design_param_definition_id"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  mrp.production: Configurator button                                -->
+    <!-- ================================================================== -->
+
+    <record id="mrp_production_form_configurator_btn" model="ir.ui.view">
+        <field name="name">mrp.production.form.design.configurator</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <field name="lot_producing_id" position="after">
+                <button name="action_open_design_configurator"
+                        string="Configurator"
+                        type="object"
+                        class="btn-secondary btn-sm"
+                        icon="fa-cube"
+                        invisible="not bom_id"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  stock.lot form: Configure Design button (duplicate protection)     -->
+    <!--  Already handled in stock_lot_views.xml but adding MO-context btn   -->
+    <!-- ================================================================== -->
+
+</odoo>

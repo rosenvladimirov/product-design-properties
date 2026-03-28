@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+<t t-name="sale_design_configurator.DesignConfiguratorDialog">
+    <Dialog title="'Design Configurator'" size="'xl'" footer="false">
+        <t t-if="state.loading">
+            <div class="text-center py-5">
+                <i class="fa fa-spinner fa-spin fa-2x text-muted"/>
+            </div>
+        </t>
+        <t t-else="">
+            <DesignConfiguratorWidget
+                productId="props.productId"
+                definitionId="props.definitionId"
+                definitionCode="state.definitionCode"
+                paramDefinition="state.paramDefinition"
+                existingLotId="props.existingLotId or false"
+                onLotCreated.bind="onLotCreated"
+                onClose.bind="onClose"
+            />
+        </t>
+    </Dialog>
+</t>
+
+</templates>

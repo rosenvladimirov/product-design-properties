@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Merged design parameter definitions for sale_design_configurator.
+    Contains both security door and interior door definitions.
+    Loaded by create_design_param_definitions() at install time.
+-->
+<records>
+    <properties code="security_door" name="Security Door" industry="doors">
+        <items name="RC_class">
+            <item name="type">selection</item>
+            <item name="selection">[["RC1","RC1"],["RC2","RC2"],["RC3","RC3"],["RC4","RC4"]]</item>
+            <item name="default">RC2</item>
+        </items>
+        <items name="sheet_thickness">
+            <item name="type">float</item>
+            <item name="default">2.0</item>
+        </items>
+        <items name="lock_type">
+            <item name="type">selection</item>
+            <item name="selection">[["standard","Standard"],["certified","Certified"],["multipoint","Multipoint"],["multipoint_ind","Multipoint + Ind."]]</item>
+            <item name="default">certified</item>
+        </items>
+        <items name="has_glass">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="has_electronic_lock">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="finish">
+            <item name="type">selection</item>
+            <item name="selection">[["RAL","RAL Paint"],["galv","Galvanized"],["ss","Stainless Steel"]]</item>
+            <item name="default">RAL</item>
+        </items>
+        <items name="RAL_code">
+            <item name="type">char</item>
+            <item name="default"></item>
+        </items>
+    </properties>
+
+    <properties code="interior_door" name="Interior Door" industry="doors">
+        <items name="construction">
+            <item name="type">selection</item>
+            <item name="selection">[["HDF","HDF"],["solid","Solid Wood"],["MDF","MDF"],["glass","Full Glass"]]</item>
+            <item name="default">HDF</item>
+        </items>
+        <items name="opening">
+            <item name="type">selection</item>
+            <item name="selection">[["left","Left"],["right","Right"],["none","None (double)"]]</item>
+            <item name="default">left</item>
+        </items>
+        <items name="leaf_type">
+            <item name="type">selection</item>
+            <item name="selection">[["single","Single"],["double","Double"]]</item>
+            <item name="default">single</item>
+        </items>
+        <items name="finish">
+            <item name="type">selection</item>
+            <item name="selection">[["veneer","Veneer"],["lacquer","Lacquer"],["RAL","RAL Paint"],["foil","Foil"]]</item>
+            <item name="default">veneer</item>
+        </items>
+        <items name="has_glass_panel">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="has_soundproof">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="wall_width">
+            <item name="type">float</item>
+            <item name="default">100.0</item>
+        </items>
+    </properties>
+</records>
