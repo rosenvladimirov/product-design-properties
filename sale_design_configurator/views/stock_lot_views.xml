@@ -7,17 +7,14 @@
         <field name="model">stock.lot</field>
         <field name="inherit_id" ref="stock.view_production_lot_form"/>
         <field name="arch" type="xml">
-
-            <!-- Configure Design button in header -->
-            <header position="inside">
+            <div name="button_box" position="inside">
                 <button name="action_open_design_configurator"
-                        string="Configure Design"
                         type="object"
-                        class="btn-primary"
+                        class="oe_stat_button"
                         icon="fa-cube"
+                        string="Configure Design"
                         invisible="not design_param_definition_id"/>
-            </header>
-
+            </div>
         </field>
     </record>
 
