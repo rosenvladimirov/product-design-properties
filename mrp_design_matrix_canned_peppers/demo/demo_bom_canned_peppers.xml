@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Demo finished product: Roasted Peppers Whole 720ml -->
+        <record id="product_tmpl_peppers_720" model="product.template">
+            <field name="name">Roasted Peppers Whole 720ml</field>
+            <field name="type">product</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="tracking">lot</field>
+        </record>
+        <record id="product_peppers_720" model="product.product">
+            <field name="product_tmpl_id" ref="product_tmpl_peppers_720"/>
+        </record>
+
+        <!-- Demo BoM with design matrix -->
+        <record id="bom_peppers_720" model="mrp.bom">
+            <field name="product_tmpl_id" ref="product_tmpl_peppers_720"/>
+            <field name="product_qty">1000</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="type">normal</field>
+            <field name="design_param_definition_id"
+                   ref="mrp_design_matrix_canned_peppers.canned_peppers"/>
+            <field name="matrix_template_id"
+                   ref="matrix_template_canned_peppers_standard"/>
+            <field name="constraint_table" eval="
+                ref('matrix_template_canned_peppers_standard').constraint_table
+            "/>
+            <field name="geometry_table" eval="
+                ref('matrix_template_canned_peppers_standard').geometry_table
+            "/>
+            <field name="material_table" eval="
+                ref('matrix_template_canned_peppers_standard').material_table
+            "/>
+            <field name="operation_table" eval="
+                ref('matrix_template_canned_peppers_standard').operation_table
+            "/>
+        </record>
+
+        <!-- ── Always-present lines ────────────────────────── -->
+
+        <!-- Raw peppers -->
+        <record id="bom_line_raw_peppers" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_raw_peppers"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_kgm"/>
+            <!-- Formula: drain_weight_g / 1000 * qty (roasting loss ~30%) -->
+            <field name="quantity_formula">
+quantity = (drain_weight_g / 1000.0) * 1.3 * product_uom_qty
+            </field>
+            <field name="coeff_default">1.0</field>
+        </record>
+
+        <!-- Water for brine -->
+        <record id="bom_line_water" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_water"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_litre"/>
+            <!-- Formula: brine_volume_ml / 1000 * qty -->
+            <field name="quantity_formula">
+quantity = (brine_volume_ml / 1000.0) * product_uom_qty
+            </field>
+            <field name="coeff_default">1.0</field>
+        </record>
+
+        <!-- Salt -->
+        <record id="bom_line_salt" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_salt"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_kgm"/>
+            <!-- Formula: brine_volume_ml * salt_pct / 100 / 1000 * qty -->
+            <field name="quantity_formula">
+quantity = (brine_volume_ml * salt_pct / 100.0 / 1000.0) * product_uom_qty
+            </field>
+            <field name="coeff_default">1.0</field>
+        </record>
+
+        <!-- Sugar -->
+        <record id="bom_line_sugar" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_sugar"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_kgm"/>
+            <field name="quantity_formula">
+quantity = (brine_volume_ml * sugar_pct / 100.0 / 1000.0) * product_uom_qty
+            </field>
+            <field name="coeff_default">1.0</field>
+        </record>
+
+        <!-- Glass jar — PTAV by container_volume_ml -->
+        <record id="bom_line_jar" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_tmpl_glass_jar"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">1.0</field>
+            <field name="product_tmpl_id" ref="product_tmpl_glass_jar"/>
+            <field name="param_attribute_map" eval="
+                {'container_volume_ml': 'mrp_design_matrix_canned_peppers.attr_container_volume'}
+            "/>
+        </record>
+
+        <!-- Lid — PTAV by lid_color -->
+        <record id="bom_line_lid" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_tmpl_lid"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">1.0</field>
+            <field name="product_tmpl_id" ref="product_tmpl_lid"/>
+            <field name="param_attribute_map" eval="
+                {'lid_color': 'mrp_design_matrix_canned_peppers.attr_lid_color'}
+            "/>
+        </record>
+
+        <!-- Pallet — always 1 per batch -->
+        <record id="bom_line_pallet" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_pallet"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <!-- Formula: qty / (units_per_box * boxes_per_layer * layers_per_pallet), rounded up -->
+            <field name="quantity_formula">
+import math
+units_per_pallet = units_per_box * boxes_per_layer * layers_per_pallet
+quantity = math.ceil(product_uom_qty / units_per_pallet) if units_per_pallet > 0 else 0
+            </field>
+            <field name="coeff_default">1.0</field>
+        </record>
+
+        <!-- Pallet label — 1 per pallet -->
+        <record id="bom_line_pallet_label" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_pallet_label"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="quantity_formula">
+import math
+units_per_pallet = units_per_box * boxes_per_layer * layers_per_pallet
+quantity = math.ceil(product_uom_qty / units_per_pallet) if units_per_pallet > 0 else 0
+            </field>
+            <field name="coeff_default">1.0</field>
+        </record>
+
+        <!-- ── O-variants (coeff=0, activated by matrix) ──── -->
+
+        <!-- Vinegar -->
+        <record id="bom_line_vinegar" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_vinegar"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_litre"/>
+            <field name="quantity_formula">
+quantity = (brine_volume_ml * vinegar_pct / 100.0 / 1000.0) * product_uom_qty
+            </field>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">vinegar-o</field>
+        </record>
+
+        <!-- Sunflower oil -->
+        <record id="bom_line_sunflower_oil" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_sunflower_oil"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_litre"/>
+            <field name="quantity_formula">
+quantity = (brine_volume_ml / 1000.0) * product_uom_qty
+            </field>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">sunflower-oil-o</field>
+        </record>
+
+        <!-- Olive oil -->
+        <record id="bom_line_olive_oil" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_olive_oil"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_litre"/>
+            <field name="quantity_formula">
+quantity = (brine_volume_ml / 1000.0) * product_uom_qty
+            </field>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">olive-oil-o</field>
+        </record>
+
+        <!-- Tomato paste -->
+        <record id="bom_line_tomato_paste" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_tomato_paste"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_kgm"/>
+            <field name="quantity_formula">
+quantity = (brine_volume_ml * 0.15 / 1000.0) * product_uom_qty
+            </field>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">tomato-paste-o</field>
+        </record>
+
+        <!-- Garlic -->
+        <record id="bom_line_garlic" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_garlic"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_kgm"/>
+            <field name="quantity_formula">
+quantity = 0.005 * product_uom_qty
+            </field>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">garlic-o</field>
+        </record>
+
+        <!-- Parsley -->
+        <record id="bom_line_parsley" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_parsley"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_kgm"/>
+            <field name="quantity_formula">
+quantity = 0.003 * product_uom_qty
+            </field>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">parsley-o</field>
+        </record>
+
+        <!-- White cheese (stuffed) -->
+        <record id="bom_line_cheese" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_white_cheese"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_kgm"/>
+            <field name="quantity_formula">
+quantity = (drain_weight_g * 0.3 / 1000.0) * product_uom_qty
+            </field>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">cheese-o</field>
+        </record>
+
+        <!-- Beans (stuffed) -->
+        <record id="bom_line_beans" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_beans"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_kgm"/>
+            <field name="quantity_formula">
+quantity = (drain_weight_g * 0.35 / 1000.0) * product_uom_qty
+            </field>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">beans-o</field>
+        </record>
+
+        <!-- Label standard -->
+        <record id="bom_line_label_std" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_label_standard"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">label-standard-o</field>
+        </record>
+
+        <!-- Label private -->
+        <record id="bom_line_label_priv" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_label_private"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">label-private-o</field>
+        </record>
+
+        <!-- Shrink sleeve -->
+        <record id="bom_line_shrink_sleeve" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_shrink_sleeve"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">shrink-sleeve-o</field>
+        </record>
+
+        <!-- Cardboard box -->
+        <record id="bom_line_cardboard_box" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_cardboard_box"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="quantity_formula">
+import math
+quantity = math.ceil(product_uom_qty / units_per_box) if units_per_box > 0 else 0
+            </field>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">cardboard-box-o</field>
+        </record>
+
+        <!-- Shrink film -->
+        <record id="bom_line_shrink_film" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_shrink_film"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_kgm"/>
+            <field name="quantity_formula">
+import math
+quantity = math.ceil(product_uom_qty / units_per_box) * 0.05 if units_per_box > 0 else 0
+            </field>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">shrink-film-o</field>
+        </record>
+
+        <!-- Tray -->
+        <record id="bom_line_tray" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_tray"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="quantity_formula">
+import math
+quantity = math.ceil(product_uom_qty / units_per_box) if units_per_box > 0 else 0
+            </field>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">tray-o</field>
+        </record>
+
+        <!-- Display box -->
+        <record id="bom_line_display_box" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_display_box"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="quantity_formula">
+import math
+quantity = math.ceil(product_uom_qty / units_per_box) if units_per_box > 0 else 0
+            </field>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">display-box-o</field>
+        </record>
+
+        <!-- Stretch film (pallet wrap) -->
+        <record id="bom_line_stretch_film" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_stretch_film"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_kgm"/>
+            <field name="quantity_formula">
+import math
+units_per_pallet = units_per_box * boxes_per_layer * layers_per_pallet
+pallet_count = math.ceil(product_uom_qty / units_per_pallet) if units_per_pallet > 0 else 0
+quantity = pallet_count * 0.35
+            </field>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">stretch-film-o</field>
+        </record>
+
+        <!-- Corner boards (4 per pallet) -->
+        <record id="bom_line_corner_boards" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_corner_boards"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="quantity_formula">
+import math
+units_per_pallet = units_per_box * boxes_per_layer * layers_per_pallet
+pallet_count = math.ceil(product_uom_qty / units_per_pallet) if units_per_pallet > 0 else 0
+quantity = pallet_count
+            </field>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">corner-boards-o</field>
+        </record>
+
+        <!-- Top sheet -->
+        <record id="bom_line_top_sheet" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_peppers_720"/>
+            <field name="product_id" ref="product_top_sheet"/>
+            <field name="product_qty">1</field>
+            <field name="product_uom_id" ref="uom.product_uom_unit"/>
+            <field name="quantity_formula">
+import math
+units_per_pallet = units_per_box * boxes_per_layer * layers_per_pallet
+pallet_count = math.ceil(product_uom_qty / units_per_pallet) if units_per_pallet > 0 else 0
+quantity = pallet_count
+            </field>
+            <field name="coeff_default">0.0</field>
+            <field name="matrix_coeff_rule">top-sheet-o</field>
+        </record>
+
+    </data>
+</odoo>

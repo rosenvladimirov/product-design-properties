@@ -1,0 +1,525 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Matrix template records for canned roasted pepper manufacturing.
+
+    T0: Recipe-container compatibility, stuffed recipe constraints,
+        HoReCa format constraints.
+    T1: Derives brine volume, fill ratios, label dimensions from container size.
+    T2: Activates O-variant ingredients and packaging materials.
+    T3: Conditional operations (stuffing, pasteurization profile, labeling,
+        palletizing).
+-->
+<odoo>
+    <data noupdate="1">
+
+        <!-- ── Workcenter stubs ────────────────────────────────────── -->
+        <record id="wc_sorting" model="mrp.workcenter">
+            <field name="name">Pepper Sorting &amp; Grading</field>
+            <field name="code">PSORT</field>
+        </record>
+        <record id="wc_roasting" model="mrp.workcenter">
+            <field name="name">Roasting Oven</field>
+            <field name="code">ROAST</field>
+        </record>
+        <record id="wc_peeling" model="mrp.workcenter">
+            <field name="name">Peeling Line</field>
+            <field name="code">PEEL</field>
+        </record>
+        <record id="wc_cutting" model="mrp.workcenter">
+            <field name="name">Cutting / Dicing</field>
+            <field name="code">CUT</field>
+        </record>
+        <record id="wc_stuffing" model="mrp.workcenter">
+            <field name="name">Stuffing Line</field>
+            <field name="code">STUFF</field>
+        </record>
+        <record id="wc_filling" model="mrp.workcenter">
+            <field name="name">Filling &amp; Brine Dosing</field>
+            <field name="code">FILL</field>
+        </record>
+        <record id="wc_sealing" model="mrp.workcenter">
+            <field name="name">Sealing / Capping</field>
+            <field name="code">SEAL</field>
+        </record>
+        <record id="wc_pasteurization" model="mrp.workcenter">
+            <field name="name">Pasteurization Tunnel</field>
+            <field name="code">PAST</field>
+        </record>
+        <record id="wc_labeling" model="mrp.workcenter">
+            <field name="name">Labeling Machine</field>
+            <field name="code">LABEL</field>
+        </record>
+        <record id="wc_boxing" model="mrp.workcenter">
+            <field name="name">Boxing / Case Packing</field>
+            <field name="code">BOX</field>
+        </record>
+        <record id="wc_palletizing" model="mrp.workcenter">
+            <field name="name">Palletizing</field>
+            <field name="code">PALL</field>
+        </record>
+        <record id="wc_qc_food" model="mrp.workcenter">
+            <field name="name">Quality Control (pH, weight, vacuum)</field>
+            <field name="code">QCFOOD</field>
+        </record>
+
+        <!-- ── Product stubs (O-variants) ──────────────────────────── -->
+
+        <!-- Raw peppers -->
+        <record id="product_raw_peppers" model="product.template">
+            <field name="name">Raw Peppers (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_kgm"/>
+        </record>
+
+        <!-- Brine ingredients -->
+        <record id="product_water" model="product.template">
+            <field name="name">Water (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_litre"/>
+        </record>
+        <record id="product_salt" model="product.template">
+            <field name="name">Salt (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_kgm"/>
+        </record>
+        <record id="product_vinegar" model="product.template">
+            <field name="name">Vinegar 9% (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_litre"/>
+        </record>
+        <record id="product_sugar" model="product.template">
+            <field name="name">Sugar (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_kgm"/>
+        </record>
+        <record id="product_sunflower_oil" model="product.template">
+            <field name="name">Sunflower Oil (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_litre"/>
+        </record>
+        <record id="product_olive_oil" model="product.template">
+            <field name="name">Olive Oil (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_litre"/>
+        </record>
+        <record id="product_garlic" model="product.template">
+            <field name="name">Garlic (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_kgm"/>
+        </record>
+        <record id="product_parsley" model="product.template">
+            <field name="name">Parsley (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_kgm"/>
+        </record>
+        <record id="product_tomato_paste" model="product.template">
+            <field name="name">Tomato Paste (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_kgm"/>
+        </record>
+
+        <!-- Stuffing ingredients -->
+        <record id="product_white_cheese" model="product.template">
+            <field name="name">White Cheese / Sirene (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_kgm"/>
+        </record>
+        <record id="product_beans" model="product.template">
+            <field name="name">Cooked Beans (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_kgm"/>
+        </record>
+
+        <!-- Containers -->
+        <record id="product_tmpl_glass_jar" model="product.template">
+            <field name="name">Glass Jar (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_tmpl_tin_can" model="product.template">
+            <field name="name">Tin Can (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Lids -->
+        <record id="product_tmpl_lid" model="product.template">
+            <field name="name">Lid / Cap (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Labels -->
+        <record id="product_label_standard" model="product.template">
+            <field name="name">Label - Standard (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_label_private" model="product.template">
+            <field name="name">Label - Private Label (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_shrink_sleeve" model="product.template">
+            <field name="name">Shrink Sleeve (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Secondary packaging -->
+        <record id="product_cardboard_box" model="product.template">
+            <field name="name">Cardboard Box (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_shrink_film" model="product.template">
+            <field name="name">Shrink Film (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_kgm"/>
+        </record>
+        <record id="product_tray" model="product.template">
+            <field name="name">Cardboard Tray (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_display_box" model="product.template">
+            <field name="name">Display Box (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Palletizing materials -->
+        <record id="product_pallet" model="product.template">
+            <field name="name">Pallet (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_stretch_film" model="product.template">
+            <field name="name">Stretch Film (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_kgm"/>
+        </record>
+        <record id="product_corner_boards" model="product.template">
+            <field name="name">Corner Boards (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_top_sheet" model="product.template">
+            <field name="name">Pallet Top Sheet (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_pallet_label" model="product.template">
+            <field name="name">Pallet Label (O-variant)</field>
+            <field name="type">consu</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Attributes for PTAV resolution -->
+        <record id="attr_container_volume" model="product.attribute">
+            <field name="name">Container Volume</field>
+            <field name="create_variant">no_variant</field>
+        </record>
+        <record id="attr_val_vol_314" model="product.attribute.value">
+            <field name="name">314</field>
+            <field name="attribute_id" ref="attr_container_volume"/>
+        </record>
+        <record id="attr_val_vol_370" model="product.attribute.value">
+            <field name="name">370</field>
+            <field name="attribute_id" ref="attr_container_volume"/>
+        </record>
+        <record id="attr_val_vol_540" model="product.attribute.value">
+            <field name="name">540</field>
+            <field name="attribute_id" ref="attr_container_volume"/>
+        </record>
+        <record id="attr_val_vol_680" model="product.attribute.value">
+            <field name="name">680</field>
+            <field name="attribute_id" ref="attr_container_volume"/>
+        </record>
+        <record id="attr_val_vol_720" model="product.attribute.value">
+            <field name="name">720</field>
+            <field name="attribute_id" ref="attr_container_volume"/>
+        </record>
+        <record id="attr_val_vol_1700" model="product.attribute.value">
+            <field name="name">1700</field>
+            <field name="attribute_id" ref="attr_container_volume"/>
+        </record>
+        <record id="attr_val_vol_3000" model="product.attribute.value">
+            <field name="name">3000</field>
+            <field name="attribute_id" ref="attr_container_volume"/>
+        </record>
+        <record id="attr_val_vol_4200" model="product.attribute.value">
+            <field name="name">4200</field>
+            <field name="attribute_id" ref="attr_container_volume"/>
+        </record>
+
+        <record id="attr_lid_color" model="product.attribute">
+            <field name="name">Lid Color</field>
+            <field name="create_variant">no_variant</field>
+        </record>
+        <record id="attr_val_lid_gold" model="product.attribute.value">
+            <field name="name">gold</field>
+            <field name="attribute_id" ref="attr_lid_color"/>
+        </record>
+        <record id="attr_val_lid_white" model="product.attribute.value">
+            <field name="name">white</field>
+            <field name="attribute_id" ref="attr_lid_color"/>
+        </record>
+        <record id="attr_val_lid_red" model="product.attribute.value">
+            <field name="name">red</field>
+            <field name="attribute_id" ref="attr_lid_color"/>
+        </record>
+        <record id="attr_val_lid_green" model="product.attribute.value">
+            <field name="name">green</field>
+            <field name="attribute_id" ref="attr_lid_color"/>
+        </record>
+        <record id="attr_val_lid_black" model="product.attribute.value">
+            <field name="name">black</field>
+            <field name="attribute_id" ref="attr_lid_color"/>
+        </record>
+        <record id="attr_val_lid_custom" model="product.attribute.value">
+            <field name="name">custom_print</field>
+            <field name="attribute_id" ref="attr_lid_color"/>
+        </record>
+
+        <!-- ── Matrix template ─────────────────────────────────────── -->
+        <record id="matrix_template_canned_peppers_standard"
+                model="mrp.matrix.template">
+            <field name="name">Canned Roasted Peppers — Standard</field>
+            <field name="industry">food</field>
+            <field name="description">
+                Standard template for canned roasted pepper production.
+                Covers: whole/strips/diced/stuffed/marinated/ajvar recipes,
+                glass jar and tin can from 314ml to 4200ml,
+                vinegar/oil/natural/tomato brine types,
+                standard and private labeling, palletizing configuration.
+
+                T0: Recipe-container constraints, stuffed recipe limits,
+                    HoReCa format constraints.
+                T1: Derives brine volume, pepper-to-brine ratio from container size.
+                T2: Activates brine ingredients, stuffing, labels, packaging, pallet materials.
+                T3: Conditional ops (cutting, stuffing, shrink sleeve, private label, palletizing).
+            </field>
+            <field name="constraint_table" eval="
+                {
+                    'nodes': [{
+                        'id': 't0-canned-peppers',
+                        'name': 'T0 Constraints',
+                        'type': 'decisionTable',
+                        'content': {
+                            'hitPolicy': 'collect',
+                            'inputs': [
+                                {'id': 'recipe_type',          'name': 'recipe_type'},
+                                {'id': 'container_type',       'name': 'container_type'},
+                                {'id': 'container_volume_ml',  'name': 'container_volume_ml'},
+                                {'id': 'lid_type',             'name': 'lid_type'},
+                                {'id': 'brine_type',           'name': 'brine_type'},
+                                {'id': 'label_type',           'name': 'label_type'}
+                            ],
+                            'outputs': [
+                                {'id': 'level',   'name': 'level'},
+                                {'id': 'message', 'name': 'message'}
+                            ],
+                            'rules': [
+                                {
+                                    'recipe_type': '[&quot;stuffed_cheese&quot;,&quot;stuffed_beans&quot;]',
+                                    'container_volume_ml': '[&quot;314&quot;,&quot;370&quot;]',
+                                    'level': '&quot;error&quot;',
+                                    'message': '&quot;Stuffed peppers require minimum 540ml container. 314-370ml too small.&quot;'
+                                },
+                                {
+                                    'recipe_type': '[&quot;stuffed_cheese&quot;,&quot;stuffed_beans&quot;]',
+                                    'container_type': '&quot;tin_can&quot;',
+                                    'level': '&quot;error&quot;',
+                                    'message': '&quot;Stuffed peppers cannot be packed in tin cans. Use glass jars.&quot;'
+                                },
+                                {
+                                    'recipe_type': '&quot;ajvar&quot;',
+                                    'brine_type': '[&quot;vinegar&quot;,&quot;natural&quot;]',
+                                    'level': '&quot;error&quot;',
+                                    'message': '&quot;Ajvar/Lutenitsa requires oil or tomato sauce base, not vinegar/natural.&quot;'
+                                },
+                                {
+                                    'container_type': '&quot;tin_can&quot;',
+                                    'lid_type': '[&quot;twist_off_63&quot;,&quot;twist_off_82&quot;,&quot;twist_off_100&quot;]',
+                                    'level': '&quot;error&quot;',
+                                    'message': '&quot;Tin cans use easy-open or press-on lids, not twist-off.&quot;'
+                                },
+                                {
+                                    'container_type': '&quot;glass_jar&quot;',
+                                    'lid_type': '&quot;easy_open&quot;',
+                                    'level': '&quot;error&quot;',
+                                    'message': '&quot;Glass jars use twist-off lids, not easy-open.&quot;'
+                                },
+                                {
+                                    'container_volume_ml': '[&quot;3000&quot;,&quot;4200&quot;]',
+                                    'label_type': '&quot;shrink_sleeve&quot;',
+                                    'level': '&quot;warning&quot;',
+                                    'message': '&quot;Shrink sleeve on HoReCa format is unusual. Verify with client.&quot;'
+                                },
+                                {
+                                    'container_volume_ml': '[&quot;3000&quot;,&quot;4200&quot;]',
+                                    'label_type': '&quot;standard&quot;',
+                                    'level': '&quot;warning&quot;',
+                                    'message': '&quot;HoReCa format usually ships with no label or private label.&quot;'
+                                }
+                            ]
+                        }
+                    }]
+                }
+            "/>
+            <field name="geometry_table" eval="
+                {
+                    'nodes': [{
+                        'id': 't1-canned-peppers',
+                        'name': 'T1 Geometry / Derived',
+                        'type': 'decisionTable',
+                        'content': {
+                            'hitPolicy': 'first',
+                            'inputs': [
+                                {'id': 'container_volume_ml', 'name': 'container_volume_ml'},
+                                {'id': 'recipe_type',         'name': 'recipe_type'}
+                            ],
+                            'outputs': [
+                                {'id': 'brine_volume_ml',     'name': 'brine_volume_ml'},
+                                {'id': 'pepper_fill_ratio',   'name': 'pepper_fill_ratio'},
+                                {'id': 'pasteurization_min',  'name': 'pasteurization_min'}
+                            ],
+                            'rules': [
+                                {'container_volume_ml': '&quot;314&quot;',  'brine_volume_ml': '110', 'pepper_fill_ratio': '0.65', 'pasteurization_min': '25'},
+                                {'container_volume_ml': '&quot;370&quot;',  'brine_volume_ml': '130', 'pepper_fill_ratio': '0.65', 'pasteurization_min': '25'},
+                                {'container_volume_ml': '&quot;540&quot;',  'brine_volume_ml': '190', 'pepper_fill_ratio': '0.65', 'pasteurization_min': '30'},
+                                {'container_volume_ml': '&quot;680&quot;',  'brine_volume_ml': '240', 'pepper_fill_ratio': '0.65', 'pasteurization_min': '35'},
+                                {'container_volume_ml': '&quot;720&quot;',  'brine_volume_ml': '250', 'pepper_fill_ratio': '0.65', 'pasteurization_min': '35'},
+                                {'container_volume_ml': '&quot;1700&quot;', 'brine_volume_ml': '600', 'pepper_fill_ratio': '0.65', 'pasteurization_min': '50'},
+                                {'container_volume_ml': '&quot;3000&quot;', 'brine_volume_ml': '1050','pepper_fill_ratio': '0.65', 'pasteurization_min': '65'},
+                                {'container_volume_ml': '&quot;4200&quot;', 'brine_volume_ml': '1470','pepper_fill_ratio': '0.65', 'pasteurization_min': '75'}
+                            ]
+                        }
+                    }]
+                }
+            "/>
+            <field name="material_table" eval="
+                {
+                    'nodes': [{
+                        'id': 't2-canned-peppers',
+                        'name': 'T2 Materials',
+                        'type': 'decisionTable',
+                        'content': {
+                            'hitPolicy': 'collect',
+                            'inputs': [
+                                {'id': 'brine_type',           'name': 'brine_type'},
+                                {'id': 'has_garlic',           'name': 'has_garlic'},
+                                {'id': 'has_parsley',          'name': 'has_parsley'},
+                                {'id': 'recipe_type',          'name': 'recipe_type'},
+                                {'id': 'label_type',           'name': 'label_type'},
+                                {'id': 'secondary_packaging',  'name': 'secondary_packaging'},
+                                {'id': 'has_pallet_wrap',      'name': 'has_pallet_wrap'},
+                                {'id': 'has_pallet_corner_boards','name': 'has_pallet_corner_boards'},
+                                {'id': 'has_pallet_top_sheet', 'name': 'has_pallet_top_sheet'}
+                            ],
+                            'outputs': [
+                                {'id': 'bom_line_coeff_key', 'name': 'bom_line_coeff_key'},
+                                {'id': 'coefficient',        'name': 'coefficient'}
+                            ],
+                            'rules': [
+                                {'brine_type': '&quot;vinegar&quot;',
+                                 'bom_line_coeff_key': '&quot;vinegar-o&quot;', 'coefficient': '1.0'},
+                                {'brine_type': '&quot;oil&quot;',
+                                 'bom_line_coeff_key': '&quot;sunflower-oil-o&quot;', 'coefficient': '1.0'},
+                                {'brine_type': '&quot;oil_olive&quot;',
+                                 'bom_line_coeff_key': '&quot;olive-oil-o&quot;', 'coefficient': '1.0'},
+                                {'brine_type': '&quot;tomato&quot;',
+                                 'bom_line_coeff_key': '&quot;tomato-paste-o&quot;', 'coefficient': '1.0'},
+                                {'has_garlic': 'true',
+                                 'bom_line_coeff_key': '&quot;garlic-o&quot;', 'coefficient': '1.0'},
+                                {'has_parsley': 'true',
+                                 'bom_line_coeff_key': '&quot;parsley-o&quot;', 'coefficient': '1.0'},
+                                {'recipe_type': '&quot;stuffed_cheese&quot;',
+                                 'bom_line_coeff_key': '&quot;cheese-o&quot;', 'coefficient': '1.0'},
+                                {'recipe_type': '&quot;stuffed_beans&quot;',
+                                 'bom_line_coeff_key': '&quot;beans-o&quot;', 'coefficient': '1.0'},
+                                {'label_type': '&quot;standard&quot;',
+                                 'bom_line_coeff_key': '&quot;label-standard-o&quot;', 'coefficient': '1.0'},
+                                {'label_type': '&quot;private_label&quot;',
+                                 'bom_line_coeff_key': '&quot;label-private-o&quot;', 'coefficient': '1.0'},
+                                {'label_type': '&quot;shrink_sleeve&quot;',
+                                 'bom_line_coeff_key': '&quot;shrink-sleeve-o&quot;', 'coefficient': '1.0'},
+                                {'secondary_packaging': '&quot;cardboard_box&quot;',
+                                 'bom_line_coeff_key': '&quot;cardboard-box-o&quot;', 'coefficient': '1.0'},
+                                {'secondary_packaging': '[&quot;shrink_wrap&quot;,&quot;tray_shrink&quot;]',
+                                 'bom_line_coeff_key': '&quot;shrink-film-o&quot;', 'coefficient': '1.0'},
+                                {'secondary_packaging': '&quot;tray_shrink&quot;',
+                                 'bom_line_coeff_key': '&quot;tray-o&quot;', 'coefficient': '1.0'},
+                                {'secondary_packaging': '&quot;display_box&quot;',
+                                 'bom_line_coeff_key': '&quot;display-box-o&quot;', 'coefficient': '1.0'},
+                                {'has_pallet_wrap': 'true',
+                                 'bom_line_coeff_key': '&quot;stretch-film-o&quot;', 'coefficient': '1.0'},
+                                {'has_pallet_corner_boards': 'true',
+                                 'bom_line_coeff_key': '&quot;corner-boards-o&quot;', 'coefficient': '4.0'},
+                                {'has_pallet_top_sheet': 'true',
+                                 'bom_line_coeff_key': '&quot;top-sheet-o&quot;', 'coefficient': '1.0'}
+                            ]
+                        }
+                    }]
+                }
+            "/>
+            <field name="operation_table" eval="
+                {
+                    'nodes': [{
+                        'id': 't3-canned-peppers',
+                        'name': 'T3 Operations',
+                        'type': 'decisionTable',
+                        'content': {
+                            'hitPolicy': 'collect',
+                            'inputs': [
+                                {'id': 'recipe_type',      'name': 'recipe_type'},
+                                {'id': 'is_peeled',        'name': 'is_peeled'},
+                                {'id': 'label_type',       'name': 'label_type'},
+                                {'id': 'has_box_print',    'name': 'has_box_print'}
+                            ],
+                            'outputs': [
+                                {'id': 'workcenter_ref',   'name': 'workcenter_ref'},
+                                {'id': 'duration_formula', 'name': 'duration_formula'},
+                                {'id': 'sequence',         'name': 'sequence'}
+                            ],
+                            'rules': [
+                                {
+                                    'is_peeled': 'true',
+                                    'workcenter_ref': '&quot;mrp_design_matrix_canned_peppers.wc_peeling&quot;',
+                                    'duration_formula': '&quot;0.5&quot;',
+                                    'sequence': '10'
+                                },
+                                {
+                                    'recipe_type': '[&quot;strips&quot;,&quot;diced&quot;]',
+                                    'workcenter_ref': '&quot;mrp_design_matrix_canned_peppers.wc_cutting&quot;',
+                                    'duration_formula': '&quot;0.3&quot;',
+                                    'sequence': '15'
+                                },
+                                {
+                                    'recipe_type': '[&quot;stuffed_cheese&quot;,&quot;stuffed_beans&quot;]',
+                                    'workcenter_ref': '&quot;mrp_design_matrix_canned_peppers.wc_stuffing&quot;',
+                                    'duration_formula': '&quot;1.5&quot;',
+                                    'sequence': '20'
+                                },
+                                {
+                                    'label_type': '&quot;shrink_sleeve&quot;',
+                                    'workcenter_ref': '&quot;mrp_design_matrix_canned_peppers.wc_labeling&quot;',
+                                    'duration_formula': '&quot;0.8&quot;',
+                                    'sequence': '45'
+                                },
+                                {
+                                    'label_type': '[&quot;standard&quot;,&quot;private_label&quot;]',
+                                    'workcenter_ref': '&quot;mrp_design_matrix_canned_peppers.wc_labeling&quot;',
+                                    'duration_formula': '&quot;0.3&quot;',
+                                    'sequence': '45'
+                                }
+                            ]
+                        }
+                    }]
+                }
+            "/>
+        </record>
+
+    </data>
+</odoo>

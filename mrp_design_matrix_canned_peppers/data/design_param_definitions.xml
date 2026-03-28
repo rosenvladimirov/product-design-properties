@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Design parameter definitions for canned roasted pepper manufacturers.
+    Loaded by install_design_params.xml via create_design_param_definitions().
+
+    Covers: recipe type, jar/can size, lid color, label type,
+    brine composition, palletizing configuration.
+
+    Types supported: char, float, boolean, selection
+    Selection format: [["value","Label"], ...]
+-->
+<records>
+    <properties code="canned_peppers" name="Canned Roasted Peppers" industry="food">
+        <!-- ── Recipe ───────────────────────────────────────── -->
+        <items name="recipe_type">
+            <item name="type">selection</item>
+            <item name="selection">[["whole","Whole Roasted"],["strips","Roasted Strips"],["diced","Roasted Diced"],["stuffed_cheese","Stuffed with Cheese"],["stuffed_beans","Stuffed with Beans"],["marinated","Marinated"],["ajvar","Ajvar / Lutenitsa"]]</item>
+            <item name="default">whole</item>
+        </items>
+        <items name="pepper_variety">
+            <item name="type">selection</item>
+            <item name="selection">[["kapia","Kapia"],["sivria","Sivria"],["chushle","Chushle"],["roasted_mix","Roasted Mix"],["hot","Hot Pepper"]]</item>
+            <item name="default">kapia</item>
+        </items>
+        <items name="is_peeled">
+            <item name="type">boolean</item>
+            <item name="default">true</item>
+        </items>
+        <items name="brine_type">
+            <item name="type">selection</item>
+            <item name="selection">[["vinegar","Vinegar Brine"],["oil","Sunflower Oil"],["oil_olive","Olive Oil"],["natural","Natural Juice"],["tomato","Tomato Sauce"]]</item>
+            <item name="default">vinegar</item>
+        </items>
+        <items name="has_garlic">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="has_parsley">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="salt_pct">
+            <item name="type">float</item>
+            <item name="default">2.0</item>
+        </items>
+        <items name="vinegar_pct">
+            <item name="type">float</item>
+            <item name="default">1.5</item>
+        </items>
+        <items name="sugar_pct">
+            <item name="type">float</item>
+            <item name="default">0.5</item>
+        </items>
+        <items name="fill_weight_g">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+        <items name="drain_weight_g">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+
+        <!-- ── Jar / Can ────────────────────────────────────── -->
+        <items name="container_type">
+            <item name="type">selection</item>
+            <item name="selection">[["glass_jar","Glass Jar"],["tin_can","Tin Can"],["pet_jar","PET Jar"]]</item>
+            <item name="default">glass_jar</item>
+        </items>
+        <items name="container_volume_ml">
+            <item name="type">selection</item>
+            <item name="selection">[["314","314 ml"],["370","370 ml"],["540","540 ml"],["680","680 ml"],["720","720 ml"],["1700","1700 ml"],["3000","3000 ml (HoReCa)"],["4200","4200 ml (HoReCa)"]]</item>
+            <item name="default">720</item>
+        </items>
+
+        <!-- ── Lid / Cap ────────────────────────────────────── -->
+        <items name="lid_type">
+            <item name="type">selection</item>
+            <item name="selection">[["twist_off_63","Twist-Off 63mm"],["twist_off_82","Twist-Off 82mm"],["twist_off_100","Twist-Off 100mm"],["easy_open","Easy-Open Tin"],["press_on","Press-On (HoReCa)"]]</item>
+            <item name="default">twist_off_82</item>
+        </items>
+        <items name="lid_color">
+            <item name="type">selection</item>
+            <item name="selection">[["gold","Gold"],["white","White"],["red","Red"],["green","Green"],["black","Black"],["custom_print","Custom Printed"]]</item>
+            <item name="default">gold</item>
+        </items>
+        <items name="lid_print_design">
+            <item name="type">char</item>
+            <item name="default"></item>
+        </items>
+
+        <!-- ── Label ────────────────────────────────────────── -->
+        <items name="label_type">
+            <item name="type">selection</item>
+            <item name="selection">[["standard","Standard (own brand)"],["private_label","Private Label (client brand)"],["no_label","No Label (bulk/HoReCa)"],["shrink_sleeve","Shrink Sleeve"]]</item>
+            <item name="default">standard</item>
+        </items>
+        <items name="label_client_name">
+            <item name="type">char</item>
+            <item name="default"></item>
+        </items>
+        <items name="label_language">
+            <item name="type">selection</item>
+            <item name="selection">[["bg","Bulgarian"],["en","English"],["de","German"],["fr","French"],["bg_en","BG + EN"],["multi","Multi-language"]]</item>
+            <item name="default">bg</item>
+        </items>
+        <items name="has_barcode_label">
+            <item name="type">boolean</item>
+            <item name="default">true</item>
+        </items>
+
+        <!-- ── Secondary Packaging ──────────────────────────── -->
+        <items name="secondary_packaging">
+            <item name="type">selection</item>
+            <item name="selection">[["cardboard_box","Cardboard Box"],["shrink_wrap","Shrink Wrap"],["tray_shrink","Tray + Shrink"],["display_box","Display Box"]]</item>
+            <item name="default">cardboard_box</item>
+        </items>
+        <items name="units_per_box">
+            <item name="type">float</item>
+            <item name="default">6.0</item>
+        </items>
+        <items name="has_box_print">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+
+        <!-- ── Palletizing ──────────────────────────────────── -->
+        <items name="pallet_type">
+            <item name="type">selection</item>
+            <item name="selection">[["eur","EUR Pallet (1200x800)"],["ind","Industrial (1200x1000)"],["half","Half Pallet (800x600)"]]</item>
+            <item name="default">eur</item>
+        </items>
+        <items name="boxes_per_layer">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+        <items name="layers_per_pallet">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+        <items name="has_pallet_wrap">
+            <item name="type">boolean</item>
+            <item name="default">true</item>
+        </items>
+        <items name="has_pallet_corner_boards">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="has_pallet_top_sheet">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+    </properties>
+</records>
