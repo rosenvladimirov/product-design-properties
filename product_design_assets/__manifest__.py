@@ -11,7 +11,7 @@
     "license": "AGPL-3",
     "application": False,
     "installable": True,
-    "depends": ["product", "mrp"],
+    "depends": ["product", "mrp", "design_param_base"],
     "data": [
         "views/product_views.xml",
     ],

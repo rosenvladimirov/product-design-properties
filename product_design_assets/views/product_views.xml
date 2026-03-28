@@ -3,12 +3,16 @@
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
 
-    <!-- Smart button on product.product form -->
+    <!-- ================================================================ -->
+    <!--  product.product form: Design Definition + Properties + Assets    -->
+    <!-- ================================================================ -->
+
     <record id="product_product_form_design_assets" model="ir.ui.view">
         <field name="name">product.product.form.design.assets</field>
         <field name="model">product.product</field>
         <field name="inherit_id" ref="product.product_normal_form_view"/>
         <field name="arch" type="xml">
+            <!-- Smart button -->
             <div name="button_box" position="inside">
                 <button name="action_view_design_assets"
                         type="object"
@@ -18,8 +22,29 @@
                     <field name="design_asset_count" widget="statinfo" string="Design Assets"/>
                 </button>
             </div>
+
+            <!-- Design tab in notebook -->
             <notebook position="inside">
-                <page string="Design Assets" name="design_assets">
+                <page string="Design" name="design_properties_page">
+                    <!-- Definition dropdown -->
+                    <group>
+                        <group>
+                            <field name="design_param_definition_id"/>
+                        </group>
+                    </group>
+
+                    <!-- Dynamic properties from definition -->
+                    <separator string="Design Properties"
+                               invisible="not design_param_definition_id"/>
+                    <div class="d-flex" invisible="not design_param_definition_id">
+                        <field name="design_properties"
+                               class="w-100"
+                               columns="2"
+                               invisible="not design_param_definition_id"/>
+                    </div>
+
+                    <!-- File assets gallery -->
+                    <separator string="Design Assets (GLB, SVG, PNG)"/>
                     <field name="design_asset_ids" widget="many2many_binary">
                         <list>
                             <field name="name"/>
@@ -32,22 +57,59 @@
         </field>
     </record>
 
-    <!-- product.template form: Design Assets tab with info -->
+    <!-- ================================================================ -->
+    <!--  product.template form: delegated Design Definition + Properties  -->
+    <!-- ================================================================ -->
+
     <record id="product_template_form_design_assets" model="ir.ui.view">
         <field name="name">product.template.form.design.assets</field>
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_only_form_view"/>
         <field name="arch" type="xml">
             <notebook position="inside">
-                <page string="Design Assets" name="design_assets">
+                <page string="Design" name="design_properties_page">
+                    <!-- Definition dropdown -->
+                    <group>
+                        <group>
+                            <field name="design_param_definition_id"/>
+                        </group>
+                    </group>
+
+                    <!-- Dynamic properties from definition -->
+                    <separator string="Design Properties"
+                               invisible="not design_param_definition_id"/>
+                    <div class="d-flex" invisible="not design_param_definition_id">
+                        <field name="design_properties"
+                               class="w-100"
+                               columns="2"
+                               invisible="not design_param_definition_id"/>
+                    </div>
+
+                    <!-- Info about variant-level assets -->
+                    <separator string="Design Assets"/>
                     <div class="alert alert-info" role="alert">
                         <i class="fa fa-info-circle"/>
                         Attach GLB (3D models), SVG (profiles), PNG/JPG (textures) files
-                        to each <strong>product variant</strong>. Open the variant form to manage assets.
+                        on each <strong>product variant</strong> form.
                         These files are used by the design configurator for 3D visualization.
                     </div>
                 </page>
             </notebook>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!--  product.template list: optional design definition column         -->
+    <!-- ================================================================ -->
+
+    <record id="product_template_list_design" model="ir.ui.view">
+        <field name="name">product.template.list.design</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="categ_id" position="after">
+                <field name="design_param_definition_id" optional="hide"/>
+            </field>
         </field>
     </record>
 
