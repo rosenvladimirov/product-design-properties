@@ -8,13 +8,13 @@
         <field name="name">design.param.definition.tree</field>
         <field name="model">design.param.definition</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="sequence" widget="handle" />
                 <field name="code" />
                 <field name="name" />
                 <field name="industry" />
                 <field name="parent_id" />
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -46,12 +46,12 @@
                         </page>
                         <page string="SVG Profiles" name="svg_profiles">
                             <field name="profile_ids">
-                                <tree>
+                                <list>
                                     <field name="sequence" widget="handle" />
                                     <field name="name" />
                                     <field name="extrude_depth" />
                                     <field name="camera_distance" />
-                                </tree>
+                                </list>
                                 <form>
                                     <group>
                                         <group>
@@ -85,7 +85,7 @@
     <record id="design_param_definition_action" model="ir.actions.act_window">
         <field name="name">Design Parameter Definitions</field>
         <field name="res_model">design.param.definition</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 
     <!-- Menu under MRP Configuration -->

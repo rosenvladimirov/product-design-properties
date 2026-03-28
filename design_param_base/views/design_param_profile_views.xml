@@ -39,13 +39,13 @@
         <field name="name">design.param.profile.tree</field>
         <field name="model">design.param.profile</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="sequence" widget="handle" />
                 <field name="name" />
                 <field name="definition_id" />
                 <field name="extrude_depth" />
                 <field name="camera_distance" />
-            </tree>
+            </list>
         </field>
     </record>
 
