@@ -42,35 +42,46 @@ class SaleOrderLine(models.Model):
     @api.depends("product_id")
     def _compute_has_design_definition(self):
         """
-        Check whether the selected product's BoM has a design parameter
-        definition. Only the first active BoM is checked.
+        Find design definition for the product. Search order:
+        1. product.product.design_param_definition_id (direct on product)
+        2. mrp.bom.design_param_definition_id (from BoM)
+        Filtered by company active definitions if configured.
         """
         for line in self:
             if not line.product_id:
                 line.has_design_definition = False
                 line.design_param_definition_id = False
                 continue
-            domain = [
-                (
-                    "product_tmpl_id",
-                    "=",
-                    line.product_id.product_tmpl_id.id,
-                ),
-                ("design_param_definition_id", "!=", False),
-                ("active", "=", True),
-            ]
+
             active_defs = self.env.company.design_definition_ids
-            if active_defs:
-                domain.append(
-                    ("design_param_definition_id", "in", active_defs.ids)
-                )
-            bom = self.env["mrp.bom"].search(domain, limit=1)
-            if bom:
-                line.has_design_definition = True
-                line.design_param_definition_id = (
-                    bom.design_param_definition_id
-                )
-            else:
+            found = False
+
+            # 1. Check product.product directly
+            prod_def = line.product_id.design_param_definition_id
+            if prod_def:
+                if not active_defs or prod_def in active_defs:
+                    line.has_design_definition = True
+                    line.design_param_definition_id = prod_def
+                    found = True
+
+            # 2. Fallback: check BoM
+            if not found:
+                domain = [
+                    ("product_tmpl_id", "=", line.product_id.product_tmpl_id.id),
+                    ("design_param_definition_id", "!=", False),
+                    ("active", "=", True),
+                ]
+                if active_defs:
+                    domain.append(
+                        ("design_param_definition_id", "in", active_defs.ids)
+                    )
+                bom = self.env["mrp.bom"].search(domain, limit=1)
+                if bom:
+                    line.has_design_definition = True
+                    line.design_param_definition_id = bom.design_param_definition_id
+                    found = True
+
+            if not found:
                 line.has_design_definition = False
                 line.design_param_definition_id = False
 
@@ -147,23 +158,35 @@ class SaleOrderLine(models.Model):
         Lightweight RPC called by the OWL SaleOrderLineProductField patch
         immediately after product selection.
 
+        Search order:
+        1. product.product.design_param_definition_id (direct on product)
+        2. mrp.bom.design_param_definition_id (from BoM)
+
         Returns::
 
             {"definitionId": int, "definitionCode": str}  if found
             False                                          if not found
-
-        Only the first active BoM with a design_param_definition_id is used.
         """
         product = self.env["product.product"].browse(product_id)
         if not product.exists():
             return False
 
+        active_defs = self.env.company.design_definition_ids
+
+        # 1. Check product directly
+        prod_def = product.design_param_definition_id
+        if prod_def and (not active_defs or prod_def in active_defs):
+            return {
+                "definitionId": prod_def.id,
+                "definitionCode": prod_def.code,
+            }
+
+        # 2. Fallback: check BoM
         domain = [
             ("product_tmpl_id", "=", product.product_tmpl_id.id),
             ("design_param_definition_id", "!=", False),
             ("active", "=", True),
         ]
-        active_defs = self.env.company.design_definition_ids
         if active_defs:
             domain.append(
                 ("design_param_definition_id", "in", active_defs.ids)
