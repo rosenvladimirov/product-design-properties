@@ -11,7 +11,7 @@
     "license": "AGPL-3",
     "application": False,
     "installable": True,
-    "depends": ["design_param_base", "stock_lot_properties", "sale"],
+    "depends": ["design_param_base", "stock_lot_properties", "product_design_assets", "sale"],
     "data": [
         "security/ir.model.access.csv",
         "views/res_config_settings_views.xml",
@@ -21,6 +21,7 @@
     "assets": {
         "web.assets_backend": [
             "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js",
+            "sale_design_configurator/static/lib/three/GLTFLoader.js",
             "sale_design_configurator/static/src/components/**/*",
         ],
     },

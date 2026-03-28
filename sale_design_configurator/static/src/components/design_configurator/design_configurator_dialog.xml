@@ -16,6 +16,7 @@
                 paramDefinition="state.paramDefinition"
                 validationRules="state.validationRules"
                 profiles="state.profiles"
+                bomAssets="state.bomAssets"
                 existingLotId="props.existingLotId or false"
                 onLotCreated.bind="onLotCreated"
                 onClose.bind="onClose"

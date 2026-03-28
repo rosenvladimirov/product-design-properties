@@ -35,6 +35,7 @@ export class DesignConfiguratorDialog extends Component {
             paramDefinition: [],
             validationRules: [],
             profiles: [],
+            bomAssets: [],
         });
         this._loadDefinition();
     }
@@ -59,6 +60,29 @@ export class DesignConfiguratorDialog extends Component {
             { order: "sequence, id" }
         );
         this.state.profiles = profiles;
+
+        // Fetch design assets from BoM product attachments (GLB/SVG/PNG)
+        try {
+            const boms = await this.orm.searchRead(
+                "mrp.bom",
+                [
+                    ["product_tmpl_id.product_variant_ids", "in", [this.props.productId]],
+                    ["active", "=", true],
+                ],
+                ["id"],
+                { limit: 1 }
+            );
+            if (boms.length) {
+                const bomAssets = await this.orm.call(
+                    "mrp.bom", "get_bom_design_assets", [boms[0].id]
+                );
+                this.state.bomAssets = bomAssets;
+            }
+        } catch (e) {
+            // product_design_assets module may not be installed — skip gracefully
+            console.warn("Could not load BoM design assets:", e.message);
+        }
+
         this.state.loading = false;
     }
 

@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [18.0.1.3.0] - 2026-03-28
+
+### Added
+- **product_design_assets** (18.0.1.0.0) — New module linking product attachments to design visualization
+  - `product.product.get_design_assets_by_type()` RPC — groups attachments by mimetype (GLB/SVG/PNG)
+  - `mrp.bom.get_bom_design_assets()` RPC — returns design assets for all BoM line products
+  - Smart button "Design Assets" on product form
+  - Automatic detection: model/gltf-binary → 3D, image/svg+xml → profile, image/* → texture
+
+### Changed
+- **sale_design_configurator** — GLB 3D model rendering from BoM product attachments
+  - New `_buildFromBomAssets()` Three.js method loads GLB via GLTFLoader
+  - Auto-applies texture from same product's PNG/JPG attachment
+  - Auto-center + auto-scale for any model size
+  - Priority: bomAssets GLB → SVG profiles → legacy builders (fallback)
+  - Added `GLTFLoader.js` (Three.js r128) to assets bundle
+  - Depends on `product_design_assets`
+
+*Assisted by Claude Code*
+
 ## [18.0.1.2.0] - 2026-03-28
 
 ### Added

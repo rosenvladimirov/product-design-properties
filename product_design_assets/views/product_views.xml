@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Smart button on product form for design assets -->
+    <record id="product_product_form_design_assets" model="ir.ui.view">
+        <field name="name">product.product.form.design.assets</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_view_design_assets"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-cube"
+                        invisible="design_asset_count == 0">
+                    <field name="design_asset_count" widget="statinfo" string="Design Assets"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+    <!-- Also extend product.template form (product variant kanban inside) -->
+    <record id="product_template_form_design_assets" model="ir.ui.view">
+        <field name="name">product.template.form.design.assets</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="Design Assets" name="design_assets">
+                    <group>
+                        <div class="text-muted">
+                            Attach GLB (3D models), SVG (profiles), PNG/JPG (textures) files
+                            to product variants. These are used by the design configurator
+                            for 3D visualization.
+                        </div>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+</odoo>

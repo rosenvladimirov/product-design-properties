@@ -26,6 +26,7 @@ export class DesignConfiguratorWidget extends Component {
         paramDefinition: { type: Array },
         validationRules: { type: Array, optional: true },
         profiles: { type: Array, optional: true },
+        bomAssets: { type: Array, optional: true },
         existingLotId: { type: [Number, Boolean], optional: true },
         onLotCreated: { type: Function },
         onClose: { type: Function },
@@ -370,9 +371,89 @@ export class DesignConfiguratorWidget extends Component {
     // ── Model building: SVG profile (primary) or legacy fallback ────────
 
     _buildModel() {
-        const profiles = this.props.profiles || [];
-        if (profiles.length > 0 && profiles[0].svg_content && profiles[0].profile_definition) {
-            this._buildFromSVGProfile(profiles[0]);
+        const bomAssets = this.props.bomAssets || [];
+        const glbAssets = bomAssets.filter(a => a.assets.models_3d.length > 0);
+
+        if (glbAssets.length > 0) {
+            this._buildFromBomAssets(glbAssets);
+        } else {
+            const profiles = this.props.profiles || [];
+            if (profiles.length > 0 && profiles[0].svg_content && profiles[0].profile_definition) {
+                this._buildFromSVGProfile(profiles[0]);
+            } else {
+                this._buildLegacyModel();
+            }
+        }
+    }
+
+    async _buildFromBomAssets(assets) {
+        this._clearModel();
+        const THREE = window.THREE;
+        if (!THREE || !THREE.GLTFLoader) {
+            console.warn("GLTFLoader not available, falling back");
+            this._buildLegacyModel();
+            return;
+        }
+        const loader = new THREE.GLTFLoader();
+        const t = this._three;
+
+        for (const component of assets) {
+            for (const glb of component.assets.models_3d) {
+                try {
+                    const url = `/web/content/${glb.id}?download=true`;
+                    const gltf = await new Promise((resolve, reject) => {
+                        loader.load(url, resolve, undefined, reject);
+                    });
+
+                    // Apply texture from same component if available
+                    const textures = component.assets.textures;
+                    if (textures.length > 0) {
+                        const texUrl = `/web/content/${textures[0].id}?download=true`;
+                        const texLoader = new THREE.TextureLoader();
+                        const texture = await new Promise(r => texLoader.load(texUrl, r));
+                        texture.wrapS = THREE.RepeatWrapping;
+                        texture.wrapT = THREE.RepeatWrapping;
+                        gltf.scene.traverse(child => {
+                            if (child.isMesh) {
+                                child.material = new THREE.MeshPhongMaterial({
+                                    map: texture,
+                                    side: THREE.DoubleSide,
+                                    shininess: 20,
+                                });
+                            }
+                        });
+                    } else {
+                        // Apply default material with component-based color
+                        const colors = [0xd4a852, 0xb8893a, 0x8899aa, 0xc0c8d0, 0x5c3d55, 0xcccccc];
+                        const ci = assets.indexOf(component);
+                        const color = colors[ci % colors.length];
+                        gltf.scene.traverse(child => {
+                            if (child.isMesh && !child.material?.map) {
+                                child.material = new THREE.MeshPhongMaterial({
+                                    color, side: THREE.DoubleSide, shininess: 30,
+                                });
+                            }
+                        });
+                    }
+
+                    t.group.add(gltf.scene);
+                } catch (e) {
+                    console.error(`Failed to load GLB ${glb.name}:`, e);
+                }
+            }
+        }
+
+        // Auto-center and auto-scale
+        if (t.group.children.length > 0) {
+            const box = new THREE.Box3().setFromObject(t.group);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            if (maxDim > 0) {
+                const scale = 2.0 / maxDim;
+                t.group.scale.setScalar(scale);
+                t.group.position.copy(center.negate().multiplyScalar(scale));
+            }
         } else {
             this._buildLegacyModel();
         }
