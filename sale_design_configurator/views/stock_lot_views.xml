@@ -5,7 +5,7 @@
     <record id="stock_lot_form_design_configurator" model="ir.ui.view">
         <field name="name">stock.lot.form.design.configurator</field>
         <field name="model">stock.lot</field>
-        <field name="inherit_id" ref="stock.view_lot_form"/>
+        <field name="inherit_id" ref="stock.view_production_lot_form"/>
         <field name="arch" type="xml">
 
             <!-- Configure Design button in header -->
