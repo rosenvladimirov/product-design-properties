@@ -2,7 +2,7 @@
 <odoo>
 
     <!-- ================================================================== -->
-    <!--  SO form: extend order_line tree to show design configurator        -->
+    <!--  SO form: extend order_line list to show design configurator        -->
     <!-- ================================================================== -->
 
     <record id="sale_order_form_design_configurator" model="ir.ui.view">
@@ -11,32 +11,33 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
 
-            <!-- Add hidden helper fields and design columns to the order line tree -->
+            <!-- Hidden helper fields (must be in the list to use in invisible) -->
             <xpath expr="//field[@name='order_line']//list//field[@name='product_id']" position="after">
-                <!-- Hidden helper fields -->
                 <field name="has_design_definition" column_invisible="True"/>
                 <field name="design_param_definition_id" column_invisible="True"/>
+            </xpath>
 
-                <!-- Configure button: visible only when product has a definition -->
+            <!-- Design columns AFTER price_subtotal (end of the line) -->
+            <xpath expr="//field[@name='order_line']//list//field[@name='price_subtotal']" position="after">
                 <button
                     name="action_open_design_configurator"
                     type="object"
                     icon="fa-cube"
                     title="Configure Design"
-                    class="btn-sm"
+                    class="btn-link p-0"
+                    column_invisible="False"
                     invisible="not has_design_definition"/>
 
-                <!-- Design lot badge: lot name if configured -->
                 <field
                     name="design_lot_id"
-                    optional="show"
+                    optional="hide"
+                    string="Design Lot"
                     invisible="not has_design_definition"/>
 
-                <!-- Compact params summary -->
                 <field
                     name="design_params_summary"
-                    optional="show"
-                    string="Parameters"
+                    optional="hide"
+                    string="Design Params"
                     invisible="not design_lot_id"/>
             </xpath>
 
@@ -62,10 +63,5 @@
             </field>
         </field>
     </record>
-
-    <!-- ================================================================== -->
-    <!--  stock.lot form: Configure Design button (duplicate protection)     -->
-    <!--  Already handled in stock_lot_views.xml but adding MO-context btn   -->
-    <!-- ================================================================== -->
 
 </odoo>
