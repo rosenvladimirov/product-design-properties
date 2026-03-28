@@ -19,6 +19,7 @@
         "stock",
         "purchase_stock",
         "design_param_base",
+        "stock_lot_properties",
         "mrp_bom_line_formula_quantity",
         "stock_move_forced_lot_multi",
     ],

@@ -11,7 +11,7 @@
     "license": "AGPL-3",
     "application": False,
     "installable": True,
-    "depends": ["design_param_base", "sale"],
+    "depends": ["design_param_base", "stock_lot_properties", "sale"],
     "data": [
         "security/ir.model.access.csv",
         "views/res_config_settings_views.xml",

@@ -1,21 +1,18 @@
 # Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
-    "name": "Design Parameter Base",
-    "summary": "Shared design parameter definitions with SVG profiles for parametric manufacturing",
+    "name": "Stock Lot Properties",
+    "summary": "Adds dynamic design parameters (Properties) to stock.lot linked to a definition model",
     "version": "18.0.1.0.0",
-    "category": "Manufacturing",
+    "category": "Inventory",
     "website": "https://github.com/OCA/manufacture",
     "author": "Rosen Vladimirov, BL Consulting, Odoo Community Association (OCA)",
     "maintainers": ["rosen-vladimirov"],
     "license": "AGPL-3",
     "application": False,
     "installable": True,
-    "depends": ["stock", "mrp"],
+    "depends": ["stock", "design_param_base"],
     "data": [
-        "security/ir.model.access.csv",
-        "views/design_param_definition_views.xml",
-        "views/design_param_profile_views.xml",
-        "views/mrp_bom_views.xml",
+        "views/stock_lot_views.xml",
     ],
 }

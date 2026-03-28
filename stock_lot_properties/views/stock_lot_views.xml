@@ -3,19 +3,19 @@
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
 
-    <record id="stock_lot_view_form_inherit_design_param" model="ir.ui.view">
-        <field name="name">stock.lot.form.inherit.design.param</field>
+    <record id="stock_lot_view_form_inherit_properties" model="ir.ui.view">
+        <field name="name">stock.lot.form.inherit.properties</field>
         <field name="model">stock.lot</field>
-        <field name="inherit_id" ref="stock.view_production_lot_form" />
+        <field name="inherit_id" ref="stock.view_production_lot_form"/>
         <field name="arch" type="xml">
             <field name="ref" position="after">
-                <field name="design_param_definition_id" />
+                <field name="design_param_definition_id"/>
             </field>
             <notebook position="inside">
                 <page string="Design Parameters"
                       name="design_parameters"
                       invisible="not design_param_definition_id">
-                    <field name="design_params" />
+                    <field name="design_params"/>
                 </page>
             </notebook>
         </field>
