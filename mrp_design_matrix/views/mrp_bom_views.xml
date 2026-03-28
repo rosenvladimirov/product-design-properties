@@ -10,7 +10,6 @@
                 <page string="Design Matrix" name="design_matrix">
                     <group>
                         <group string="Configuration">
-                            <field name="design_param_definition_id"/>
                             <field name="matrix_template_id"/>
                             <button name="action_load_from_template"
                                     string="Load from Template"

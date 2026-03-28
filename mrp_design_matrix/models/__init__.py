@@ -1,6 +1,5 @@
 # Copyright 2026 BL Consulting
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
-from . import mrp_design_param_definition
 from . import mrp_matrix_template
 from . import mrp_bom
 from . import mrp_bom_line

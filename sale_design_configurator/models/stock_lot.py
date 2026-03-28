@@ -7,20 +7,6 @@ from odoo import api, fields, models
 class StockLot(models.Model):
     _inherit = "stock.lot"
 
-    design_param_definition_id = fields.Many2one(
-        "design.param.definition",
-        string="Design Parameter Set",
-        help=(
-            "Defines which Properties fields are shown for this lot. "
-            "Set automatically when creating a lot from the Design Configurator."
-        ),
-    )
-    design_params = fields.Properties(
-        "Design Parameters",
-        definition="design_param_definition_id.design_params_definition",
-        copy=True,
-    )
-
     # -- Helpers -------------------------------------------------------------
 
     @api.model

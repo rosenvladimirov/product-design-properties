@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<odoo>
-    <data noupdate="1">
-        <function model="design.param.definition"
-                  name="create_design_param_definitions">
-            <value>sale_design_configurator</value>
-        </function>
-    </data>
-</odoo>

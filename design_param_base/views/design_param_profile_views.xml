@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Form View (standalone) -->
+    <record id="design_param_profile_view_form" model="ir.ui.view">
+        <field name="name">design.param.profile.form</field>
+        <field name="model">design.param.profile</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" />
+                            <field name="sequence" />
+                            <field name="definition_id" />
+                        </group>
+                        <group>
+                            <field name="extrude_depth" />
+                            <field name="camera_distance" />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="SVG Content" name="svg_content">
+                            <field name="svg_content" widget="ace" options="{'mode': 'xml'}" />
+                        </page>
+                        <page string="Profile Definition" name="profile_definition">
+                            <field name="profile_definition" widget="json" />
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree View -->
+    <record id="design_param_profile_view_tree" model="ir.ui.view">
+        <field name="name">design.param.profile.tree</field>
+        <field name="model">design.param.profile</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle" />
+                <field name="name" />
+                <field name="definition_id" />
+                <field name="extrude_depth" />
+                <field name="camera_distance" />
+            </tree>
+        </field>
+    </record>
+
+</odoo>

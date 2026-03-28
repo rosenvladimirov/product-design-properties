@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Extend stock.lot form: add definition field, design params page, configure button -->
+    <!-- Extend stock.lot form: add Configure Design button -->
     <record id="stock_lot_form_design_configurator" model="ir.ui.view">
         <field name="name">stock.lot.form.design.configurator</field>
         <field name="model">stock.lot</field>
@@ -17,20 +17,6 @@
                         icon="fa-cube"
                         invisible="not design_param_definition_id"/>
             </header>
-
-            <!-- Add definition field after ref -->
-            <field name="ref" position="after">
-                <field name="design_param_definition_id"/>
-            </field>
-
-            <!-- Design Parameters notebook page -->
-            <notebook position="inside">
-                <page string="Design Parameters"
-                      name="design_params"
-                      invisible="not design_param_definition_id">
-                    <field name="design_params" nolabel="1"/>
-                </page>
-            </notebook>
 
         </field>
     </record>

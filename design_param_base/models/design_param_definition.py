@@ -18,8 +18,8 @@ class DesignParamDefinition(models.Model):
     Parameter definitions are loaded from a custom XML file shipped with
     each industry data file via ``create_design_param_definitions()``.
 
-    Uses ``design.param.definition`` as model name to avoid conflict
-    with ``mrp.design.param.definition`` from the mrp_design_matrix module.
+    Uses ``design.param.definition`` as model name, shared across
+    all modules that depend on ``design_param_base``.
     """
 
     _name = "design.param.definition"
@@ -40,6 +40,22 @@ class DesignParamDefinition(models.Model):
     )
     design_params_definition = fields.PropertiesDefinition(
         "Design Parameter Definitions",
+    )
+
+    # NEW fields:
+    company_ids = fields.Many2many(
+        "res.company",
+        string="Enabled Companies",
+        help="If empty, available for all companies.",
+    )
+    validation_rules = fields.Json(
+        "Validation Rules",
+        help="JSON array of validation rules for client-side evaluation.",
+    )
+    profile_ids = fields.One2many(
+        "design.param.profile",
+        "definition_id",
+        string="SVG Profiles",
     )
 
     _sql_constraints = [

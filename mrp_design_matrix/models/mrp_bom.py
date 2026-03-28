@@ -7,14 +7,6 @@ from odoo import fields, models
 class MrpBom(models.Model):
     _inherit = "mrp.bom"
 
-    design_param_definition_id = fields.Many2one(
-        "mrp.design.param.definition",
-        string="Design Parameter Set",
-        help=(
-            "Defines which Properties fields appear on production lots "
-            "created from this BoM."
-        ),
-    )
     matrix_template_id = fields.Many2one(
         "mrp.matrix.template",
         string="Matrix Template",

@@ -6,16 +6,8 @@
  * DesignConfiguratorDialog
  * ------------------------
  * Wraps DesignConfiguratorWidget in an Odoo dialog.
- * Called from the "Configure Design" button on sale.order.line,
- * mrp.production or stock.lot.
- *
- * Usage from another component or action:
- *
- *   this.dialog.add(DesignConfiguratorDialog, {
- *       productId:    this.productId,
- *       definitionId: this.definitionId,
- *       onLotCreated: (lotId, params) => { ... },
- *   });
+ * Loads the definition, validation rules, and SVG profiles from server
+ * before rendering the widget.
  */
 
 import { Component, useState } from "@odoo/owl";
@@ -32,7 +24,7 @@ export class DesignConfiguratorDialog extends Component {
         definitionId: { type: Number },
         existingLotId: { type: [Number, Boolean], optional: true },
         onLotCreated: { type: Function, optional: true },
-        close: { type: Function }, // injected by Dialog service
+        close: { type: Function },
     };
 
     setup() {
@@ -41,6 +33,8 @@ export class DesignConfiguratorDialog extends Component {
             loading: true,
             definitionCode: "",
             paramDefinition: [],
+            validationRules: [],
+            profiles: [],
         });
         this._loadDefinition();
     }
@@ -49,12 +43,22 @@ export class DesignConfiguratorDialog extends Component {
         const [def] = await this.orm.read(
             "design.param.definition",
             [this.props.definitionId],
-            ["code", "design_params_definition"]
+            ["code", "design_params_definition", "validation_rules"]
         );
         if (def) {
             this.state.definitionCode = def.code;
             this.state.paramDefinition = def.design_params_definition || [];
+            this.state.validationRules = def.validation_rules || [];
         }
+
+        // Fetch SVG profiles for this definition
+        const profiles = await this.orm.searchRead(
+            "design.param.profile",
+            [["definition_id", "=", this.props.definitionId]],
+            ["name", "svg_content", "profile_definition", "extrude_depth", "camera_distance"],
+            { order: "sequence, id" }
+        );
+        this.state.profiles = profiles;
         this.state.loading = false;
     }
 

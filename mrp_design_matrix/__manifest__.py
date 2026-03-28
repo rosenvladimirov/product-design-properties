@@ -18,19 +18,17 @@
         "mrp",
         "stock",
         "purchase_stock",
+        "design_param_base",
         "mrp_bom_line_formula_quantity",
-        "stock_move_forced_lot_multi_dim",
+        "stock_move_forced_lot_multi",
     ],
     "external_dependencies": {
         "python": ["zen"],
     },
     "data": [
         "security/ir.model.access.csv",
-        "data/base_param_definitions.xml",
-        "views/mrp_design_param_definition_views.xml",
         "views/mrp_matrix_template_views.xml",
         "views/mrp_bom_views.xml",
-        "views/stock_lot_views.xml",
     ],
     "demo": [],
 }

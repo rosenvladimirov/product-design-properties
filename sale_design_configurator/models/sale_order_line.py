@@ -50,18 +50,21 @@ class SaleOrderLine(models.Model):
                 line.has_design_definition = False
                 line.design_param_definition_id = False
                 continue
-            bom = self.env["mrp.bom"].search(
-                [
-                    (
-                        "product_tmpl_id",
-                        "=",
-                        line.product_id.product_tmpl_id.id,
-                    ),
-                    ("design_param_definition_id", "!=", False),
-                    ("active", "=", True),
-                ],
-                limit=1,
-            )
+            domain = [
+                (
+                    "product_tmpl_id",
+                    "=",
+                    line.product_id.product_tmpl_id.id,
+                ),
+                ("design_param_definition_id", "!=", False),
+                ("active", "=", True),
+            ]
+            active_defs = self.env.company.design_definition_ids
+            if active_defs:
+                domain.append(
+                    ("design_param_definition_id", "in", active_defs.ids)
+                )
+            bom = self.env["mrp.bom"].search(domain, limit=1)
             if bom:
                 line.has_design_definition = True
                 line.design_param_definition_id = (
@@ -155,14 +158,17 @@ class SaleOrderLine(models.Model):
         if not product.exists():
             return False
 
-        bom = self.env["mrp.bom"].search(
-            [
-                ("product_tmpl_id", "=", product.product_tmpl_id.id),
-                ("design_param_definition_id", "!=", False),
-                ("active", "=", True),
-            ],
-            limit=1,
-        )
+        domain = [
+            ("product_tmpl_id", "=", product.product_tmpl_id.id),
+            ("design_param_definition_id", "!=", False),
+            ("active", "=", True),
+        ]
+        active_defs = self.env.company.design_definition_ids
+        if active_defs:
+            domain.append(
+                ("design_param_definition_id", "in", active_defs.ids)
+            )
+        bom = self.env["mrp.bom"].search(domain, limit=1)
         if not bom:
             return False
 

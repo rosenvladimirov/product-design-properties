@@ -4,19 +4,6 @@
 from odoo import _, api, fields, models
 
 
-class MrpBom(models.Model):
-    _inherit = "mrp.bom"
-
-    design_param_definition_id = fields.Many2one(
-        "design.param.definition",
-        string="Design Parameter Set",
-        help=(
-            "Defines which Properties fields appear on production lots "
-            "created from this BoM."
-        ),
-    )
-
-
 class MrpProduction(models.Model):
     _inherit = "mrp.production"
 

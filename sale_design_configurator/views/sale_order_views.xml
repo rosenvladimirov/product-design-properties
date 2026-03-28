@@ -89,21 +89,6 @@
     </record>
 
     <!-- ================================================================== -->
-    <!--  mrp.bom: add design_param_definition_id field                      -->
-    <!-- ================================================================== -->
-
-    <record id="mrp_bom_form_design_configurator" model="ir.ui.view">
-        <field name="name">mrp.bom.form.design.configurator</field>
-        <field name="model">mrp.bom</field>
-        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
-        <field name="arch" type="xml">
-            <field name="product_qty" position="after">
-                <field name="design_param_definition_id"/>
-            </field>
-        </field>
-    </record>
-
-    <!-- ================================================================== -->
     <!--  mrp.production: Configurator button                                -->
     <!-- ================================================================== -->
 

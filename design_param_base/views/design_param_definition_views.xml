@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Tree View -->
+    <record id="design_param_definition_view_tree" model="ir.ui.view">
+        <field name="name">design.param.definition.tree</field>
+        <field name="model">design.param.definition</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle" />
+                <field name="code" />
+                <field name="name" />
+                <field name="industry" />
+                <field name="parent_id" />
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="design_param_definition_view_form" model="ir.ui.view">
+        <field name="name">design.param.definition.form</field>
+        <field name="model">design.param.definition</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code" />
+                            <field name="name" />
+                            <field name="industry" />
+                        </group>
+                        <group>
+                            <field name="parent_id" />
+                            <field name="sequence" />
+                            <field name="company_ids" widget="many2many_tags" />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Parameter Definitions" name="param_definitions">
+                            <field name="design_params_definition" />
+                        </page>
+                        <page string="Validation Rules" name="validation_rules">
+                            <field name="validation_rules" widget="json" />
+                        </page>
+                        <page string="SVG Profiles" name="svg_profiles">
+                            <field name="profile_ids">
+                                <tree>
+                                    <field name="sequence" widget="handle" />
+                                    <field name="name" />
+                                    <field name="extrude_depth" />
+                                    <field name="camera_distance" />
+                                </tree>
+                                <form>
+                                    <group>
+                                        <group>
+                                            <field name="name" />
+                                            <field name="sequence" />
+                                            <field name="definition_id" invisible="1" />
+                                        </group>
+                                        <group>
+                                            <field name="extrude_depth" />
+                                            <field name="camera_distance" />
+                                        </group>
+                                    </group>
+                                    <notebook>
+                                        <page string="SVG Content" name="svg_content">
+                                            <field name="svg_content" widget="ace" options="{'mode': 'xml'}" />
+                                        </page>
+                                        <page string="Profile Definition" name="profile_definition">
+                                            <field name="profile_definition" widget="json" />
+                                        </page>
+                                    </notebook>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="design_param_definition_action" model="ir.actions.act_window">
+        <field name="name">Design Parameter Definitions</field>
+        <field name="res_model">design.param.definition</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu under MRP Configuration -->
+    <menuitem
+        id="menu_design_param_definition"
+        name="Design Parameter Definitions"
+        parent="mrp.menu_mrp_configuration"
+        action="design_param_definition_action"
+        sequence="55"
+    />
+
+</odoo>

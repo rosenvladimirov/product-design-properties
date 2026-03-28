@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo><data noupdate="1">
-  <function model="mrp.design.param.definition" name="create_design_param_definitions">
+  <function model="design.param.definition" name="create_design_param_definitions">
     <value>mrp_design_matrix_interior_door</value>
   </function>
 </data></odoo>

@@ -1,27 +1,13 @@
 # Copyright 2026 BL Consulting
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import api, fields, models
+from odoo import api, models
 
 
 class StockLot(models.Model):
     _inherit = "stock.lot"
 
     # width / height / thickness come from stock_move_forced_lot_multi_dim
-
-    design_param_definition_id = fields.Many2one(
-        "mrp.design.param.definition",
-        string="Design Parameter Set",
-        help=(
-            "Defines which Properties fields are shown for this lot. "
-            "Set automatically when creating a lot from an MO."
-        ),
-    )
-    design_params = fields.Properties(
-        "Design Parameters",
-        definition="design_param_definition_id.design_params_definition",
-        copy=True,
-    )
 
     # ── helpers ──────────────────────────────────────────────────────────
 

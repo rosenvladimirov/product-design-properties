@@ -58,10 +58,10 @@ class MrpBomLine(models.Model):
         ),
     )
     child_definition_id = fields.Many2one(
-        "mrp.design.param.definition",
+        "design.param.definition",
         string="Child Design Parameter Set",
         help=(
-            "The mrp.design.param.definition assigned to the child lot "
+            "The design.param.definition assigned to the child lot "
             "created for this semi-finished component."
         ),
     )
