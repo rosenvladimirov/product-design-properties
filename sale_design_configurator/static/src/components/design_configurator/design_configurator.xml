@@ -10,8 +10,28 @@
             <div class="o_cfg_params">
                 <t t-foreach="displayParams" t-as="param" t-key="param.name">
 
-                    <!-- Float: range slider with live value -->
-                    <t t-if="param.type === 'float'">
+                    <!-- Float with (mm): number spinner with step=1 -->
+                    <t t-if="param.type === 'float' and param.string and param.string.includes('mm')">
+                        <div class="o_cfg_param_row">
+                            <div class="o_cfg_param_label">
+                                <span><t t-esc="param.string"/></span>
+                                <strong><t t-esc="param.value"/> mm</strong>
+                            </div>
+                            <input
+                                type="number"
+                                class="o_input o_cfg_spinner"
+                                t-att-min="param.min || 0"
+                                t-att-max="param.max || 9999"
+                                step="1"
+                                t-att-value="param.value"
+                                t-att-data-param="param.name"
+                                t-on-input="onSliderInput"
+                            />
+                        </div>
+                    </t>
+
+                    <!-- Float without (mm): range slider -->
+                    <t t-if="param.type === 'float' and (!param.string or !param.string.includes('mm'))">
                         <div class="o_cfg_param_row">
                             <div class="o_cfg_param_label">
                                 <span><t t-esc="param.string"/></span>
