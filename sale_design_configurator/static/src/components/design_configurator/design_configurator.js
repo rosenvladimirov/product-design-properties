@@ -244,6 +244,13 @@ export class DesignConfiguratorWidget extends Component {
     onParamChange(key, value) {
         this.params[key] = value;
         this._validate();
+        // Check if this is a visual-only param that doesn't need rebuild
+        const def = (this.props.paramDefinition || []).find(d => d.name === key);
+        const label = def?.string || "";
+        if (label === "Opening Direction") {
+            this._updateHingeDirection();
+            return;
+        }
         this._buildModel();
     }
 
@@ -269,6 +276,33 @@ export class DesignConfiguratorWidget extends Component {
     onTextChange(ev) {
         const key = ev.target.dataset.param;
         this.onParamChange(key, ev.target.value);
+    }
+
+    _updateHingeDirection() {
+        const t = this._three;
+        if (!t.leafPivot || !t.group) return;
+        const THREE = window.THREE;
+
+        // Close leaf first (reset rotation)
+        t.leafPivot.rotation.y = 0;
+        t.leafOpen = false;
+        t.leafAnimating = false;
+
+        // Get current leaf world bounds
+        t.leafPivot.updateMatrixWorld(true);
+        const leafBox = new THREE.Box3().setFromObject(t.leafPivot);
+
+        const opening = this._getParamByLabel("Opening Direction") || "left";
+        const newHingeX = opening === "right" ? leafBox.max.x : leafBox.min.x;
+        const oldHingeX = t.leafPivot.position.x;
+        const deltaX = newHingeX - oldHingeX;
+
+        // Move pivot to new hinge position
+        t.leafPivot.position.x = newHingeX;
+        // Shift children by -deltaX to keep them in place
+        t.leafPivot.children.forEach(child => {
+            child.position.x -= deltaX;
+        });
     }
 
     _toggleLeaf() {
