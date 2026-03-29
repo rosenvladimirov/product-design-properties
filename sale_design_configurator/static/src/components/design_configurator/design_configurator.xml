@@ -10,13 +10,10 @@
             <div class="o_cfg_params">
                 <t t-foreach="displayParams" t-as="param" t-key="param.name">
 
-                    <!-- Float with (mm): number spinner with step=1 -->
+                    <!-- Float with (mm): compact label + spinner on same line -->
                     <t t-if="param.type === 'float' and param.string and param.string.includes('mm')">
-                        <div class="o_cfg_param_row">
-                            <div class="o_cfg_param_label">
-                                <span><t t-esc="param.string"/></span>
-                                <strong><t t-esc="param.value"/> mm</strong>
-                            </div>
+                        <div class="o_cfg_spinner_row">
+                            <span class="o_cfg_spinner_label"><t t-esc="param.string"/></span>
                             <input
                                 type="number"
                                 class="o_input o_cfg_spinner"

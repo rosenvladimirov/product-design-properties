@@ -152,10 +152,22 @@
     height: 100%;
 }
 
+.o_cfg_spinner_row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.o_cfg_spinner_label {
+    font-size: 12px;
+    color: #6c757d;
+}
+
 .o_cfg_spinner {
-    width: 100%;
+    width: 90px;
     font-size: 13px;
-    padding: 4px 8px;
+    padding: 3px 6px;
     text-align: right;
 }
 
