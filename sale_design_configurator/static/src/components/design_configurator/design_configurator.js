@@ -916,8 +916,14 @@ export class DesignConfiguratorWidget extends Component {
 
         // Auto-center and auto-scale
         if (t.group.children.length > 0) {
-            // First pass: measure raw bounds
+            // Reset transform
+            t.group.position.set(0, 0, 0);
+            t.group.scale.set(1, 1, 1);
+            t.group.updateMatrixWorld(true);
+
+            // Measure raw bounds
             const box1 = new THREE.Box3().setFromObject(t.group);
+            const center1 = box1.getCenter(new THREE.Vector3());
             const size1 = box1.getSize(new THREE.Vector3());
             const maxDim = Math.max(size1.x, size1.y, size1.z);
             if (maxDim > 0) {
@@ -925,12 +931,10 @@ export class DesignConfiguratorWidget extends Component {
                 this._refWidth = this._getParamByLabel("Width (mm)") || 900;
                 this._refHeight = this._getParamByLabel("Height (mm)") || 2100;
                 this._refWallWidth = this._getParamByLabel("Wall Width (mm)") || 100;
+
+                // Center at origin first, then scale
+                t.group.position.set(-center1.x, -center1.y, -center1.z);
                 t.group.scale.setScalar(this._baseScale);
-                // Second pass: measure after scale, then center
-                t.group.updateMatrixWorld(true);
-                const box2 = new THREE.Box3().setFromObject(t.group);
-                const center2 = box2.getCenter(new THREE.Vector3());
-                t.group.position.sub(center2);
             }
         } else {
             this._buildLegacyModel();
