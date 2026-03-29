@@ -529,13 +529,18 @@ export class DesignConfiguratorWidget extends Component {
 
                         // Position leaf:
                         // X: centered on frame
-                        // Y: aligned to bottom of frame (Y min)
-                        // Z: flush against inner face (room side = frame Z min)
-                        //    leaf sits at Z=frame.min.z, its back face touching the frame
+                        // Y: aligned to bottom of frame
+                        // Z: offset from inner face by lip_depth
+                        //    lip makes the leaf wider than the opening,
+                        //    so it sits slightly in front of the frame
+                        const lipDepth = (
+                            this._getParamByLabel("Lip Depth (mm)") || 10
+                        ) / 1000;  // mm to meters (GLB units)
+
                         scene.position.set(
                             frameCenter.x - newCenter.x,
                             frameBox.min.y - newBox.min.y,
-                            frameBox.min.z - newBox.min.z
+                            frameBox.min.z - newBox.min.z - lipDepth
                         );
                     }
 
