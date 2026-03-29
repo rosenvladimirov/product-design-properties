@@ -97,13 +97,10 @@ export class DesignConfiguratorWidget extends Component {
 
     async _loadExistingLot(lotId) {
         const [lot] = await this.orm.read("stock.lot", [lotId], [
-            "design_params", "width", "height", "thickness",
+            "design_params",
         ]);
         if (!lot) return;
         Object.assign(this.params, lot.design_params || {});
-        if (lot.width) this.params.width = lot.width;
-        if (lot.height) this.params.height = lot.height;
-        if (lot.thickness) this.params.thickness = lot.thickness;
     }
 
     // ── Data-driven validation ──────────────────────────────────────────
@@ -272,16 +269,9 @@ export class DesignConfiguratorWidget extends Component {
     }
 
     async _saveDesignLot() {
-        const REAL_FIELDS = ["width", "height", "thickness"];
-        const designParams = {};
-        const realVals = {};
-        for (const [k, v] of Object.entries(this.params)) {
-            if (REAL_FIELDS.includes(k)) {
-                realVals[k] = v;
-            } else {
-                designParams[k] = v;
-            }
-        }
+        // All params go into design_params (Properties field)
+        // Width/Height/Thickness are now part of Properties via base_dimensions inheritance
+        const designParams = { ...this.params };
         const lotName = await this.orm.call(
             "stock.lot", "generate_design_lot_name", [this.props.productId]
         );
@@ -290,7 +280,6 @@ export class DesignConfiguratorWidget extends Component {
             product_id: this.props.productId,
             design_param_definition_id: this.props.definitionId,
             design_params: designParams,
-            ...realVals,
         };
         if (this.props.existingLotId) {
             await this.orm.write("stock.lot", [this.props.existingLotId], vals);
