@@ -400,17 +400,17 @@ export class DesignConfiguratorWidget extends Component {
 
         const refW = this._refWidth || 900;
         const refH = this._refHeight || 2100;
+        const refT = this._refThickness || 40;
 
         const w = this._getParamByLabel("Width (mm)") || refW;
         const h = this._getParamByLabel("Height (mm)") || refH;
+        const th = this._getParamByLabel("Thickness (mm)") || refT;
 
-        const scaleX = w / refW;
-        const scaleY = h / refH;
-
+        const bs = this._baseScale || 1;
         t.group.scale.set(
-            (this._baseScale || 1) * scaleX,
-            (this._baseScale || 1) * scaleY,
-            this._baseScale || 1
+            bs * (w / refW),
+            bs * (h / refH),
+            bs * (th / refT)
         );
     }
 
@@ -499,6 +499,7 @@ export class DesignConfiguratorWidget extends Component {
                 this._baseScale = 2.0 / maxDim;
                 this._refWidth = this._getParamByLabel("Width (mm)") || 900;
                 this._refHeight = this._getParamByLabel("Height (mm)") || 2100;
+                this._refThickness = this._getParamByLabel("Thickness (mm)") || 40;
                 t.group.scale.setScalar(this._baseScale);
                 t.group.position.copy(center.negate().multiplyScalar(this._baseScale));
             }
@@ -590,6 +591,7 @@ export class DesignConfiguratorWidget extends Component {
         this._baseScale = 1;
         this._refWidth = this._getParamByLabel("Width (mm)") || 900;
         this._refHeight = this._getParamByLabel("Height (mm)") || 2100;
+        this._refThickness = this._getParamByLabel("Thickness (mm)") || 40;
         const code = this.props.definitionCode;
         if (code === "bags") this._buildBag();
         else if (code === "security_door") this._buildSecurityDoor();
