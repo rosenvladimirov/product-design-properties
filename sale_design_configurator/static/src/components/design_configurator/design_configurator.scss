@@ -7,7 +7,7 @@
     border: 1px solid var(--color-border-primary, #dee2e6);
     border-radius: 8px;
     overflow: hidden;
-    min-height: 520px;
+    height: 520px;
 }
 
 .o_cfg_panel {
@@ -15,11 +15,12 @@
     display: flex;
     flex-direction: column;
     background: #fff;
+    overflow-y: auto;
+    height: 100%;
 }
 
 .o_cfg_params {
-    flex: 1;
-    overflow-y: auto;
+    flex: 1 0 auto;
     padding: 14px;
 }
 
@@ -143,7 +144,7 @@
 .o_cfg_viewport {
     background: #f0eff0;
     position: relative;
-    min-height: 520px;
+    height: 100%;
 }
 
 .o_cfg_viewport canvas {
