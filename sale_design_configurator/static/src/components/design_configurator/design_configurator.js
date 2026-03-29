@@ -383,16 +383,26 @@ export class DesignConfiguratorWidget extends Component {
 
     // ── Scale: slider changes apply scale without rebuild ──────────────
 
+    _getParamByLabel(label) {
+        // Properties use UUID names but human-readable strings.
+        // Find the UUID key whose string matches the label.
+        for (const def of (this.props.paramDefinition || [])) {
+            if (def.string === label) {
+                return this.params[def.name];
+            }
+        }
+        return undefined;
+    }
+
     _applyScale() {
         const t = this._three;
         if (!t.group || !t.group.children.length) return;
 
-        // Reference dimensions (from initial params or defaults)
         const refW = this._refWidth || 900;
         const refH = this._refHeight || 2100;
 
-        const w = this.params["Width (mm)"] || this.params.width || refW;
-        const h = this.params["Height (mm)"] || this.params.height || refH;
+        const w = this._getParamByLabel("Width (mm)") || refW;
+        const h = this._getParamByLabel("Height (mm)") || refH;
 
         const scaleX = w / refW;
         const scaleY = h / refH;
@@ -487,8 +497,8 @@ export class DesignConfiguratorWidget extends Component {
             const maxDim = Math.max(size.x, size.y, size.z);
             if (maxDim > 0) {
                 this._baseScale = 2.0 / maxDim;
-                this._refWidth = this.params["Width (mm)"] || this.params.width || 900;
-                this._refHeight = this.params["Height (mm)"] || this.params.height || 2100;
+                this._refWidth = this._getParamByLabel("Width (mm)") || 900;
+                this._refHeight = this._getParamByLabel("Height (mm)") || 2100;
                 t.group.scale.setScalar(this._baseScale);
                 t.group.position.copy(center.negate().multiplyScalar(this._baseScale));
             }
@@ -578,8 +588,8 @@ export class DesignConfiguratorWidget extends Component {
 
     _buildLegacyModel() {
         this._baseScale = 1;
-        this._refWidth = this.params["Width (mm)"] || this.params.width || 900;
-        this._refHeight = this.params["Height (mm)"] || this.params.height || 2100;
+        this._refWidth = this._getParamByLabel("Width (mm)") || 900;
+        this._refHeight = this._getParamByLabel("Height (mm)") || 2100;
         const code = this.props.definitionCode;
         if (code === "bags") this._buildBag();
         else if (code === "security_door") this._buildSecurityDoor();
