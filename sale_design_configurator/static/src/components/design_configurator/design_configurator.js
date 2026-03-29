@@ -926,7 +926,9 @@ export class DesignConfiguratorWidget extends Component {
                 this._refHeight = this._getParamByLabel("Height (mm)") || 2100;
                 this._refWallWidth = this._getParamByLabel("Wall Width (mm)") || 100;
                 t.group.scale.setScalar(this._baseScale);
-                t.group.position.copy(center.negate().multiplyScalar(this._baseScale));
+                // Center the group at origin
+                const scaledCenter = center.multiplyScalar(this._baseScale);
+                t.group.position.set(-scaledCenter.x, -scaledCenter.y, -scaledCenter.z);
             }
         } else {
             this._buildLegacyModel();
