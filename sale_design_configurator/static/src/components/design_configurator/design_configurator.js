@@ -674,69 +674,66 @@ export class DesignConfiguratorWidget extends Component {
             { y: 0.45, z: -0.04, label: "handle" },   // handle area
         ];
 
+        // Get overall model bounds for proportional sizing
+        const modelBox = new THREE.Box3().setFromObject(t.group);
+        const modelSize = modelBox.getSize(new THREE.Vector3());
+        const dotSize = Math.max(modelSize.x, modelSize.y) * 0.015;
+
+        const dotMat = new THREE.MeshPhongMaterial({
+            color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1.0,
+        });
+
+        // Hotspot positions on the leaf face (relative to model center)
+        const modelCenter = modelBox.getCenter(new THREE.Vector3());
+
+        // Lock/handle hotspots — on the leaf, handle side
+        const opening = this._getParamByLabel("Opening Direction") || "left";
+        const handleSide = opening === "left" ? 1 : -1;  // handle opposite to hinge
+
         let posIdx = 0;
+        const yPositions = [0.48, 0.42, 0.55];  // different Y offsets per component
         for (const comp of nonGlb) {
-            const pos = positions[posIdx % positions.length];
-            const leafPivot = t.leafPivot;
-            if (!leafPivot) continue;
-
-            // Get leaf bounds for positioning
-            const leafBox = new THREE.Box3().setFromObject(leafPivot);
-            const leafCenter = leafBox.getCenter(new THREE.Vector3());
-
-            // Hotspot sphere
-            const geo = new THREE.SphereGeometry(0.015, 16, 12);
-            const mat = new THREE.MeshPhongMaterial({
-                color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.8,
-            });
-            const sphere = new THREE.Mesh(geo, mat);
-
-            // Position on the leaf surface
+            const yRatio = yPositions[posIdx % yPositions.length];
+            const sphere = new THREE.Mesh(new THREE.SphereGeometry(dotSize, 16, 12), dotMat);
             sphere.position.set(
-                leafCenter.x + 0.05,
-                leafBox.min.y + (leafBox.max.y - leafBox.min.y) * pos.y,
-                leafBox.min.z + pos.z
+                modelCenter.x + handleSide * modelSize.x * 0.3,
+                modelBox.min.y + modelSize.y * yRatio,
+                modelBox.min.z - dotSize * 2
             );
-
             t.group.add(sphere);
 
-            const imgUrl = `/web/content/${comp.assets.textures[0].id}?download=true`;
+            const imgUrl = comp.assets.textures.length > 0
+                ? `/web/content/${comp.assets.textures[0].id}?download=true`
+                : "";
             t.hotspots.push({
                 mesh: sphere,
                 label: comp.product_name,
                 imageUrl: imgUrl,
             });
-
             posIdx++;
         }
 
-        // Add hinge hotspots (no image — just label)
+        // Hinge hotspots — on the hinge edge
         const leafPivot = t.leafPivot;
         if (leafPivot) {
             const leafBox = new THREE.Box3().setFromObject(leafPivot);
-            const opening = this._getParamByLabel("Opening Direction") || "left";
             const hingeX = opening === "right" ? leafBox.max.x : leafBox.min.x;
-            const hingeZ = leafBox.min.z;
 
-            const hingeMat = new THREE.MeshPhongMaterial({
-                color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.8,
-            });
-
-            // Top hinge
-            const topHinge = new THREE.Mesh(new THREE.SphereGeometry(0.012, 12, 8), hingeMat);
-            topHinge.position.set(hingeX, leafBox.max.y - 0.15, hingeZ - 0.01);
-            t.group.add(topHinge);
-            t.hotspots.push({
-                mesh: topHinge, label: "Hinge (top)", imageUrl: "",
-            });
-
-            // Bottom hinge
-            const botHinge = new THREE.Mesh(new THREE.SphereGeometry(0.012, 12, 8), hingeMat);
-            botHinge.position.set(hingeX, leafBox.min.y + 0.15, hingeZ - 0.01);
-            t.group.add(botHinge);
-            t.hotspots.push({
-                mesh: botHinge, label: "Hinge (bottom)", imageUrl: "",
-            });
+            const hingePositions = [0.85, 0.5, 0.15];  // top, middle, bottom
+            for (let i = 0; i < 3; i++) {
+                const hs = new THREE.Mesh(new THREE.SphereGeometry(dotSize * 0.8, 12, 8), dotMat);
+                hs.position.set(
+                    hingeX,
+                    leafBox.min.y + (leafBox.max.y - leafBox.min.y) * hingePositions[i],
+                    modelBox.min.z - dotSize
+                );
+                t.group.add(hs);
+                t.hotspots.push({
+                    mesh: hs,
+                    label: `Панта ${i + 1}`,
+                    imageUrl: "",
+                });
+            }
         }
     }
 
