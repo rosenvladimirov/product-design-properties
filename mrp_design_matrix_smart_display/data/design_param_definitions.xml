@@ -10,7 +10,7 @@
     Selection format: [["value","Label"], ...]
 -->
 <records>
-    <properties code="smart_display" name="Smart Home Display" industry="electronics">
+    <properties code="smart_display" name="Smart Home Display" industry="electronics" parent="base_dimensions">
         <!-- ── Display ──────────────────────────────────────── -->
         <items name="display_size">
             <item name="type">selection</item>

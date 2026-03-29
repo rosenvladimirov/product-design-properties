@@ -1,0 +1,21 @@
+<!--
+    Base design parameter definitions — shared dimensions.
+    Loaded at install by install_design_params.xml.
+    Industry modules inherit from 'base_dimensions' via parent="base_dimensions".
+-->
+<records>
+    <properties code="base_dimensions" name="Base Dimensions" industry="base">
+        <items name="Width (mm)">
+            <item name="type">float</item>
+            <item name="default">900</item>
+        </items>
+        <items name="Height (mm)">
+            <item name="type">float</item>
+            <item name="default">2100</item>
+        </items>
+        <items name="Thickness (mm)">
+            <item name="type">float</item>
+            <item name="default">40</item>
+        </items>
+    </properties>
+</records>

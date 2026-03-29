@@ -5,7 +5,7 @@
     sheet_thickness and lock_type based on the RC class chosen.
 -->
 <records>
-    <properties code="security_door" name="Security Door" industry="doors">
+    <properties code="security_door" name="Security Door" industry="doors" parent="base_dimensions">
         <items name="RC_class">
             <item name="type">selection</item>
             <item name="selection">[["RC1","RC1"],["RC2","RC2"],["RC3","RC3"],["RC4","RC4"]]</item>

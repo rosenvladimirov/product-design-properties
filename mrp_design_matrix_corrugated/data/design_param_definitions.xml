@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <records>
-  <properties code="corrugated" name="Corrugated / Cartons" industry="corrugated">
+  <properties code="corrugated" name="Corrugated / Cartons" industry="corrugated" parent="base_dimensions">
     <items name="board_type">
       <item name="type">selection</item>
       <item name="selection">[["BC","BC Double Wall"],["C","C Flute"],["B","B Flute"],["E","E Flute"]]</item>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <records>
-  <properties code="roller_door" name="Roller Door" industry="doors">
+  <properties code="roller_door" name="Roller Door" industry="doors" parent="base_dimensions">
     <items name="slat_type">
       <item name="type">selection</item>
       <item name="selection">[["AL","Aluminium"],["steel","Steel"],["PC","Polycarbonate"]]</item>

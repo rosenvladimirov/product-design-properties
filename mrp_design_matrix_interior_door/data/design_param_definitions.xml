@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <records>
-  <properties code="interior_door" name="Interior Door" industry="doors">
+  <properties code="interior_door" name="Interior Door" industry="doors" parent="base_dimensions">
     <items name="construction">
       <item name="type">selection</item>
       <item name="selection">[["HDF","HDF"],["solid","Solid wood"],["MDF","MDF"],["glass","Full glass"]]</item>

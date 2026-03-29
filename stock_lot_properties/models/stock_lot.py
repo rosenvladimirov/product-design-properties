@@ -13,6 +13,6 @@ class StockLot(models.Model):
     )
     design_params = fields.Properties(
         "Design Parameters",
-        definition="design_param_definition_id.design_params_definition",
+        definition="design_param_definition_id.full_design_params_definition",
         copy=True,
     )

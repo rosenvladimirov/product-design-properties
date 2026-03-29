@@ -41,6 +41,10 @@ class DesignParamDefinition(models.Model):
     design_params_definition = fields.PropertiesDefinition(
         "Design Parameter Definitions",
     )
+    full_design_params_definition = fields.PropertiesDefinition(
+        "Full Design Parameter Definitions (with inherited)",
+        compute="_compute_full_design_params_definition",
+    )
 
     # NEW fields:
     company_ids = fields.Many2many(
@@ -61,6 +65,37 @@ class DesignParamDefinition(models.Model):
     _sql_constraints = [
         ("code_unique", "UNIQUE(code)", "The code must be unique."),
     ]
+
+    def _compute_full_design_params_definition(self):
+        """Merge parent chain properties with own properties.
+
+        Base definition (e.g. 'base_dimensions') provides width/height/thickness.
+        Industry definition (e.g. 'interior_door') adds its own properties.
+        Full = parent chain properties + own properties (own overrides parent by name).
+        """
+        for record in self:
+            merged = []
+            seen_strings = set()
+            # Collect parent chain (bottom-up, then reverse)
+            chain = []
+            current = record
+            while current:
+                chain.append(current)
+                current = current.parent_id
+            # Apply top-down (base first, then child overrides)
+            for defn in reversed(chain):
+                for prop in (defn.design_params_definition or []):
+                    prop_string = prop.get("string", "")
+                    if prop_string in seen_strings:
+                        # Override: replace existing
+                        merged = [
+                            p if p.get("string") != prop_string else prop
+                            for p in merged
+                        ]
+                    else:
+                        merged.append(prop)
+                        seen_strings.add(prop_string)
+            record.full_design_params_definition = merged
 
     # -- XML loading ---------------------------------------------------------
 
@@ -95,19 +130,36 @@ class DesignParamDefinition(models.Model):
         return result
 
     def _process_properties(self, properties, sequence):
-        """Parse one ``<properties>`` node into a create-values dict."""
+        """Parse one ``<properties>`` node into a create-values dict.
+
+        Supports ``parent="code"`` attribute to link to a parent definition.
+        The parent must already exist in the database.
+
+        Example::
+
+            <properties code="interior_door" name="Interior Door"
+                        industry="doors" parent="base_dimensions">
+                <items name="construction">...</items>
+            </properties>
+        """
         attr = properties.attrib
         props = [
             self._process_items(items)
             for items in properties.iter("items")
         ]
-        return {
+        vals = {
             "sequence": sequence,
             "code": attr.get("code"),
             "name": attr.get("name"),
             "industry": attr.get("industry", ""),
             "design_params_definition": props,
         }
+        parent_code = attr.get("parent")
+        if parent_code:
+            parent = self.search([("code", "=", parent_code)], limit=1)
+            if parent:
+                vals["parent_id"] = parent.id
+        return vals
 
     def create_design_param_definitions(self, module_name, codes=False):
         """

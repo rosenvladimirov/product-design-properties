@@ -10,7 +10,7 @@
     Selection format: [["value","Label"], ...]
 -->
 <records>
-    <properties code="canned_peppers" name="Canned Roasted Peppers" industry="food">
+    <properties code="canned_peppers" name="Canned Roasted Peppers" industry="food" parent="base_dimensions">
         <!-- ── Recipe ───────────────────────────────────────── -->
         <items name="recipe_type">
             <item name="type">selection</item>

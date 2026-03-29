@@ -26,7 +26,7 @@ class ProductProduct(models.Model):
     # ── Design properties (dynamic fields from definition) ───────────
     design_properties = fields.Properties(
         "Design Properties",
-        definition="design_param_definition_id.design_params_definition",
+        definition="design_param_definition_id.full_design_params_definition",
         help="Product-level design properties for configurator filtering. "
              "Values must match product.attribute.value.name for PTAV resolution.",
     )
@@ -101,7 +101,7 @@ class ProductTemplate(models.Model):
         "Design Properties",
         compute="_compute_design_properties",
         inverse="_inverse_design_properties",
-        definition="design_param_definition_id.design_params_definition",
+        definition="design_param_definition_id.full_design_params_definition",
     )
 
     @api.depends("product_variant_ids", "product_variant_ids.design_param_definition_id")

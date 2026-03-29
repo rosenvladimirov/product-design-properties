@@ -44,11 +44,11 @@ export class DesignConfiguratorDialog extends Component {
         const [def] = await this.orm.read(
             "design.param.definition",
             [this.props.definitionId],
-            ["code", "design_params_definition", "validation_rules"]
+            ["code", "full_design_params_definition", "validation_rules"]
         );
         if (def) {
             this.state.definitionCode = def.code;
-            this.state.paramDefinition = def.design_params_definition || [];
+            this.state.paramDefinition = def.full_design_params_definition || [];
             this.state.validationRules = def.validation_rules || [];
         }
 
