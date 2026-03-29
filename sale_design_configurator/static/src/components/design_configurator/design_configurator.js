@@ -527,21 +527,65 @@ export class DesignConfiguratorWidget extends Component {
                         const newCenter = newBox.getCenter(new THREE.Vector3());
                         const newSize = newBox.getSize(new THREE.Vector3());
 
-                        // Position leaf:
-                        // X: centered on frame
-                        // Y: aligned to bottom of frame
-                        // Z: offset from inner face by lip_depth
-                        //    lip makes the leaf wider than the opening,
-                        //    so it sits slightly in front of the frame
-                        const lipDepth = (
-                            this._getParamByLabel("Lip Depth (mm)") || 10
-                        ) / 1000;  // mm to meters (GLB units)
+                        // Leaf positioning + Г-lip generation
+                        const lipOverlap = (this._getParamByLabel("Lip Overlap (mm)") || 10) / 1000;
+                        const lipDepth = (this._getParamByLabel("Lip Depth (mm)") || 10) / 1000;
 
+                        // Position leaf body: centered X, bottom-aligned Y,
+                        // Z = inner face of frame minus lip depth
                         scene.position.set(
                             frameCenter.x - newCenter.x,
                             frameBox.min.y - newBox.min.y,
                             frameBox.min.z - newBox.min.z - lipDepth
                         );
+                        scene.updateMatrixWorld(true);
+
+                        // Add Г-lip as BoxGeometry strips around the leaf (top, left, right)
+                        const leafBox = new THREE.Box3().setFromObject(scene);
+                        const leafW = leafBox.max.x - leafBox.min.x;
+                        const leafH = leafBox.max.y - leafBox.min.y;
+                        const leafZ = leafBox.min.z;  // front face of leaf
+
+                        const lipColor = 0xb8893a;
+                        const lipMat = new THREE.MeshPhongMaterial({
+                            color: lipColor, side: THREE.DoubleSide, shininess: 20,
+                        });
+
+                        // Top lip: horizontal strip
+                        const topLip = new THREE.Mesh(
+                            new THREE.BoxGeometry(leafW + lipOverlap * 2, lipOverlap, lipDepth),
+                            lipMat
+                        );
+                        topLip.position.set(
+                            (leafBox.min.x + leafBox.max.x) / 2,
+                            leafBox.max.y + lipOverlap / 2,
+                            leafZ + lipDepth / 2
+                        );
+                        t.group.add(topLip);
+
+                        // Left lip: vertical strip
+                        const leftLip = new THREE.Mesh(
+                            new THREE.BoxGeometry(lipOverlap, leafH + lipOverlap, lipDepth),
+                            lipMat
+                        );
+                        leftLip.position.set(
+                            leafBox.min.x - lipOverlap / 2,
+                            (leafBox.min.y + leafBox.max.y) / 2 + lipOverlap / 2,
+                            leafZ + lipDepth / 2
+                        );
+                        t.group.add(leftLip);
+
+                        // Right lip: vertical strip
+                        const rightLip = new THREE.Mesh(
+                            new THREE.BoxGeometry(lipOverlap, leafH + lipOverlap, lipDepth),
+                            lipMat
+                        );
+                        rightLip.position.set(
+                            leafBox.max.x + lipOverlap / 2,
+                            (leafBox.min.y + leafBox.max.y) / 2 + lipOverlap / 2,
+                            leafZ + lipDepth / 2
+                        );
+                        t.group.add(rightLip);
                     }
 
                     t.group.add(scene);
