@@ -219,6 +219,17 @@
                 </button>
             </div>
             <div class="o_cfg_rotate_hint" t-if="ui.autoRotate">Drag to rotate</div>
+
+            <!-- Hotspot annotation popup -->
+            <div t-ref="hotspotOverlay" class="o_cfg_hotspot_overlay">
+                <svg class="o_cfg_hotspot_svg" t-ref="hotspotSvg"/>
+                <div class="o_cfg_hotspot_popup" t-ref="hotspotPopup"
+                     t-att-class="{'active': ui.hotspotVisible}">
+                    <button class="o_cfg_popup_close" t-on-click="closeHotspot">&#215;</button>
+                    <img t-ref="hotspotImg" class="o_cfg_popup_img"/>
+                    <div class="o_cfg_popup_label" t-ref="hotspotLabel"/>
+                </div>
+            </div>
         </div>
 
     </div>

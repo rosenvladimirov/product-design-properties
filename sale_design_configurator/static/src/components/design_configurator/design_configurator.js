@@ -38,6 +38,10 @@ export class DesignConfiguratorWidget extends Component {
         this.orm = useService("orm");
         this.notification = useService("notification");
         this.canvasRef = useRef("canvas");
+        this.hotspotPopupRef = useRef("hotspotPopup");
+        this.hotspotImgRef = useRef("hotspotImg");
+        this.hotspotLabelRef = useRef("hotspotLabel");
+        this.hotspotSvgRef = useRef("hotspotSvg");
 
         this.params = useState(
             this._buildInitialParams(this.props.paramDefinition)
@@ -48,17 +52,19 @@ export class DesignConfiguratorWidget extends Component {
             validErrors: [],
             validWarns: [],
             autoRotate: true,
+            hotspotVisible: false,
         });
 
         this._three = {
             renderer: null, scene: null, camera: null, group: null,
             animId: null, rotX: 0.3, rotY: 0.4,
             drag: false, prevX: 0, prevY: 0,
-            leafPivot: null,       // Group for leaf rotation
-            leafOpen: false,       // is leaf currently open?
-            leafAnimating: false,  // animation in progress?
-            leafTargetAngle: 0,    // target rotation
+            leafPivot: null,
+            leafOpen: false,
+            leafAnimating: false,
+            leafTargetAngle: 0,
             raycaster: null,
+            hotspots: [],          // [{mesh, label, imageUrl, position3D}]
         };
 
         onMounted(async () => {
@@ -322,6 +328,56 @@ export class DesignConfiguratorWidget extends Component {
         });
     }
 
+    _showHotspot(hotspot, event) {
+        const popup = this.hotspotPopupRef.el;
+        const img = this.hotspotImgRef.el;
+        const label = this.hotspotLabelRef.el;
+        const svg = this.hotspotSvgRef.el;
+        if (!popup || !img) return;
+
+        img.src = hotspot.imageUrl;
+        label.textContent = hotspot.label;
+
+        // Position popup near click but inside viewport
+        const vp = this.canvasRef.el?.parentElement;
+        if (!vp) return;
+        const rect = vp.getBoundingClientRect();
+        const px = event.clientX - rect.left;
+        const py = event.clientY - rect.top;
+
+        // Popup offset — appear to the right and above the click
+        const popX = Math.min(px + 20, rect.width - 150);
+        const popY = Math.max(py - 80, 10);
+        popup.style.left = popX + "px";
+        popup.style.top = popY + "px";
+
+        // Draw connector line from hotspot 3D position to popup
+        const THREE = window.THREE;
+        if (THREE && svg) {
+            const pos3D = new THREE.Vector3();
+            hotspot.mesh.getWorldPosition(pos3D);
+            pos3D.project(this._three.camera);
+            const dotX = (pos3D.x * 0.5 + 0.5) * rect.width;
+            const dotY = (-pos3D.y * 0.5 + 0.5) * rect.height;
+
+            svg.innerHTML = `
+                <line x1="${dotX}" y1="${dotY}" x2="${popX + 60}" y2="${popY + 60}"
+                      stroke="#495057" stroke-width="1.5" stroke-dasharray="4,3"/>
+                <circle cx="${dotX}" cy="${dotY}" r="5" fill="#714B67"/>
+            `;
+        }
+
+        this.ui.hotspotVisible = true;
+        this._activeHotspot = hotspot;
+    }
+
+    closeHotspot() {
+        this.ui.hotspotVisible = false;
+        const svg = this.hotspotSvgRef.el;
+        if (svg) svg.innerHTML = "";
+        this._activeHotspot = null;
+    }
+
     _toggleLeaf() {
         const t = this._three;
         if (!t.leafPivot) return;
@@ -439,9 +495,24 @@ export class DesignConfiguratorWidget extends Component {
                     mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
                     mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
                     t.raycaster.setFromCamera(mouse, t.camera);
-                    const hits = t.raycaster.intersectObjects(t.leafPivot.children, true);
-                    if (hits.length > 0) {
-                        this._toggleLeaf();
+
+                    // Check hotspots first
+                    const hotspotMeshes = t.hotspots.map(h => h.mesh);
+                    const hotspotHits = t.raycaster.intersectObjects(hotspotMeshes);
+                    if (hotspotHits.length > 0) {
+                        const hs = t.hotspots.find(h => h.mesh === hotspotHits[0].object);
+                        if (hs) this._showHotspot(hs, e);
+                        t.drag = false;
+                        clickStart = null;
+                        return;
+                    }
+
+                    // Then check leaf
+                    if (t.leafPivot) {
+                        const hits = t.raycaster.intersectObjects(t.leafPivot.children, true);
+                        if (hits.length > 0) {
+                            this._toggleLeaf();
+                        }
                     }
                 }
             }
@@ -471,6 +542,30 @@ export class DesignConfiguratorWidget extends Component {
                     t.leafPivot.rotation.y += diff * 0.08;
                 }
             }
+            // Update hotspot connector line while rotating
+            if (this.ui.hotspotVisible && this._activeHotspot) {
+                const svg = this.hotspotSvgRef?.el;
+                const popup = this.hotspotPopupRef?.el;
+                if (svg && popup && this._activeHotspot.mesh) {
+                    const pos3D = new THREE.Vector3();
+                    this._activeHotspot.mesh.getWorldPosition(pos3D);
+                    pos3D.project(t.camera);
+                    const vp = this.canvasRef.el?.parentElement;
+                    if (vp) {
+                        const w = vp.offsetWidth, h = vp.offsetHeight;
+                        const dotX = (pos3D.x * 0.5 + 0.5) * w;
+                        const dotY = (-pos3D.y * 0.5 + 0.5) * h;
+                        const popX = parseFloat(popup.style.left) + 60;
+                        const popY = parseFloat(popup.style.top) + 60;
+                        svg.innerHTML = `
+                            <line x1="${dotX}" y1="${dotY}" x2="${popX}" y2="${popY}"
+                                  stroke="#495057" stroke-width="1.5" stroke-dasharray="4,3"/>
+                            <circle cx="${dotX}" cy="${dotY}" r="5" fill="#714B67"/>
+                        `;
+                    }
+                }
+            }
+
             t.renderer.render(t.scene, t.camera);
         };
         animate();
@@ -538,11 +633,16 @@ export class DesignConfiguratorWidget extends Component {
     // ── Model building: SVG profile (primary) or legacy fallback ────────
 
     _buildModel() {
+        this._three.hotspots = [];
+        this.closeHotspot();
+
         const bomAssets = this.props.bomAssets || [];
         const glbAssets = bomAssets.filter(a => a.assets.models_3d.length > 0);
 
         if (glbAssets.length > 0) {
             this._buildFromBomAssets(glbAssets);
+            // Add hotspots for components with textures/images but no GLB
+            this._addHotspots(bomAssets);
         } else {
             const profiles = this.props.profiles || [];
             if (profiles.length > 0 && profiles[0].svg_content && profiles[0].profile_definition) {
@@ -550,6 +650,59 @@ export class DesignConfiguratorWidget extends Component {
             } else {
                 this._buildLegacyModel();
             }
+        }
+    }
+
+    _addHotspots(allAssets) {
+        const THREE = window.THREE;
+        if (!THREE) return;
+        const t = this._three;
+
+        // Components with images but no 3D model → hotspot
+        const nonGlb = allAssets.filter(
+            a => a.assets.models_3d.length === 0 && a.assets.textures.length > 0
+        );
+
+        // Predefined positions relative to leaf (normalized)
+        const positions = [
+            { y: 0.45, z: -0.02, label: "lock" },    // lock area (mid-height)
+            { y: 0.45, z: -0.04, label: "handle" },   // handle area
+        ];
+
+        let posIdx = 0;
+        for (const comp of nonGlb) {
+            const pos = positions[posIdx % positions.length];
+            const leafPivot = t.leafPivot;
+            if (!leafPivot) continue;
+
+            // Get leaf bounds for positioning
+            const leafBox = new THREE.Box3().setFromObject(leafPivot);
+            const leafCenter = leafBox.getCenter(new THREE.Vector3());
+
+            // Hotspot sphere
+            const geo = new THREE.SphereGeometry(0.015, 16, 12);
+            const mat = new THREE.MeshPhongMaterial({
+                color: 0x714B67, emissive: 0x714B67, emissiveIntensity: 0.5,
+            });
+            const sphere = new THREE.Mesh(geo, mat);
+
+            // Position on the leaf surface
+            sphere.position.set(
+                leafCenter.x + 0.05,
+                leafBox.min.y + (leafBox.max.y - leafBox.min.y) * pos.y,
+                leafBox.min.z + pos.z
+            );
+
+            t.group.add(sphere);
+
+            const imgUrl = `/web/content/${comp.assets.textures[0].id}?download=true`;
+            t.hotspots.push({
+                mesh: sphere,
+                label: comp.product_name,
+                imageUrl: imgUrl,
+            });
+
+            posIdx++;
         }
     }
 
