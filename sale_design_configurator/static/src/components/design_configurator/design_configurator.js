@@ -280,28 +280,29 @@ export class DesignConfiguratorWidget extends Component {
 
     _updateHingeDirection() {
         const t = this._three;
-        if (!t.leafPivot || !t.group) return;
-        const THREE = window.THREE;
+        if (!t.leafPivot) return;
 
-        // Close leaf first (reset rotation)
+        // Close leaf first
         t.leafPivot.rotation.y = 0;
         t.leafOpen = false;
         t.leafAnimating = false;
 
-        // Get current leaf world bounds
-        t.leafPivot.updateMatrixWorld(true);
-        const leafBox = new THREE.Box3().setFromObject(t.leafPivot);
-
         const opening = this._getParamByLabel("Opening Direction") || "left";
-        const newHingeX = opening === "right" ? leafBox.max.x : leafBox.min.x;
-        const oldHingeX = t.leafPivot.position.x;
-        const deltaX = newHingeX - oldHingeX;
+        const newHingeX = opening === "right" ? t.hingeRightX : t.hingeLeftX;
+        const oldHingeX = opening === "right" ? t.hingeLeftX : t.hingeRightX;
 
-        // Move pivot to new hinge position
+        // Move pivot to new hinge
         t.leafPivot.position.x = newHingeX;
-        // Shift children by -deltaX to keep them in place
-        t.leafPivot.children.forEach(child => {
-            child.position.x -= deltaX;
+
+        // Restore original child positions then offset for new hinge
+        const deltaX = newHingeX - oldHingeX;
+        t.leafPivot.children.forEach((child, i) => {
+            const baseX = t.leafChildrenBaseX[i];
+            if (baseX !== undefined) {
+                // baseX was relative to the original hinge (left)
+                // For right hinge, shift by -(right - left)
+                child.position.x = baseX - (newHingeX - t.hingeLeftX);
+            }
         });
     }
 
@@ -689,6 +690,14 @@ export class DesignConfiguratorWidget extends Component {
                         t.leafPivot = leafPivot;
                         t.leafOpen = false;
                         t.leafAnimating = false;
+                        // Store hinge edges for direction switching
+                        t.hingeLeftX = leafBox.min.x;
+                        t.hingeRightX = leafBox.max.x;
+                        t.hingeZ = hingeZ;
+                        t.leafChildrenBaseX = {};  // store original X positions
+                        leafPivot.children.forEach((child, i) => {
+                            t.leafChildrenBaseX[i] = child.position.x;
+                        });
                     }
 
                     if (componentIndex === 0 || !frameBox) {
