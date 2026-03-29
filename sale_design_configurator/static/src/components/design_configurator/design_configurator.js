@@ -225,16 +225,38 @@ export class DesignConfiguratorWidget extends Component {
         this._buildModel();
     }
 
-    onRangeChange(key, event) {
-        this.onParamChange(key, parseFloat(event.target.value));
+    // Event handlers use data-param attribute to identify the parameter
+    onFloatChange(ev) {
+        const key = ev.target.dataset.param;
+        this.onParamChange(key, parseFloat(ev.target.value) || 0);
     }
 
-    onBoolChange(key, event) {
-        this.onParamChange(key, event.target.checked);
-    }
-
-    onSelectionChange(key, value) {
+    onSegmentClick(ev) {
+        const key = ev.target.dataset.param;
+        const value = ev.target.dataset.value;
         this.onParamChange(key, value);
+    }
+
+    onCheckChange(ev) {
+        const key = ev.target.dataset.param;
+        this.onParamChange(key, ev.target.checked);
+    }
+
+    onTextChange(ev) {
+        const key = ev.target.dataset.param;
+        this.onParamChange(key, ev.target.value);
+    }
+
+    onWidthChange(ev) {
+        this.params.width = parseFloat(ev.target.value) || 900;
+        this._validate();
+        this._buildModel();
+    }
+
+    onHeightChange(ev) {
+        this.params.height = parseFloat(ev.target.value) || 2100;
+        this._validate();
+        this._buildModel();
     }
 
     toggleAutoRotate() {

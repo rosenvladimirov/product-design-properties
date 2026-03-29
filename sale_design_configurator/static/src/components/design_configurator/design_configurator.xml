@@ -14,14 +14,14 @@
                     <label>Width</label>
                     <input type="number" class="o_input"
                            t-att-value="params.width || 900"
-                           t-on-input="(e) => this.onRangeChange('width', e)"
+                           t-on-change="onWidthChange"
                            min="400" max="2400" step="10"/>
                 </div>
                 <div class="o_cfg_dim_row">
                     <label>Height</label>
                     <input type="number" class="o_input"
                            t-att-value="params.height || 2100"
-                           t-on-input="(e) => this.onRangeChange('height', e)"
+                           t-on-change="onHeightChange"
                            min="1800" max="2700" step="10"/>
                 </div>
             </div>
@@ -30,7 +30,7 @@
             <div class="o_cfg_params">
                 <t t-foreach="displayParams" t-as="param" t-key="param.name">
 
-                    <!-- Float / range slider -->
+                    <!-- Float: number input with label -->
                     <t t-if="param.type === 'float'">
                         <div class="o_cfg_param_row">
                             <div class="o_cfg_param_label">
@@ -38,12 +38,14 @@
                                 <strong><t t-esc="param.value"/></strong>
                             </div>
                             <input
-                                type="range"
+                                type="number"
+                                class="o_input"
                                 t-att-min="param.min || 0"
-                                t-att-max="param.max || 9999"
-                                t-att-step="param.step || 1"
+                                t-att-max="param.max || 99999"
+                                t-att-step="param.step || 0.1"
                                 t-att-value="param.value"
-                                t-on-input="(e) => onRangeChange(param.name, e)"
+                                t-att-data-param="param.name"
+                                t-on-change="onFloatChange"
                             />
                         </div>
                     </t>
@@ -54,11 +56,13 @@
                             <div class="o_cfg_param_label">
                                 <span><t t-esc="param.string"/></span>
                             </div>
-                            <div class="o_cfg_seg">
+                            <div class="o_cfg_seg" t-att-data-param="param.name">
                                 <t t-foreach="param.selection" t-as="opt" t-key="opt[0]">
                                     <button
                                         t-att-class="'o_cfg_seg_btn' + (params[param.name] === opt[0] ? ' active' : '')"
-                                        t-on-click="() => onSelectionChange(param.name, opt[0])"
+                                        t-att-data-value="opt[0]"
+                                        t-att-data-param="param.name"
+                                        t-on-click="onSegmentClick"
                                     >
                                         <t t-esc="opt[1]"/>
                                     </button>
@@ -73,7 +77,8 @@
                             <input
                                 type="checkbox"
                                 t-att-checked="params[param.name]"
-                                t-on-change="(e) => onBoolChange(param.name, e)"
+                                t-att-data-param="param.name"
+                                t-on-change="onCheckChange"
                             />
                             <span><t t-esc="param.string"/></span>
                         </label>
@@ -89,7 +94,8 @@
                                 type="text"
                                 class="o_input"
                                 t-att-value="params[param.name]"
-                                t-on-input="(e) => onParamChange(param.name, e.target.value)"
+                                t-att-data-param="param.name"
+                                t-on-change="onTextChange"
                                 style="width: 100%;"/>
                         </div>
                     </t>
