@@ -245,14 +245,29 @@ export class DesignConfiguratorWidget extends Component {
     onParamChange(key, value) {
         this.params[key] = value;
         this._validate();
-        // Check if this is a visual-only param that doesn't need rebuild
-        const def = (this.props.paramDefinition || []).find(d => d.name === key);
+
+        // Find the param definition to check what changed
+        const allDefs = [
+            ...(this.props.paramDefinition || []),
+            ...((this.props.childComponents || []).flatMap(c => c.paramDefinition || [])),
+        ];
+        const def = allDefs.find(d => d.name === key);
         const label = def?.string || "";
+
+        // Opening Direction: just move hinge pivot
         if (label === "Opening Direction") {
             this._updateHingeDirection();
             return;
         }
-        this._buildModel();
+
+        // Most params don't need 3D rebuild — just update state
+        // Only rebuild if it's a structural change (Leaf Type, Construction, etc.)
+        // that changes which GLB models to show
+        const rebuildParams = ["Leaf Type", "Construction"];
+        if (rebuildParams.includes(label)) {
+            this._buildModel();
+        }
+        // Everything else: no rebuild, just state update + validation
     }
 
     // Event handlers — use data-param attribute, no arrow functions
