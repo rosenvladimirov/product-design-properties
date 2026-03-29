@@ -152,6 +152,21 @@
     height: 100%;
 }
 
+.o_cfg_finetune {
+    border-top: 1px solid #dee2e6;
+    padding: 10px 14px;
+    background: #f8f9fa;
+}
+
+.o_cfg_finetune_title {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
 .o_cfg_spinner_row {
     display: flex;
     align-items: center;

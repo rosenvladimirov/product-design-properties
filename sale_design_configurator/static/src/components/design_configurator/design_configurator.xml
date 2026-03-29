@@ -98,6 +98,28 @@
                 </t>
             </div>
 
+            <!-- Fine tuning: spinners for dimension params -->
+            <div class="o_cfg_finetune">
+                <div class="o_cfg_finetune_title">Fine Tuning</div>
+                <t t-foreach="displayParams" t-as="param" t-key="'ft_' + param.name">
+                    <t t-if="param.type === 'float' and param.string and param.string.includes('mm') and !(param.string.includes('Wall') or param.string.includes('Каса'))">
+                        <div class="o_cfg_spinner_row">
+                            <span class="o_cfg_spinner_label"><t t-esc="param.string"/></span>
+                            <input
+                                type="number"
+                                class="o_input o_cfg_spinner"
+                                t-att-min="param.min || 0"
+                                t-att-max="param.max || 9999"
+                                step="1"
+                                t-att-value="param.value"
+                                t-att-data-param="param.name"
+                                t-on-input="onSliderInput"
+                            />
+                        </div>
+                    </t>
+                </t>
+            </div>
+
             <!-- Validation messages -->
             <div class="o_cfg_validation" t-if="ui.validErrors.length or ui.validWarns.length">
                 <t t-foreach="ui.validErrors" t-as="err" t-key="err">
