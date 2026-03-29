@@ -229,7 +229,8 @@ export class DesignConfiguratorWidget extends Component {
     onSliderInput(ev) {
         const key = ev.target.dataset.param;
         this.params[key] = parseFloat(ev.target.value) || 0;
-        this._buildModel();
+        // Dimension sliders: scale the model, don't rebuild
+        this._applyScale();
     }
 
     onSegmentClick(ev) {
@@ -380,6 +381,29 @@ export class DesignConfiguratorWidget extends Component {
         }));
     }
 
+    // ── Scale: slider changes apply scale without rebuild ──────────────
+
+    _applyScale() {
+        const t = this._three;
+        if (!t.group || !t.group.children.length) return;
+
+        // Reference dimensions (from initial params or defaults)
+        const refW = this._refWidth || 900;
+        const refH = this._refHeight || 2100;
+
+        const w = this.params["Width (mm)"] || this.params.width || refW;
+        const h = this.params["Height (mm)"] || this.params.height || refH;
+
+        const scaleX = w / refW;
+        const scaleY = h / refH;
+
+        t.group.scale.set(
+            (this._baseScale || 1) * scaleX,
+            (this._baseScale || 1) * scaleY,
+            this._baseScale || 1
+        );
+    }
+
     // ── Model building: SVG profile (primary) or legacy fallback ────────
 
     _buildModel() {
@@ -462,9 +486,11 @@ export class DesignConfiguratorWidget extends Component {
             const size = box.getSize(new THREE.Vector3());
             const maxDim = Math.max(size.x, size.y, size.z);
             if (maxDim > 0) {
-                const scale = 2.0 / maxDim;
-                t.group.scale.setScalar(scale);
-                t.group.position.copy(center.negate().multiplyScalar(scale));
+                this._baseScale = 2.0 / maxDim;
+                this._refWidth = this.params["Width (mm)"] || this.params.width || 900;
+                this._refHeight = this.params["Height (mm)"] || this.params.height || 2100;
+                t.group.scale.setScalar(this._baseScale);
+                t.group.position.copy(center.negate().multiplyScalar(this._baseScale));
             }
         } else {
             this._buildLegacyModel();
@@ -551,6 +577,9 @@ export class DesignConfiguratorWidget extends Component {
     // ── Legacy builders (fallback when no SVG profile exists) ───────────
 
     _buildLegacyModel() {
+        this._baseScale = 1;
+        this._refWidth = this.params["Width (mm)"] || this.params.width || 900;
+        this._refHeight = this.params["Height (mm)"] || this.params.height || 2100;
         const code = this.props.definitionCode;
         if (code === "bags") this._buildBag();
         else if (code === "security_door") this._buildSecurityDoor();
