@@ -14,14 +14,14 @@
                     <label>Width</label>
                     <input type="number" class="o_input"
                            t-att-value="params.width || 900"
-                           t-on-change="(e) => onParamChange('width', parseFloat(e.target.value) || 900)"
+                           t-on-input="(e) => this.onRangeChange('width', e)"
                            min="400" max="2400" step="10"/>
                 </div>
                 <div class="o_cfg_dim_row">
                     <label>Height</label>
                     <input type="number" class="o_input"
                            t-att-value="params.height || 2100"
-                           t-on-change="(e) => onParamChange('height', parseFloat(e.target.value) || 2100)"
+                           t-on-input="(e) => this.onRangeChange('height', e)"
                            min="1800" max="2700" step="10"/>
                 </div>
             </div>
