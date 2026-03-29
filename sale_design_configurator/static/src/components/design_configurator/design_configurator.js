@@ -594,21 +594,25 @@ export class DesignConfiguratorWidget extends Component {
                         scene.updateMatrixWorld(true);
 
                         // Create pivot group for leaf rotation (hinge animation)
+                        // Get leaf bounds AFTER positioning (world space)
+                        scene.updateMatrixWorld(true);
                         const leafBox = new THREE.Box3().setFromObject(scene);
                         const leafW = leafBox.max.x - leafBox.min.x;
                         const leafH = leafBox.max.y - leafBox.min.y;
                         const leafZ = leafBox.min.z;
 
                         const opening = this._getParamByLabel("Opening Direction") || "left";
-                        // Pivot at hinge edge: left opening = hinge on left, right = hinge on right
+                        // Hinge at world position of leaf edge
                         const hingeX = opening === "right" ? leafBox.max.x : leafBox.min.x;
+                        const hingeY = 0;  // pivot Y at origin (leaf rotates around vertical axis)
+                        const hingeZ = leafBox.min.z;  // pivot Z at leaf front face
 
                         const leafPivot = new THREE.Group();
-                        // Move pivot to hinge position
-                        leafPivot.position.set(hingeX, 0, 0);
+                        leafPivot.position.set(hingeX, hingeY, hingeZ);
 
-                        // Re-parent scene into pivot (offset by -hingeX so geometry stays in place)
+                        // Move scene into pivot space (subtract pivot world pos from scene pos)
                         scene.position.x -= hingeX;
+                        scene.position.z -= hingeZ;
                         leafPivot.add(scene);
 
                         // Г-lip strips
@@ -617,14 +621,14 @@ export class DesignConfiguratorWidget extends Component {
                             color: lipColor, side: THREE.DoubleSide, shininess: 20,
                         });
 
+                        // Lip positions in pivot local space (subtract hingeX and hingeZ)
+                        const lx = (leafBox.min.x + leafBox.max.x) / 2 - hingeX;
+                        const ly = (leafBox.min.y + leafBox.max.y) / 2;
+
                         const topLip = new THREE.Mesh(
                             new THREE.BoxGeometry(leafW + lipOverlap * 2, lipOverlap, lipDepth), lipMat
                         );
-                        topLip.position.set(
-                            (leafBox.min.x + leafBox.max.x) / 2 - hingeX,
-                            leafBox.max.y + lipOverlap / 2,
-                            leafZ + lipDepth / 2
-                        );
+                        topLip.position.set(lx, leafBox.max.y + lipOverlap / 2, lipDepth / 2);
                         leafPivot.add(topLip);
 
                         const leftLip = new THREE.Mesh(
@@ -632,8 +636,8 @@ export class DesignConfiguratorWidget extends Component {
                         );
                         leftLip.position.set(
                             leafBox.min.x - lipOverlap / 2 - hingeX,
-                            (leafBox.min.y + leafBox.max.y) / 2 + lipOverlap / 2,
-                            leafZ + lipDepth / 2
+                            ly + lipOverlap / 2,
+                            lipDepth / 2
                         );
                         leafPivot.add(leftLip);
 
@@ -642,8 +646,8 @@ export class DesignConfiguratorWidget extends Component {
                         );
                         rightLip.position.set(
                             leafBox.max.x + lipOverlap / 2 - hingeX,
-                            (leafBox.min.y + leafBox.max.y) / 2 + lipOverlap / 2,
-                            leafZ + lipDepth / 2
+                            ly + lipOverlap / 2,
+                            lipDepth / 2
                         );
                         leafPivot.add(rightLip);
 
