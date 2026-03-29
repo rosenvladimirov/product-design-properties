@@ -526,15 +526,16 @@ export class DesignConfiguratorWidget extends Component {
                         const newBox = new THREE.Box3().setFromObject(scene);
                         const newCenter = newBox.getCenter(new THREE.Vector3());
                         const newSize = newBox.getSize(new THREE.Vector3());
-                        const frameSize = frameBox.getSize(new THREE.Vector3());
 
-                        // Position leaf flush against inside face of frame
-                        // X,Y: centered on frame
-                        // Z: pushed to one side (inner face) not centered
+                        // Position leaf:
+                        // X: centered on frame
+                        // Y: aligned to bottom of frame (Y min)
+                        // Z: flush against inner face (room side = frame Z min)
+                        //    leaf sits at Z=frame.min.z, its back face touching the frame
                         scene.position.set(
                             frameCenter.x - newCenter.x,
-                            frameCenter.y - newCenter.y,
-                            frameBox.min.z + newSize.z / 2 - newBox.min.z
+                            frameBox.min.y - newBox.min.y,
+                            frameBox.min.z - newBox.min.z
                         );
                     }
 
