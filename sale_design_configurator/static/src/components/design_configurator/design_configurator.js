@@ -459,6 +459,8 @@ export class DesignConfiguratorWidget extends Component {
         }
         const loader = new THREE.GLTFLoader();
         const t = this._three;
+        let frameBox = null;
+        let componentIndex = 0;
 
         for (const component of assets) {
             for (const glb of component.assets.models_3d) {
@@ -468,7 +470,9 @@ export class DesignConfiguratorWidget extends Component {
                         loader.load(url, resolve, undefined, reject);
                     });
 
-                    // Apply texture from same component if available
+                    const scene = gltf.scene;
+
+                    // Apply texture or default color
                     const textures = component.assets.textures;
                     if (textures.length > 0) {
                         const texUrl = `/web/content/${textures[0].id}?download=true`;
@@ -476,21 +480,17 @@ export class DesignConfiguratorWidget extends Component {
                         const texture = await new Promise(r => texLoader.load(texUrl, r));
                         texture.wrapS = THREE.RepeatWrapping;
                         texture.wrapT = THREE.RepeatWrapping;
-                        gltf.scene.traverse(child => {
+                        scene.traverse(child => {
                             if (child.isMesh) {
                                 child.material = new THREE.MeshPhongMaterial({
-                                    map: texture,
-                                    side: THREE.DoubleSide,
-                                    shininess: 20,
+                                    map: texture, side: THREE.DoubleSide, shininess: 20,
                                 });
                             }
                         });
                     } else {
-                        // Apply default material with component-based color
                         const colors = [0xd4a852, 0xb8893a, 0x8899aa, 0xc0c8d0, 0x5c3d55, 0xcccccc];
-                        const ci = assets.indexOf(component);
-                        const color = colors[ci % colors.length];
-                        gltf.scene.traverse(child => {
+                        const color = colors[componentIndex % colors.length];
+                        scene.traverse(child => {
                             if (child.isMesh && !child.material?.map) {
                                 child.material = new THREE.MeshPhongMaterial({
                                     color, side: THREE.DoubleSide, shininess: 30,
@@ -499,7 +499,42 @@ export class DesignConfiguratorWidget extends Component {
                         });
                     }
 
-                    t.group.add(gltf.scene);
+                    // Detect component type and position accordingly
+                    const box = new THREE.Box3().setFromObject(scene);
+                    const size = box.getSize(new THREE.Vector3());
+
+                    if (componentIndex === 0) {
+                        // First component = frame (reference)
+                        frameBox = box.clone();
+                    } else if (frameBox) {
+                        // Subsequent components = leaf/lock — position inside frame
+                        const frameCenter = frameBox.getCenter(new THREE.Vector3());
+                        const leafCenter = box.getCenter(new THREE.Vector3());
+
+                        // Check if leaf is flat (one axis near zero) — needs rotation
+                        const minAxis = Math.min(size.x, size.y, size.z);
+                        if (size.y < 0.05 && size.x > 0.1) {
+                            // Leaf is horizontal (X-wide, Y-thin) — rotate to stand up
+                            scene.rotation.x = -Math.PI / 2;
+                            scene.updateMatrixWorld(true);
+                        } else if (size.z < 0.01 && size.x > 0.1) {
+                            // Leaf is in XY plane already — just position
+                        }
+
+                        // Recalculate box after rotation
+                        const newBox = new THREE.Box3().setFromObject(scene);
+                        const newCenter = newBox.getCenter(new THREE.Vector3());
+
+                        // Center leaf inside frame
+                        scene.position.set(
+                            frameCenter.x - newCenter.x,
+                            frameCenter.y - newCenter.y,
+                            frameCenter.z - newCenter.z
+                        );
+                    }
+
+                    t.group.add(scene);
+                    componentIndex++;
                 } catch (e) {
                     console.error(`Failed to load GLB ${glb.name}:`, e);
                 }
