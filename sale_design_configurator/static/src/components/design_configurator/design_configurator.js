@@ -80,7 +80,7 @@ export class DesignConfiguratorWidget extends Component {
     // ── Param initialisation ────────────────────────────────────────────
 
     _buildInitialParams(definition) {
-        const p = { width: 900, height: 2100 };
+        const p = {};
         for (const prop of definition || []) {
             if (prop.type === "boolean") {
                 p[prop.name] = prop.default === "true" || prop.default === true;
@@ -225,10 +225,11 @@ export class DesignConfiguratorWidget extends Component {
         this._buildModel();
     }
 
-    // Event handlers use data-param attribute to identify the parameter
-    onFloatChange(ev) {
+    // Event handlers — use data-param attribute, no arrow functions
+    onSliderInput(ev) {
         const key = ev.target.dataset.param;
-        this.onParamChange(key, parseFloat(ev.target.value) || 0);
+        this.params[key] = parseFloat(ev.target.value) || 0;
+        this._buildModel();
     }
 
     onSegmentClick(ev) {
@@ -245,18 +246,6 @@ export class DesignConfiguratorWidget extends Component {
     onTextChange(ev) {
         const key = ev.target.dataset.param;
         this.onParamChange(key, ev.target.value);
-    }
-
-    onWidthChange(ev) {
-        this.params.width = parseFloat(ev.target.value) || 900;
-        this._validate();
-        this._buildModel();
-    }
-
-    onHeightChange(ev) {
-        this.params.height = parseFloat(ev.target.value) || 2100;
-        this._validate();
-        this._buildModel();
     }
 
     toggleAutoRotate() {

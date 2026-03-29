@@ -7,30 +7,10 @@
         <!-- Left panel: parameters -->
         <div class="o_cfg_panel">
 
-            <!-- ── Dimensions (always visible) ──────────────── -->
-            <div class="o_cfg_dimensions">
-                <div class="o_cfg_dim_title">Dimensions (mm)</div>
-                <div class="o_cfg_dim_row">
-                    <label>Width</label>
-                    <input type="number" class="o_input"
-                           t-att-value="params.width || 900"
-                           t-on-change="onWidthChange"
-                           min="400" max="2400" step="10"/>
-                </div>
-                <div class="o_cfg_dim_row">
-                    <label>Height</label>
-                    <input type="number" class="o_input"
-                           t-att-value="params.height || 2100"
-                           t-on-change="onHeightChange"
-                           min="1800" max="2700" step="10"/>
-                </div>
-            </div>
-
-            <!-- ── Dynamic parameter controls ───────────────── -->
             <div class="o_cfg_params">
                 <t t-foreach="displayParams" t-as="param" t-key="param.name">
 
-                    <!-- Float: number input with label -->
+                    <!-- Float: range slider with live value -->
                     <t t-if="param.type === 'float'">
                         <div class="o_cfg_param_row">
                             <div class="o_cfg_param_label">
@@ -38,14 +18,13 @@
                                 <strong><t t-esc="param.value"/></strong>
                             </div>
                             <input
-                                type="number"
-                                class="o_input"
+                                type="range"
                                 t-att-min="param.min || 0"
-                                t-att-max="param.max || 99999"
-                                t-att-step="param.step || 0.1"
+                                t-att-max="param.max || 9999"
+                                t-att-step="param.step || 1"
                                 t-att-value="param.value"
                                 t-att-data-param="param.name"
-                                t-on-change="onFloatChange"
+                                t-on-input="onSliderInput"
                             />
                         </div>
                     </t>
@@ -56,7 +35,7 @@
                             <div class="o_cfg_param_label">
                                 <span><t t-esc="param.string"/></span>
                             </div>
-                            <div class="o_cfg_seg" t-att-data-param="param.name">
+                            <div class="o_cfg_seg">
                                 <t t-foreach="param.selection" t-as="opt" t-key="opt[0]">
                                     <button
                                         t-att-class="'o_cfg_seg_btn' + (params[param.name] === opt[0] ? ' active' : '')"
@@ -115,12 +94,6 @@
                         <i class="fa fa-exclamation-triangle"/> <t t-esc="warn"/>
                     </div>
                 </t>
-            </div>
-
-            <!-- Lot preview -->
-            <div class="o_cfg_lot_preview">
-                <div class="o_cfg_lot_label">Design Lot &#8212; Parameters</div>
-                <pre class="o_cfg_lot_json"><t t-esc="lotPreview"/></pre>
             </div>
 
             <!-- Footer buttons -->
