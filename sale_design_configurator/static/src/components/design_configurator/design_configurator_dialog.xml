@@ -17,6 +17,7 @@
                 validationRules="state.validationRules"
                 profiles="state.profiles"
                 bomAssets="state.bomAssets"
+                childComponents="state.childComponents"
                 existingLotId="props.existingLotId or false"
                 onLotCreated.bind="onLotCreated"
                 onClose.bind="onClose"

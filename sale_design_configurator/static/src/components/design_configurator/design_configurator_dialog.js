@@ -36,6 +36,7 @@ export class DesignConfiguratorDialog extends Component {
             validationRules: [],
             profiles: [],
             bomAssets: [],
+            childComponents: [],  // [{name, definitionCode, paramDefinition}]
         });
         this._loadDefinition();
     }
@@ -77,9 +78,38 @@ export class DesignConfiguratorDialog extends Component {
                     "mrp.bom", "get_bom_design_assets", [boms[0].id]
                 );
                 this.state.bomAssets = bomAssets;
+
+                // Load child component definitions (e.g., door leaf with its own params)
+                const childComponents = [];
+                for (const comp of bomAssets) {
+                    // Check if the product has its own design_param_definition_id
+                    const [pp] = await this.orm.read(
+                        "product.product", [comp.product_id],
+                        ["design_param_definition_id"]
+                    );
+                    if (pp && pp.design_param_definition_id) {
+                        const defId = pp.design_param_definition_id[0];
+                        // Skip if same as main definition
+                        if (defId === this.props.definitionId) continue;
+                        const [childDef] = await this.orm.read(
+                            "design.param.definition", [defId],
+                            ["code", "name", "design_params_definition"]
+                        );
+                        if (childDef) {
+                            childComponents.push({
+                                productId: comp.product_id,
+                                productName: comp.product_name,
+                                definitionId: defId,
+                                definitionCode: childDef.code,
+                                definitionName: childDef.name,
+                                paramDefinition: childDef.design_params_definition || [],
+                            });
+                        }
+                    }
+                }
+                this.state.childComponents = childComponents;
             }
         } catch (e) {
-            // product_design_assets module may not be installed — skip gracefully
             console.warn("Could not load BoM design assets:", e.message);
         }
 

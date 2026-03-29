@@ -27,6 +27,7 @@ export class DesignConfiguratorWidget extends Component {
         validationRules: { type: Array, optional: true },
         profiles: { type: Array, optional: true },
         bomAssets: { type: Array, optional: true },
+        childComponents: { type: Array, optional: true },
         existingLotId: { type: [Number, Boolean], optional: true },
         onLotCreated: { type: Function },
         onClose: { type: Function },
@@ -57,6 +58,22 @@ export class DesignConfiguratorWidget extends Component {
         onMounted(async () => {
             if (this.props.existingLotId) {
                 await this._loadExistingLot(this.props.existingLotId);
+            }
+            // Initialize child component params with defaults
+            for (const child of (this.props.childComponents || [])) {
+                for (const def of (child.paramDefinition || [])) {
+                    if (this.params[def.name] === undefined) {
+                        if (def.type === 'boolean') {
+                            this.params[def.name] = def.default === 'true' || def.default === true;
+                        } else if (def.type === 'float') {
+                            this.params[def.name] = parseFloat(def.default) || 0;
+                        } else if (def.type === 'selection' && def.selection?.length) {
+                            this.params[def.name] = def.default || def.selection[0][0];
+                        } else {
+                            this.params[def.name] = def.default || '';
+                        }
+                    }
+                }
             }
             this._initThree();
             this._buildModel();
@@ -736,6 +753,20 @@ export class DesignConfiguratorWidget extends Component {
         return this.props.paramDefinition.map((def) => ({
             ...def,
             value: this.params[def.name],
+        }));
+    }
+
+    get childDisplayParams() {
+        // Returns child component params with current values for Fine Tuning
+        const children = this.props.childComponents || [];
+        return children.map(child => ({
+            ...child,
+            params: (child.paramDefinition || []).map(def => ({
+                ...def,
+                value: this.params[def.name] !== undefined
+                    ? this.params[def.name]
+                    : (def.type === 'float' ? (parseFloat(def.default) || 0) : (def.default || '')),
+            })),
         }));
     }
 
