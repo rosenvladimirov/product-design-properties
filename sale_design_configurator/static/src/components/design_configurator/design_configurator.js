@@ -646,8 +646,6 @@ export class DesignConfiguratorWidget extends Component {
 
         if (glbAssets.length > 0) {
             this._buildFromBomAssets(glbAssets);
-            // Add hotspots for components with textures/images but no GLB
-            this._addHotspots(bomAssets);
         } else {
             const profiles = this.props.profiles || [];
             if (profiles.length > 0 && profiles[0].svg_content && profiles[0].profile_definition) {
@@ -916,26 +914,34 @@ export class DesignConfiguratorWidget extends Component {
 
         // Auto-center and auto-scale
         if (t.group.children.length > 0) {
-            // Reset transform
-            t.group.position.set(0, 0, 0);
-            t.group.scale.set(1, 1, 1);
-            t.group.updateMatrixWorld(true);
+            // Move all children into an inner group for offset
+            const inner = new THREE.Group();
+            while (t.group.children.length) {
+                inner.add(t.group.children[0]);
+            }
+            t.group.add(inner);
 
-            // Measure raw bounds
-            const box1 = new THREE.Box3().setFromObject(t.group);
-            const center1 = box1.getCenter(new THREE.Vector3());
-            const size1 = box1.getSize(new THREE.Vector3());
-            const maxDim = Math.max(size1.x, size1.y, size1.z);
+            // Measure bounds of inner
+            inner.updateMatrixWorld(true);
+            const box = new THREE.Box3().setFromObject(inner);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+
             if (maxDim > 0) {
                 this._baseScale = 2.0 / maxDim;
                 this._refWidth = this._getParamByLabel("Width (mm)") || 900;
                 this._refHeight = this._getParamByLabel("Height (mm)") || 2100;
                 this._refWallWidth = this._getParamByLabel("Wall Width (mm)") || 100;
 
-                // Center at origin first, then scale
-                t.group.position.set(-center1.x, -center1.y, -center1.z);
+                // Offset inner to center at origin
+                inner.position.set(-center.x, -center.y, -center.z);
+                // Scale the outer group
                 t.group.scale.setScalar(this._baseScale);
             }
+
+            // Keep reference to inner for hotspots etc
+            t.innerGroup = inner;
         } else {
             this._buildLegacyModel();
         }
