@@ -27,6 +27,7 @@ export class DesignConfiguratorWidget extends Component {
         validationRules: { type: Array, optional: true },
         profiles: { type: Array, optional: true },
         bomAssets: { type: Array, optional: true },
+        mainProductAssets: { type: Object, optional: true },
         childComponents: { type: Array, optional: true },
         existingLotId: { type: [Number, Boolean], optional: true },
         onLotCreated: { type: Function },
@@ -560,8 +561,11 @@ export class DesignConfiguratorWidget extends Component {
 
                     const scene = gltf.scene;
 
-                    // Apply texture or default color
-                    const textures = component.assets.textures;
+                    // Apply texture: prefer main product texture (coating),
+                    // then component texture, then default color
+                    const mainTex = (this.props.mainProductAssets?.textures || []);
+                    const compTex = component.assets.textures;
+                    const textures = mainTex.length > 0 ? mainTex : compTex;
                     if (textures.length > 0) {
                         const texUrl = `/web/content/${textures[0].id}?download=true`;
                         const texLoader = new THREE.TextureLoader();

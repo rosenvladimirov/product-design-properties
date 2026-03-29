@@ -36,7 +36,8 @@ export class DesignConfiguratorDialog extends Component {
             validationRules: [],
             profiles: [],
             bomAssets: [],
-            childComponents: [],  // [{name, definitionCode, paramDefinition}]
+            mainProductAssets: { models_3d: [], profiles_svg: [], textures: [] },
+            childComponents: [],
         });
         this._loadDefinition();
     }
@@ -62,8 +63,14 @@ export class DesignConfiguratorDialog extends Component {
         );
         this.state.profiles = profiles;
 
-        // Fetch design assets from BoM product attachments (GLB/SVG/PNG)
+        // Fetch design assets: main product variant + BoM components
         try {
+            // Main product variant assets (coating textures, GLB, SVG)
+            const mainAssets = await this.orm.call(
+                "product.product", "get_design_assets_by_type", [this.props.productId]
+            );
+            this.state.mainProductAssets = mainAssets;
+
             const boms = await this.orm.searchRead(
                 "mrp.bom",
                 [
