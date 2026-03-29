@@ -929,7 +929,7 @@ export class DesignConfiguratorWidget extends Component {
             const maxDim = Math.max(size.x, size.y, size.z);
 
             if (maxDim > 0) {
-                this._baseScale = 2.0 / maxDim;
+                this._baseScale = 2.3 / maxDim;
                 this._refWidth = this._getParamByLabel("Width (mm)") || 900;
                 this._refHeight = this._getParamByLabel("Height (mm)") || 2100;
                 this._refWallWidth = this._getParamByLabel("Wall Width (mm)") || 100;
