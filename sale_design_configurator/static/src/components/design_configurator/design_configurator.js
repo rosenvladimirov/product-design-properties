@@ -522,14 +522,19 @@ export class DesignConfiguratorWidget extends Component {
                         }
 
                         // Recalculate box after rotation
+                        scene.updateMatrixWorld(true);
                         const newBox = new THREE.Box3().setFromObject(scene);
                         const newCenter = newBox.getCenter(new THREE.Vector3());
+                        const newSize = newBox.getSize(new THREE.Vector3());
+                        const frameSize = frameBox.getSize(new THREE.Vector3());
 
-                        // Center leaf inside frame
+                        // Position leaf flush against inside face of frame
+                        // X,Y: centered on frame
+                        // Z: pushed to one side (inner face) not centered
                         scene.position.set(
                             frameCenter.x - newCenter.x,
                             frameCenter.y - newCenter.y,
-                            frameCenter.z - newCenter.z
+                            frameBox.min.z + newSize.z / 2 - newBox.min.z
                         );
                     }
 
