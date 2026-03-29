@@ -45,6 +45,7 @@ export class DesignConfiguratorWidget extends Component {
             saving: false,
             validErrors: [],
             validWarns: [],
+            autoRotate: true,
         });
 
         this._three = {
@@ -79,7 +80,7 @@ export class DesignConfiguratorWidget extends Component {
     // ── Param initialisation ────────────────────────────────────────────
 
     _buildInitialParams(definition) {
-        const p = {};
+        const p = { width: 900, height: 2100 };
         for (const prop of definition || []) {
             if (prop.type === "boolean") {
                 p[prop.name] = prop.default === "true" || prop.default === true;
@@ -239,6 +240,17 @@ export class DesignConfiguratorWidget extends Component {
         this.onParamChange(key, value);
     }
 
+    toggleAutoRotate() {
+        this.ui.autoRotate = !this.ui.autoRotate;
+    }
+
+    resetView() {
+        const t = this._three;
+        t.rotX = 0.2;
+        t.rotY = 0;
+        this.ui.autoRotate = true;
+    }
+
     // ── Save to Odoo ────────────────────────────────────────────────────
 
     async onConfirm() {
@@ -334,7 +346,7 @@ export class DesignConfiguratorWidget extends Component {
 
         const animate = () => {
             t.animId = requestAnimationFrame(animate);
-            if (!t.drag) t.rotY += 0.003;
+            if (this.ui.autoRotate && !t.drag) t.rotY += 0.003;
             t.group.rotation.x = t.rotX;
             t.group.rotation.y = t.rotY;
             t.renderer.render(t.scene, t.camera);

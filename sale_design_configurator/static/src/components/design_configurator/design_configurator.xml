@@ -7,7 +7,26 @@
         <!-- Left panel: parameters -->
         <div class="o_cfg_panel">
 
-            <!-- Dynamic parameter controls generated from paramDefinition -->
+            <!-- ── Dimensions (always visible) ──────────────── -->
+            <div class="o_cfg_dimensions">
+                <div class="o_cfg_dim_title">Dimensions (mm)</div>
+                <div class="o_cfg_dim_row">
+                    <label>Width</label>
+                    <input type="number" class="o_input"
+                           t-att-value="params.width || 900"
+                           t-on-change="(e) => onParamChange('width', parseFloat(e.target.value) || 900)"
+                           min="400" max="2400" step="10"/>
+                </div>
+                <div class="o_cfg_dim_row">
+                    <label>Height</label>
+                    <input type="number" class="o_input"
+                           t-att-value="params.height || 2100"
+                           t-on-change="(e) => onParamChange('height', parseFloat(e.target.value) || 2100)"
+                           min="1800" max="2700" step="10"/>
+                </div>
+            </div>
+
+            <!-- ── Dynamic parameter controls ───────────────── -->
             <div class="o_cfg_params">
                 <t t-foreach="displayParams" t-as="param" t-key="param.name">
 
@@ -71,8 +90,7 @@
                                 class="o_input"
                                 t-att-value="params[param.name]"
                                 t-on-input="(e) => onParamChange(param.name, e.target.value)"
-                                style="width: 100%;"
-                            />
+                                style="width: 100%;"/>
                         </div>
                     </t>
 
@@ -93,7 +111,7 @@
                 </t>
             </div>
 
-            <!-- Lot preview (design_params dict) -->
+            <!-- Lot preview -->
             <div class="o_cfg_lot_preview">
                 <div class="o_cfg_lot_label">Design Lot &#8212; Parameters</div>
                 <pre class="o_cfg_lot_json"><t t-esc="lotPreview"/></pre>
@@ -104,8 +122,7 @@
                 <button
                     class="btn btn-primary"
                     t-att-disabled="hasErrors or ui.saving"
-                    t-on-click="onConfirm"
-                >
+                    t-on-click="onConfirm">
                     <t t-if="ui.saving">
                         <i class="fa fa-spinner fa-spin"/> Saving...
                     </t>
@@ -124,7 +141,16 @@
         <!-- Right panel: 3D viewport -->
         <div class="o_cfg_viewport">
             <canvas t-ref="canvas"/>
-            <div class="o_cfg_rotate_hint">Drag to rotate</div>
+            <div class="o_cfg_viewport_controls">
+                <button class="o_cfg_ctrl_btn" t-on-click="toggleAutoRotate"
+                        t-att-title="ui.autoRotate ? 'Pause rotation' : 'Resume rotation'">
+                    <i t-att-class="ui.autoRotate ? 'fa fa-pause' : 'fa fa-play'"/>
+                </button>
+                <button class="o_cfg_ctrl_btn" t-on-click="resetView" title="Reset view">
+                    <i class="fa fa-refresh"/>
+                </button>
+            </div>
+            <div class="o_cfg_rotate_hint" t-if="ui.autoRotate">Drag to rotate</div>
         </div>
 
     </div>
