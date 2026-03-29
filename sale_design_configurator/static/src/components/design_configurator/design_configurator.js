@@ -53,6 +53,11 @@ export class DesignConfiguratorWidget extends Component {
             renderer: null, scene: null, camera: null, group: null,
             animId: null, rotX: 0.3, rotY: 0.4,
             drag: false, prevX: 0, prevY: 0,
+            leafPivot: null,       // Group for leaf rotation
+            leafOpen: false,       // is leaf currently open?
+            leafAnimating: false,  // animation in progress?
+            leafTargetAngle: 0,    // target rotation
+            raycaster: null,
         };
 
         onMounted(async () => {
@@ -266,6 +271,18 @@ export class DesignConfiguratorWidget extends Component {
         this.onParamChange(key, ev.target.value);
     }
 
+    _toggleLeaf() {
+        const t = this._three;
+        if (!t.leafPivot) return;
+        t.leafOpen = !t.leafOpen;
+        const opening = this._getParamByLabel("Opening Direction") || "left";
+        // Left opening: hinge on left side → rotate -90° (open inward to room)
+        // Right opening: hinge on right side → rotate +90°
+        const angle = opening === "right" ? -Math.PI / 2 : Math.PI / 2;
+        t.leafTargetAngle = t.leafOpen ? angle : 0;
+        t.leafAnimating = true;
+    }
+
     toggleAutoRotate() {
         this.ui.autoRotate = !this.ui.autoRotate;
     }
@@ -350,10 +367,36 @@ export class DesignConfiguratorWidget extends Component {
         this._resizeObserver.observe(canvas.parentElement);
         this._resize();
 
+        // Raycaster for click-to-open leaf
+        t.raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let clickStart = null;
+
         canvas.addEventListener("mousedown", (e) => {
             t.drag = true; t.prevX = e.clientX; t.prevY = e.clientY;
+            clickStart = { x: e.clientX, y: e.clientY, time: Date.now() };
         });
-        window.addEventListener("mouseup", () => { t.drag = false; });
+        window.addEventListener("mouseup", (e) => {
+            // Detect click (not drag): small movement + short duration
+            if (clickStart && !t.leafAnimating) {
+                const dx = Math.abs(e.clientX - clickStart.x);
+                const dy = Math.abs(e.clientY - clickStart.y);
+                const dt = Date.now() - clickStart.time;
+                if (dx < 5 && dy < 5 && dt < 300 && t.leafPivot) {
+                    // Raycast to check if leaf was clicked
+                    const rect = canvas.getBoundingClientRect();
+                    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                    t.raycaster.setFromCamera(mouse, t.camera);
+                    const hits = t.raycaster.intersectObjects(t.leafPivot.children, true);
+                    if (hits.length > 0) {
+                        this._toggleLeaf();
+                    }
+                }
+            }
+            t.drag = false;
+            clickStart = null;
+        });
         window.addEventListener("mousemove", (e) => {
             if (!t.drag) return;
             t.rotY += (e.clientX - t.prevX) * 0.008;
@@ -367,6 +410,16 @@ export class DesignConfiguratorWidget extends Component {
             if (this.ui.autoRotate && !t.drag) t.rotY += 0.003;
             t.group.rotation.x = t.rotX;
             t.group.rotation.y = t.rotY;
+            // Smooth leaf open/close animation
+            if (t.leafPivot && t.leafAnimating) {
+                const diff = t.leafTargetAngle - t.leafPivot.rotation.y;
+                if (Math.abs(diff) < 0.01) {
+                    t.leafPivot.rotation.y = t.leafTargetAngle;
+                    t.leafAnimating = false;
+                } else {
+                    t.leafPivot.rotation.y += diff * 0.08;
+                }
+            }
             t.renderer.render(t.scene, t.camera);
         };
         animate();
@@ -540,55 +593,70 @@ export class DesignConfiguratorWidget extends Component {
                         );
                         scene.updateMatrixWorld(true);
 
-                        // Add Г-lip as BoxGeometry strips around the leaf (top, left, right)
+                        // Create pivot group for leaf rotation (hinge animation)
                         const leafBox = new THREE.Box3().setFromObject(scene);
                         const leafW = leafBox.max.x - leafBox.min.x;
                         const leafH = leafBox.max.y - leafBox.min.y;
-                        const leafZ = leafBox.min.z;  // front face of leaf
+                        const leafZ = leafBox.min.z;
 
+                        const opening = this._getParamByLabel("Opening Direction") || "left";
+                        // Pivot at hinge edge: left opening = hinge on left, right = hinge on right
+                        const hingeX = opening === "right" ? leafBox.max.x : leafBox.min.x;
+
+                        const leafPivot = new THREE.Group();
+                        // Move pivot to hinge position
+                        leafPivot.position.set(hingeX, 0, 0);
+
+                        // Re-parent scene into pivot (offset by -hingeX so geometry stays in place)
+                        scene.position.x -= hingeX;
+                        leafPivot.add(scene);
+
+                        // Г-lip strips
                         const lipColor = 0xb8893a;
                         const lipMat = new THREE.MeshPhongMaterial({
                             color: lipColor, side: THREE.DoubleSide, shininess: 20,
                         });
 
-                        // Top lip: horizontal strip
                         const topLip = new THREE.Mesh(
-                            new THREE.BoxGeometry(leafW + lipOverlap * 2, lipOverlap, lipDepth),
-                            lipMat
+                            new THREE.BoxGeometry(leafW + lipOverlap * 2, lipOverlap, lipDepth), lipMat
                         );
                         topLip.position.set(
-                            (leafBox.min.x + leafBox.max.x) / 2,
+                            (leafBox.min.x + leafBox.max.x) / 2 - hingeX,
                             leafBox.max.y + lipOverlap / 2,
                             leafZ + lipDepth / 2
                         );
-                        t.group.add(topLip);
+                        leafPivot.add(topLip);
 
-                        // Left lip: vertical strip
                         const leftLip = new THREE.Mesh(
-                            new THREE.BoxGeometry(lipOverlap, leafH + lipOverlap, lipDepth),
-                            lipMat
+                            new THREE.BoxGeometry(lipOverlap, leafH + lipOverlap, lipDepth), lipMat
                         );
                         leftLip.position.set(
-                            leafBox.min.x - lipOverlap / 2,
+                            leafBox.min.x - lipOverlap / 2 - hingeX,
                             (leafBox.min.y + leafBox.max.y) / 2 + lipOverlap / 2,
                             leafZ + lipDepth / 2
                         );
-                        t.group.add(leftLip);
+                        leafPivot.add(leftLip);
 
-                        // Right lip: vertical strip
                         const rightLip = new THREE.Mesh(
-                            new THREE.BoxGeometry(lipOverlap, leafH + lipOverlap, lipDepth),
-                            lipMat
+                            new THREE.BoxGeometry(lipOverlap, leafH + lipOverlap, lipDepth), lipMat
                         );
                         rightLip.position.set(
-                            leafBox.max.x + lipOverlap / 2,
+                            leafBox.max.x + lipOverlap / 2 - hingeX,
                             (leafBox.min.y + leafBox.max.y) / 2 + lipOverlap / 2,
                             leafZ + lipDepth / 2
                         );
-                        t.group.add(rightLip);
+                        leafPivot.add(rightLip);
+
+                        t.group.add(leafPivot);
+                        t.leafPivot = leafPivot;
+                        t.leafOpen = false;
+                        t.leafAnimating = false;
                     }
 
-                    t.group.add(scene);
+                    if (componentIndex === 0 || !frameBox) {
+                        t.group.add(scene);
+                    }
+                    // leaf scene already added to leafPivot above
                     componentIndex++;
                 } catch (e) {
                     console.error(`Failed to load GLB ${glb.name}:`, e);
