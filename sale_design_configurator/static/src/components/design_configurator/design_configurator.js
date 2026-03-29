@@ -335,7 +335,12 @@ export class DesignConfiguratorWidget extends Component {
         const svg = this.hotspotSvgRef.el;
         if (!popup || !img) return;
 
-        img.src = hotspot.imageUrl;
+        if (hotspot.imageUrl) {
+            img.src = hotspot.imageUrl;
+            img.style.display = "block";
+        } else {
+            img.style.display = "none";
+        }
         label.textContent = hotspot.label;
 
         // Position popup near click but inside viewport
@@ -363,7 +368,7 @@ export class DesignConfiguratorWidget extends Component {
             svg.innerHTML = `
                 <line x1="${dotX}" y1="${dotY}" x2="${popX + 60}" y2="${popY + 60}"
                       stroke="#495057" stroke-width="1.5" stroke-dasharray="4,3"/>
-                <circle cx="${dotX}" cy="${dotY}" r="5" fill="#714B67"/>
+                <circle cx="${dotX}" cy="${dotY}" r="5" fill="#fff" stroke="#495057" stroke-width="1.5"/>
             `;
         }
 
@@ -560,7 +565,7 @@ export class DesignConfiguratorWidget extends Component {
                         svg.innerHTML = `
                             <line x1="${dotX}" y1="${dotY}" x2="${popX}" y2="${popY}"
                                   stroke="#495057" stroke-width="1.5" stroke-dasharray="4,3"/>
-                            <circle cx="${dotX}" cy="${dotY}" r="5" fill="#714B67"/>
+                            <circle cx="${dotX}" cy="${dotY}" r="5" fill="#fff" stroke="#495057" stroke-width="1.5"/>
                         `;
                     }
                 }
@@ -682,7 +687,7 @@ export class DesignConfiguratorWidget extends Component {
             // Hotspot sphere
             const geo = new THREE.SphereGeometry(0.015, 16, 12);
             const mat = new THREE.MeshPhongMaterial({
-                color: 0x714B67, emissive: 0x714B67, emissiveIntensity: 0.5,
+                color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.8,
             });
             const sphere = new THREE.Mesh(geo, mat);
 
@@ -703,6 +708,35 @@ export class DesignConfiguratorWidget extends Component {
             });
 
             posIdx++;
+        }
+
+        // Add hinge hotspots (no image — just label)
+        const leafPivot = t.leafPivot;
+        if (leafPivot) {
+            const leafBox = new THREE.Box3().setFromObject(leafPivot);
+            const opening = this._getParamByLabel("Opening Direction") || "left";
+            const hingeX = opening === "right" ? leafBox.max.x : leafBox.min.x;
+            const hingeZ = leafBox.min.z;
+
+            const hingeMat = new THREE.MeshPhongMaterial({
+                color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.8,
+            });
+
+            // Top hinge
+            const topHinge = new THREE.Mesh(new THREE.SphereGeometry(0.012, 12, 8), hingeMat);
+            topHinge.position.set(hingeX, leafBox.max.y - 0.15, hingeZ - 0.01);
+            t.group.add(topHinge);
+            t.hotspots.push({
+                mesh: topHinge, label: "Hinge (top)", imageUrl: "",
+            });
+
+            // Bottom hinge
+            const botHinge = new THREE.Mesh(new THREE.SphereGeometry(0.012, 12, 8), hingeMat);
+            botHinge.position.set(hingeX, leafBox.min.y + 0.15, hingeZ - 0.01);
+            t.group.add(botHinge);
+            t.hotspots.push({
+                mesh: botHinge, label: "Hinge (bottom)", imageUrl: "",
+            });
         }
     }
 
