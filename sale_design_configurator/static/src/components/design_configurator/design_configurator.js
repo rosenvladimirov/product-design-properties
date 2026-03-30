@@ -57,8 +57,8 @@ export class DesignConfiguratorWidget extends Component {
             validErrors: [],
             validWarns: [],
             autoRotate: true,
-            overlayOpen: hasAccessories,
-            overlayHeight: hasAccessories ? 260 : 24,
+            overlayOpen: false,
+            overlayHeight: 24,
             description: "",
         });
 
@@ -1010,7 +1010,12 @@ export class DesignConfiguratorWidget extends Component {
 
     toggleOverlay() {
         this.ui.overlayOpen = !this.ui.overlayOpen;
-        this.ui.overlayHeight = this.ui.overlayOpen ? 260 : 24;
+        if (this.ui.overlayOpen) {
+            const vp = this.canvasRef.el?.parentElement;
+            this.ui.overlayHeight = vp ? vp.offsetHeight : 400;
+        } else {
+            this.ui.overlayHeight = 24;
+        }
     }
 
     onOverlayHandleDrag(ev) {
