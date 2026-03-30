@@ -394,9 +394,13 @@ export class DesignConfiguratorWidget extends Component {
 
     async _saveDesignLot() {
         // All params go into design_params (Properties field)
-        // Width/Height/Thickness are now part of Properties via base_dimensions inheritance
-        const designParams = { ...this.params };
-        designParams._description = this.ui.description;
+        // Filter out _acc_* keys (not in definition, accessory selections)
+        const designParams = {};
+        for (const [k, v] of Object.entries(this.params)) {
+            if (!k.startsWith("_")) {
+                designParams[k] = v;
+            }
+        }
         const lotName = await this.orm.call(
             "stock.lot", "generate_design_lot_name", [this.props.productId]
         );
