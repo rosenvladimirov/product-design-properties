@@ -40,32 +40,22 @@ class DesignConfiguratorAction extends Component {
             existingLotId: params.existingLotId || false,
 
             onLotCreated: async (lotId, lotParams) => {
-                // MO flow: link lot_producing_id
                 if (params.moId) {
                     await this.orm.write("mrp.production", [params.moId], {
                         lot_producing_id: lotId,
                     });
                 }
-
-                // SO line flow: write design_lot_id back
                 if (params.solId) {
                     await this.orm.call("sale.order.line", "set_design_lot", [
                         [params.solId],
                         lotId,
                     ]);
-                    // Trigger reload of the SO form to show the lot badge
-                    this.action.doAction(
-                        { type: "ir.actions.act_window_close" },
-                        { stackPosition: "replaceCurrentAction" }
-                    );
-                } else {
-                    // Refresh the underlying view
-                    this.action.doAction({
-                        type: "ir.actions.act_window_close",
-                    });
                 }
             },
         });
+
+        // Return to previous view immediately — dialog stays as overlay
+        this.action.doAction({ type: "ir.actions.act_window_close" });
     }
 }
 
