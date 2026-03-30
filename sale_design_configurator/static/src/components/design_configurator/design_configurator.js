@@ -88,12 +88,19 @@ export class DesignConfiguratorWidget extends Component {
                     }
                 }
             }
-            // Apply model variant overrides from loaded params
+            // Hide canvas until model is ready (prevents flash/jump)
+            const canvas = this.canvasRef.el;
+            if (canvas) {
+                canvas.style.opacity = "0";
+                canvas.style.transition = "opacity 0.3s ease";
+            }
             this._applyVariantOverridesFromParams();
             this._initThree();
-            this._buildModel();
+            await this._buildModel();
             this._validate();
             this._updateDescription();
+            // Fade in canvas
+            if (canvas) canvas.style.opacity = "1";
         });
 
         onWillUpdateProps((newProps) => {
@@ -284,8 +291,8 @@ export class DesignConfiguratorWidget extends Component {
         // Check if this param maps to a 3D model variant (e.g., Slab Type → different GLB)
         if (this._trySwapModelVariant(key, value)) return;
 
-        // Structural changes that need full rebuild
-        const rebuildParams = ["Leaf Type", "Construction"];
+        // Structural changes that need full rebuild (different GLB set)
+        const rebuildParams = ["Leaf Type"];
         if (rebuildParams.includes(label)) {
             this._buildModel();
         }
@@ -585,27 +592,30 @@ export class DesignConfiguratorWidget extends Component {
         }
     }
 
-    _trySwapModelVariant(paramKey, selectedValue) {
+    async _trySwapModelVariant(paramKey, selectedValue) {
         const mv = this.props.modelVariants || {};
         for (const [productId, variants] of Object.entries(mv)) {
             const match = variants.find(v => v.ptav_name === selectedValue);
             if (match) {
                 this._variantOverrides = this._variantOverrides || {};
                 this._variantOverrides[parseInt(productId)] = match.assets;
-                // Save camera state, rebuild, camera restores via preserved rotX/rotY
-                this._buildModel();
+                // Brief fade during rebuild to avoid visual jump
+                const canvas = this.canvasRef.el;
+                if (canvas) canvas.style.opacity = "0.3";
+                await this._buildModel();
+                if (canvas) canvas.style.opacity = "1";
                 return true;
             }
         }
         return false;
     }
 
-    _buildModel() {
+    async _buildModel() {
         const bomAssets = this.props.bomAssets || [];
         const glbAssets = bomAssets.filter(a => a.assets.models_3d.length > 0);
 
         if (glbAssets.length > 0) {
-            this._buildFromBomAssets(glbAssets);
+            await this._buildFromBomAssets(glbAssets);
         } else {
             const profiles = this.props.profiles || [];
             if (profiles.length > 0 && profiles[0].svg_content && profiles[0].profile_definition) {
