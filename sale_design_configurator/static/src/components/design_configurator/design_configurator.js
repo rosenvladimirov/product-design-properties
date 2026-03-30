@@ -564,71 +564,12 @@ export class DesignConfiguratorWidget extends Component {
             if (match) {
                 this._variantOverrides = this._variantOverrides || {};
                 this._variantOverrides[parseInt(productId)] = match.assets;
-                this._swapLeafModel(match.assets);
+                // Save camera state, rebuild, camera restores via preserved rotX/rotY
+                this._buildModel();
                 return true;
             }
         }
         return false;
-    }
-
-    async _swapLeafModel(assets) {
-        const THREE = window.THREE;
-        const t = this._three;
-        if (!THREE || !THREE.GLTFLoader || !t.leafPivot || !assets.models_3d?.length) {
-            this._buildModel();
-            return;
-        }
-
-        // Find the old leaf scene inside leafPivot (first child, added before lip strips)
-        const oldLeaf = t.leafPivot.children[0];
-        if (!oldLeaf) { this._buildModel(); return; }
-
-        const loader = new THREE.GLTFLoader();
-        const url = `/web/content/${assets.models_3d[0].id}?download=true`;
-
-        try {
-            const gltf = await new Promise((resolve, reject) =>
-                loader.load(url, resolve, undefined, reject)
-            );
-            const newScene = gltf.scene;
-
-            // Apply coating texture (same as original build)
-            const mainTex = this.props.mainProductAssets?.textures || [];
-            const compTex = assets.textures || [];
-            const textures = mainTex.length > 0 ? mainTex : compTex;
-            if (textures.length > 0) {
-                const texUrl = `/web/content/${textures[0].id}?download=true`;
-                const texLoader = new THREE.TextureLoader();
-                const texture = await new Promise(r => texLoader.load(texUrl, r));
-                texture.wrapS = THREE.RepeatWrapping;
-                texture.wrapT = THREE.RepeatWrapping;
-                newScene.traverse(child => {
-                    if (child.isMesh) {
-                        child.material = new THREE.MeshPhongMaterial({
-                            map: texture, side: THREE.DoubleSide, shininess: 20,
-                        });
-                    }
-                });
-            }
-
-            // Copy exact transform from old leaf — same size, different milling
-            newScene.position.copy(oldLeaf.position);
-            newScene.rotation.copy(oldLeaf.rotation);
-            newScene.scale.copy(oldLeaf.scale);
-
-            // Swap: remove old, add new (frame, lips, scale all stay)
-            t.leafPivot.remove(oldLeaf);
-            t.leafPivot.add(newScene);
-
-            // Refresh stored child positions for hinge direction switching
-            t.leafChildrenBaseX = {};
-            t.leafPivot.children.forEach((child, i) => {
-                t.leafChildrenBaseX[i] = child.position.x;
-            });
-        } catch (e) {
-            console.error("Leaf swap failed, falling back to full rebuild:", e);
-            this._buildModel();
-        }
     }
 
     _buildModel() {
@@ -648,6 +589,11 @@ export class DesignConfiguratorWidget extends Component {
     }
 
     async _buildFromBomAssets(assets) {
+        const t = this._three;
+        // Freeze camera during rebuild to prevent jumps
+        const savedAutoRotate = this.ui.autoRotate;
+        this.ui.autoRotate = false;
+
         this._clearModel();
         const THREE = window.THREE;
         if (!THREE || !THREE.GLTFLoader) {
@@ -861,6 +807,9 @@ export class DesignConfiguratorWidget extends Component {
         } else {
             this._buildLegacyModel();
         }
+
+        // Restore auto-rotate after rebuild
+        this.ui.autoRotate = savedAutoRotate;
     }
 
     _buildFromSVGProfile(profile) {
