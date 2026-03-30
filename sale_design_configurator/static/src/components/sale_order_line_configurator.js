@@ -19,6 +19,14 @@ import { DesignConfiguratorDialog } from "./design_configurator/design_configura
 
 // ── Helper: open configurator dialog on an SO line ─────────────────────
 
+// Many2one value → ID (handles both list [id,"name"] and form proxy)
+function m2oId(val) {
+    if (!val) return false;
+    if (Array.isArray(val)) return val[0];
+    if (typeof val === "object") return val.resId || val.id || false;
+    return val;
+}
+
 function openDesignConfigurator(dialogService, orm, record, productId, definitionId, existingLotId) {
     const lineId = record.resId;
     dialogService.add(DesignConfiguratorDialog, {
@@ -45,7 +53,7 @@ patch(SaleOrderLineProductField.prototype, {
     async _onProductUpdate() {
         await super._onProductUpdate(...arguments);
 
-        const productId = this.props.record.data.product_id?.[0];
+        const productId = m2oId(this.props.record.data.product_id);
         if (!productId) return;
 
         const result = await this.orm.call(
@@ -87,15 +95,13 @@ export class DesignConfiguratorOpenWidget extends Component {
         let productId, defId, lotId;
 
         if (model === "stock.lot") {
-            // Lot form: the record IS the lot
-            productId = record.data.product_id?.[0];
-            defId = record.data.design_param_definition_id?.[0];
+            productId = m2oId(record.data.product_id);
+            defId = m2oId(record.data.design_param_definition_id);
             lotId = record.resId;
         } else {
-            // SO line: lot is a related field
-            productId = record.data.product_id?.[0];
-            defId = record.data.design_param_definition_id?.[0];
-            lotId = record.data.design_lot_id?.[0] || false;
+            productId = m2oId(record.data.product_id);
+            defId = m2oId(record.data.design_param_definition_id);
+            lotId = m2oId(record.data.design_lot_id);
         }
 
         if (!productId || !defId) return;
