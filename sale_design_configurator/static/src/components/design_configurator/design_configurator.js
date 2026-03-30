@@ -58,8 +58,9 @@ export class DesignConfiguratorWidget extends Component {
             validWarns: [],
             autoRotate: true,
             overlayOpen: hasAccessories,
-            overlayHeight: hasAccessories ? 260 : 44,
+            overlayHeight: hasAccessories ? 260 : 24,
             selectedAccessories: initialAccessories,
+            description: "",
         });
 
         this._three = {
@@ -96,6 +97,7 @@ export class DesignConfiguratorWidget extends Component {
             this._initThree();
             this._buildModel();
             this._validate();
+            this._updateDescription();
         });
 
         onWillUpdateProps((newProps) => {
@@ -257,6 +259,7 @@ export class DesignConfiguratorWidget extends Component {
     onParamChange(key, value) {
         this.params[key] = value;
         this._validate();
+        this._updateDescription();
 
         // Find the param definition to check what changed
         const allDefs = [
@@ -286,8 +289,8 @@ export class DesignConfiguratorWidget extends Component {
     onSliderInput(ev) {
         const key = ev.target.dataset.param;
         this.params[key] = parseFloat(ev.target.value) || 0;
-        // Dimension sliders: scale the model, don't rebuild
         this._applyScale();
+        this._updateDescription();
     }
 
     onSegmentClick(ev) {
@@ -381,7 +384,7 @@ export class DesignConfiguratorWidget extends Component {
         // All params go into design_params (Properties field)
         // Width/Height/Thickness are now part of Properties via base_dimensions inheritance
         const designParams = { ...this.params };
-        designParams._description = this.overlayDescription;
+        designParams._description = this.ui.description;
         // Store selected accessory variant IDs
         const accSel = {};
         for (const [groupId, variantId] of Object.entries(this.ui.selectedAccessories)) {
@@ -1016,7 +1019,7 @@ export class DesignConfiguratorWidget extends Component {
 
     toggleOverlay() {
         this.ui.overlayOpen = !this.ui.overlayOpen;
-        this.ui.overlayHeight = this.ui.overlayOpen ? 260 : 44;
+        this.ui.overlayHeight = this.ui.overlayOpen ? 260 : 24;
     }
 
     onOverlayHandleDrag(ev) {
@@ -1045,8 +1048,8 @@ export class DesignConfiguratorWidget extends Component {
             overlay.style.transition = "";
 
             const finalH = overlay.offsetHeight;
-            if (finalH < 80) {
-                this.ui.overlayHeight = 44;
+            if (finalH < 60) {
+                this.ui.overlayHeight = 24;
                 this.ui.overlayOpen = false;
             } else {
                 this.ui.overlayHeight = finalH;
@@ -1065,20 +1068,10 @@ export class DesignConfiguratorWidget extends Component {
         const groupId = parseInt(ev.currentTarget.dataset.group);
         const variantId = parseInt(ev.currentTarget.dataset.variant);
         this.ui.selectedAccessories[groupId] = variantId;
+        this._updateDescription();
     }
 
-    get overlayGroups() {
-        return (this.props.accessoryVariants || []).map(group => ({
-            ...group,
-            variants: group.variants.map(v => ({
-                ...v,
-                imageUrl: `/web/content/${v.textures[0].id}?download=true`,
-                selected: this.ui.selectedAccessories[group.bomProductId] === v.variant_id,
-            })),
-        }));
-    }
-
-    get overlayDescription() {
+    _updateDescription() {
         const parts = [];
         for (const def of (this.props.paramDefinition || [])) {
             const val = this.params[def.name];
@@ -1106,7 +1099,18 @@ export class DesignConfiguratorWidget extends Component {
             const variant = group.variants.find(v => v.variant_id === selId);
             if (variant) parts.push(`${group.componentName}: ${variant.ptav_name}`);
         }
-        return parts.join(" | ");
+        this.ui.description = parts.join(" | ");
+    }
+
+    get overlayGroups() {
+        return (this.props.accessoryVariants || []).map(group => ({
+            ...group,
+            variants: group.variants.map(v => ({
+                ...v,
+                imageUrl: `/web/content/${v.textures[0].id}?download=true`,
+                selected: this.ui.selectedAccessories[group.bomProductId] === v.variant_id,
+            })),
+        }));
     }
 
     // ── Computed display helpers ─────────────────────────────────────────

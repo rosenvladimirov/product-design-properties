@@ -245,10 +245,18 @@
     flex-direction: column;
 }
 
+.o_cfg_overlay_body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 14px 10px;
+    min-height: 0;
+}
+
 .o_cfg_overlay_handle {
     display: flex;
     justify-content: center;
-    padding: 10px 0 6px;
+    padding: 8px 0;
     cursor: grab;
     flex-shrink: 0;
     user-select: none;
@@ -263,12 +271,6 @@
     height: 4px;
     border-radius: 2px;
     background: rgba(0, 0, 0, 0.30);
-}
-
-.o_cfg_overlay_body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0 14px 14px;
 }
 
 .o_cfg_overlay_desc {
