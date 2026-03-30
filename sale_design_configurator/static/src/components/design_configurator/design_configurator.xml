@@ -227,23 +227,24 @@
                     <div class="o_cfg_overlay_grip"/>
                 </div>
                 <div class="o_cfg_overlay_body">
-                    <div class="o_cfg_overlay_desc">
-                        <textarea class="o_input o_cfg_overlay_textarea"
-                                  t-att-value="ui.description"
-                                  t-on-input="onDescriptionInput"
-                                  placeholder="Описание на вратата..."
-                                  rows="2"/>
+                    <div class="o_cfg_overlay_desc" t-if="overlayDescription">
+                        <t t-esc="overlayDescription"/>
                     </div>
-                    <t t-if="overlayItems.length">
-                        <div class="o_cfg_overlay_section_title">Аксесоари</div>
+                    <t t-foreach="overlayGroups" t-as="group" t-key="group.bomProductId">
+                        <div class="o_cfg_overlay_section_title">
+                            <t t-esc="group.componentName"/>
+                        </div>
                         <div class="o_cfg_overlay_grid">
-                            <t t-foreach="overlayItems" t-as="item" t-key="item.product_id">
-                                <div class="o_cfg_overlay_card">
-                                    <img t-att-src="item.imageUrl"
+                            <t t-foreach="group.variants" t-as="v" t-key="v.variant_id">
+                                <div t-att-class="'o_cfg_overlay_card' + (v.selected ? ' active' : '')"
+                                     t-att-data-group="group.bomProductId"
+                                     t-att-data-variant="v.variant_id"
+                                     t-on-click="onAccessorySelect">
+                                    <img t-att-src="v.imageUrl"
                                          class="o_cfg_overlay_card_img"
-                                         t-att-alt="item.name"/>
+                                         t-att-alt="v.ptav_name"/>
                                     <div class="o_cfg_overlay_card_name">
-                                        <t t-esc="item.name"/>
+                                        <t t-esc="v.ptav_name"/>
                                     </div>
                                 </div>
                             </t>

@@ -273,23 +273,12 @@
 
 .o_cfg_overlay_desc {
     margin-bottom: 6px;
-}
-
-.o_cfg_overlay_textarea {
-    width: 100%;
-    min-height: 44px;
-    resize: none;
-    font-size: 12px;
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.65);
-    padding: 8px 10px;
+    font-size: 11px;
     color: #212529;
-    line-height: 1.4;
-}
-
-.o_cfg_overlay_textarea::placeholder {
-    color: #868e96;
+    background: rgba(255, 255, 255, 0.55);
+    padding: 6px 10px;
+    border-radius: 6px;
+    line-height: 1.5;
 }
 
 .o_cfg_overlay_section_title {
@@ -319,6 +308,12 @@
 }
 
 .o_cfg_overlay_card:hover {
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.o_cfg_overlay_card.active {
+    border-color: #714B67;
+    box-shadow: 0 0 0 2px rgba(113, 75, 103, 0.35);
     background: rgba(255, 255, 255, 0.85);
 }
 

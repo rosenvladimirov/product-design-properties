@@ -6,14 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-## [18.0.1.4.0] - 2026-03-30
+## [18.0.1.5.0] - 2026-03-30
+
+### Added
+- **product_design_assets** (18.0.1.1.0) — `get_template_variant_assets()` RPC
+  - Returns all variants of a product template with their PNG/JPG textures
+  - Used by overlay gallery to show all selectable accessory variants
 
 ### Changed
-- **sale_design_configurator** (18.0.1.1.0) — Sliding overlay panel replaces hotspot annotations
+- **sale_design_configurator** (18.0.1.2.0) — Sliding overlay panel with variant gallery
   - Bottom-anchored overlay panel (90% transparent, frosted glass) over 3D viewport
   - Drag handle for resizing — click to toggle, drag to adjust height
-  - Door description textarea (stored in `design_params._description`)
-  - Accessory PNG gallery grid — shows BoM component textures (lock, handle, hinges)
+  - Auto-generated description from current parameter selections
+  - Accessory gallery shows ALL variants per component (lock, handle) with click-to-select
+  - Active variant highlighted with Odoo purple border
+  - Selected accessories stored in `design_params._selected_accessories`
+  - Overlay opens automatically when accessory variants are available
   - Removed hotspot spheres, SVG connector lines and popup (replaced by overlay)
 
 *Assisted by Claude Code*

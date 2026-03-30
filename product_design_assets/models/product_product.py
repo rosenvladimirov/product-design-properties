@@ -70,6 +70,32 @@ class ProductProduct(models.Model):
                 result["textures"].append(a)
         return result
 
+    @api.model
+    def get_template_variant_assets(self, product_id):
+        """RPC: Returns all variants of the same template with PNG/JPG textures.
+
+        Used by the overlay gallery to show all selectable accessory variants.
+        """
+        product = self.browse(product_id)
+        if not product.exists():
+            return []
+        result = []
+        for variant in product.product_tmpl_id.product_variant_ids:
+            textures = variant.design_asset_ids.filtered(
+                lambda a: a.mimetype in ("image/jpeg", "image/png")
+            ).read(["id", "name", "mimetype"])
+            if textures:
+                ptav_names = variant.product_template_variant_value_ids.mapped(
+                    "name"
+                )
+                result.append({
+                    "variant_id": variant.id,
+                    "variant_name": variant.display_name,
+                    "ptav_name": ptav_names[0] if ptav_names else variant.display_name,
+                    "textures": textures,
+                })
+        return result
+
     def action_view_design_assets(self):
         """Button action to view design asset attachments."""
         self.ensure_one()

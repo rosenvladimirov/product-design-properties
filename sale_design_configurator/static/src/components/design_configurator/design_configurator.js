@@ -29,6 +29,7 @@ export class DesignConfiguratorWidget extends Component {
         bomAssets: { type: Array, optional: true },
         mainProductAssets: { type: Object, optional: true },
         childComponents: { type: Array, optional: true },
+        accessoryVariants: { type: Array, optional: true },
         existingLotId: { type: [Number, Boolean], optional: true },
         onLotCreated: { type: Function },
         onClose: { type: Function },
@@ -44,14 +45,21 @@ export class DesignConfiguratorWidget extends Component {
             this._buildInitialParams(this.props.paramDefinition)
         );
 
+        // Initialize selected accessories from bomAssets defaults
+        const initialAccessories = {};
+        for (const group of (this.props.accessoryVariants || [])) {
+            initialAccessories[group.bomProductId] = group.bomProductId;
+        }
+
+        const hasAccessories = (this.props.accessoryVariants || []).length > 0;
         this.ui = useState({
             saving: false,
             validErrors: [],
             validWarns: [],
             autoRotate: true,
-            overlayOpen: false,
-            overlayHeight: 44,
-            description: "",
+            overlayOpen: hasAccessories,
+            overlayHeight: hasAccessories ? 260 : 44,
+            selectedAccessories: initialAccessories,
         });
 
         this._three = {
@@ -373,8 +381,14 @@ export class DesignConfiguratorWidget extends Component {
         // All params go into design_params (Properties field)
         // Width/Height/Thickness are now part of Properties via base_dimensions inheritance
         const designParams = { ...this.params };
-        if (this.ui.description) {
-            designParams._description = this.ui.description;
+        designParams._description = this.overlayDescription;
+        // Store selected accessory variant IDs
+        const accSel = {};
+        for (const [groupId, variantId] of Object.entries(this.ui.selectedAccessories)) {
+            accSel[groupId] = variantId;
+        }
+        if (Object.keys(accSel).length) {
+            designParams._selected_accessories = accSel;
         }
         const lotName = await this.orm.call(
             "stock.lot", "generate_design_lot_name", [this.props.productId]
@@ -1047,23 +1061,52 @@ export class DesignConfiguratorWidget extends Component {
         window.addEventListener("mouseup", onUp);
     }
 
-    onDescriptionInput(ev) {
-        this.ui.description = ev.target.value;
+    onAccessorySelect(ev) {
+        const groupId = parseInt(ev.currentTarget.dataset.group);
+        const variantId = parseInt(ev.currentTarget.dataset.variant);
+        this.ui.selectedAccessories[groupId] = variantId;
     }
 
-    get overlayItems() {
-        const items = [];
-        for (const comp of (this.props.bomAssets || [])) {
-            const textures = comp.assets.textures || [];
-            if (textures.length > 0) {
-                items.push({
-                    product_id: comp.product_id,
-                    name: comp.product_name,
-                    imageUrl: `/web/content/${textures[0].id}?download=true`,
-                });
+    get overlayGroups() {
+        return (this.props.accessoryVariants || []).map(group => ({
+            ...group,
+            variants: group.variants.map(v => ({
+                ...v,
+                imageUrl: `/web/content/${v.textures[0].id}?download=true`,
+                selected: this.ui.selectedAccessories[group.bomProductId] === v.variant_id,
+            })),
+        }));
+    }
+
+    get overlayDescription() {
+        const parts = [];
+        for (const def of (this.props.paramDefinition || [])) {
+            const val = this.params[def.name];
+            if (val === undefined || val === "") continue;
+            if (def.type === "float" && def.string?.includes("mm")
+                && !def.string.includes("Wall") && !def.string.includes("Lip")
+                && !def.string.includes("Каса")) {
+                parts.push(`${def.string}: ${val}`);
+            } else if (def.type === "selection" && def.selection) {
+                const opt = def.selection.find(s => s[0] === val);
+                if (opt) parts.push(`${def.string}: ${opt[1]}`);
             }
         }
-        return items;
+        for (const child of (this.props.childComponents || [])) {
+            for (const def of (child.paramDefinition || [])) {
+                if (def.type !== "selection" || !def.selection) continue;
+                const val = this.params[def.name];
+                if (val === undefined) continue;
+                const opt = def.selection.find(s => s[0] === val);
+                if (opt) parts.push(`${child.definitionName}: ${opt[1]}`);
+            }
+        }
+        for (const group of (this.props.accessoryVariants || [])) {
+            const selId = this.ui.selectedAccessories[group.bomProductId];
+            const variant = group.variants.find(v => v.variant_id === selId);
+            if (variant) parts.push(`${group.componentName}: ${variant.ptav_name}`);
+        }
+        return parts.join(" | ");
     }
 
     // ── Computed display helpers ─────────────────────────────────────────

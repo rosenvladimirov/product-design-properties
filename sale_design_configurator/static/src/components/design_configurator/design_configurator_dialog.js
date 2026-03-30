@@ -38,6 +38,7 @@ export class DesignConfiguratorDialog extends Component {
             bomAssets: [],
             mainProductAssets: { models_3d: [], profiles_svg: [], textures: [] },
             childComponents: [],
+            accessoryVariants: [],
         });
         this._loadDefinition();
     }
@@ -115,6 +116,27 @@ export class DesignConfiguratorDialog extends Component {
                     }
                 }
                 this.state.childComponents = childComponents;
+
+                // Load all variant textures for accessory components (no 3D)
+                const accessoryVariants = [];
+                for (const comp of bomAssets) {
+                    if (comp.assets.models_3d.length === 0 && comp.assets.textures.length > 0) {
+                        const variants = await this.orm.call(
+                            "product.product", "get_template_variant_assets",
+                            [comp.product_id]
+                        );
+                        if (variants.length > 0) {
+                            // Extract clean component name (before parenthesis)
+                            const name = comp.product_name.replace(/\s*\(.*\)$/, "");
+                            accessoryVariants.push({
+                                bomProductId: comp.product_id,
+                                componentName: name,
+                                variants: variants,
+                            });
+                        }
+                    }
+                }
+                this.state.accessoryVariants = accessoryVariants;
             }
         } catch (e) {
             console.warn("Could not load BoM design assets:", e.message);
