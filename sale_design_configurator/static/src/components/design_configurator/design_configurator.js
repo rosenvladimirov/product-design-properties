@@ -602,7 +602,6 @@ export class DesignConfiguratorWidget extends Component {
             return;
         }
         const loader = new THREE.GLTFLoader();
-        const t = this._three;
         let frameBox = null;
         let componentIndex = 0;
 
