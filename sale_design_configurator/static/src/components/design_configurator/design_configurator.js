@@ -1186,10 +1186,17 @@ export class DesignConfiguratorWidget extends Component {
     // ── Computed display helpers ─────────────────────────────────────────
 
     get displayParams() {
-        return this.props.paramDefinition.map((def) => ({
-            ...def,
-            value: this.params[def.name],
-        }));
+        // Exclude child component params (shown in their own sections)
+        const childNames = new Set(
+            (this.props.childComponents || [])
+                .flatMap(c => (c.paramDefinition || []).map(d => d.name))
+        );
+        return this.props.paramDefinition
+            .filter(def => !childNames.has(def.name))
+            .map(def => ({
+                ...def,
+                value: this.params[def.name],
+            }));
     }
 
     get childDisplayParams() {
