@@ -96,6 +96,30 @@ class ProductProduct(models.Model):
                 })
         return result
 
+    @api.model
+    def get_template_variant_all_assets(self, product_id):
+        """RPC: Returns all variants with all design assets (GLB + textures).
+
+        Used to swap 3D models when the user changes a variant selection.
+        """
+        product = self.browse(product_id)
+        if not product.exists():
+            return []
+        result = []
+        for variant in product.product_tmpl_id.product_variant_ids:
+            assets = self.get_design_assets_by_type(variant.id)
+            if any(v for v in assets.values()):
+                ptav_names = variant.product_template_variant_value_ids.mapped(
+                    "name"
+                )
+                result.append({
+                    "variant_id": variant.id,
+                    "variant_name": variant.display_name,
+                    "ptav_name": ptav_names[0] if ptav_names else variant.display_name,
+                    "assets": assets,
+                })
+        return result
+
     def action_view_design_assets(self):
         """Button action to view design asset attachments."""
         self.ensure_one()

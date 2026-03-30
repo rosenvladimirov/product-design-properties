@@ -30,6 +30,7 @@ export class DesignConfiguratorWidget extends Component {
         mainProductAssets: { type: Object, optional: true },
         childComponents: { type: Array, optional: true },
         accessoryVariants: { type: Array, optional: true },
+        modelVariants: { type: Object, optional: true },
         existingLotId: { type: [Number, Boolean], optional: true },
         onLotCreated: { type: Function },
         onClose: { type: Function },
@@ -274,14 +275,14 @@ export class DesignConfiguratorWidget extends Component {
             return;
         }
 
-        // Most params don't need 3D rebuild — just update state
-        // Only rebuild if it's a structural change (Leaf Type, Construction, etc.)
-        // that changes which GLB models to show
+        // Check if this param maps to a 3D model variant (e.g., Slab Type → different GLB)
+        if (this._trySwapModelVariant(key, value)) return;
+
+        // Structural changes that need full rebuild
         const rebuildParams = ["Leaf Type", "Construction"];
         if (rebuildParams.includes(label)) {
             this._buildModel();
         }
-        // Everything else: no rebuild, just state update + validation
     }
 
     // Event handlers — use data-param attribute, no arrow functions
@@ -556,6 +557,22 @@ export class DesignConfiguratorWidget extends Component {
 
     // ── Model building: SVG profile (primary) or legacy fallback ────────
 
+    _trySwapModelVariant(paramKey, selectedValue) {
+        // Check if selectedValue matches a PTAV name in any modelVariants group.
+        // If so, store the override and rebuild the 3D model.
+        const mv = this.props.modelVariants || {};
+        for (const [productId, variants] of Object.entries(mv)) {
+            const match = variants.find(v => v.ptav_name === selectedValue);
+            if (match) {
+                this._variantOverrides = this._variantOverrides || {};
+                this._variantOverrides[parseInt(productId)] = match.assets;
+                this._buildModel();
+                return true;
+            }
+        }
+        return false;
+    }
+
     _buildModel() {
         const bomAssets = this.props.bomAssets || [];
         const glbAssets = bomAssets.filter(a => a.assets.models_3d.length > 0);
@@ -586,7 +603,11 @@ export class DesignConfiguratorWidget extends Component {
         let componentIndex = 0;
 
         for (const component of assets) {
-            for (const glb of component.assets.models_3d) {
+            // Use variant override if available (e.g., different slab GLB)
+            const overrideAssets = (this._variantOverrides || {})[component.product_id];
+            const glbList = overrideAssets ? overrideAssets.models_3d : component.assets.models_3d;
+            const texList = overrideAssets ? overrideAssets.textures : component.assets.textures;
+            for (const glb of glbList) {
                 try {
                     const url = `/web/content/${glb.id}?download=true`;
                     const gltf = await new Promise((resolve, reject) => {
@@ -598,7 +619,7 @@ export class DesignConfiguratorWidget extends Component {
                     // Apply texture: prefer main product texture (coating),
                     // then component texture, then default color
                     const mainTex = (this.props.mainProductAssets?.textures || []);
-                    const compTex = component.assets.textures;
+                    const compTex = texList;
                     const textures = mainTex.length > 0 ? mainTex : compTex;
                     if (textures.length > 0) {
                         const texUrl = `/web/content/${textures[0].id}?download=true`;

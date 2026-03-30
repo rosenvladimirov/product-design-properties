@@ -39,6 +39,7 @@ export class DesignConfiguratorDialog extends Component {
             mainProductAssets: { models_3d: [], profiles_svg: [], textures: [] },
             childComponents: [],
             accessoryVariants: [],
+            modelVariants: {},
         });
         this._loadDefinition();
     }
@@ -137,6 +138,21 @@ export class DesignConfiguratorDialog extends Component {
                     }
                 }
                 this.state.accessoryVariants = accessoryVariants;
+
+                // Load all variant 3D assets for components with GLB models
+                const modelVariants = {};
+                for (const comp of bomAssets) {
+                    if (comp.assets.models_3d.length > 0) {
+                        const allVariants = await this.orm.call(
+                            "product.product", "get_template_variant_all_assets",
+                            [comp.product_id]
+                        );
+                        if (allVariants.length > 1) {
+                            modelVariants[comp.product_id] = allVariants;
+                        }
+                    }
+                }
+                this.state.modelVariants = modelVariants;
             }
         } catch (e) {
             console.warn("Could not load BoM design assets:", e.message);

@@ -20,6 +20,7 @@
                 mainProductAssets="state.mainProductAssets"
                 childComponents="state.childComponents"
                 accessoryVariants="state.accessoryVariants"
+                modelVariants="state.modelVariants"
                 existingLotId="props.existingLotId or false"
                 onLotCreated.bind="onLotCreated"
                 onClose.bind="onClose"
