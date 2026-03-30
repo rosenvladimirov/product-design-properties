@@ -171,6 +171,26 @@
                 </div>
             </t>
 
+            <!-- Accessory variant selections (two-way bound with overlay) -->
+            <t t-foreach="accessoryDisplayParams" t-as="acc" t-key="acc.paramKey">
+                <div class="o_cfg_finetune">
+                    <div class="o_cfg_finetune_title"><t t-esc="acc.componentName"/></div>
+                    <div class="o_cfg_param_row">
+                        <div class="o_cfg_seg">
+                            <t t-foreach="acc.options" t-as="opt" t-key="opt[0]">
+                                <button
+                                    t-att-class="'o_cfg_seg_btn' + (params[acc.paramKey] === opt[0] ? ' active' : '')"
+                                    t-att-data-value="opt[0]"
+                                    t-att-data-param="acc.paramKey"
+                                    t-on-click="onSegmentClick">
+                                    <t t-esc="opt[1]"/>
+                                </button>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
             <!-- Validation messages -->
             <div class="o_cfg_validation" t-if="ui.validErrors.length or ui.validWarns.length">
                 <t t-foreach="ui.validErrors" t-as="err" t-key="err">
@@ -234,8 +254,8 @@
                         <div class="o_cfg_overlay_grid">
                             <t t-foreach="group.variants" t-as="v" t-key="v.variant_id">
                                 <div t-att-class="'o_cfg_overlay_card' + (v.selected ? ' active' : '')"
-                                     t-att-data-group="group.bomProductId"
-                                     t-att-data-variant="v.variant_id"
+                                     t-att-data-param="group.paramKey"
+                                     t-att-data-variant="String(v.variant_id)"
                                      t-on-click="onAccessorySelect">
                                     <img t-att-src="v.imageUrl"
                                          class="o_cfg_overlay_card_img"
