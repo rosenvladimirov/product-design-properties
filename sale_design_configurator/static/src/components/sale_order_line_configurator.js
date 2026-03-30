@@ -17,29 +17,25 @@
 
 import { patch } from "@web/core/utils/patch";
 import { registry } from "@web/core/registry";
+import { useService } from "@web/core/utils/hooks";
 import { DesignConfiguratorDialog } from "./design_configurator/design_configurator_dialog";
 
 // -- Auto-open on product change in SO line list ----------------------------
 
-/**
- * We patch the SaleOrderLineProductField so that when a product_id field
- * changes on a line and the product has a design definition, the
- * configurator opens automatically.
- *
- * The check is done via a server call to avoid loading all BoMs client-side.
- */
-
 import { SaleOrderLineProductField } from "@sale/js/sale_product_field";
 
 patch(SaleOrderLineProductField.prototype, {
+    setup() {
+        super.setup(...arguments);
+        this.dialogService = useService("dialog");
+    },
+
     async _onProductUpdate() {
-        // Call original update
         await super._onProductUpdate(...arguments);
 
         const productId = this.props.record.data.product_id?.[0];
         if (!productId) return;
 
-        // Check if this product has a design definition
         const result = await this.orm.call(
             "sale.order.line",
             "get_design_definition_for_product",
@@ -48,10 +44,8 @@ patch(SaleOrderLineProductField.prototype, {
 
         if (!result || !result.definitionId) return;
 
-        // Get the current record id (may be a virtual id on a new line)
         const lineId = this.props.record.resId;
         if (!lineId) {
-            // New unsaved line - show notification to save first
             this.notification.add(
                 "Save the line before configuring the design.",
                 { type: "info" }
@@ -59,15 +53,18 @@ patch(SaleOrderLineProductField.prototype, {
             return;
         }
 
-        // Open configurator automatically
-        this.action.doAction({
-            type: "ir.actions.client",
-            tag: "design_configurator_action",
-            params: {
-                productId: productId,
-                definitionId: result.definitionId,
-                existingLotId: false,
-                solId: lineId,
+        // Open as dialog overlay (SO form stays visible behind)
+        this.dialogService.add(DesignConfiguratorDialog, {
+            productId: productId,
+            definitionId: result.definitionId,
+            existingLotId: false,
+            onLotCreated: async (lotId, lotParams) => {
+                await this.orm.call("sale.order.line", "set_design_lot", [
+                    [lineId],
+                    lotId,
+                ]);
+                // Reload the SO line to show the lot badge
+                await this.props.record.load();
             },
         });
     },
