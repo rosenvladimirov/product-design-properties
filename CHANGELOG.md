@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [18.0.1.4.0] - 2026-03-30
+
+### Changed
+- **sale_design_configurator** (18.0.1.1.0) — Sliding overlay panel replaces hotspot annotations
+  - Bottom-anchored overlay panel (90% transparent, frosted glass) over 3D viewport
+  - Drag handle for resizing — click to toggle, drag to adjust height
+  - Door description textarea (stored in `design_params._description`)
+  - Accessory PNG gallery grid — shows BoM component textures (lock, handle, hinges)
+  - Removed hotspot spheres, SVG connector lines and popup (replaced by overlay)
+
+*Assisted by Claude Code*
+
 ## [18.0.1.3.0] - 2026-03-28
 
 ### Added

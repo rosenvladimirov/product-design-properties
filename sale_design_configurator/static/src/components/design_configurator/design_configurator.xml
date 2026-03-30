@@ -220,14 +220,35 @@
             </div>
             <div class="o_cfg_rotate_hint" t-if="ui.autoRotate">Drag to rotate</div>
 
-            <!-- Hotspot annotation popup -->
-            <div t-ref="hotspotOverlay" class="o_cfg_hotspot_overlay">
-                <svg class="o_cfg_hotspot_svg" t-ref="hotspotSvg"/>
-                <div class="o_cfg_hotspot_popup" t-ref="hotspotPopup"
-                     t-att-class="{'active': ui.hotspotVisible}">
-                    <button class="o_cfg_popup_close" t-on-click="closeHotspot">&#215;</button>
-                    <img t-ref="hotspotImg" class="o_cfg_popup_img"/>
-                    <div class="o_cfg_popup_label" t-ref="hotspotLabel"/>
+            <!-- Accessory overlay panel -->
+            <div t-ref="overlay" class="o_cfg_overlay"
+                 t-att-style="'height:' + ui.overlayHeight + 'px'">
+                <div class="o_cfg_overlay_handle" t-on-mousedown="onOverlayHandleDrag">
+                    <div class="o_cfg_overlay_grip"/>
+                </div>
+                <div class="o_cfg_overlay_body">
+                    <div class="o_cfg_overlay_desc">
+                        <textarea class="o_input o_cfg_overlay_textarea"
+                                  t-att-value="ui.description"
+                                  t-on-input="onDescriptionInput"
+                                  placeholder="Описание на вратата..."
+                                  rows="2"/>
+                    </div>
+                    <t t-if="overlayItems.length">
+                        <div class="o_cfg_overlay_section_title">Аксесоари</div>
+                        <div class="o_cfg_overlay_grid">
+                            <t t-foreach="overlayItems" t-as="item" t-key="item.product_id">
+                                <div class="o_cfg_overlay_card">
+                                    <img t-att-src="item.imageUrl"
+                                         class="o_cfg_overlay_card_img"
+                                         t-att-alt="item.name"/>
+                                    <div class="o_cfg_overlay_card_name">
+                                        <t t-esc="item.name"/>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
                 </div>
             </div>
         </div>
