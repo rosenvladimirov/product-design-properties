@@ -5,22 +5,34 @@
 /**
  * SaleOrderLineConfigurator
  * -------------------------
- * Patches the sale.order.line list renderer to:
- *
- *   1. Auto-open the Design Configurator when a product with a design
- *      definition is selected on a new line.
- *   2. Write the created lot back to the SO line via RPC after confirmation.
- *
- * Also patches the design_configurator_action client action to handle
- * the solId -> set_design_lot RPC callback.
+ * 1. Auto-open the Design Configurator dialog when a product with a
+ *    design definition is selected on a new SO line.
+ * 2. Provide a view widget (fa-cube button) that opens the dialog
+ *    directly without leaving the SO form.
  */
 
+import { Component } from "@odoo/owl";
 import { patch } from "@web/core/utils/patch";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { DesignConfiguratorDialog } from "./design_configurator/design_configurator_dialog";
 
-// -- Auto-open on product change in SO line list ----------------------------
+// ── Helper: open configurator dialog on an SO line ─────────────────────
+
+function openDesignConfigurator(dialogService, orm, record, productId, definitionId, existingLotId) {
+    const lineId = record.resId;
+    dialogService.add(DesignConfiguratorDialog, {
+        productId,
+        definitionId,
+        existingLotId: existingLotId || false,
+        onLotCreated: async (lotId) => {
+            await orm.call("sale.order.line", "set_design_lot", [[lineId], lotId]);
+            await record.load();
+        },
+    });
+}
+
+// ── Auto-open on product change ────────────────────────────────────────
 
 import { SaleOrderLineProductField } from "@sale/js/sale_product_field";
 
@@ -41,11 +53,9 @@ patch(SaleOrderLineProductField.prototype, {
             "get_design_definition_for_product",
             [productId]
         );
-
         if (!result || !result.definitionId) return;
 
-        const lineId = this.props.record.resId;
-        if (!lineId) {
+        if (!this.props.record.resId) {
             this.notification.add(
                 "Save the line before configuring the design.",
                 { type: "info" }
@@ -53,19 +63,39 @@ patch(SaleOrderLineProductField.prototype, {
             return;
         }
 
-        // Open as dialog overlay (SO form stays visible behind)
-        this.dialogService.add(DesignConfiguratorDialog, {
-            productId: productId,
-            definitionId: result.definitionId,
-            existingLotId: false,
-            onLotCreated: async (lotId, lotParams) => {
-                await this.orm.call("sale.order.line", "set_design_lot", [
-                    [lineId],
-                    lotId,
-                ]);
-                // Reload the SO line to show the lot badge
-                await this.props.record.load();
-            },
-        });
+        openDesignConfigurator(
+            this.dialogService, this.orm, this.props.record,
+            productId, result.definitionId, false
+        );
     },
+});
+
+// ── View widget: Configure Design button (replaces type=object btn) ────
+
+export class DesignConfiguratorOpenWidget extends Component {
+    static template = "sale_design_configurator.OpenWidget";
+    static props = ["*"];
+
+    setup() {
+        this.dialogService = useService("dialog");
+        this.orm = useService("orm");
+    }
+
+    onClick() {
+        const record = this.props.record;
+        const productId = record.data.product_id?.[0];
+        const defId = record.data.design_param_definition_id?.[0];
+        const lotId = record.data.design_lot_id?.[0] || false;
+
+        if (!productId || !defId) return;
+
+        openDesignConfigurator(
+            this.dialogService, this.orm, record,
+            productId, defId, lotId
+        );
+    }
+}
+
+registry.category("view_widgets").add("design_configurator_open", {
+    component: DesignConfiguratorOpenWidget,
 });

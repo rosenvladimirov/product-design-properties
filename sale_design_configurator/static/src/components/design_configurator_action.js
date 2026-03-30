@@ -34,10 +34,6 @@ class DesignConfiguratorAction extends Component {
     async openDialog() {
         const params = this.props.action.params || {};
 
-        const closeAction = () => {
-            this.action.doAction({ type: "ir.actions.act_window_close" });
-        };
-
         this.dialog.add(DesignConfiguratorDialog, {
             productId: params.productId,
             definitionId: params.definitionId,
@@ -57,8 +53,9 @@ class DesignConfiguratorAction extends Component {
                 }
             },
         }, {
-            // Close the client action when the dialog closes (any way)
-            onClose: closeAction,
+            onClose: () => {
+                this.action.doAction({ type: "ir.actions.act_window_close" });
+            },
         });
     }
 }

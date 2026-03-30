@@ -19,14 +19,9 @@
 
             <!-- Design columns AFTER price_subtotal (end of the line) -->
             <xpath expr="//field[@name='order_line']//list//field[@name='price_subtotal']" position="after">
-                <button
-                    name="action_open_design_configurator"
-                    type="object"
-                    icon="fa-cube"
-                    title="Configure Design"
-                    class="btn-link p-0"
-                    column_invisible="False"
-                    invisible="not has_design_definition"/>
+                <widget name="design_configurator_open"
+                        column_invisible="False"
+                        invisible="not has_design_definition"/>
 
                 <field
                     name="design_lot_id"

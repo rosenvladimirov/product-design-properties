@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+<t t-name="sale_design_configurator.OpenWidget">
+    <button class="btn btn-link p-0" t-on-click="onClick" title="Configure Design">
+        <i class="fa fa-cube"/>
+    </button>
+</t>
+
+</templates>
