@@ -161,9 +161,9 @@ export class DesignConfiguratorDialog extends Component {
         this.state.loading = false;
     }
 
-    onLotCreated(lotId, params) {
+    async onLotCreated(lotId, params) {
         if (this.props.onLotCreated) {
-            this.props.onLotCreated(lotId, params);
+            await this.props.onLotCreated(lotId, params);
         }
         this.props.close();
     }

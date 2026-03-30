@@ -475,11 +475,13 @@ export class DesignConfiguratorWidget extends Component {
         window.addEventListener("mousemove", this._onMouseMove);
 
         const animate = () => {
+            if (!t.renderer) return; // stop loop after destroy
             t.animId = requestAnimationFrame(animate);
             if (this.ui.autoRotate && !t.drag) t.rotY += 0.003;
-            t.group.rotation.x = t.rotX;
-            t.group.rotation.y = t.rotY;
-            // Smooth leaf open/close animation
+            if (t.group) {
+                t.group.rotation.x = t.rotX;
+                t.group.rotation.y = t.rotY;
+            }
             if (t.leafPivot && t.leafAnimating) {
                 const diff = t.leafTargetAngle - t.leafPivot.rotation.y;
                 if (Math.abs(diff) < 0.01) {
@@ -496,7 +498,7 @@ export class DesignConfiguratorWidget extends Component {
 
     _resize() {
         const t = this._three;
-        if (!t.renderer) return;
+        if (!t || !t.renderer) return;
         const vp = this.canvasRef.el?.parentElement;
         if (!vp) return;
         const w = vp.offsetWidth || 400;
