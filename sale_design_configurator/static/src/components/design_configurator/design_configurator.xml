@@ -240,9 +240,12 @@
             </div>
             <div class="o_cfg_rotate_hint" t-if="ui.autoRotate">Drag to rotate</div>
 
-            <!-- Accessory overlay panel — handle at bottom edge -->
+            <!-- Accessory overlay panel (bottom sheet) -->
             <div t-ref="overlay" class="o_cfg_overlay"
                  t-att-style="'height:' + ui.overlayHeight + 'px'">
+                <div class="o_cfg_overlay_handle" t-on-mousedown="onOverlayHandleDrag">
+                    <div class="o_cfg_overlay_grip"/>
+                </div>
                 <div class="o_cfg_overlay_body">
                     <div class="o_cfg_overlay_desc" t-if="ui.description">
                         <t t-esc="ui.description"/>
@@ -267,9 +270,6 @@
                             </t>
                         </div>
                     </t>
-                </div>
-                <div class="o_cfg_overlay_handle" t-on-mousedown="onOverlayHandleDrag">
-                    <div class="o_cfg_overlay_grip"/>
                 </div>
             </div>
         </div>
