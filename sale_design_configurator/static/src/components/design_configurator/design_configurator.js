@@ -1102,6 +1102,7 @@ export class DesignConfiguratorWidget extends Component {
                 paramKey,
                 variants: group.variants.map(v => ({
                     ...v,
+                    variantStr: String(v.variant_id),
                     imageUrl: `/web/content/${v.textures[0].id}?download=true`,
                     selected: String(v.variant_id) === selectedVal,
                 })),
