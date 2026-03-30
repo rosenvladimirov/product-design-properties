@@ -137,6 +137,23 @@ export class DesignConfiguratorDialog extends Component {
                         }
                     }
                 }
+                // Map each accessory group to its definition selection param
+                for (const group of accessoryVariants) {
+                    for (const child of childComponents) {
+                        if (child.productId !== group.bomProductId) continue;
+                        const ptavNames = new Set(group.variants.map(v => v.ptav_name));
+                        for (const def of (child.paramDefinition || [])) {
+                            if (def.type === "selection" && def.selection) {
+                                const selVals = new Set(def.selection.map(s => s[0]));
+                                if ([...ptavNames].some(n => selVals.has(n))) {
+                                    group.definitionParamKey = def.name;
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
                 this.state.accessoryVariants = accessoryVariants;
 
                 // Load all variant 3D assets for components with GLB models

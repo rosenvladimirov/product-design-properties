@@ -46,12 +46,6 @@ export class DesignConfiguratorWidget extends Component {
             this._buildInitialParams(this.props.paramDefinition)
         );
 
-        // Initialize accessory selections in params (two-way binding with overlay)
-        for (const group of (this.props.accessoryVariants || [])) {
-            const key = `_acc_${group.bomProductId}`;
-            this.params[key] = String(group.bomProductId);
-        }
-
         const hasAccessories = (this.props.accessoryVariants || []).length > 0;
         this.ui = useState({
             saving: false,
@@ -1159,27 +1153,21 @@ export class DesignConfiguratorWidget extends Component {
                 if (opt) parts.push(`${child.definitionName}: ${opt[1]}`);
             }
         }
-        for (const group of (this.props.accessoryVariants || [])) {
-            const paramKey = `_acc_${group.bomProductId}`;
-            const selVal = this.params[paramKey];
-            const variant = group.variants.find(v => String(v.variant_id) === selVal);
-            if (variant) parts.push(`${group.componentName}: ${variant.ptav_name}`);
-        }
         this.ui.description = parts.join(" | ");
     }
 
     get overlayGroups() {
-        return (this.props.accessoryVariants || []).map(group => {
-            const paramKey = `_acc_${group.bomProductId}`;
+        return (this.props.accessoryVariants || []).filter(g => g.definitionParamKey).map(group => {
+            const paramKey = group.definitionParamKey;
             const selectedVal = this.params[paramKey];
             return {
                 ...group,
                 paramKey,
                 variants: group.variants.map(v => ({
                     ...v,
-                    variantStr: String(v.variant_id),
+                    variantStr: v.ptav_name,
                     imageUrl: `/web/content/${v.textures[0].id}?download=true`,
-                    selected: String(v.variant_id) === selectedVal,
+                    selected: v.ptav_name === selectedVal,
                 })),
             };
         });
@@ -1205,14 +1193,6 @@ export class DesignConfiguratorWidget extends Component {
                     ? this.params[def.name]
                     : (def.type === 'float' ? (parseFloat(def.default) || 0) : (def.default || '')),
             })),
-        }));
-    }
-
-    get accessoryDisplayParams() {
-        return (this.props.accessoryVariants || []).map(group => ({
-            paramKey: `_acc_${group.bomProductId}`,
-            componentName: group.componentName,
-            options: group.variants.map(v => [String(v.variant_id), v.ptav_name]),
         }));
     }
 

@@ -171,26 +171,6 @@
                 </div>
             </t>
 
-            <!-- Accessory variant selections (two-way bound with overlay) -->
-            <t t-foreach="accessoryDisplayParams" t-as="acc" t-key="acc.paramKey">
-                <div class="o_cfg_finetune">
-                    <div class="o_cfg_finetune_title"><t t-esc="acc.componentName"/></div>
-                    <div class="o_cfg_param_row">
-                        <div class="o_cfg_seg">
-                            <t t-foreach="acc.options" t-as="opt" t-key="opt[0]">
-                                <button
-                                    t-att-class="'o_cfg_seg_btn' + (params[acc.paramKey] === opt[0] ? ' active' : '')"
-                                    t-att-data-value="opt[0]"
-                                    t-att-data-param="acc.paramKey"
-                                    t-on-click="onSegmentClick">
-                                    <t t-esc="opt[1]"/>
-                                </button>
-                            </t>
-                        </div>
-                    </div>
-                </div>
-            </t>
-
             <!-- Validation messages -->
             <div class="o_cfg_validation" t-if="ui.validErrors.length or ui.validWarns.length">
                 <t t-foreach="ui.validErrors" t-as="err" t-key="err">
