@@ -94,6 +94,8 @@ export class DesignConfiguratorWidget extends Component {
                     }
                 }
             }
+            // Apply model variant overrides from loaded params
+            this._applyVariantOverridesFromParams();
             this._initThree();
             this._buildModel();
             this._validate();
@@ -137,7 +139,17 @@ export class DesignConfiguratorWidget extends Component {
             "design_params",
         ]);
         if (!lot) return;
-        Object.assign(this.params, lot.design_params || {});
+        const dp = lot.design_params;
+        if (Array.isArray(dp)) {
+            // Properties field returns [{name, type, string, value}, ...]
+            for (const prop of dp) {
+                if (prop.name && prop.value !== undefined) {
+                    this.params[prop.name] = prop.value;
+                }
+            }
+        } else if (dp && typeof dp === "object") {
+            Object.assign(this.params, dp);
+        }
     }
 
     // ── Data-driven validation ──────────────────────────────────────────
@@ -556,6 +568,24 @@ export class DesignConfiguratorWidget extends Component {
     }
 
     // ── Model building: SVG profile (primary) or legacy fallback ────────
+
+    _applyVariantOverridesFromParams() {
+        // Check all current param values against modelVariants PTAV names.
+        // If any match, set the override so _buildModel uses the right GLB.
+        const mv = this.props.modelVariants || {};
+        for (const [productId, variants] of Object.entries(mv)) {
+            for (const v of variants) {
+                // Check if any param has this variant's ptav_name as value
+                for (const val of Object.values(this.params)) {
+                    if (val === v.ptav_name) {
+                        this._variantOverrides = this._variantOverrides || {};
+                        this._variantOverrides[parseInt(productId)] = v.assets;
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
     _trySwapModelVariant(paramKey, selectedValue) {
         const mv = this.props.modelVariants || {};

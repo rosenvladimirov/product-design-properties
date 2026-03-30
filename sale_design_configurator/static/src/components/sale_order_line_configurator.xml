@@ -2,8 +2,9 @@
 <templates xml:space="preserve">
 
 <t t-name="sale_design_configurator.OpenWidget">
-    <button class="btn btn-link p-0" t-on-click="onClick" title="Configure Design">
+    <button class="btn btn-link p-0 oe_stat_button" t-on-click="onClick" title="Configure Design">
         <i class="fa fa-cube"/>
+        <span class="o_stat_text" t-if="props.record.resModel === 'stock.lot'">Configure</span>
     </button>
 </t>
 

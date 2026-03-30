@@ -83,9 +83,20 @@ export class DesignConfiguratorOpenWidget extends Component {
 
     onClick() {
         const record = this.props.record;
-        const productId = record.data.product_id?.[0];
-        const defId = record.data.design_param_definition_id?.[0];
-        const lotId = record.data.design_lot_id?.[0] || false;
+        const model = record.resModel;
+        let productId, defId, lotId;
+
+        if (model === "stock.lot") {
+            // Lot form: the record IS the lot
+            productId = record.data.product_id?.[0];
+            defId = record.data.design_param_definition_id?.[0];
+            lotId = record.resId;
+        } else {
+            // SO line: lot is a related field
+            productId = record.data.product_id?.[0];
+            defId = record.data.design_param_definition_id?.[0];
+            lotId = record.data.design_lot_id?.[0] || false;
+        }
 
         if (!productId || !defId) return;
 
