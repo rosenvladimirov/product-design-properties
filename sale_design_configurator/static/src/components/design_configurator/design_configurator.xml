@@ -255,7 +255,7 @@
                             <t t-foreach="group.variants" t-as="v" t-key="v.variant_id">
                                 <div t-att-class="'o_cfg_overlay_card' + (v.selected ? ' active' : '')"
                                      t-att-data-param="group.paramKey"
-                                     t-att-data-variant="String(v.variant_id)"
+                                     t-att-data-variant="'' + v.variant_id
                                      t-on-click="onAccessorySelect">
                                     <img t-att-src="v.imageUrl"
                                          class="o_cfg_overlay_card_img"
