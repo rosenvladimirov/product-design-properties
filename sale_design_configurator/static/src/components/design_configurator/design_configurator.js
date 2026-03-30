@@ -371,8 +371,8 @@ export class DesignConfiguratorWidget extends Component {
         try {
             const lotId = await this._saveDesignLot();
             this.notification.add("Design lot created successfully.", { type: "success" });
+            // onLotCreated in dialog already calls close() — don't call onClose again
             this.props.onLotCreated(lotId, { ...this.params });
-            this.props.onClose();
         } catch (e) {
             this.notification.add(`Error: ${e.message}`, { type: "danger" });
         } finally {
@@ -443,20 +443,16 @@ export class DesignConfiguratorWidget extends Component {
             t.drag = true; t.prevX = e.clientX; t.prevY = e.clientY;
             clickStart = { x: e.clientX, y: e.clientY, time: Date.now() };
         });
-        window.addEventListener("mouseup", (e) => {
-            // Detect click (not drag): small movement + short duration
+        this._onMouseUp = (e) => {
             if (clickStart && !t.leafAnimating) {
                 const dx = Math.abs(e.clientX - clickStart.x);
                 const dy = Math.abs(e.clientY - clickStart.y);
                 const dt = Date.now() - clickStart.time;
                 if (dx < 5 && dy < 5 && dt < 300 && t.leafPivot) {
-                    // Raycast to check if leaf was clicked
                     const rect = canvas.getBoundingClientRect();
                     mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
                     mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
                     t.raycaster.setFromCamera(mouse, t.camera);
-
-                    // Check leaf click
                     if (t.leafPivot) {
                         const hits = t.raycaster.intersectObjects(t.leafPivot.children, true);
                         if (hits.length > 0) {
@@ -467,14 +463,16 @@ export class DesignConfiguratorWidget extends Component {
             }
             t.drag = false;
             clickStart = null;
-        });
-        window.addEventListener("mousemove", (e) => {
+        };
+        this._onMouseMove = (e) => {
             if (!t.drag) return;
             t.rotY += (e.clientX - t.prevX) * 0.008;
             t.rotX += (e.clientY - t.prevY) * 0.008;
             t.rotX = Math.max(-1.2, Math.min(1.2, t.rotX));
             t.prevX = e.clientX; t.prevY = e.clientY;
-        });
+        };
+        window.addEventListener("mouseup", this._onMouseUp);
+        window.addEventListener("mousemove", this._onMouseMove);
 
         const animate = () => {
             t.animId = requestAnimationFrame(animate);
@@ -1027,10 +1025,19 @@ export class DesignConfiguratorWidget extends Component {
     }
 
     _destroyThree() {
-        const t = this._three;
-        if (t.animId) cancelAnimationFrame(t.animId);
-        if (t.renderer) t.renderer.dispose();
-        if (this._resizeObserver) this._resizeObserver.disconnect();
+        try {
+            const t = this._three;
+            if (t.animId) cancelAnimationFrame(t.animId);
+            t.animId = null;
+            if (t.renderer) t.renderer.dispose();
+            t.renderer = null;
+            if (this._resizeObserver) this._resizeObserver.disconnect();
+            // Clean up window event listeners added in _initThree
+            if (this._onMouseUp) window.removeEventListener("mouseup", this._onMouseUp);
+            if (this._onMouseMove) window.removeEventListener("mousemove", this._onMouseMove);
+        } catch (e) {
+            console.warn("Three.js cleanup error:", e);
+        }
     }
 
     // ── Overlay panel ──────────────────────────────────────────────────
