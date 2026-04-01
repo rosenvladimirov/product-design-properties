@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- product.product form: Preview Design Configurator button -->
+    <record id="product_product_form_design_configurator" model="ir.ui.view">
+        <field name="name">product.product.form.design.configurator</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_open_design_configurator"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-magic"
+                        invisible="not design_param_definition_id">
+                    <span class="o_stat_text">Preview</span>
+                    <span class="o_stat_text">Configurator</span>
+                </button>
+            </div>
+        </field>
+    </record>
+
+</odoo>
