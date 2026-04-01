@@ -2,10 +2,19 @@
 <templates xml:space="preserve">
 
 <t t-name="sale_design_configurator.OpenWidget">
-    <button class="btn btn-link p-0 oe_stat_button" t-on-click="onClick" title="Configure Design">
-        <i class="fa fa-cube"/>
-        <span class="o_stat_text" t-if="props.record.resModel === 'stock.lot'">Configure</span>
-    </button>
+    <t t-if="props.record.resModel === 'product.product' or props.record.resModel === 'product.template'">
+        <button class="oe_stat_button" t-on-click="onClick" title="Preview Configurator">
+            <i class="fa fa-magic o_button_icon"/>
+            <span class="o_stat_text">Preview</span>
+            <span class="o_stat_text">Configurator</span>
+        </button>
+    </t>
+    <t t-else="">
+        <button class="btn btn-link p-0 oe_stat_button" t-on-click="onClick" title="Configure Design">
+            <i class="fa fa-cube"/>
+            <span class="o_stat_text" t-if="props.record.resModel === 'stock.lot'">Configure</span>
+        </button>
+    </t>
 </t>
 
 </templates>
