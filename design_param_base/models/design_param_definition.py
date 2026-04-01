@@ -5,7 +5,7 @@ import os
 import secrets
 from xml.etree import ElementTree as ET
 
-from odoo import addons, fields, models
+from odoo import addons, api, fields, models
 from odoo.exceptions import UserError
 
 XML_FILENAME = "design_param_definitions.xml"
@@ -161,6 +161,7 @@ class DesignParamDefinition(models.Model):
                 vals["parent_id"] = parent.id
         return vals
 
+    @api.model
     def create_design_param_definitions(self, module_name, codes=False):
         """
         Load (or reload) parameter definitions from the XML file in
