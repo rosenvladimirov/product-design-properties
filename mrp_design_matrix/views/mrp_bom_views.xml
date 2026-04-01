@@ -15,7 +15,7 @@
                                     string="Load from Template"
                                     type="object"
                                     icon="fa-download"
-                                    attrs="{'invisible': [('matrix_template_id', '=', False)]}"/>
+                                    invisible="not matrix_template_id"/>
                         </group>
                     </group>
 
@@ -80,7 +80,7 @@
                         <field name="param_attribute_map"
                                widget="ace"
                                options="{'mode': 'json'}"
-                               attrs="{'invisible': [('product_tmpl_id', '=', False)]}"/>
+                               invisible="not product_tmpl_id"/>
                     </group>
                     <group string="Semi-finished Chain">
                         <field name="child_definition_id"/>
@@ -88,7 +88,7 @@
                         <field name="param_extraction_map"
                                widget="ace"
                                options="{'mode': 'json'}"
-                               attrs="{'invisible': [('child_definition_id', '=', False)]}"/>
+                               invisible="not child_definition_id"/>
                     </group>
                 </page>
             </notebook>
