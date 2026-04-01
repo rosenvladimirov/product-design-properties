@@ -1,15 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo><data noupdate="1">
-  <record id="matrix_template_roller_door_manual" model="mrp.matrix.template">
-    <field name="name">Roller Door — Manual</field>
-    <field name="industry">doors</field>
-    <field name="description">T0 ERROR: perforation+insulation; PC+RAL.
-T0 WARNING: width>4000+manual. T1 derive: area; slat_weight; motor_class.
-T2: slat/guide/shaft/spring O-variants; motor-O coeff=0 if manual; insulation-O.
-T3: motor install+programming+test if electric.</field>
-    <field name="constraint_table" eval="{}"/>
-    <field name="geometry_table"   eval="{}"/>
-    <field name="material_table"   eval="{}"/>
-    <field name="operation_table"  eval="{}"/>
-  </record>
-</data></odoo>
+<odoo>
+    <data noupdate="1">
+        <!-- Workcenters -->
+        <record id="wc_slat_cutting" model="mrp.workcenter">
+            <field name="name">Slat Cutting</field>
+            <field name="code">RSCUT</field>
+        </record>
+        <record id="wc_assembly" model="mrp.workcenter">
+            <field name="name">Roller Shutter Assembly</field>
+            <field name="code">RSASM</field>
+        </record>
+        <record id="wc_motor_install" model="mrp.workcenter">
+            <field name="name">Motor Installation &amp; Programming</field>
+            <field name="code">RSMOT</field>
+        </record>
+
+        <!-- Matrix template -->
+        <record id="matrix_template_roller_shutter" model="mrp.matrix.template">
+            <field name="name">Roller Shutter — Standard</field>
+            <field name="industry">doors</field>
+            <field name="description">
+                T0: PC+insulation error, width/height limits, manual+wide warning.
+                T1: slat weight, min box size, slat height from slat_type.
+                T2: motor/crank/insulation/mosquito O-variant activation.
+                T3: motor install+programming ops if electric/radio.
+            </field>
+            <field name="constraint_table" eval="{}"/>
+            <field name="geometry_table"   eval="{}"/>
+            <field name="material_table"   eval="{}"/>
+            <field name="operation_table"  eval="{}"/>
+        </record>
+    </data>
+</odoo>

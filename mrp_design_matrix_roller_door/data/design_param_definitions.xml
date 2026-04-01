@@ -1,18 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Design parameter definitions for roller shutter manufacturers.
+    Based on Teolino product range: PVC/AL slats, RAL colours,
+    manual/chain/electric drive options.
+-->
 <records>
-  <properties code="roller_door" name="Roller Door" industry="doors" parent="base_dimensions">
-    <items name="slat_type">
-      <item name="type">selection</item>
-      <item name="selection">[["AL","Aluminium"],["steel","Steel"],["PC","Polycarbonate"]]</item>
-      <item name="default">AL</item>
-    </items>
-    <items name="drive_type">
-      <item name="type">selection</item>
-      <item name="selection">[["manual","Manual"],["chain","Chain"],["electric","Electric"]]</item>
-      <item name="default">manual</item>
-    </items>
-    <items name="has_insulation"><item name="type">boolean</item><item name="default">false</item></items>
-    <items name="has_perforation"><item name="type">boolean</item><item name="default">false</item></items>
-    <items name="RAL_code"><item name="type">char</item><item name="default"></item></items>
-  </properties>
+    <properties code="roller_door" name="Roller Shutter" industry="doors" parent="base_dimensions">
+        <items name="slat_type">
+            <item name="type">selection</item>
+            <item name="selection">[["AL","Aluminium"],["PVC","PVC"],["AL_foam","Aluminium + PU foam"],["PC","Polycarbonate"]]</item>
+            <item name="default">PVC</item>
+        </items>
+        <items name="drive_type">
+            <item name="type">selection</item>
+            <item name="selection">[["manual","Ръчна (корда)"],["chain","Манивела"],["electric","Ел. мотор (Somfy кабелен)"],["radio","Радио мотор (Somfy IO)"]]</item>
+            <item name="default">manual</item>
+        </items>
+        <items name="box_size">
+            <item name="type">selection</item>
+            <item name="selection">[["137","137x137 мм"],["165","165x165 мм"],["180","180x180 мм"]]</item>
+            <item name="default">165</item>
+        </items>
+        <items name="guide_type">
+            <item name="type">selection</item>
+            <item name="selection">[["PVC_double","PVC двоен водач"],["AL_feather","Алуминиев с перо"]]</item>
+            <item name="default">PVC_double</item>
+        </items>
+        <items name="has_insulation">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="has_mosquito_net">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+    </properties>
 </records>

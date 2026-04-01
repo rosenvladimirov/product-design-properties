@@ -1,9 +1,9 @@
 # Copyright 2026 BL Consulting
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
-    "name": "MRP Design Matrix — Roller Doors",
-    "summary": "Design parameter definitions and matrix templates for Roller Doors manufacturers.",
-    "version": "18.0.1.0.0",
+    "name": "MRP Design Matrix — Roller Shutters",
+    "summary": "Design parameter definitions and matrix templates for roller shutter manufacturers (Teolino).",
+    "version": "18.0.1.1.0",
     "category": "Manufacturing",
     "website": "https://github.com/OCA/manufacture",
     "author": "BL Consulting, Odoo Community Association (OCA)",

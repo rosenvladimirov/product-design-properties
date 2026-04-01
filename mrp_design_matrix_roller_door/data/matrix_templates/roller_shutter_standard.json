@@ -1,0 +1,196 @@
+{
+  "nodes": [
+    {
+      "id": "t0-roller",
+      "name": "T0 Constraints",
+      "type": "decisionTable",
+      "content": {
+        "hitPolicy": "collect",
+        "inputs": [
+          {"id": "slat_type",  "name": "slat_type"},
+          {"id": "drive_type", "name": "drive_type"},
+          {"id": "width",      "name": "width"},
+          {"id": "height",     "name": "height"},
+          {"id": "has_insulation", "name": "has_insulation"}
+        ],
+        "outputs": [
+          {"id": "level",   "name": "level"},
+          {"id": "message", "name": "message"}
+        ],
+        "rules": [
+          {
+            "slat_type": "\"PC\"",
+            "drive_type": "",
+            "width": "",
+            "height": "",
+            "has_insulation": "true",
+            "level": "\"error\"",
+            "message": "\"Поликарбонатните ламели не могат да имат изолация.\""
+          },
+          {
+            "slat_type": "",
+            "drive_type": "\"manual\"",
+            "width": "> 3000",
+            "height": "",
+            "has_insulation": "",
+            "level": "\"warning\"",
+            "message": "\"Ширина > 3000 мм с ръчно управление — препоръчва се ел. мотор.\""
+          },
+          {
+            "slat_type": "",
+            "drive_type": "",
+            "width": "> 3300",
+            "height": "",
+            "has_insulation": "",
+            "level": "\"error\"",
+            "message": "\"Максимална ширина 3300 мм.\""
+          },
+          {
+            "slat_type": "",
+            "drive_type": "",
+            "width": "",
+            "height": "> 2800",
+            "has_insulation": "",
+            "level": "\"error\"",
+            "message": "\"Максимална височина 2800 мм.\""
+          },
+          {
+            "slat_type": "",
+            "drive_type": "",
+            "width": "< 500",
+            "height": "",
+            "has_insulation": "",
+            "level": "\"error\"",
+            "message": "\"Минимална ширина 500 мм.\""
+          }
+        ]
+      }
+    },
+    {
+      "id": "t1-roller",
+      "name": "T1 Geometry — derived values",
+      "type": "decisionTable",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          {"id": "slat_type", "name": "slat_type"}
+        ],
+        "outputs": [
+          {"id": "slat_weight_kg_m2", "name": "slat_weight_kg_m2"},
+          {"id": "min_box_size",      "name": "min_box_size"},
+          {"id": "slat_height_mm",    "name": "slat_height_mm"}
+        ],
+        "rules": [
+          {
+            "slat_type": "\"PVC\"",
+            "slat_weight_kg_m2": "3.5",
+            "min_box_size": "\"137\"",
+            "slat_height_mm": "39"
+          },
+          {
+            "slat_type": "\"AL\"",
+            "slat_weight_kg_m2": "4.8",
+            "min_box_size": "\"165\"",
+            "slat_height_mm": "42"
+          },
+          {
+            "slat_type": "\"AL_foam\"",
+            "slat_weight_kg_m2": "5.2",
+            "min_box_size": "\"180\"",
+            "slat_height_mm": "45"
+          },
+          {
+            "slat_type": "\"PC\"",
+            "slat_weight_kg_m2": "3.0",
+            "min_box_size": "\"137\"",
+            "slat_height_mm": "39"
+          }
+        ]
+      }
+    },
+    {
+      "id": "t2-roller",
+      "name": "T2 Materials — O-variant activation",
+      "type": "decisionTable",
+      "content": {
+        "hitPolicy": "collect",
+        "inputs": [
+          {"id": "drive_type",      "name": "drive_type"},
+          {"id": "has_insulation",  "name": "has_insulation"},
+          {"id": "has_mosquito_net","name": "has_mosquito_net"}
+        ],
+        "outputs": [
+          {"id": "bom_line_coeff_key", "name": "bom_line_coeff_key"},
+          {"id": "coefficient",        "name": "coefficient"}
+        ],
+        "rules": [
+          {
+            "drive_type": "\"electric\"",
+            "has_insulation": "",
+            "has_mosquito_net": "",
+            "bom_line_coeff_key": "\"motor-o\"",
+            "coefficient": "1.0"
+          },
+          {
+            "drive_type": "\"radio\"",
+            "has_insulation": "",
+            "has_mosquito_net": "",
+            "bom_line_coeff_key": "\"motor-o\"",
+            "coefficient": "1.0"
+          },
+          {
+            "drive_type": "\"chain\"",
+            "has_insulation": "",
+            "has_mosquito_net": "",
+            "bom_line_coeff_key": "\"crank-o\"",
+            "coefficient": "1.0"
+          },
+          {
+            "drive_type": "",
+            "has_insulation": "true",
+            "has_mosquito_net": "",
+            "bom_line_coeff_key": "\"insulation-o\"",
+            "coefficient": "1.0"
+          },
+          {
+            "drive_type": "",
+            "has_insulation": "",
+            "has_mosquito_net": "true",
+            "bom_line_coeff_key": "\"mosquito-o\"",
+            "coefficient": "1.0"
+          }
+        ]
+      }
+    },
+    {
+      "id": "t3-roller",
+      "name": "T3 Operations",
+      "type": "decisionTable",
+      "content": {
+        "hitPolicy": "collect",
+        "inputs": [
+          {"id": "drive_type", "name": "drive_type"}
+        ],
+        "outputs": [
+          {"id": "workcenter_ref",   "name": "workcenter_ref"},
+          {"id": "name",             "name": "name"},
+          {"id": "duration_formula", "name": "duration_formula"}
+        ],
+        "rules": [
+          {
+            "drive_type": "\"electric\"",
+            "workcenter_ref": "\"mrp_design_matrix_roller_door.wc_motor_install\"",
+            "name": "\"Монтаж ел. мотор + програмиране\"",
+            "duration_formula": "\"45\""
+          },
+          {
+            "drive_type": "\"radio\"",
+            "workcenter_ref": "\"mrp_design_matrix_roller_door.wc_motor_install\"",
+            "name": "\"Монтаж радио мотор + програмиране + тест\"",
+            "duration_formula": "\"60\""
+          }
+        ]
+      }
+    }
+  ]
+}
