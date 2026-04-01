@@ -98,6 +98,10 @@ export class DesignConfiguratorOpenWidget extends Component {
             productId = m2oId(record.data.product_id);
             defId = m2oId(record.data.design_param_definition_id);
             lotId = record.resId;
+        } else if (model === "product.product") {
+            productId = record.resId;
+            defId = m2oId(record.data.design_param_definition_id);
+            lotId = false;
         } else {
             productId = m2oId(record.data.product_id);
             defId = m2oId(record.data.design_param_definition_id);
@@ -105,6 +109,16 @@ export class DesignConfiguratorOpenWidget extends Component {
         }
 
         if (!productId || !defId) return;
+
+        if (model === "product.product") {
+            // Preview only — no lot creation callback
+            this.dialogService.add(DesignConfiguratorDialog, {
+                productId,
+                definitionId: defId,
+                existingLotId: false,
+            });
+            return;
+        }
 
         openDesignConfigurator(
             this.dialogService, this.orm, record,

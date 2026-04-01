@@ -5,18 +5,12 @@
     <record id="product_product_form_design_configurator" model="ir.ui.view">
         <field name="name">product.product.form.design.configurator</field>
         <field name="model">product.product</field>
-        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="inherit_id" ref="product_design_assets.product_product_form_design_assets"/>
         <field name="arch" type="xml">
-            <div name="button_box" position="inside">
-                <button name="action_open_design_configurator"
-                        type="object"
-                        class="oe_stat_button"
-                        icon="fa-magic"
-                        invisible="not design_param_definition_id">
-                    <span class="o_stat_text">Preview</span>
-                    <span class="o_stat_text">Configurator</span>
-                </button>
-            </div>
+            <field name="design_param_definition_id" position="after">
+                <widget name="design_configurator_open"
+                        invisible="not design_param_definition_id"/>
+            </field>
         </field>
     </record>
 
