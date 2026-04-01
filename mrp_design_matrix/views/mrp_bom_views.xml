@@ -67,10 +67,11 @@
     <record id="mrp_bom_line_form_design_matrix" model="ir.ui.view">
         <field name="name">mrp.bom.line.form.design.matrix</field>
         <field name="model">mrp.bom.line</field>
-        <field name="inherit_id" ref="mrp.mrp_bom_line_view_form2"/>
+        <field name="inherit_id" ref="mrp.mrp_bom_line_view_form"/>
         <field name="arch" type="xml">
-            <notebook position="inside">
-                <page string="Design Matrix" name="bom_line_matrix">
+            <sheet position="inside">
+                <notebook>
+                    <page string="Design Matrix" name="bom_line_matrix">
                     <group string="Coefficient">
                         <field name="coeff_default"/>
                         <field name="matrix_coeff_rule"/>
@@ -90,8 +91,9 @@
                                options="{'mode': 'json'}"
                                invisible="not child_definition_id"/>
                     </group>
-                </page>
-            </notebook>
+                    </page>
+                </notebook>
+            </sheet>
         </field>
     </record>
 
