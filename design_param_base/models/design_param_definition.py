@@ -1,6 +1,7 @@
 # Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import json
 import os
 import secrets
 from xml.etree import ElementTree as ET
@@ -112,7 +113,13 @@ class DesignParamDefinition(models.Model):
     def _process_item(item):
         """Parse a single ``<item>`` node."""
         attr = item.attrib
-        return {attr.get("name"): item.text or ""}
+        text = item.text or ""
+        if text.startswith("[") or text.startswith("{"):
+            try:
+                text = json.loads(text)
+            except json.JSONDecodeError:
+                pass
+        return {attr.get("name"): text}
 
     @staticmethod
     def _generate_uuid():
