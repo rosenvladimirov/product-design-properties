@@ -110,26 +110,45 @@
 // ── Column name headers ─────────────────────────────────────────────
 
 .o_dmn_col_row {
+    .o_dmn_col_input,
+    .o_dmn_col_output {
+        position: relative;
+        font-weight: 600;
+        padding: 4px 8px;
+        font-size: 11px;
+        white-space: nowrap;
+
+        .o_dmn_col_remove {
+            display: none;
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 8px;
+            opacity: 0.5;
+            padding: 2px;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        &:hover .o_dmn_col_remove {
+            display: block;
+        }
+    }
+
     .o_dmn_col_input {
         background: #f0f8ff;
         color: #1976d2;
-        font-weight: 600;
-        padding: 4px 8px;
         border-bottom: 1px solid #bbdefb;
         border-right: 1px solid #e3f2fd;
-        font-size: 11px;
-        white-space: nowrap;
     }
 
     .o_dmn_col_output {
         background: #f1f8e9;
         color: #388e3c;
-        font-weight: 600;
-        padding: 4px 8px;
         border-bottom: 1px solid #c8e6c9;
         border-right: 1px solid #e8f5e9;
-        font-size: 11px;
-        white-space: nowrap;
     }
 }
 
@@ -144,6 +163,33 @@
     padding: 3px 4px;
     border-right: 1px solid #dee2e6;
     background: #fafafa;
+}
+
+// ── Row actions column (delete button) ──────────────────────────────
+
+.o_dmn_row_actions {
+    width: 32px;
+    min-width: 32px;
+    text-align: center;
+    padding: 0 2px;
+    background: #fafafa;
+    border-left: 1px solid #dee2e6;
+
+    .o_dmn_row_delete {
+        visibility: hidden;
+        color: #dc3545;
+        padding: 2px 4px;
+        line-height: 1;
+
+        &:hover {
+            background: #f8d7da;
+            border-radius: 3px;
+        }
+    }
+}
+
+.o_dmn_rule_row:hover .o_dmn_row_actions .o_dmn_row_delete {
+    visibility: visible;
 }
 
 // ── Rule rows ───────────────────────────────────────────────────────
@@ -163,7 +209,7 @@
     }
 }
 
-// ── Cell types ──────────────────────────────────────────────────────
+// ── Cell types (read mode) ──────────────────────────────────────────
 
 .o_dmn_cell_input {
     border-right: 1px solid #e8f0fe;
@@ -206,6 +252,41 @@
     font-size: 11px;
 }
 
+// ── Edit mode cells ─────────────────────────────────────────────────
+
+.o_dmn_cell_edit {
+    padding: 1px 2px !important;
+
+    .o_dmn_input {
+        width: 100%;
+        border: 1px solid transparent;
+        border-radius: 3px;
+        padding: 2px 5px;
+        font-size: 12px;
+        font-family: monospace;
+        background: transparent;
+        outline: none;
+        transition: border-color 0.15s, background 0.15s;
+
+        &:hover {
+            border-color: #dee2e6;
+            background: #fff;
+        }
+
+        &:focus {
+            border-color: #86b7fe;
+            background: #fff;
+            box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.15);
+        }
+
+        &::placeholder {
+            color: #ced4da;
+            font-style: italic;
+            font-family: inherit;
+        }
+    }
+}
+
 // ── Level badges (T0 constraint outputs) ────────────────────────────
 
 .o_dmn_level_badge {
@@ -223,6 +304,56 @@
     &.o_dmn_badge_warning {
         background: #fff3cd;
         color: #856404;
+    }
+}
+
+// ── Toolbar (edit mode) ─────────────────────────────────────────────
+
+.o_dmn_toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+
+    .btn {
+        font-size: 11px;
+        padding: 2px 8px;
+    }
+}
+
+.o_dmn_toolbar_sep {
+    width: 1px;
+    height: 18px;
+    background: #dee2e6;
+    margin: 0 4px;
+}
+
+// ── Add column inline ───────────────────────────────────────────────
+
+.o_dmn_add_col_inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    .o_dmn_add_col_name {
+        width: 140px;
+        border: 1px solid #dee2e6;
+        border-radius: 3px;
+        padding: 2px 6px;
+        font-size: 11px;
+        outline: none;
+
+        &:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.15);
+        }
+    }
+
+    .btn {
+        font-size: 11px;
+        padding: 2px 6px;
     }
 }
 

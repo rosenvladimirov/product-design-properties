@@ -7,10 +7,10 @@ import { registry } from "@web/core/registry";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 
 /**
- * Read-only DMN decision table renderer for GoRules JDM JSON fields.
+ * DMN decision table widget for GoRules JDM JSON fields.
  *
- * Renders the first node of a GoRules JDM document as a visual
- * decision table grid with input (blue) and output (green) columns.
+ * Read mode: visual grid with input (blue) and output (green) columns.
+ * Edit mode: inline cell editing, add/remove rows and columns.
  */
 export class DesignMatrixField extends Component {
     static template = "mrp_design_matrix.DesignMatrixField";
@@ -22,7 +22,16 @@ export class DesignMatrixField extends Component {
     setup() {
         this.state = useState({
             collapsed: false,
+            addingInput: false,
+            addingOutput: false,
+            newColName: "",
         });
+    }
+
+    // ── Mode ──────────────────────────────────────────────────────────
+
+    get isEditing() {
+        return !this.props.readonly;
     }
 
     // ── Getters ────────────────────────────────────────────────────────
@@ -35,11 +44,9 @@ export class DesignMatrixField extends Component {
     get table() {
         const raw = this.rawValue;
         if (!raw) return null;
-        // JDM format: { nodes: [{ id, name, type, content }] }
         if (raw.nodes && raw.nodes.length) {
             return raw.nodes[0];
         }
-        // Fallback: maybe the field stores the node directly
         if (raw.content) {
             return raw;
         }
@@ -88,6 +95,10 @@ export class DesignMatrixField extends Component {
         return this.table !== null && this.rules.length > 0;
     }
 
+    get hasTable() {
+        return this.table !== null;
+    }
+
     get isEmpty() {
         return !this.rawValue;
     }
@@ -96,50 +107,46 @@ export class DesignMatrixField extends Component {
         return this.inputs.length + this.outputs.length;
     }
 
+    /** All column ids in order: inputs then outputs. */
+    get allColumns() {
+        const cols = [];
+        for (const inp of this.inputs) {
+            cols.push({ ...inp, isInput: true });
+        }
+        for (const out of this.outputs) {
+            cols.push({ ...out, isInput: false });
+        }
+        return cols;
+    }
+
     // ── Cell display helpers ───────────────────────────────────────────
 
-    /**
-     * Format a cell value for display.
-     * - Empty string / null / undefined → "--" (wildcard)
-     * - Quoted strings like '"error"' → error (unquoted)
-     * - Operators like '> 3000' → > 3000
-     * - JSON objects → shortened display
-     */
     formatCell(value) {
         if (value === undefined || value === null || value === "") {
             return { display: "--", cssClass: "o_dmn_cell_empty" };
         }
         const str = String(value);
 
-        // Quoted string: "\"value\""
         if (str.startsWith('"') && str.endsWith('"') && str.length > 1) {
             try {
                 const parsed = JSON.parse(str);
                 return { display: parsed, cssClass: "" };
             } catch {
-                // Not valid JSON, show as-is
+                // pass
             }
         }
 
-        // Boolean
-        if (str === "true") {
-            return { display: "true", cssClass: "o_dmn_cell_bool" };
-        }
-        if (str === "false") {
-            return { display: "false", cssClass: "o_dmn_cell_bool" };
-        }
+        if (str === "true") return { display: "true", cssClass: "o_dmn_cell_bool" };
+        if (str === "false") return { display: "false", cssClass: "o_dmn_cell_bool" };
 
-        // Numeric
         if (!isNaN(str) && str.trim() !== "") {
             return { display: str, cssClass: "o_dmn_cell_num" };
         }
 
-        // Operator expressions: >, <, >=, <=, !=
         if (/^[><!]=?\s/.test(str)) {
             return { display: str, cssClass: "o_dmn_cell_op" };
         }
 
-        // JSON object string
         if (str.startsWith("{")) {
             try {
                 const obj = JSON.parse(str);
@@ -151,62 +158,226 @@ export class DesignMatrixField extends Component {
                     title: str,
                 };
             } catch {
-                // Not valid JSON
+                // pass
             }
         }
 
         return { display: str, cssClass: "" };
     }
 
-    /**
-     * Determine the badge class for output cells in T0 constraint tables.
-     * Recognizes error/warning levels.
-     */
     levelBadgeClass(value) {
         if (!value) return "";
         const str = String(value);
-        // Unquote if needed
         let level = str;
         if (str.startsWith('"')) {
-            try {
-                level = JSON.parse(str);
-            } catch {
-                // ignore
-            }
+            try { level = JSON.parse(str); } catch { /* pass */ }
         }
         if (level === "error") return "o_dmn_badge_error";
         if (level === "warning") return "o_dmn_badge_warning";
         return "";
     }
 
-    /**
-     * Get formatted cell data for a rule row.
-     * Returns array of { display, cssClass, title?, badgeClass? }
-     */
     getRuleCells(rule) {
         const cells = [];
         for (const input of this.inputs) {
             cells.push({
                 ...this.formatCell(rule[input.id]),
                 isInput: true,
+                colId: input.id,
             });
         }
         for (const output of this.outputs) {
             const formatted = this.formatCell(rule[output.id]);
-            // Check for level badges (T0 constraint tables)
             if (output.id === "level") {
                 formatted.badgeClass = this.levelBadgeClass(rule[output.id]);
             }
             formatted.isInput = false;
+            formatted.colId = output.id;
             cells.push(formatted);
         }
         return cells;
     }
 
-    // ── Actions ────────────────────────────────────────────────────────
+    /** Get raw cell value for edit input. */
+    getCellRaw(rule, colId) {
+        const val = rule[colId];
+        if (val === undefined || val === null) return "";
+        return String(val);
+    }
+
+    // ── JSON rebuild & save ────────────────────────────────────────────
+
+    /** Deep-clone the current JDM structure for mutation. */
+    _cloneJDM() {
+        const raw = this.rawValue;
+        if (!raw) return null;
+        return JSON.parse(JSON.stringify(raw));
+    }
+
+    /** Get mutable content from a cloned JDM. */
+    _getContent(jdm) {
+        if (jdm.nodes && jdm.nodes.length) {
+            return jdm.nodes[0].content;
+        }
+        if (jdm.content) {
+            return jdm.content;
+        }
+        return null;
+    }
+
+    /** Persist the modified JDM to the record. */
+    _save(jdm) {
+        this.props.record.update({ [this.props.name]: jdm });
+    }
+
+    // ── Edit actions ──────────────────────────────────────────────────
 
     toggleCollapse() {
         this.state.collapsed = !this.state.collapsed;
+    }
+
+    /** Update a single cell value. */
+    onCellChange(ruleIndex, colId, ev) {
+        const jdm = this._cloneJDM();
+        const content = this._getContent(jdm);
+        if (!content) return;
+        content.rules[ruleIndex][colId] = ev.target.value;
+        this._save(jdm);
+    }
+
+    /** Add an empty rule row. */
+    addRule() {
+        const jdm = this._cloneJDM() || this._createEmptyJDM();
+        const content = this._getContent(jdm);
+        if (!content) return;
+        const row = {};
+        for (const inp of content.inputs) {
+            row[inp.id] = "";
+        }
+        for (const out of content.outputs) {
+            row[out.id] = "";
+        }
+        content.rules.push(row);
+        this._save(jdm);
+    }
+
+    /** Remove a rule row by index. */
+    removeRule(ruleIndex) {
+        const jdm = this._cloneJDM();
+        const content = this._getContent(jdm);
+        if (!content) return;
+        content.rules.splice(ruleIndex, 1);
+        this._save(jdm);
+    }
+
+    /** Start adding input column — show name field. */
+    startAddInput() {
+        this.state.addingInput = true;
+        this.state.addingOutput = false;
+        this.state.newColName = "";
+    }
+
+    /** Start adding output column — show name field. */
+    startAddOutput() {
+        this.state.addingInput = false;
+        this.state.addingOutput = true;
+        this.state.newColName = "";
+    }
+
+    /** Cancel adding a column. */
+    cancelAddCol() {
+        this.state.addingInput = false;
+        this.state.addingOutput = false;
+        this.state.newColName = "";
+    }
+
+    onNewColNameInput(ev) {
+        this.state.newColName = ev.target.value;
+    }
+
+    /** Confirm adding the new column. */
+    confirmAddCol(ev) {
+        if (ev.type === "keydown" && ev.key !== "Enter") return;
+        const name = this.state.newColName.trim();
+        if (!name) return;
+
+        const colId = name.toLowerCase().replace(/\s+/g, "_");
+        const jdm = this._cloneJDM() || this._createEmptyJDM();
+        const content = this._getContent(jdm);
+        if (!content) return;
+
+        const colDef = { id: colId, name: name };
+
+        if (this.state.addingInput) {
+            // Check duplicate
+            if (content.inputs.some((c) => c.id === colId)) return;
+            content.inputs.push(colDef);
+        } else {
+            if (content.outputs.some((c) => c.id === colId)) return;
+            content.outputs.push(colDef);
+        }
+
+        // Add empty key to all existing rules
+        for (const rule of content.rules) {
+            if (!(colId in rule)) {
+                rule[colId] = "";
+            }
+        }
+
+        this.cancelAddCol();
+        this._save(jdm);
+    }
+
+    /** Remove an input or output column. */
+    removeColumn(colId, isInput) {
+        const jdm = this._cloneJDM();
+        const content = this._getContent(jdm);
+        if (!content) return;
+
+        if (isInput) {
+            content.inputs = content.inputs.filter((c) => c.id !== colId);
+        } else {
+            content.outputs = content.outputs.filter((c) => c.id !== colId);
+        }
+
+        // Remove key from all rules
+        for (const rule of content.rules) {
+            delete rule[colId];
+        }
+
+        this._save(jdm);
+    }
+
+    /** Create a blank JDM structure when field is empty. */
+    _createEmptyJDM() {
+        const tableType = this.props.tableType || "t0";
+        const names = {
+            t0: "T0 Constraints",
+            t1: "T1 Geometry",
+            t2: "T2 Materials",
+            t3: "T3 Operations",
+        };
+        return {
+            nodes: [
+                {
+                    id: tableType,
+                    name: names[tableType] || "Decision Table",
+                    type: "decisionTable",
+                    content: {
+                        hitPolicy: "collect",
+                        inputs: [],
+                        outputs: [],
+                        rules: [],
+                    },
+                },
+            ],
+        };
+    }
+
+    /** Create initial table for empty field in edit mode. */
+    createTable() {
+        const jdm = this._createEmptyJDM();
+        this._save(jdm);
     }
 }
 

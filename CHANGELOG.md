@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [18.0.1.6.0] - 2026-04-02
 
 ### Added
-- **mrp_design_matrix** (18.0.1.1.0) — `DesignMatrixField` OWL widget (Phase 1: read-only)
+- **mrp_design_matrix** (18.0.1.2.0) — `DesignMatrixField` OWL widget (Phase 1+2: read-only + edit)
   - Visual DMN decision table renderer for GoRules JDM JSON fields
   - Replaces ACE JSON editor in BoM form for T0/T1/T2/T3 tables
   - Input columns (blue) / output columns (green) grid layout

@@ -10,26 +10,21 @@
             <!-- Empty state -->
             <t t-if="isEmpty">
                 <div class="o_dmn_empty text-muted fst-italic p-2">
-                    No decision table loaded.
+                    <t t-if="isEditing">
+                        <span>No decision table.</span>
+                        <button class="btn btn-sm btn-outline-primary ms-2"
+                                t-on-click="createTable">
+                            <i class="fa fa-plus me-1"/>Create Table
+                        </button>
+                    </t>
+                    <t t-else="">
+                        No decision table loaded.
+                    </t>
                 </div>
             </t>
 
-            <!-- Table has data but no rules -->
-            <t t-elif="!hasData and table">
-                <div class="o_dmn_wrapper">
-                    <div class="o_dmn_header" t-on-click="toggleCollapse">
-                        <i t-attf-class="fa fa-fw #{state.collapsed ? 'fa-chevron-right' : 'fa-chevron-down'}"/>
-                        <span class="o_dmn_table_name" t-out="tableName"/>
-                        <span t-attf-class="o_dmn_hp_badge #{hitPolicyClass}" t-out="hitPolicyLabel"/>
-                    </div>
-                    <div class="o_dmn_empty_rules text-muted fst-italic p-2" t-if="!state.collapsed">
-                        Table defined but no rules yet.
-                    </div>
-                </div>
-            </t>
-
-            <!-- Full table render -->
-            <t t-elif="hasData">
+            <!-- Table exists (with or without rules) -->
+            <t t-elif="hasTable">
                 <div class="o_dmn_wrapper">
                     <!-- Header bar -->
                     <div class="o_dmn_header" t-on-click="toggleCollapse">
@@ -42,55 +37,173 @@
                     </div>
 
                     <!-- Decision table -->
-                    <table class="o_dmn_table" t-if="!state.collapsed">
-                        <thead>
-                            <!-- Category row -->
-                            <tr class="o_dmn_cat_row">
-                                <th class="o_dmn_row_num">#</th>
-                                <th t-attf-class="o_dmn_cat_input"
-                                    t-att-colspan="inputs.length"
-                                    t-if="inputs.length">
-                                    INPUTS
-                                </th>
-                                <th t-attf-class="o_dmn_cat_output"
-                                    t-att-colspan="outputs.length"
-                                    t-if="outputs.length">
-                                    OUTPUTS
-                                </th>
-                            </tr>
-                            <!-- Column names -->
-                            <tr class="o_dmn_col_row">
-                                <th class="o_dmn_row_num"/>
-                                <t t-foreach="inputs" t-as="inp" t-key="inp.id">
-                                    <th class="o_dmn_col_input" t-out="inp.name"/>
-                                </t>
-                                <t t-foreach="outputs" t-as="out" t-key="out.id">
-                                    <th class="o_dmn_col_output" t-out="out.name"/>
-                                </t>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <t t-foreach="rules" t-as="rule" t-key="rule_index">
-                                <tr class="o_dmn_rule_row">
-                                    <td class="o_dmn_row_num">
-                                        <t t-out="rule_index + 1"/>
-                                    </td>
-                                    <t t-foreach="getRuleCells(rule)" t-as="cell" t-key="cell_index">
-                                        <td t-attf-class="#{cell.isInput ? 'o_dmn_cell_input' : 'o_dmn_cell_output'} #{cell.cssClass}"
-                                            t-att-title="cell.title or false">
-                                            <t t-if="cell.badgeClass">
-                                                <span t-attf-class="o_dmn_level_badge #{cell.badgeClass}"
-                                                      t-out="cell.display"/>
-                                            </t>
-                                            <t t-else="">
-                                                <t t-out="cell.display"/>
-                                            </t>
-                                        </td>
-                                    </t>
+                    <t t-if="!state.collapsed">
+                        <table class="o_dmn_table" t-if="inputs.length or outputs.length">
+                            <thead>
+                                <!-- Category row -->
+                                <tr class="o_dmn_cat_row">
+                                    <th class="o_dmn_row_num">#</th>
+                                    <th class="o_dmn_cat_input"
+                                        t-att-colspan="inputs.length"
+                                        t-if="inputs.length">
+                                        INPUTS
+                                    </th>
+                                    <th class="o_dmn_cat_output"
+                                        t-att-colspan="outputs.length"
+                                        t-if="outputs.length">
+                                        OUTPUTS
+                                    </th>
+                                    <th class="o_dmn_row_actions" t-if="isEditing"/>
                                 </tr>
+                                <!-- Column names -->
+                                <tr class="o_dmn_col_row">
+                                    <th class="o_dmn_row_num"/>
+                                    <t t-foreach="inputs" t-as="inp" t-key="inp.id">
+                                        <th class="o_dmn_col_input">
+                                            <span t-out="inp.name"/>
+                                            <button class="o_dmn_col_remove btn-close"
+                                                    t-if="isEditing"
+                                                    t-on-click.stop="() => this.removeColumn(inp.id, true)"
+                                                    title="Remove column"/>
+                                        </th>
+                                    </t>
+                                    <t t-foreach="outputs" t-as="out" t-key="out.id">
+                                        <th class="o_dmn_col_output">
+                                            <span t-out="out.name"/>
+                                            <button class="o_dmn_col_remove btn-close"
+                                                    t-if="isEditing"
+                                                    t-on-click.stop="() => this.removeColumn(out.id, false)"
+                                                    title="Remove column"/>
+                                        </th>
+                                    </t>
+                                    <th class="o_dmn_row_actions" t-if="isEditing"/>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="rules" t-as="rule" t-key="rule_index">
+                                    <tr class="o_dmn_rule_row">
+                                        <td class="o_dmn_row_num">
+                                            <t t-out="rule_index + 1"/>
+                                        </td>
+
+                                        <!-- READ mode cells -->
+                                        <t t-if="!isEditing">
+                                            <t t-foreach="getRuleCells(rule)" t-as="cell" t-key="cell_index">
+                                                <td t-attf-class="#{cell.isInput ? 'o_dmn_cell_input' : 'o_dmn_cell_output'} #{cell.cssClass}"
+                                                    t-att-title="cell.title or false">
+                                                    <t t-if="cell.badgeClass">
+                                                        <span t-attf-class="o_dmn_level_badge #{cell.badgeClass}"
+                                                              t-out="cell.display"/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <t t-out="cell.display"/>
+                                                    </t>
+                                                </td>
+                                            </t>
+                                        </t>
+
+                                        <!-- EDIT mode cells -->
+                                        <t t-if="isEditing">
+                                            <t t-foreach="allColumns" t-as="col" t-key="col.id">
+                                                <td t-attf-class="o_dmn_cell_edit #{col.isInput ? 'o_dmn_cell_input' : 'o_dmn_cell_output'}">
+                                                    <input type="text"
+                                                           class="o_dmn_input"
+                                                           t-att-value="getCellRaw(rule, col.id)"
+                                                           t-on-change="(ev) => this.onCellChange(rule_index, col.id, ev)"
+                                                           t-att-placeholder="col.isInput ? '--' : ''"/>
+                                                </td>
+                                            </t>
+                                        </t>
+
+                                        <!-- Row delete button -->
+                                        <td class="o_dmn_row_actions" t-if="isEditing">
+                                            <button class="o_dmn_row_delete btn btn-sm"
+                                                    t-on-click="() => this.removeRule(rule_index)"
+                                                    title="Delete rule">
+                                                <i class="fa fa-trash-o"/>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <!-- Empty rules message -->
+                        <div class="o_dmn_empty_rules text-muted fst-italic p-2"
+                             t-if="!rules.length and !isEditing and (inputs.length or outputs.length)">
+                            Table defined but no rules yet.
+                        </div>
+
+                        <!-- No columns yet (edit mode) -->
+                        <div class="o_dmn_empty_rules text-muted fst-italic p-2"
+                             t-if="!inputs.length and !outputs.length and isEditing">
+                            Add input and output columns to start defining rules.
+                        </div>
+
+                        <!-- Edit toolbar -->
+                        <div class="o_dmn_toolbar" t-if="isEditing">
+                            <button class="btn btn-sm btn-outline-secondary"
+                                    t-on-click="addRule"
+                                    t-att-disabled="!inputs.length and !outputs.length">
+                                <i class="fa fa-plus me-1"/>Rule
+                            </button>
+                            <span class="o_dmn_toolbar_sep"/>
+
+                            <!-- Add input -->
+                            <t t-if="!state.addingInput">
+                                <button class="btn btn-sm btn-outline-primary"
+                                        t-on-click="startAddInput">
+                                    <i class="fa fa-plus me-1"/>Input
+                                </button>
                             </t>
-                        </tbody>
-                    </table>
+                            <t t-else="">
+                                <div class="o_dmn_add_col_inline">
+                                    <input type="text"
+                                           class="o_dmn_add_col_name"
+                                           placeholder="Column name..."
+                                           t-att-value="state.newColName"
+                                           t-on-input="onNewColNameInput"
+                                           t-on-keydown="confirmAddCol"
+                                           t-ref="addColInput"/>
+                                    <button class="btn btn-sm btn-primary"
+                                            t-on-click="confirmAddCol">
+                                        <i class="fa fa-check"/>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            t-on-click="cancelAddCol">
+                                        <i class="fa fa-times"/>
+                                    </button>
+                                </div>
+                            </t>
+
+                            <!-- Add output -->
+                            <t t-if="!state.addingOutput">
+                                <button class="btn btn-sm btn-outline-success"
+                                        t-on-click="startAddOutput">
+                                    <i class="fa fa-plus me-1"/>Output
+                                </button>
+                            </t>
+                            <t t-else="">
+                                <div class="o_dmn_add_col_inline">
+                                    <input type="text"
+                                           class="o_dmn_add_col_name"
+                                           placeholder="Column name..."
+                                           t-att-value="state.newColName"
+                                           t-on-input="onNewColNameInput"
+                                           t-on-keydown="confirmAddCol"
+                                           t-ref="addColInput"/>
+                                    <button class="btn btn-sm btn-success"
+                                            t-on-click="confirmAddCol">
+                                        <i class="fa fa-check"/>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            t-on-click="cancelAddCol">
+                                        <i class="fa fa-times"/>
+                                    </button>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
                 </div>
             </t>
         </div>

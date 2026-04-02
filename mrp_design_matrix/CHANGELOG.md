@@ -4,6 +4,21 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.2.0] - 2026-04-02
+
+### Added
+
+- `DesignMatrixField` edit mode (Phase 2)
+  - Inline cell editing — all cells become `<input>` fields in edit mode
+  - Add rule row (+ Rule button in toolbar)
+  - Delete rule row (trash icon on hover)
+  - Add input / output columns (+ Input, + Output buttons with inline name entry)
+  - Remove columns (x button on column header hover)
+  - Create empty table from blank field ("Create Table" button)
+  - Auto-persist: every edit rebuilds JSON and updates the ORM record
+
+*Assisted by Claude Code*
+
 ## [18.0.1.1.0] - 2026-04-02
 
 ### Added
