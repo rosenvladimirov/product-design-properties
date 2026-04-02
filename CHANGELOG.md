@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [18.0.1.6.0] - 2026-04-02
+
+### Added
+- **mrp_design_matrix** (18.0.1.1.0) — `DesignMatrixField` OWL widget (Phase 1: read-only)
+  - Visual DMN decision table renderer for GoRules JDM JSON fields
+  - Replaces ACE JSON editor in BoM form for T0/T1/T2/T3 tables
+  - Input columns (blue) / output columns (green) grid layout
+  - hitPolicy badge (COLLECT / FIRST / PRIORITY)
+  - Collapsible sections with rule count
+  - Error/warning level badges for T0 constraint outputs
+  - Smart cell formatting: wildcards, booleans, operators, JSON objects
+
+*Assisted by Claude Code*
+
 ## [18.0.1.5.0] - 2026-03-30
 
 ### Added

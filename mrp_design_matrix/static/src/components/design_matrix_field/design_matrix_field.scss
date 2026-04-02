@@ -1,0 +1,234 @@
+// Copyright 2026 BL Consulting
+// License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+// ── DMN Decision Table Field ────────────────────────────────────────
+
+.o_dmn_field {
+    margin-bottom: 8px;
+}
+
+.o_dmn_wrapper {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+}
+
+// ── Header bar ──────────────────────────────────────────────────────
+
+.o_dmn_header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    cursor: pointer;
+    user-select: none;
+    font-size: 13px;
+
+    &:hover {
+        background: #e9ecef;
+    }
+
+    .fa {
+        color: #6c757d;
+        font-size: 11px;
+    }
+}
+
+.o_dmn_table_name {
+    font-weight: 600;
+    color: #212529;
+}
+
+.o_dmn_hp_badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+
+    &.o_dmn_hp_collect {
+        background: #e2e3e5;
+        color: #41464b;
+    }
+
+    &.o_dmn_hp_first {
+        background: #cff4fc;
+        color: #055160;
+    }
+
+    &.o_dmn_hp_priority {
+        background: #fff3cd;
+        color: #664d03;
+    }
+}
+
+.o_dmn_rule_count {
+    font-size: 11px;
+}
+
+// ── Table ───────────────────────────────────────────────────────────
+
+.o_dmn_table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    line-height: 1.4;
+    table-layout: auto;
+}
+
+// ── Category headers (INPUTS / OUTPUTS) ─────────────────────────────
+
+.o_dmn_cat_row {
+    .o_dmn_cat_input {
+        background: #e8f4fd;
+        color: #1565c0;
+        border-bottom: 2px solid #2196f3;
+        text-align: center;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 3px 8px;
+    }
+
+    .o_dmn_cat_output {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border-bottom: 2px solid #4caf50;
+        text-align: center;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 3px 8px;
+    }
+}
+
+// ── Column name headers ─────────────────────────────────────────────
+
+.o_dmn_col_row {
+    .o_dmn_col_input {
+        background: #f0f8ff;
+        color: #1976d2;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-bottom: 1px solid #bbdefb;
+        border-right: 1px solid #e3f2fd;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .o_dmn_col_output {
+        background: #f1f8e9;
+        color: #388e3c;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-bottom: 1px solid #c8e6c9;
+        border-right: 1px solid #e8f5e9;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+}
+
+// ── Row number column ───────────────────────────────────────────────
+
+.o_dmn_row_num {
+    width: 30px;
+    min-width: 30px;
+    text-align: center;
+    color: #adb5bd;
+    font-size: 10px;
+    padding: 3px 4px;
+    border-right: 1px solid #dee2e6;
+    background: #fafafa;
+}
+
+// ── Rule rows ───────────────────────────────────────────────────────
+
+.o_dmn_rule_row {
+    &:hover {
+        background: #f5f5f5;
+    }
+
+    &:not(:last-child) td {
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    td {
+        padding: 3px 8px;
+        vertical-align: middle;
+    }
+}
+
+// ── Cell types ──────────────────────────────────────────────────────
+
+.o_dmn_cell_input {
+    border-right: 1px solid #e8f0fe;
+}
+
+.o_dmn_cell_output {
+    border-right: 1px solid #e8f5e9;
+}
+
+// Input/output boundary
+.o_dmn_cell_input:last-of-type,
+.o_dmn_col_input:last-of-type {
+    border-right: 2px solid #dee2e6;
+}
+
+.o_dmn_cell_empty {
+    color: #ced4da;
+    font-style: italic;
+}
+
+.o_dmn_cell_bool {
+    color: #6f42c1;
+    font-weight: 500;
+}
+
+.o_dmn_cell_num {
+    color: #0d6efd;
+    font-family: monospace;
+}
+
+.o_dmn_cell_op {
+    color: #d63384;
+    font-family: monospace;
+    font-weight: 500;
+}
+
+.o_dmn_cell_json {
+    color: #6c757d;
+    font-family: monospace;
+    font-size: 11px;
+}
+
+// ── Level badges (T0 constraint outputs) ────────────────────────────
+
+.o_dmn_level_badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+
+    &.o_dmn_badge_error {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    &.o_dmn_badge_warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+}
+
+// ── Empty / no-data states ──────────────────────────────────────────
+
+.o_dmn_empty,
+.o_dmn_empty_rules {
+    font-size: 12px;
+}

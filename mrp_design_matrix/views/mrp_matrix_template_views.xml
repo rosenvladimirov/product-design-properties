@@ -30,26 +30,26 @@
                     <notebook>
                         <page string="T0 — Constraints">
                             <field name="constraint_table"
-                                   widget="ace"
-                                   options="{'mode': 'json'}"
+                                   widget="design_matrix"
+                                   options="{'table_type': 't0'}"
                                    nolabel="1"/>
                         </page>
                         <page string="T1 — Geometry">
                             <field name="geometry_table"
-                                   widget="ace"
-                                   options="{'mode': 'json'}"
+                                   widget="design_matrix"
+                                   options="{'table_type': 't1'}"
                                    nolabel="1"/>
                         </page>
                         <page string="T2 — Materials">
                             <field name="material_table"
-                                   widget="ace"
-                                   options="{'mode': 'json'}"
+                                   widget="design_matrix"
+                                   options="{'table_type': 't2'}"
                                    nolabel="1"/>
                         </page>
                         <page string="T3 — Operations">
                             <field name="operation_table"
-                                   widget="ace"
-                                   options="{'mode': 'json'}"
+                                   widget="design_matrix"
+                                   options="{'table_type': 't3'}"
                                    nolabel="1"/>
                         </page>
                     </notebook>
