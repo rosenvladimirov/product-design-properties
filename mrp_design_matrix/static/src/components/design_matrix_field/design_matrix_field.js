@@ -198,11 +198,63 @@ export class DesignMatrixField extends Component {
         return cells;
     }
 
-    /** Get raw cell value for edit input. */
+    // ── JDM cell encoding/decoding ───────────────────────────────────
+
+    /**
+     * Decode a JDM cell value to human-readable form for editing.
+     *
+     * JDM stores:  "\"error\""   → user sees: error
+     *              "true"        → user sees: true
+     *              "> 3000"      → user sees: > 3000
+     *              "1.0"         → user sees: 1.0
+     *              ""            → user sees: (empty)
+     */
+    decodeCell(value) {
+        if (value === undefined || value === null || value === "") return "";
+        const str = String(value);
+        // Quoted string → unquote: "\"error\"" → error
+        if (str.startsWith('"') && str.endsWith('"') && str.length > 1) {
+            try {
+                return JSON.parse(str);
+            } catch {
+                // malformed, return as-is
+            }
+        }
+        return str;
+    }
+
+    /**
+     * Encode a human-readable value back to JDM cell format.
+     *
+     * user types: error     → stored: "\"error\""   (quoted string)
+     *             true      → stored: "true"         (boolean)
+     *             1.0       → stored: "1.0"          (number)
+     *             > 3000    → stored: "> 3000"       (operator)
+     *             {key: v}  → stored: "{key: v}"     (JSON object)
+     *             (empty)   → stored: ""             (wildcard)
+     */
+    encodeCell(value) {
+        if (value === "") return "";
+        // Boolean
+        if (value === "true" || value === "false") return value;
+        // Number
+        if (!isNaN(value) && value.trim() !== "") return value;
+        // Operator expression
+        if (/^[><!]=?\s/.test(value)) return value;
+        // JSON object
+        if (value.startsWith("{")) return value;
+        // Already JDM-quoted (user manually typed quotes)
+        if (value.startsWith('"') && value.endsWith('"') && value.length > 1) {
+            return value;
+        }
+        // Plain text → wrap in JDM quotes
+        return JSON.stringify(value);
+    }
+
+    /** Get decoded cell value for edit input display. */
     getCellRaw(rule, colId) {
         const val = rule[colId];
-        if (val === undefined || val === null) return "";
-        return String(val);
+        return this.decodeCell(val);
     }
 
     // ── JSON rebuild & save ────────────────────────────────────────────
@@ -236,12 +288,12 @@ export class DesignMatrixField extends Component {
         this.state.collapsed = !this.state.collapsed;
     }
 
-    /** Update a single cell value. */
+    /** Update a single cell value with smart encoding. */
     onCellChange(ruleIndex, colId, ev) {
         const jdm = this._cloneJDM();
         const content = this._getContent(jdm);
         if (!content) return;
-        content.rules[ruleIndex][colId] = ev.target.value;
+        content.rules[ruleIndex][colId] = this.encodeCell(ev.target.value.trim());
         this._save(jdm);
     }
 

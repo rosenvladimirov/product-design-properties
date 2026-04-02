@@ -4,6 +4,17 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.2.1] - 2026-04-02
+
+### Fixed
+
+- Smart cell encoding/decoding — user types `error` and widget auto-encodes to JDM `"error"` format
+  - No manual quoting needed for string values
+  - Booleans (`true`/`false`), numbers, operators (`> 3000`), JSON objects pass through unquoted
+  - Existing JDM-quoted values decoded for display in edit mode
+
+*Assisted by Claude Code*
+
 ## [18.0.1.2.0] - 2026-04-02
 
 ### Added
