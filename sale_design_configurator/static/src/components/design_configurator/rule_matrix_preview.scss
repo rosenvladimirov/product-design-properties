@@ -1,0 +1,323 @@
+// Copyright 2026 BL Consulting
+// License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+// ── Rule Matrix Preview ─────────────────────────────────────────────
+
+.o_cfg_rule_preview {
+    background: #fafafa;
+    height: 100%;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+// ── Section cards ───────────────────────────────────────────────────
+
+.o_cfg_rule_section {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.o_cfg_rule_section_header {
+    padding: 8px 12px;
+    font-weight: 600;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &.t0 {
+        background: #fce4ec;
+        color: #c62828;
+        border-left: 3px solid #e53935;
+    }
+
+    &.t1 {
+        background: #e3f2fd;
+        color: #1565c0;
+        border-left: 3px solid #1e88e5;
+    }
+
+    &.t2 {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border-left: 3px solid #43a047;
+    }
+
+    &.t3 {
+        background: #fff3e0;
+        color: #e65100;
+        border-left: 3px solid #fb8c00;
+    }
+}
+
+.o_cfg_rule_status {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+
+    &.ok {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    &.error {
+        background: #ffebee;
+        color: #c62828;
+    }
+
+    &.warning {
+        background: #fff8e1;
+        color: #f57f17;
+    }
+}
+
+.o_cfg_rule_section_body {
+    padding: 4px 0;
+}
+
+// ── Constraint rows ─────────────────────────────────────────────────
+
+.o_cfg_rule_row {
+    padding: 5px 12px;
+    font-size: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    transition: background 0.2s, opacity 0.3s;
+
+    &:not(:last-child) {
+        border-bottom: 1px solid #f5f5f5;
+    }
+
+    &.ok {
+        color: #81c784;
+
+        .o_cfg_rule_msg {
+            color: #66bb6a;
+        }
+    }
+
+    &.error {
+        background: rgba(244, 67, 54, 0.06);
+
+        .o_cfg_rule_icon {
+            color: #e53935;
+        }
+
+        .o_cfg_rule_msg {
+            color: #c62828;
+            font-weight: 500;
+        }
+    }
+
+    &.warning {
+        background: rgba(255, 193, 7, 0.06);
+
+        .o_cfg_rule_icon {
+            color: #f9a825;
+        }
+
+        .o_cfg_rule_msg {
+            color: #f57f17;
+            font-weight: 500;
+        }
+    }
+}
+
+.o_cfg_rule_icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 13px;
+}
+
+.o_cfg_rule_msg {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.o_cfg_rule_desc {
+    font-size: 10px;
+    color: #9e9e9e;
+    white-space: nowrap;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+// ── T1 — Geometry rows ──────────────────────────────────────────────
+
+.o_cfg_geom_row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    font-size: 12px;
+
+    &:not(:last-child) {
+        border-bottom: 1px solid #f5f5f5;
+    }
+}
+
+.o_cfg_geom_key {
+    font-weight: 500;
+    color: #1565c0;
+    min-width: 140px;
+}
+
+.o_cfg_geom_eq {
+    color: #9e9e9e;
+}
+
+.o_cfg_geom_val {
+    font-family: monospace;
+    font-weight: 600;
+    color: #212529;
+}
+
+// ── T2 — Materials table ────────────────────────────────────────────
+
+.o_cfg_mat_table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+
+    thead th {
+        padding: 4px 10px;
+        font-size: 10px;
+        font-weight: 600;
+        color: #9e9e9e;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    tbody td {
+        padding: 4px 10px;
+    }
+}
+
+.o_cfg_mat_line {
+    transition: background 0.2s, opacity 0.2s;
+
+    &:not(:last-child) td {
+        border-bottom: 1px solid #f5f5f5;
+    }
+
+    &.inactive {
+        opacity: 0.4;
+        text-decoration: line-through;
+    }
+
+    &.modified {
+        background: rgba(255, 235, 59, 0.08);
+    }
+}
+
+.o_cfg_mat_name {
+    font-weight: 500;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.o_cfg_mat_num {
+    font-family: monospace;
+    font-size: 11px;
+}
+
+.o_cfg_mat_op {
+    color: #9e9e9e;
+    font-size: 10px;
+}
+
+.o_cfg_mat_coeff_matrix {
+    color: #f57f17;
+    font-weight: 600;
+}
+
+// ── T3 — Operation cards ────────────────────────────────────────────
+
+.o_cfg_ops_body {
+    padding: 8px 10px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.o_cfg_op_card {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    transition: opacity 0.2s, border-color 0.2s;
+
+    &.active {
+        border-left: 3px solid #43a047;
+        background: #f1f8e9;
+    }
+
+    &.inactive {
+        border: 1px dashed #ccc;
+        opacity: 0.5;
+    }
+}
+
+.o_cfg_op_name {
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.o_cfg_op_icon {
+    font-size: 11px;
+
+    .active & {
+        color: #43a047;
+    }
+
+    .inactive & {
+        color: #bdbdbd;
+    }
+}
+
+.o_cfg_op_meta {
+    display: flex;
+    gap: 12px;
+    margin-top: 3px;
+    padding-left: 20px;
+    font-size: 10px;
+    color: #757575;
+}
+
+.o_cfg_op_duration,
+.o_cfg_op_wc {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+// ── Empty state ─────────────────────────────────────────────────────
+
+.o_cfg_rule_empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 40px 20px;
+    color: #bdbdbd;
+    font-size: 13px;
+
+    .fa {
+        font-size: 32px;
+    }
+}

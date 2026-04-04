@@ -206,53 +206,69 @@
 
         </div>
 
-        <!-- Right panel: 3D viewport -->
-        <div class="o_cfg_viewport">
-            <canvas t-ref="canvas"/>
-            <div class="o_cfg_viewport_controls">
-                <button class="o_cfg_ctrl_btn" t-on-click="toggleAutoRotate"
-                        t-att-title="ui.autoRotate ? 'Pause rotation' : 'Resume rotation'">
-                    <i t-att-class="ui.autoRotate ? 'fa fa-pause' : 'fa fa-play'"/>
-                </button>
-                <button class="o_cfg_ctrl_btn" t-on-click="resetView" title="Reset view">
-                    <i class="fa fa-refresh"/>
-                </button>
+        <!-- Right panel: Rule Matrix Preview (when no 3D/SVG assets) -->
+        <t t-if="showRulePreview">
+            <div class="o_cfg_viewport">
+                <RuleMatrixPreview
+                    params="params"
+                    constraintTable="props.constraintTable"
+                    geometryTable="props.geometryTable"
+                    materialTable="props.materialTable"
+                    operationTable="props.operationTable"
+                    bomLines="props.bomLines or []"
+                />
             </div>
-            <div class="o_cfg_rotate_hint" t-if="ui.autoRotate">Drag to rotate</div>
+        </t>
 
-            <!-- Accessory overlay panel (bottom sheet) -->
-            <div t-ref="overlay" class="o_cfg_overlay"
-                 t-att-style="'height:' + ui.overlayHeight + 'px'">
-                <div class="o_cfg_overlay_handle" t-on-mousedown="onOverlayHandleDrag">
-                    <div class="o_cfg_overlay_grip"/>
+        <!-- Right panel: 3D viewport (when 3D/SVG assets exist) -->
+        <t t-else="">
+            <div class="o_cfg_viewport">
+                <canvas t-ref="canvas"/>
+                <div class="o_cfg_viewport_controls">
+                    <button class="o_cfg_ctrl_btn" t-on-click="toggleAutoRotate"
+                            t-att-title="ui.autoRotate ? 'Pause rotation' : 'Resume rotation'">
+                        <i t-att-class="ui.autoRotate ? 'fa fa-pause' : 'fa fa-play'"/>
+                    </button>
+                    <button class="o_cfg_ctrl_btn" t-on-click="resetView" title="Reset view">
+                        <i class="fa fa-refresh"/>
+                    </button>
                 </div>
-                <div class="o_cfg_overlay_body">
-                    <div class="o_cfg_overlay_desc" t-if="ui.description">
-                        <t t-esc="ui.description"/>
+                <div class="o_cfg_rotate_hint" t-if="ui.autoRotate">Drag to rotate</div>
+
+                <!-- Accessory overlay panel (bottom sheet) -->
+                <div t-ref="overlay" class="o_cfg_overlay"
+                     t-att-style="'height:' + ui.overlayHeight + 'px'">
+                    <div class="o_cfg_overlay_handle" t-on-mousedown="onOverlayHandleDrag">
+                        <div class="o_cfg_overlay_grip"/>
                     </div>
-                    <t t-foreach="overlayGroups" t-as="group" t-key="group.bomProductId">
-                        <div class="o_cfg_overlay_section_title">
-                            <t t-esc="group.componentName"/>
+                    <div class="o_cfg_overlay_body">
+                        <div class="o_cfg_overlay_desc" t-if="ui.description">
+                            <t t-esc="ui.description"/>
                         </div>
-                        <div class="o_cfg_overlay_grid">
-                            <t t-foreach="group.variants" t-as="v" t-key="v.variant_id">
-                                <div t-att-class="'o_cfg_overlay_card' + (v.selected ? ' active' : '')"
-                                     t-att-data-param="group.paramKey"
-                                     t-att-data-variant="v.variantStr"
-                                     t-on-click="onAccessorySelect">
-                                    <img t-att-src="v.imageUrl"
-                                         class="o_cfg_overlay_card_img"
-                                         t-att-alt="v.ptav_name"/>
-                                    <div class="o_cfg_overlay_card_name">
-                                        <t t-esc="v.ptav_name"/>
+                        <t t-foreach="overlayGroups" t-as="group" t-key="group.bomProductId">
+                            <div class="o_cfg_overlay_section_title">
+                                <t t-esc="group.componentName"/>
+                            </div>
+                            <div class="o_cfg_overlay_grid">
+                                <t t-foreach="group.variants" t-as="v" t-key="v.variant_id">
+                                    <div t-att-class="'o_cfg_overlay_card' + (v.selected ? ' active' : '')"
+                                         t-att-data-param="group.paramKey"
+                                         t-att-data-variant="v.variantStr"
+                                         t-on-click="onAccessorySelect">
+                                        <img t-att-src="v.imageUrl"
+                                             class="o_cfg_overlay_card_img"
+                                             t-att-alt="v.ptav_name"/>
+                                        <div class="o_cfg_overlay_card_name">
+                                            <t t-esc="v.ptav_name"/>
+                                        </div>
                                     </div>
-                                </div>
-                            </t>
-                        </div>
-                    </t>
+                                </t>
+                            </div>
+                        </t>
+                    </div>
                 </div>
             </div>
-        </div>
+        </t>
 
     </div>
 </t>

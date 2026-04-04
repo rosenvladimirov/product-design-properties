@@ -40,6 +40,11 @@ export class DesignConfiguratorDialog extends Component {
             childComponents: [],
             accessoryVariants: [],
             modelVariants: {},
+            constraintTable: false,
+            geometryTable: false,
+            materialTable: false,
+            operationTable: false,
+            bomLines: [],
         });
         this._loadDefinition();
     }
@@ -87,6 +92,41 @@ export class DesignConfiguratorDialog extends Component {
                     "mrp.bom", "get_bom_design_assets", [boms[0].id]
                 );
                 this.state.bomAssets = bomAssets;
+
+                // Load BoM matrix tables (T0-T3) for RuleMatrixPreview
+                try {
+                    const [bomData] = await this.orm.read(
+                        "mrp.bom", [boms[0].id],
+                        ["constraint_table", "geometry_table", "material_table", "operation_table"]
+                    );
+                    if (bomData) {
+                        this.state.constraintTable = bomData.constraint_table || false;
+                        this.state.geometryTable = bomData.geometry_table || false;
+                        this.state.materialTable = bomData.material_table || false;
+                        this.state.operationTable = bomData.operation_table || false;
+                    }
+                } catch (e) {
+                    console.warn("Could not load BoM matrix tables:", e.message);
+                }
+
+                // Load BoM lines with matrix coefficient fields
+                try {
+                    const lines = await this.orm.searchRead(
+                        "mrp.bom.line",
+                        [["bom_id", "=", boms[0].id]],
+                        ["product_id", "product_qty", "coeff_default", "matrix_coeff_rule"],
+                        { order: "sequence, id" }
+                    );
+                    this.state.bomLines = lines.map(l => ({
+                        product_id: l.product_id[0],
+                        product_name: l.product_id[1],
+                        product_qty: l.product_qty,
+                        coeff_default: l.coeff_default,
+                        matrix_coeff_rule: l.matrix_coeff_rule || "",
+                    }));
+                } catch (e) {
+                    console.warn("Could not load BoM lines:", e.message);
+                }
 
                 // Load child component definitions (e.g., door leaf with its own params)
                 const childComponents = [];

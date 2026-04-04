@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright 2026 BL Consulting
+    License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+-->
+<templates xml:space="preserve">
+
+    <t t-name="sale_design_configurator.RuleMatrixPreview">
+        <div class="o_cfg_rule_preview">
+
+            <!-- T0 — Constraints -->
+            <t t-if="hasT0">
+                <div class="o_cfg_rule_section">
+                    <div class="o_cfg_rule_section_header t0">
+                        <span>T0 Constraints</span>
+                        <span t-attf-class="o_cfg_rule_status #{t0StatusClass}">
+                            <t t-out="t0StatusText"/>
+                        </span>
+                    </div>
+                    <div class="o_cfg_rule_section_body">
+                        <t t-foreach="t0.results" t-as="row" t-key="row_index">
+                            <div t-attf-class="o_cfg_rule_row #{row.cssClass}">
+                                <i t-attf-class="fa #{row.icon} o_cfg_rule_icon"/>
+                                <span class="o_cfg_rule_msg">
+                                    <t t-out="row.message"/>
+                                </span>
+                                <span class="o_cfg_rule_desc" t-if="row.matched and row.description">
+                                    <t t-out="row.description"/>
+                                </span>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </t>
+
+            <!-- T1 — Geometry -->
+            <t t-if="hasT1">
+                <div class="o_cfg_rule_section">
+                    <div class="o_cfg_rule_section_header t1">
+                        <span>T1 Geometry</span>
+                        <span class="o_cfg_rule_status ok">
+                            <t t-out="t1.length"/> value<t t-if="t1.length !== 1">s</t>
+                        </span>
+                    </div>
+                    <div class="o_cfg_rule_section_body">
+                        <t t-foreach="t1" t-as="entry" t-key="entry.name">
+                            <div class="o_cfg_geom_row">
+                                <span class="o_cfg_geom_key"><t t-out="entry.name"/></span>
+                                <span class="o_cfg_geom_eq">=</span>
+                                <span class="o_cfg_geom_val"><t t-out="entry.value"/></span>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </t>
+
+            <!-- T2 — Materials -->
+            <t t-if="hasT2">
+                <div class="o_cfg_rule_section">
+                    <div class="o_cfg_rule_section_header t2">
+                        <span>T2 Materials</span>
+                        <span class="o_cfg_rule_status ok">
+                            <t t-out="t2ActiveCount"/> / <t t-out="t2.length"/> active
+                        </span>
+                    </div>
+                    <div class="o_cfg_rule_section_body">
+                        <table class="o_cfg_mat_table">
+                            <thead>
+                                <tr>
+                                    <th>Component</th>
+                                    <th class="text-end">Qty</th>
+                                    <th class="text-center">x</th>
+                                    <th class="text-end">Coeff</th>
+                                    <th class="text-center">=</th>
+                                    <th class="text-end">Final</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="t2" t-as="line" t-key="line_index">
+                                    <tr t-attf-class="o_cfg_mat_line #{line.cssClass}">
+                                        <td class="o_cfg_mat_name"><t t-out="line.name"/></td>
+                                        <td class="text-end o_cfg_mat_num"><t t-out="line.baseQty"/></td>
+                                        <td class="text-center o_cfg_mat_op">x</td>
+                                        <td class="text-end o_cfg_mat_num">
+                                            <span t-attf-class="#{line.coeffSource === 'matrix' ? 'o_cfg_mat_coeff_matrix' : ''}">
+                                                <t t-out="line.coeff"/>
+                                            </span>
+                                        </td>
+                                        <td class="text-center o_cfg_mat_op">=</td>
+                                        <td class="text-end o_cfg_mat_num fw-bold"><t t-out="line.finalQty"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </t>
+
+            <!-- T3 — Operations -->
+            <t t-if="hasT3">
+                <div class="o_cfg_rule_section">
+                    <div class="o_cfg_rule_section_header t3">
+                        <span>T3 Operations</span>
+                        <span class="o_cfg_rule_status ok">
+                            <t t-out="t3ActiveCount"/> / <t t-out="t3.length"/> active
+                        </span>
+                    </div>
+                    <div class="o_cfg_rule_section_body o_cfg_ops_body">
+                        <t t-foreach="t3" t-as="op" t-key="op_index">
+                            <div t-attf-class="o_cfg_op_card #{op.cssClass}">
+                                <div class="o_cfg_op_name">
+                                    <i t-attf-class="fa #{op.active ? 'fa-cog' : 'fa-ban'} o_cfg_op_icon"/>
+                                    <t t-out="op.name"/>
+                                </div>
+                                <div class="o_cfg_op_meta" t-if="op.duration or op.workcenter">
+                                    <span t-if="op.duration" class="o_cfg_op_duration">
+                                        <i class="fa fa-clock-o"/> <t t-out="op.duration"/>
+                                    </span>
+                                    <span t-if="op.workcenter" class="o_cfg_op_wc">
+                                        <i class="fa fa-industry"/> <t t-out="op.workcenter"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Empty state: no matrix tables at all -->
+            <t t-if="!hasT0 and !hasT1 and !hasT2 and !hasT3">
+                <div class="o_cfg_rule_empty">
+                    <i class="fa fa-table"/>
+                    <span>No matrix tables available</span>
+                </div>
+            </t>
+
+        </div>
+    </t>
+
+</templates>

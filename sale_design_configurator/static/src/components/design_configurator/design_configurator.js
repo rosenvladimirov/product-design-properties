@@ -12,12 +12,14 @@ import {
 } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { registry } from "@web/core/registry";
+import { RuleMatrixPreview } from "./rule_matrix_preview";
 
 // Three.js + SVGLoader loaded via assets bundle (see __manifest__.py)
 // window.THREE is available after page load.
 
 export class DesignConfiguratorWidget extends Component {
     static template = "sale_design_configurator.DesignConfiguratorWidget";
+    static components = { RuleMatrixPreview };
 
     static props = {
         productId: { type: Number },
@@ -31,6 +33,11 @@ export class DesignConfiguratorWidget extends Component {
         childComponents: { type: Array, optional: true },
         accessoryVariants: { type: Array, optional: true },
         modelVariants: { type: Object, optional: true },
+        constraintTable: { type: [Object, { value: false }], optional: true },
+        geometryTable: { type: [Object, { value: false }], optional: true },
+        materialTable: { type: [Object, { value: false }], optional: true },
+        operationTable: { type: [Object, { value: false }], optional: true },
+        bomLines: { type: Array, optional: true },
         existingLotId: { type: [Number, Boolean], optional: true },
         onLotCreated: { type: Function },
         onClose: { type: Function },
@@ -88,19 +95,22 @@ export class DesignConfiguratorWidget extends Component {
                     }
                 }
             }
-            // Hide canvas until model is ready (prevents flash/jump)
-            const canvas = this.canvasRef.el;
-            if (canvas) {
-                canvas.style.opacity = "0";
-                canvas.style.transition = "opacity 0.3s ease";
+            // Only init Three.js when NOT in rule preview mode
+            if (!this.showRulePreview) {
+                // Hide canvas until model is ready (prevents flash/jump)
+                const canvas = this.canvasRef.el;
+                if (canvas) {
+                    canvas.style.opacity = "0";
+                    canvas.style.transition = "opacity 0.3s ease";
+                }
+                this._applyVariantOverridesFromParams();
+                this._initThree();
+                await this._buildModel();
+                // Fade in canvas
+                if (canvas) canvas.style.opacity = "1";
             }
-            this._applyVariantOverridesFromParams();
-            this._initThree();
-            await this._buildModel();
             this._validate();
             this._updateDescription();
-            // Fade in canvas
-            if (canvas) canvas.style.opacity = "1";
         });
 
         onWillUpdateProps((newProps) => {
@@ -265,6 +275,26 @@ export class DesignConfiguratorWidget extends Component {
 
     get hasErrors() {
         return this.ui.validErrors.length > 0;
+    }
+
+    /**
+     * Show RuleMatrixPreview instead of 3D canvas when:
+     * - No 3D models (GLB)
+     * - No SVG profiles
+     * - At least one matrix table exists
+     */
+    get showRulePreview() {
+        const assets = this.props.mainProductAssets || {};
+        const has3D = (assets.models_3d || []).length > 0;
+        const hasSVG = (this.props.profiles || []).length > 0
+            && this.props.profiles[0]?.svg_content;
+        const hasMatrix = !!(
+            this.props.constraintTable ||
+            this.props.geometryTable ||
+            this.props.materialTable ||
+            this.props.operationTable
+        );
+        return !has3D && !hasSVG && hasMatrix;
     }
 
     // ── User interaction ────────────────────────────────────────────────
