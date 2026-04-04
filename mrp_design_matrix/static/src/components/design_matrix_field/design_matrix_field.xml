@@ -30,15 +30,49 @@
                     <div class="o_dmn_header" t-on-click="toggleCollapse">
                         <i t-attf-class="fa fa-fw #{state.collapsed ? 'fa-chevron-right' : 'fa-chevron-down'}"/>
                         <span class="o_dmn_table_name" t-out="tableName"/>
-                        <span t-attf-class="o_dmn_hp_badge #{hitPolicyClass}" t-out="hitPolicyLabel"/>
+                        <t t-if="isEditing">
+                            <select class="o_dmn_hp_select"
+                                    t-on-change="onHitPolicyChange"
+                                    t-on-click.stop="">
+                                <option value="collect" t-att-selected="hitPolicy === 'collect' ? 'selected' : undefined">COLLECT</option>
+                                <option value="first" t-att-selected="hitPolicy === 'first' ? 'selected' : undefined">FIRST</option>
+                                <option value="priority" t-att-selected="hitPolicy === 'priority' ? 'selected' : undefined">PRIORITY</option>
+                            </select>
+                        </t>
+                        <t t-else="">
+                            <span t-attf-class="o_dmn_hp_badge #{hitPolicyClass}" t-out="hitPolicyLabel"/>
+                        </t>
                         <span class="o_dmn_rule_count text-muted ms-auto">
                             <t t-out="rules.length"/> rule<t t-if="rules.length !== 1">s</t>
                         </span>
+                        <button class="o_dmn_view_toggle btn btn-sm btn-outline-secondary"
+                                t-on-click.stop="toggleViewMode"
+                                t-att-title="isJsonView ? 'Switch to table view' : 'Switch to JSON view'">
+                            <i t-attf-class="fa #{isJsonView ? 'fa-table' : 'fa-code'}"/>
+                            <span class="ms-1" t-out="isJsonView ? 'Table' : 'JSON'"/>
+                        </button>
                     </div>
 
                     <!-- Decision table -->
                     <t t-if="!state.collapsed">
-                        <table class="o_dmn_table" t-if="inputs.length or outputs.length">
+
+                        <!-- JSON view mode -->
+                        <t t-if="isJsonView">
+                            <div class="o_dmn_json_view">
+                                <t t-if="isEditing">
+                                    <textarea class="o_dmn_json_editor"
+                                              t-att-value="jsonString"
+                                              t-on-change="onJsonChange"
+                                              spellcheck="false"/>
+                                </t>
+                                <t t-else="">
+                                    <pre class="o_dmn_json_readonly"><t t-out="jsonString"/></pre>
+                                </t>
+                            </div>
+                        </t>
+
+                        <!-- Table view mode -->
+                        <table class="o_dmn_table" t-if="!isJsonView and (inputs.length or outputs.length)">
                             <thead>
                                 <!-- Category row -->
                                 <tr class="o_dmn_cat_row">
@@ -81,9 +115,20 @@
                             </thead>
                             <tbody>
                                 <t t-foreach="rules" t-as="rule" t-key="rule_index">
-                                    <tr class="o_dmn_rule_row">
+                                    <tr t-attf-class="o_dmn_rule_row #{getDragClass(rule_index)}"
+                                        t-att-draggable="isEditing ? 'true' : undefined"
+                                        t-on-dragstart="(ev) => this.onDragStart(rule_index, ev)"
+                                        t-on-dragover="(ev) => this.onDragOver(rule_index, ev)"
+                                        t-on-dragleave="(ev) => this.onDragLeave(rule_index, ev)"
+                                        t-on-drop="(ev) => this.onDrop(rule_index, ev)"
+                                        t-on-dragend="onDragEnd">
                                         <td class="o_dmn_row_num">
-                                            <t t-out="rule_index + 1"/>
+                                            <t t-if="isEditing">
+                                                <i class="fa fa-bars o_dmn_drag_handle" title="Drag to reorder"/>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-out="rule_index + 1"/>
+                                            </t>
                                         </td>
 
                                         <!-- READ mode cells -->
@@ -130,18 +175,18 @@
 
                         <!-- Empty rules message -->
                         <div class="o_dmn_empty_rules text-muted fst-italic p-2"
-                             t-if="!rules.length and !isEditing and (inputs.length or outputs.length)">
+                             t-if="!isJsonView and !rules.length and !isEditing and (inputs.length or outputs.length)">
                             Table defined but no rules yet.
                         </div>
 
                         <!-- No columns yet (edit mode) -->
                         <div class="o_dmn_empty_rules text-muted fst-italic p-2"
-                             t-if="!inputs.length and !outputs.length and isEditing">
+                             t-if="!isJsonView and !inputs.length and !outputs.length and isEditing">
                             Add input and output columns to start defining rules.
                         </div>
 
                         <!-- Edit toolbar -->
-                        <div class="o_dmn_toolbar" t-if="isEditing">
+                        <div class="o_dmn_toolbar" t-if="isEditing and !isJsonView">
                             <button class="btn btn-sm btn-outline-secondary"
                                     t-on-click="addRule"
                                     t-att-disabled="!inputs.length and !outputs.length">

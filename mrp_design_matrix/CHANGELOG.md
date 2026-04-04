@@ -4,6 +4,17 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.3.0] - 2026-04-04
+
+### Added
+
+- `DesignMatrixField` Phase 3 enhancements:
+  - **JSON↔Table toggle** — switch between visual DMN table and raw JSON editor (dark theme textarea in edit, formatted pre in read mode)
+  - **hitPolicy selector** — dropdown in edit mode to change between COLLECT / FIRST / PRIORITY, persists to JDM
+  - **Drag-and-drop row reorder** — drag handle on rule rows in edit mode, HTML5 native DnD with visual drop indicators
+
+*Assisted by Claude Code*
+
 ## [18.0.1.2.1] - 2026-04-02
 
 ### Fixed

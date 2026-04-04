@@ -22,9 +22,12 @@ export class DesignMatrixField extends Component {
     setup() {
         this.state = useState({
             collapsed: false,
+            viewMode: "table", // "table" | "json"
             addingInput: false,
             addingOutput: false,
             newColName: "",
+            dragIndex: null,
+            dropIndex: null,
         });
     }
 
@@ -32,6 +35,10 @@ export class DesignMatrixField extends Component {
 
     get isEditing() {
         return !this.props.readonly;
+    }
+
+    get isJsonView() {
+        return this.state.viewMode === "json";
     }
 
     // ── Getters ────────────────────────────────────────────────────────
@@ -257,6 +264,61 @@ export class DesignMatrixField extends Component {
         return this.decodeCell(val);
     }
 
+    // ── Drag & drop row reorder ──────────────────────────────────────
+
+    onDragStart(ruleIndex, ev) {
+        this.state.dragIndex = ruleIndex;
+        ev.dataTransfer.effectAllowed = "move";
+        ev.dataTransfer.setData("text/plain", String(ruleIndex));
+        // Make the dragged row semi-transparent
+        ev.target.closest("tr").classList.add("o_dmn_dragging");
+    }
+
+    onDragOver(ruleIndex, ev) {
+        ev.preventDefault();
+        ev.dataTransfer.dropEffect = "move";
+        if (this.state.dropIndex !== ruleIndex) {
+            this.state.dropIndex = ruleIndex;
+        }
+    }
+
+    onDragLeave(ruleIndex, ev) {
+        if (this.state.dropIndex === ruleIndex) {
+            this.state.dropIndex = null;
+        }
+    }
+
+    onDrop(ruleIndex, ev) {
+        ev.preventDefault();
+        const from = this.state.dragIndex;
+        const to = ruleIndex;
+        this.state.dragIndex = null;
+        this.state.dropIndex = null;
+        if (from === null || from === to) return;
+
+        const jdm = this._cloneJDM();
+        const content = this._getContent(jdm);
+        if (!content) return;
+        const [moved] = content.rules.splice(from, 1);
+        content.rules.splice(to, 0, moved);
+        this._save(jdm);
+    }
+
+    onDragEnd(ev) {
+        this.state.dragIndex = null;
+        this.state.dropIndex = null;
+        // Clean up class from any lingering row
+        const el = ev.target.closest("tr");
+        if (el) el.classList.remove("o_dmn_dragging");
+    }
+
+    getDragClass(ruleIndex) {
+        if (this.state.dropIndex === ruleIndex && this.state.dragIndex !== ruleIndex) {
+            return this.state.dragIndex < ruleIndex ? "o_dmn_drop_below" : "o_dmn_drop_above";
+        }
+        return "";
+    }
+
     // ── JSON rebuild & save ────────────────────────────────────────────
 
     /** Deep-clone the current JDM structure for mutation. */
@@ -286,6 +348,39 @@ export class DesignMatrixField extends Component {
 
     toggleCollapse() {
         this.state.collapsed = !this.state.collapsed;
+    }
+
+    toggleViewMode() {
+        this.state.viewMode = this.state.viewMode === "table" ? "json" : "table";
+    }
+
+    /** Change hitPolicy and persist to JDM. */
+    onHitPolicyChange(ev) {
+        ev.stopPropagation();
+        const jdm = this._cloneJDM();
+        const content = this._getContent(jdm);
+        if (!content) return;
+        content.hitPolicy = ev.target.value;
+        this._save(jdm);
+    }
+
+    /** Get formatted JSON string for display/editing. */
+    get jsonString() {
+        const raw = this.rawValue;
+        if (!raw) return "";
+        return JSON.stringify(raw, null, 2);
+    }
+
+    /** Update field value from raw JSON textarea. */
+    onJsonChange(ev) {
+        const text = ev.target.value.trim();
+        if (!text) return;
+        try {
+            const parsed = JSON.parse(text);
+            this._save(parsed);
+        } catch {
+            // Invalid JSON — do not save
+        }
     }
 
     /** Update a single cell value with smart encoding. */
