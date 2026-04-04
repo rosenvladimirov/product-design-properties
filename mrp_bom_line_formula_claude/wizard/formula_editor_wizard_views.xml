@@ -15,14 +15,14 @@
                 <field name="claude_instructions" invisible="1"/>
             </field>
 
-            <!-- Add Ask Claude button in the Formula section -->
-            <xpath expr="//separator[@string='Formula']" position="after">
+            <!-- Add Ask Claude button before the formula editor -->
+            <field name="quantity_formula" position="before">
                 <div class="d-flex justify-content-end mb-2">
-                    <field name="bom_line_id"
+                    <field name="claude_trigger"
                            widget="claude_formula_button"
                            nolabel="1"/>
                 </div>
-            </xpath>
+            </field>
 
         </field>
     </record>

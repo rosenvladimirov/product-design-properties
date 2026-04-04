@@ -87,6 +87,10 @@ class FormulaEditorWizard(models.TransientModel):
         readonly=True,
         help="Static task description for Claude.",
     )
+    claude_trigger = fields.Integer(
+        default=0,
+        help="Trigger field for the Ask Claude button widget.",
+    )
 
     @api.depends("bom_line_id", "quantity_formula")
     def _compute_claude_brief(self):
