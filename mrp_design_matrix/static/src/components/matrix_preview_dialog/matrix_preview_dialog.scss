@@ -1,0 +1,127 @@
+// Copyright 2026 BL Consulting
+// License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+// ── Matrix Preview Dialog Layout ────────────────────────────────────
+
+.o_matrix_preview_layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 0;
+    min-height: 500px;
+    max-height: 70vh;
+}
+
+// ── Left panel: param controls ──────────────────────────────────────
+
+.o_matrix_preview_params {
+    padding: 12px;
+    border-right: 1px solid #dee2e6;
+    overflow-y: auto;
+    background: #fff;
+}
+
+.o_matrix_preview_params_title {
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 12px;
+    color: #212529;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.o_mp_param_row {
+    margin-bottom: 10px;
+
+    input[type="range"] {
+        width: 100%;
+        margin: 4px 0 2px;
+    }
+}
+
+.o_mp_param_label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #495057;
+
+    strong {
+        font-family: monospace;
+        color: #0d6efd;
+    }
+}
+
+.o_mp_spinner {
+    width: 70px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-family: monospace;
+    text-align: right;
+    outline: none;
+
+    &:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.15);
+    }
+}
+
+.o_mp_seg {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.o_mp_seg_btn {
+    padding: 3px 10px;
+    font-size: 11px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.15s;
+
+    &:hover {
+        background: #f8f9fa;
+        border-color: #adb5bd;
+    }
+
+    &.active {
+        background: #0d6efd;
+        color: #fff;
+        border-color: #0d6efd;
+    }
+}
+
+.o_mp_check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+
+    input[type="checkbox"] {
+        margin: 0;
+    }
+}
+
+.o_mp_text {
+    width: 100%;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.o_mp_no_params {
+    font-size: 12px;
+    padding: 20px 0;
+    text-align: center;
+}
+
+// ── Right panel ─────────────────────────────────────────────────────
+
+.o_matrix_preview_right {
+    overflow-y: auto;
+}

@@ -6,6 +6,11 @@
         <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
         <field name="arch" type="xml">
 
+            <!-- Matrix Preview smart button -->
+            <div name="button_box" position="inside">
+                <field name="id" widget="matrix_preview_button" nolabel="1"/>
+            </div>
+
             <notebook position="inside">
                 <page string="Design Matrix" name="design_matrix">
                     <group>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright 2026 BL Consulting
+    License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+-->
+<templates xml:space="preserve">
+
+    <t t-name="mrp_design_matrix.MatrixPreviewDialog">
+        <Dialog title="'Matrix Preview'" size="'xl'" footer="false">
+            <t t-if="state.loading">
+                <div class="text-center py-5">
+                    <i class="fa fa-spinner fa-spin fa-2x text-muted"/>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="o_matrix_preview_layout">
+
+                    <!-- Left panel: param controls -->
+                    <div class="o_matrix_preview_params">
+                        <div class="o_matrix_preview_params_title">Parameters</div>
+
+                        <t t-foreach="displayParams" t-as="param" t-key="param.name">
+
+                            <!-- Float slider -->
+                            <t t-if="param.type === 'float'">
+                                <div class="o_mp_param_row">
+                                    <div class="o_mp_param_label">
+                                        <span><t t-esc="param.string || param.name"/></span>
+                                        <strong><t t-esc="param.value"/></strong>
+                                    </div>
+                                    <input type="range"
+                                           t-att-min="param.min || 0"
+                                           t-att-max="param.max || 9999"
+                                           t-att-step="param.step || 1"
+                                           t-att-value="param.value"
+                                           t-att-data-param="param.name"
+                                           t-on-input="onSliderInput"/>
+                                    <input type="number"
+                                           class="o_mp_spinner"
+                                           t-att-min="param.min || 0"
+                                           t-att-max="param.max || 9999"
+                                           step="1"
+                                           t-att-value="param.value"
+                                           t-att-data-param="param.name"
+                                           t-on-input="onSpinnerInput"/>
+                                </div>
+                            </t>
+
+                            <!-- Selection -->
+                            <t t-if="param.type === 'selection' and param.selection">
+                                <div class="o_mp_param_row">
+                                    <div class="o_mp_param_label">
+                                        <span><t t-esc="param.string || param.name"/></span>
+                                    </div>
+                                    <div class="o_mp_seg">
+                                        <t t-foreach="param.selection" t-as="opt" t-key="opt[0]">
+                                            <button t-att-class="'o_mp_seg_btn' + (params[param.name] === opt[0] ? ' active' : '')"
+                                                    t-att-data-value="opt[0]"
+                                                    t-att-data-param="param.name"
+                                                    t-on-click="onSegmentClick">
+                                                <t t-esc="opt[1]"/>
+                                            </button>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+
+                            <!-- Boolean -->
+                            <t t-if="param.type === 'boolean'">
+                                <label class="o_mp_check">
+                                    <input type="checkbox"
+                                           t-att-checked="params[param.name]"
+                                           t-att-data-param="param.name"
+                                           t-on-change="onCheckChange"/>
+                                    <span><t t-esc="param.string || param.name"/></span>
+                                </label>
+                            </t>
+
+                            <!-- Char -->
+                            <t t-if="param.type === 'char'">
+                                <div class="o_mp_param_row">
+                                    <div class="o_mp_param_label">
+                                        <span><t t-esc="param.string || param.name"/></span>
+                                    </div>
+                                    <input type="text" class="o_input o_mp_text"
+                                           t-att-value="params[param.name]"
+                                           t-att-data-param="param.name"
+                                           t-on-change="onTextChange"/>
+                                </div>
+                            </t>
+
+                        </t>
+
+                        <div class="o_mp_no_params text-muted fst-italic"
+                             t-if="!displayParams.length">
+                            No design parameter definition linked to this BoM.
+                        </div>
+                    </div>
+
+                    <!-- Right panel: RuleMatrixPreview -->
+                    <div class="o_matrix_preview_right">
+                        <RuleMatrixPreview
+                            params="params"
+                            constraintTable="state.constraintTable"
+                            geometryTable="state.geometryTable"
+                            materialTable="state.materialTable"
+                            operationTable="state.operationTable"
+                            bomLines="state.bomLines"
+                        />
+                    </div>
+
+                </div>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

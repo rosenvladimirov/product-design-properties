@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright 2026 BL Consulting
+    License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+-->
+<templates xml:space="preserve">
+
+    <t t-name="mrp_design_matrix.MatrixPreviewButton">
+        <button class="oe_stat_button" t-on-click="onClick" t-if="hasMatrix">
+            <div class="o_stat_info">
+                <span class="o_stat_value"><t t-out="ruleCount"/></span>
+                <span class="o_stat_text">Matrix Rules</span>
+            </div>
+            <i class="fa fa-fw fa-th o_button_icon"/>
+        </button>
+    </t>
+
+</templates>

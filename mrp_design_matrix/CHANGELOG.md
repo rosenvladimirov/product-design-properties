@@ -4,6 +4,19 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.4.0] - 2026-04-04
+
+### Added
+
+- **Matrix Preview** smart button on BoM form
+  - Shows total rule count across all matrix tables
+  - Opens `MatrixPreviewDialog` — simulation dialog with param controls (left) and real-time T0/T1/T2/T3 evaluation (right)
+  - `RuleMatrixPreview` component moved here from sale_design_configurator (shared between BoM preview and SO configurator)
+  - Loads param definition from BoM's linked `design_param_definition_id`
+  - Loads BoM lines with `coeff_default` and `matrix_coeff_rule` for T2 Materials
+
+*Assisted by Claude Code*
+
 ## [18.0.1.3.0] - 2026-04-04
 
 ### Added

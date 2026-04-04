@@ -5,7 +5,7 @@
 -->
 <templates xml:space="preserve">
 
-    <t t-name="sale_design_configurator.RuleMatrixPreview">
+    <t t-name="mrp_design_matrix.RuleMatrixPreview">
         <div class="o_cfg_rule_preview">
 
             <!-- T0 — Constraints -->

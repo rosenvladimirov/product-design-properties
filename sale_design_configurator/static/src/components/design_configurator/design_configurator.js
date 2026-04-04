@@ -12,7 +12,7 @@ import {
 } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { registry } from "@web/core/registry";
-import { RuleMatrixPreview } from "./rule_matrix_preview";
+import { RuleMatrixPreview } from "@mrp_design_matrix/components/rule_matrix_preview/rule_matrix_preview";
 
 // Three.js + SVGLoader loaded via assets bundle (see __manifest__.py)
 // window.THREE is available after page load.
