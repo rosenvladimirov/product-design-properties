@@ -367,19 +367,16 @@ export class DesignConfiguratorWidget extends Component {
 
         const opening = this._getParamByLabel("Opening Direction") || "left";
         const newHingeX = opening === "right" ? t.hingeRightX : t.hingeLeftX;
-        const oldHingeX = opening === "right" ? t.hingeLeftX : t.hingeRightX;
 
         // Move pivot to new hinge
         t.leafPivot.position.x = newHingeX;
 
-        // Restore original child positions then offset for new hinge
-        const deltaX = newHingeX - oldHingeX;
+        // Reposition children: baseX was stored relative to the build-time hinge
+        // (initialHingeX). Offset by the delta between new and initial hinge.
         t.leafPivot.children.forEach((child, i) => {
             const baseX = t.leafChildrenBaseX[i];
             if (baseX !== undefined) {
-                // baseX was relative to the original hinge (left)
-                // For right hinge, shift by -(right - left)
-                child.position.x = baseX - (newHingeX - t.hingeLeftX);
+                child.position.x = baseX - (newHingeX - t.initialHingeX);
             }
         });
     }
@@ -828,6 +825,7 @@ export class DesignConfiguratorWidget extends Component {
                         t.hingeLeftX = leafBox.min.x;
                         t.hingeRightX = leafBox.max.x;
                         t.hingeZ = hingeZ;
+                        t.initialHingeX = hingeX;  // hinge used at build time
                         t.leafChildrenBaseX = {};  // store original X positions
                         leafPivot.children.forEach((child, i) => {
                             t.leafChildrenBaseX[i] = child.position.x;
