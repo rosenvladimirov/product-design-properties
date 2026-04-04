@@ -7,11 +7,11 @@
 
     <t t-name="mrp_design_matrix.MatrixPreviewButton">
         <button class="oe_stat_button" t-on-click="onClick" t-if="hasMatrix">
-            <div class="o_stat_info">
+            <i class="o_button_icon fa fa-fw fa-th"/>
+            <div class="o_field_widget o_stat_info">
                 <span class="o_stat_value"><t t-out="ruleCount"/></span>
                 <span class="o_stat_text">Matrix Rules</span>
             </div>
-            <i class="fa fa-fw fa-th o_button_icon"/>
         </button>
     </t>
 
