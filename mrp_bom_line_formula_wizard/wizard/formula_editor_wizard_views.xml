@@ -7,18 +7,22 @@
         <field name="name">mrp.bom.line.formula.wizard.form</field>
         <field name="model">mrp.bom.line.formula.wizard</field>
         <field name="arch" type="xml">
-            <form string="Quantity Formula Editor">
+            <form string="Formula Editor">
                 <group>
                     <group>
                         <field name="bom_line_id" invisible="1"/>
                         <field name="product_name"/>
                     </group>
+                    <group>
+                        <field name="formula_template_id"
+                               placeholder="Select template to load..."/>
+                    </group>
                 </group>
                 <separator string="Formula"/>
                 <field name="quantity_formula"
-                       placeholder="quantity = product_uom_qty * 1.0"
+                       placeholder="result = product_uom_qty * 1.0"
                        widget="code"/>
-                <separator string="Available Variables Reference"/>
+                <separator string="Reference"/>
                 <field name="formula_help_text" widget="code" readonly="1"/>
                 <footer>
                     <button name="action_apply"

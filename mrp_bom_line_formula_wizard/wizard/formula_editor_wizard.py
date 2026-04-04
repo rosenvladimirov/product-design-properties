@@ -13,15 +13,30 @@ FORMULA_HELP = _(
     "  product_uom      - UoM of the product\n"
     "  product_uom_qty  - quantity from the MO\n"
     "  operation        - routing workcenter (if set)\n"
+    "  env              - Odoo environment (env.ref(), searches)\n"
     "\n"
-    "Assign the result to 'quantity'.\n"
+    "Design context (when design matrix is active):\n"
+    "  width, height, thickness - lot dimensions\n"
+    "  + all T1 geometry outputs as flat variables\n"
+    "  + all design_params from the lot\n"
+    "  design_context   - full context dict\n"
     "\n"
-    "Example:\n"
-    "  quantity = product_uom_qty * 1.05\n"
+    "Output variables (assign in formula):\n"
+    "  result           - computed quantity (or 'quantity')\n"
+    "  product          - override product (optional)\n"
+    "  uom              - override UoM (optional)\n"
     "\n"
-    "Example with dimensions (requires mrp_bom_formula_lot_dimension):\n"
-    "  area = (width / 1000) * (height / 1000)\n"
-    "  quantity = area * product_uom_qty"
+    "Examples:\n"
+    "  result = product_uom_qty * 1.05\n"
+    "\n"
+    "  # Area-based with design dimensions\n"
+    "  result = (width / 1000) * (height / 1000)\n"
+    "\n"
+    "  # Override product based on param\n"
+    "  result = 1\n"
+    "  if construction == 'glass':\n"
+    "      product = env.ref('my_module.glass_panel')\n"
+    "      uom = env.ref('uom.product_uom_unit')"
 )
 
 
@@ -38,14 +53,18 @@ class FormulaEditorWizard(models.TransientModel):
         readonly=True,
         string="Component",
     )
+    formula_template_id = fields.Many2one(
+        "mrp.bom.line.formula.template",
+        string="Load from Template",
+    )
     quantity_formula = fields.Text(
-        string="Quantity Formula",
+        string="Formula",
         help=FORMULA_HELP,
     )
     formula_help_text = fields.Text(
         default=FORMULA_HELP,
         readonly=True,
-        string="Available Variables",
+        string="Reference",
     )
 
     @api.constrains("quantity_formula")
@@ -58,6 +77,11 @@ class FormulaEditorWizard(models.TransientModel):
                 )
                 if error:
                     raise ValidationError(error)
+
+    @api.onchange("formula_template_id")
+    def _onchange_formula_template_id(self):
+        if self.formula_template_id:
+            self.quantity_formula = self.formula_template_id.quantity_formula
 
     def action_apply(self):
         """Write the formula back to the BoM line."""
