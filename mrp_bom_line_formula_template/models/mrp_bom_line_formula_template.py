@@ -19,19 +19,24 @@ class MrpBomLineFormulaTemplate(models.Model):
     )
     quantity_formula = fields.Text(
         required=True,
-        help="Formula to be evaluated "
-        "when generating the quantity "
-        "for a production order line.\n"
-        "The following values are available:\n"
-        "- bom_line: the current BoM line,\n"
-        "- operation: the operation where the components are"
-        "consumed for current BoM line,\n"
-        "- product: the Product of current BoM line,\n"
-        "- product_uom: the UoM of the Product of current BoM line,\n"
-        "- product_uom_qty: the quantity of the production order line,\n"
-        "- production: the production order being created,\n"
-        "The computed quantity "
-        "must be assigned to the `quantity` variable.",
+        help="Formula evaluated when generating a production order line.\n\n"
+        "Available input variables:\n"
+        "- bom_line: the current BoM line\n"
+        "- operation: workcenter for current BoM line\n"
+        "- product: product of current BoM line\n"
+        "- product_uom: UoM of the product\n"
+        "- product_uom_qty: quantity of the production order\n"
+        "- production: the production order being created\n"
+        "- env: Odoo environment (for env.ref(), searches, etc.)\n"
+        "- design context keys (width, height, etc.) when available\n\n"
+        "Output variables (assign in formula):\n"
+        "- result (or quantity): computed quantity (required)\n"
+        "- product: override the BoM line product (optional)\n"
+        "- uom: override the UoM (optional)\n\n"
+        "Example:\n"
+        "  result = width * height / 1000000\n"
+        "  product = env.ref('my_module.special_product')\n"
+        "  uom = env.ref('uom.product_uom_kgm')",
     )
 
     @api.constrains("quantity_formula")

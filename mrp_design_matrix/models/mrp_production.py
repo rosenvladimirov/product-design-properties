@@ -78,12 +78,20 @@ class MrpProduction(models.Model):
 
         # 4. BoM lines × (formula_qty × coeff)  [T2 Type 1: O-variants]
         for line in bom.bom_line_ids:
-            qty_base = self._eval_bom_line_formula(line, full_ctx)
+            formula_result = self._eval_bom_line_formula(line, full_ctx)
+            if isinstance(formula_result, dict):
+                qty_base = formula_result.get("quantity", 0) or 0.0
+                move_product = formula_result.get("product") or line.product_id
+                move_uom = formula_result.get("uom") or line.product_uom_id
+            else:
+                qty_base = formula_result
+                move_product = line.product_id
+                move_uom = line.product_uom_id
             coeff = self._eval_matrix_coeff(line, full_ctx)
             qty_final = qty_base * coeff
             if qty_final > 0.0:
                 self._create_or_update_matrix_move(
-                    line.product_id, qty_final, line.product_uom_id, line
+                    move_product, qty_final, move_uom, line
                 )
 
         # 5. T2 ad-hoc rows  [Type 2: direct ref / Type 3: PTAV]
@@ -203,18 +211,27 @@ class MrpProduction(models.Model):
 
     # ── Helpers ───────────────────────────────────────────────────────────
 
-    def _eval_bom_line_formula(self, line, ctx: dict) -> float:
+    def _eval_bom_line_formula(self, line, ctx: dict):
         """
         Evaluate the quantity_formula of a BoM line against ctx.
-        Falls back to product_qty if no formula is set.
+
+        Returns float (quantity) or dict {quantity, product, uom} when
+        the formula overrides product/uom.  Falls back to product_qty
+        if no formula is set.
         """
         if hasattr(line, "_eval_quantity_formula") and line.quantity_formula:
-            return line._eval_quantity_formula(
+            result = line._eval_quantity_formula(
                 line.product_id,
                 line.product_uom_id,
                 self.product_qty,
                 self,
-            ) or 0.0
+                design_context=ctx,
+            )
+            if result is None:
+                return line.product_qty
+            if isinstance(result, dict):
+                return result
+            return result or 0.0
         return line.product_qty
 
     def _eval_matrix_coeff(self, line, ctx: dict) -> float:
