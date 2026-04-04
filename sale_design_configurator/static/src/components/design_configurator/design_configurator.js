@@ -279,13 +279,17 @@ export class DesignConfiguratorWidget extends Component {
 
     /**
      * Show RuleMatrixPreview instead of 3D canvas when:
-     * - No 3D models (GLB)
+     * - No 3D models (GLB) — neither on main product nor in BoM components
      * - No SVG profiles
      * - At least one matrix table exists
      */
     get showRulePreview() {
-        const assets = this.props.mainProductAssets || {};
-        const has3D = (assets.models_3d || []).length > 0;
+        const mainAssets = this.props.mainProductAssets || {};
+        const hasMain3D = (mainAssets.models_3d || []).length > 0;
+        const hasBom3D = (this.props.bomAssets || []).some(
+            comp => (comp.assets?.models_3d || []).length > 0
+        );
+        const has3D = hasMain3D || hasBom3D;
         const hasSVG = (this.props.profiles || []).length > 0
             && this.props.profiles[0]?.svg_content;
         const hasMatrix = !!(
