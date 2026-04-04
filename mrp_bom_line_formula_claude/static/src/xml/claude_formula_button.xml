@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<templates xml:space="preserve">
+
+    <!-- Widget button rendered in the wizard form -->
+    <t t-name="mrp_bom_line_formula_claude.FormulaButton">
+        <button type="button"
+                class="btn btn-warning o_cfc_button"
+                t-att-disabled="!hasTerminal"
+                t-att-title="hasTerminal ? 'Ask Claude to help generate this formula' : 'Configure terminal URL in Settings → Preferences → Claude Terminal'"
+                t-on-click="onClick">
+            <i class="fa fa-magic me-1"/>
+            <span>Ask Claude</span>
+        </button>
+    </t>
+
+    <!-- Modal dialog with the Claude terminal iframe -->
+    <t t-name="mrp_bom_line_formula_claude.FormulaDialog">
+        <Dialog size="'xl'" header="false" footer="false" withBodyPadding="false"
+                contentClass="'o_cfc_dialog_content'">
+            <button class="o_cfc_dialog_close" t-on-click="props.close" title="Close">
+                <i class="fa fa-times"/>
+            </button>
+            <iframe t-if="props.url"
+                    t-att-src="iframeSrc"
+                    class="o_cfc_dialog_iframe"
+                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                    allow="clipboard-read; clipboard-write"/>
+            <div t-else="" class="o_cfc_dialog_empty">
+                <i class="fa fa-cog fa-2x"/>
+                <p>Configure terminal URL in <strong>Settings → Preferences → Claude Terminal</strong></p>
+            </div>
+        </Dialog>
+    </t>
+
+</templates>

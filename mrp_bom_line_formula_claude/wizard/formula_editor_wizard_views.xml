@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="formula_editor_wizard_form_claude" model="ir.ui.view">
+        <field name="name">mrp.bom.line.formula.wizard.form.claude</field>
+        <field name="model">mrp.bom.line.formula.wizard</field>
+        <field name="inherit_id" ref="mrp_bom_line_formula_wizard.formula_editor_wizard_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Invisible fields: Claude reads these via RPC -->
+            <field name="formula_template_id" position="after">
+                <field name="claude_brief" invisible="1"/>
+                <field name="claude_instructions" invisible="1"/>
+            </field>
+
+            <!-- Add Ask Claude button in the Formula section -->
+            <xpath expr="//separator[@string='Formula']" position="after">
+                <div class="d-flex justify-content-end mb-2">
+                    <field name="bom_line_id"
+                           widget="claude_formula_button"
+                           nolabel="1"/>
+                </div>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
