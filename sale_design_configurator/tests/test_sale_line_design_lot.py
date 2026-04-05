@@ -15,9 +15,11 @@ Covers:
 - ``design_params_summary`` reflects the lot's Properties
 """
 
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
+@tagged("post_install", "-at_install")
 class TestSaleLineDesignLot(TransactionCase):
     @classmethod
     def setUpClass(cls):

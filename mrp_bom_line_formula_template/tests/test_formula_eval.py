@@ -15,9 +15,11 @@ Covers:
 - Empty formula returns ``None``
 """
 
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
+@tagged("post_install", "-at_install")
 class TestFormulaEval(TransactionCase):
     @classmethod
     def setUpClass(cls):

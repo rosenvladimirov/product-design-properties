@@ -21,6 +21,7 @@ Each test covers a distinct code path:
 import unittest
 
 from odoo.exceptions import UserError
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 try:
@@ -51,6 +52,7 @@ def _jdm(inputs, outputs, rules, hit_policy="collect", name="Table"):
 
 
 @unittest.skipUnless(_ZEN_AVAILABLE, "zen-engine is not installed")
+@tagged("post_install", "-at_install")
 class TestMatrixMoves(TransactionCase):
     @classmethod
     def setUpClass(cls):

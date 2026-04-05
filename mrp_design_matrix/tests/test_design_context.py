@@ -7,9 +7,11 @@ These do not require the GoRules engine — they exercise the pure-Python
 context-building logic used by ``_generate_design_matrix_moves``.
 """
 
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 
+@tagged("post_install", "-at_install")
 class TestDesignContext(TransactionCase):
     @classmethod
     def setUpClass(cls):
