@@ -162,6 +162,13 @@ class DesignParamDefinition(models.Model):
             "name": attr.get("name"),
             "industry": attr.get("industry", ""),
             "design_params_definition": props,
+            # Explicitly create as global (empty company_ids) so the
+            # multi-company record rule does not hide the definition
+            # from users of other companies.  Module install runs with
+            # default_company_ids=[current_company] in context, which
+            # would otherwise scope the definition to the installing
+            # company only.
+            "company_ids": [(5, 0, 0)],
         }
         parent_code = attr.get("parent")
         if parent_code:
