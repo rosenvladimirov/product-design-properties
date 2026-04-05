@@ -3,7 +3,7 @@
 {
     "name": "MRP BoM Line Formula Templates",
     "summary": "Manage reusable templates for BoM line quantity formulas",
-    "version": "18.0.1.2.0",
+    "version": "18.0.1.2.1",
     "author": "Rosen Vladimirov, BL Consulting, Odoo Community Association (OCA)",
     "maintainers": ["rosen-vladimirov"],
     "category": "Manufacturing",
@@ -15,6 +15,7 @@
     "license": "AGPL-3",
     "data": [
         "security/ir.model.access.csv",
+        "security/formula_template_rules.xml",
         "views/mrp_bom_line_formula_template_views.xml",
     ],
     "installable": True,
