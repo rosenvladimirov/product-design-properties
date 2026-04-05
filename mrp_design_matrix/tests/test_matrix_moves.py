@@ -40,12 +40,8 @@ def _jdm(inputs, outputs, rules, hit_policy="collect", name="Table"):
                 "type": "decisionTable",
                 "content": {
                     "hitPolicy": hit_policy,
-                    "inputs": [
-                        {"id": k, "name": k, "field": k} for k in inputs
-                    ],
-                    "outputs": [
-                        {"id": k, "name": k, "field": k} for k in outputs
-                    ],
+                    "inputs": [{"id": k, "name": k, "field": k} for k in inputs],
+                    "outputs": [{"id": k, "name": k, "field": k} for k in outputs],
                     "rules": rules,
                 },
             }
@@ -75,15 +71,9 @@ class TestMatrixMoves(TransactionCase):
             }
         )
         # Components
-        cls.slab = cls.Product.create(
-            {"name": "Wood Slab", "is_storable": True}
-        )
-        cls.hinges = cls.Product.create(
-            {"name": "Hinge Set", "is_storable": True}
-        )
-        cls.glass = cls.Product.create(
-            {"name": "Glass Panel", "is_storable": True}
-        )
+        cls.slab = cls.Product.create({"name": "Wood Slab", "is_storable": True})
+        cls.hinges = cls.Product.create({"name": "Hinge Set", "is_storable": True})
+        cls.glass = cls.Product.create({"name": "Glass Panel", "is_storable": True})
 
         cls.definition = cls.Definition.create(
             {
@@ -125,9 +115,10 @@ class TestMatrixMoves(TransactionCase):
 
     def _build_mo_with_lot(self, bom, design_params):
         """Create an MO with a lot that carries the given design params."""
+        serial = self.env["ir.sequence"].next_by_code("stock.lot.serial") or "X"
         lot = self.Lot.create(
             {
-                "name": f"TEST-LOT-{self.env['ir.sequence'].next_by_code('stock.lot.serial') or 'X'}",
+                "name": f"TEST-LOT-{serial}",
                 "product_id": self.finished.id,
                 "design_param_definition_id": self.definition.id,
                 "design_params": design_params,
@@ -198,9 +189,7 @@ class TestMatrixMoves(TransactionCase):
         )
         mo, _ = self._build_mo_with_lot(bom, {"material": "wood"})
         mo._generate_design_matrix_moves()
-        slab_moves = mo.move_raw_ids.filtered(
-            lambda m: m.product_id == self.slab
-        )
+        slab_moves = mo.move_raw_ids.filtered(lambda m: m.product_id == self.slab)
         self.assertTrue(slab_moves, "slab move should have been created")
 
     def test_bom_line_o_variant_skipped(self):
@@ -218,9 +207,7 @@ class TestMatrixMoves(TransactionCase):
         )
         mo, _ = self._build_mo_with_lot(bom, {"material": "wood"})
         mo._generate_design_matrix_moves()
-        glass_moves = mo.move_raw_ids.filtered(
-            lambda m: m.product_id == self.glass
-        )
+        glass_moves = mo.move_raw_ids.filtered(lambda m: m.product_id == self.glass)
         self.assertFalse(
             glass_moves, "O-variant with no matrix match should stay inactive"
         )
@@ -253,9 +240,7 @@ class TestMatrixMoves(TransactionCase):
         )
         mo, _ = self._build_mo_with_lot(bom, {"material": "glass"})
         mo._generate_design_matrix_moves()
-        glass_moves = mo.move_raw_ids.filtered(
-            lambda m: m.product_id == self.glass
-        )
+        glass_moves = mo.move_raw_ids.filtered(lambda m: m.product_id == self.glass)
         self.assertTrue(
             glass_moves,
             "O-variant should activate when matrix returns a non-zero coeff",

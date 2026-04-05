@@ -30,9 +30,7 @@ class TestFormulaEval(TransactionCase):
         cls.parent_product = cls.Product.create(
             {"name": "Parent Product", "is_storable": True}
         )
-        cls.component = cls.Product.create(
-            {"name": "Component", "is_storable": True}
-        )
+        cls.component = cls.Product.create({"name": "Component", "is_storable": True})
         cls.override_product = cls.Product.create(
             {"name": "Override Component", "is_storable": True}
         )
@@ -45,9 +43,10 @@ class TestFormulaEval(TransactionCase):
 
     def _make_line(self, formula: str):
         """Create a BoM line with an inline formula (no template)."""
+        snippet = formula.split("\n", 1)[0][:20]
         template = self.Template.create(
             {
-                "name": "inline-%s" % formula.split("\n", 1)[0][:20],
+                "name": f"inline-{snippet}",
                 "quantity_formula": formula,
             }
         )
@@ -111,9 +110,9 @@ class TestFormulaEval(TransactionCase):
 
     def test_product_override_returns_dict(self):
         """Setting ``product`` in the formula returns a dict result."""
+        override_id = self.override_product.id
         line = self._make_line(
-            "result = 5\nproduct = env['product.product'].browse(%d)"
-            % self.override_product.id
+            f"result = 5\nproduct = env['product.product'].browse({override_id})"
         )
         result = self._eval(line)
         self.assertIsInstance(result, dict)
@@ -131,10 +130,9 @@ class TestFormulaEval(TransactionCase):
     def test_uom_override(self):
         """Setting ``uom`` in the formula returns a dict with the new UoM."""
         other_uom = self.env.ref("uom.product_uom_unit")
+        uom_id = other_uom.id
         # Make sure the override UoM is different from the line's default
-        line = self._make_line(
-            "result = 1\nuom = env['uom.uom'].browse(%d)" % other_uom.id
-        )
+        line = self._make_line(f"result = 1\nuom = env['uom.uom'].browse({uom_id})")
         result = self._eval(line)
         # Only returns dict when the UoM actually differs
         if result != 1:

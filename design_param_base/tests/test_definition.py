@@ -128,9 +128,7 @@ class TestDefinition(TransactionCase):
 
     def test_empty_definition_has_empty_full(self):
         """A definition with no properties and no parent has an empty full."""
-        defn = self.Definition.create(
-            {"code": "test_empty", "name": "Empty"}
-        )
+        defn = self.Definition.create({"code": "test_empty", "name": "Empty"})
         self.assertEqual(defn.full_design_params_definition or [], [])
 
     # ── Constraints ──────────────────────────────────────────────────

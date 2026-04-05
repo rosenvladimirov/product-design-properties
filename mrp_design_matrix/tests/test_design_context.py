@@ -51,9 +51,10 @@ class TestDesignContext(TransactionCase):
 
     def _make_lot(self, **params):
         """Create a stock.lot with the test definition + given design params."""
+        serial = self.env["ir.sequence"].next_by_code("stock.lot.serial") or "X"
         return self.Lot.create(
             {
-                "name": f"TEST-LOT-{self.env['ir.sequence'].next_by_code('stock.lot.serial') or 'X'}",
+                "name": f"TEST-LOT-{serial}",
                 "product_id": self.product.id,
                 "design_param_definition_id": self.definition.id,
                 "design_params": params or False,
@@ -90,14 +91,10 @@ class TestDesignContext(TransactionCase):
         lot_a = self._make_lot(material="wood", leaf_type="single")
         lot_b = self._make_lot(material="steel", leaf_type="double")
 
-        found = self.Lot._find_matching_stock_lot(
-            self.product, {"material": "wood"}
-        )
+        found = self.Lot._find_matching_stock_lot(self.product, {"material": "wood"})
         self.assertEqual(found, lot_a)
 
-        found = self.Lot._find_matching_stock_lot(
-            self.product, {"leaf_type": "double"}
-        )
+        found = self.Lot._find_matching_stock_lot(self.product, {"leaf_type": "double"})
         self.assertEqual(found, lot_b)
 
     def test_find_matching_lot_no_match(self):
@@ -111,9 +108,7 @@ class TestDesignContext(TransactionCase):
     def test_find_matching_lot_ignores_extra_params(self):
         """Extra lot params do not break the match."""
         lot = self._make_lot(material="wood", leaf_type="single")
-        found = self.Lot._find_matching_stock_lot(
-            self.product, {"material": "wood"}
-        )
+        found = self.Lot._find_matching_stock_lot(self.product, {"material": "wood"})
         self.assertEqual(found, lot)
 
     # ── _create_child_lot ───────────────────────────────────────────
