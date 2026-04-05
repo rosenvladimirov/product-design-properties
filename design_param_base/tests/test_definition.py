@@ -12,10 +12,12 @@ Tests for ``design.param.definition``:
 
 from psycopg2 import IntegrityError
 
+from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 from odoo.tools import mute_logger
 
 
+@tagged("post_install", "-at_install")
 class TestDefinition(TransactionCase):
     @classmethod
     def setUpClass(cls):
