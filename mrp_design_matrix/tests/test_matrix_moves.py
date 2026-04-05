@@ -212,6 +212,32 @@ class TestMatrixMoves(TransactionCase):
             glass_moves, "O-variant with no matrix match should stay inactive"
         )
 
+    def test_matrix_coeff_cached_lookup(self):
+        """_eval_matrix_coeff_cached returns the value from the dict."""
+        bom = self._build_bom(
+            constraint_table=_jdm(["material"], ["x"], []),
+            lines=[
+                {
+                    "product_id": self.glass.id,
+                    "product_qty": 1.0,
+                    "coeff_default": 0.0,
+                    "matrix_coeff_rule": "glass_coeff",
+                }
+            ],
+        )
+        mo, _ = self._build_mo_with_lot(bom, {"material": "glass"})
+        line = bom.bom_line_ids[0]
+        # Match → returns matrix coeff
+        self.assertEqual(
+            mo._eval_matrix_coeff_cached(line, {"glass_coeff": 2.5}),
+            2.5,
+        )
+        # No match → falls back to coeff_default
+        self.assertEqual(
+            mo._eval_matrix_coeff_cached(line, {"other_key": 5.0}),
+            0.0,
+        )
+
     def test_bom_line_o_variant_activated_by_matrix(self):
         """T2 material table activates an O-variant via matrix_coeff_rule."""
         t2 = _jdm(

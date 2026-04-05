@@ -37,15 +37,24 @@ class MrpProduction(models.Model):
             1. Build design_context from lot_producing_id.
             2. T0: validate constraints (ERROR stops, WARNING logs).
             3. T1: compute geometry / forced values → full_context.
-            4. BoM lines: qty_formula × matrix_coeff → move_raw.
-            5. T2 ad-hoc: resolve product (direct / PTAV) → move_raw.
-            6. T3: create workorders.
-            7. Semi-finished: create child lots or find matching stock.
+            4. T2: evaluate once, reuse for O-variant coeff lookup
+               and ad-hoc rows (avoids N+1 on bom_line_ids).
+            5. BoM lines: qty_formula × matrix_coeff → move_raw.
+            6. T2 ad-hoc: resolve product (direct / PTAV) → move_raw.
+            7. T3: create workorders.
+            8. Semi-finished: create child lots or find matching stock.
+
+        Performance notes:
+            - T2 material_table is evaluated ONCE per MO, not per BoM
+              line.  Before this optimisation a 50-line BoM would call
+              ``ZenWrapper.evaluate`` 51× with the same arguments.
+            - Prefetches are batched on ``bom_line_ids`` before the
+              loop so the ORM issues a single SELECT for the fields
+              we access during move creation.
         """
         self.ensure_one()
         bom = self.bom_id
         lot = self.lot_producing_id
-
         if not lot:
             _logger.warning(
                 "MO %s has no lot_producing_id — design matrix skipped.",
@@ -53,73 +62,131 @@ class MrpProduction(models.Model):
             )
             return
 
-        # 1. Build context
+        # 1–2. Build context + T0 validation
         ctx = lot._get_design_context()
         ctx["qty"] = self.product_qty
-
-        # 2. T0 — constraints
-        if bom.constraint_table:
-            t0 = ZenWrapper.evaluate(bom.constraint_table, ctx)
-            for err in t0.get("errors", []):
-                raise UserError(
-                    _("Design constraint violation: %s") % err.get("message", err)
-                )
-            for warn in t0.get("warnings", []):
-                self.message_post(
-                    body=_("Design warning: %s") % warn.get("message", warn)
-                )
+        self._eval_t0_constraints(bom, ctx)
 
         # 3. T1 — geometry + forced values
+        full_ctx = self._eval_t1_geometry(bom, ctx)
+
+        # 4. T2 — evaluate once, split into (all rows, coeff-by-key map)
+        t2_rows, t2_coeff_by_key = self._eval_t2_materials(bom, full_ctx)
+
+        # 5. BoM line moves (with prefetch) + 6. T2 ad-hoc moves
+        self._generate_bom_line_moves(bom, full_ctx, t2_coeff_by_key)
+        self._generate_t2_adhoc_moves(t2_rows, full_ctx)
+
+        # 7. T3 — workorders
+        if bom.operation_table:
+            t3 = ZenWrapper.evaluate(bom.operation_table, full_ctx)
+            for op in t3 if isinstance(t3, list) else t3.get("result", []):
+                self._create_matrix_workorder(op)
+
+        # 8. Semi-finished: child lots / mto_stop
+        self._handle_semifinished_lots(full_ctx)
+
+    # ── Step helpers (split from main algorithm for complexity) ──────────
+
+    def _eval_t0_constraints(self, bom, ctx: dict) -> None:
+        """Run T0 constraint_table; raise on errors, log warnings."""
+        if not bom.constraint_table:
+            return
+        t0 = ZenWrapper.evaluate(bom.constraint_table, ctx)
+        for err in t0.get("errors", []):
+            raise UserError(
+                _("Design constraint violation: %s") % err.get("message", err)
+            )
+        for warn in t0.get("warnings", []):
+            self.message_post(body=_("Design warning: %s") % warn.get("message", warn))
+
+    def _eval_t1_geometry(self, bom, ctx: dict) -> dict:
+        """Run T1 geometry_table; return ``ctx`` merged with T1 outputs."""
         full_ctx = dict(ctx)
         if bom.geometry_table:
             t1 = ZenWrapper.evaluate(bom.geometry_table, ctx)
             # forced values from T1 override user-supplied values
             full_ctx.update(t1)
+        return full_ctx
 
-        # 4. BoM lines × (formula_qty × coeff)  [T2 Type 1: O-variants]
-        for line in bom.bom_line_ids:
-            formula_result = self._eval_bom_line_formula(line, full_ctx)
-            if isinstance(formula_result, dict):
-                qty_base = formula_result.get("quantity", 0) or 0.0
-                move_product = formula_result.get("product") or line.product_id
-                move_uom = formula_result.get("uom") or line.product_uom_id
-            else:
-                qty_base = formula_result
-                move_product = line.product_id
-                move_uom = line.product_uom_id
-            coeff = self._eval_matrix_coeff(line, full_ctx)
+    def _eval_t2_materials(self, bom, full_ctx: dict) -> tuple:
+        """
+        Evaluate T2 ``material_table`` once.
+
+        :returns: ``(rows, coeff_by_key)`` where ``rows`` is the full
+                  list of output items and ``coeff_by_key`` maps each
+                  ``bom_line_coeff_key`` to its coefficient (for O-variant
+                  activation in the BoM-line loop).
+        """
+        if not bom.material_table:
+            return [], {}
+        raw = ZenWrapper.evaluate(bom.material_table, full_ctx)
+        rows = raw if isinstance(raw, list) else raw.get("result", [])
+        coeff_by_key = {}
+        for item in rows:
+            key = item.get("bom_line_coeff_key")
+            if key:
+                coeff_by_key[key] = float(item.get("coefficient", 0.0))
+        return rows, coeff_by_key
+
+    def _generate_bom_line_moves(
+        self, bom, full_ctx: dict, t2_coeff_by_key: dict
+    ) -> None:
+        """Loop over bom_line_ids and create raw moves."""
+        bom_lines = bom.bom_line_ids
+        # Batch prefetch: turns N queries into one for large BoMs.
+        bom_lines.fetch(
+            [
+                "product_id",
+                "product_uom_id",
+                "product_qty",
+                "quantity_formula",
+                "coeff_default",
+                "matrix_coeff_rule",
+            ]
+        )
+        for line in bom_lines:
+            qty_base, move_product, move_uom = self._unpack_formula_result(
+                line, full_ctx
+            )
+            coeff = self._eval_matrix_coeff_cached(line, t2_coeff_by_key)
             qty_final = qty_base * coeff
             if qty_final > 0.0:
                 self._create_or_update_matrix_move(
                     move_product, qty_final, move_uom, line
                 )
 
-        # 5. T2 ad-hoc rows  [Type 2: direct ref / Type 3: PTAV]
-        if bom.material_table:
-            t2 = ZenWrapper.evaluate(bom.material_table, full_ctx)
-            for item in t2 if isinstance(t2, list) else t2.get("result", []):
-                coeff = item.get("coefficient", 0.0)
-                if coeff <= 0.0:
-                    continue
-                product = self._resolve_t2_product(item, full_ctx)
-                if not product:
-                    raise UserError(_("Cannot resolve product for T2 item: %s") % item)
-                qty = self._eval_qty_expr(item.get("quantity", 0), full_ctx)
-                uom = (
-                    self.env.ref(item["uom_ref"])
-                    if item.get("uom_ref")
-                    else product.uom_id
-                )
-                self._create_or_update_matrix_move(product, qty * coeff, uom)
+    def _unpack_formula_result(self, line, full_ctx: dict) -> tuple:
+        """Evaluate the BoM line formula and return ``(qty, product, uom)``."""
+        formula_result = self._eval_bom_line_formula(line, full_ctx)
+        if isinstance(formula_result, dict):
+            qty_base = formula_result.get("quantity", 0) or 0.0
+            move_product = formula_result.get("product") or line.product_id
+            move_uom = formula_result.get("uom") or line.product_uom_id
+        else:
+            qty_base = formula_result
+            move_product = line.product_id
+            move_uom = line.product_uom_id
+        return qty_base, move_product, move_uom
 
-        # 6. T3 — workorders
-        if bom.operation_table:
-            t3 = ZenWrapper.evaluate(bom.operation_table, full_ctx)
-            for op in t3 if isinstance(t3, list) else t3.get("result", []):
-                self._create_matrix_workorder(op)
-
-        # 7. Semi-finished: child lots / mto_stop
-        self._handle_semifinished_lots(full_ctx)
+    def _generate_t2_adhoc_moves(self, t2_rows: list, full_ctx: dict) -> None:
+        """Create raw moves for ad-hoc T2 rows (direct ref / PTAV)."""
+        for item in t2_rows:
+            coeff = item.get("coefficient", 0.0)
+            if coeff <= 0.0:
+                continue
+            # Skip rows already used as O-variant coefficients — those
+            # generated a move in the BoM-line loop.
+            if item.get("bom_line_coeff_key"):
+                continue
+            product = self._resolve_t2_product(item, full_ctx)
+            if not product:
+                raise UserError(_("Cannot resolve product for T2 item: %s") % item)
+            qty = self._eval_qty_expr(item.get("quantity", 0), full_ctx)
+            uom = (
+                self.env.ref(item["uom_ref"]) if item.get("uom_ref") else product.uom_id
+            )
+            self._create_or_update_matrix_move(product, qty * coeff, uom)
 
     # ── Product resolution ────────────────────────────────────────────────
 
@@ -239,10 +306,30 @@ class MrpProduction(models.Model):
             return result or 0.0
         return line.product_qty
 
+    def _eval_matrix_coeff_cached(self, line, t2_coeff_by_key: dict) -> float:
+        """
+        Look up a BoM line's matrix coefficient in a pre-evaluated
+        ``{bom_line_coeff_key: coefficient}`` dict produced once by
+        ``_generate_design_matrix_moves``.
+
+        This replaces the per-line ``ZenWrapper.evaluate`` call that
+        used to run inside the loop.  For a 50-line BoM the T2 table
+        is now evaluated once instead of 50 times.
+        """
+        if line.matrix_coeff_rule and line.matrix_coeff_rule in t2_coeff_by_key:
+            return t2_coeff_by_key[line.matrix_coeff_rule]
+        return line.coeff_default if hasattr(line, "coeff_default") else 1.0
+
     def _eval_matrix_coeff(self, line, ctx: dict) -> float:
         """
         Return the runtime coefficient for a BoM line.
         Falls back to coeff_default (1.0 by default).
+
+        .. deprecated::
+            Kept for backward compatibility with external callers.  The
+            main algorithm in ``_generate_design_matrix_moves`` now uses
+            the cached variant ``_eval_matrix_coeff_cached`` to avoid
+            re-evaluating the T2 table for every BoM line.
         """
         if line.matrix_coeff_rule and self.bom_id.material_table:
             t2 = ZenWrapper.evaluate(self.bom_id.material_table, ctx)

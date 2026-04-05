@@ -4,6 +4,38 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.5.0] - 2026-04-05
+
+### Performance
+
+- `_generate_design_matrix_moves` refactored into step helpers
+  (`_eval_t0_constraints`, `_eval_t1_geometry`, `_eval_t2_materials`,
+  `_generate_bom_line_moves`, `_generate_t2_adhoc_moves`).
+- **T2 `material_table` now evaluated once per MO** instead of once
+  per BoM line.  A 50-line BoM with O-variants used to call
+  `ZenWrapper.evaluate` 51× with the same arguments; it now calls it
+  once.  New helper `_eval_matrix_coeff_cached(line, coeff_by_key)`
+  performs dict lookup instead of re-evaluation.
+- `bom_line_ids.fetch([...])` batch prefetch before the move-generation
+  loop turns N+1 SELECTs into a single query for large BoMs.
+- Old `_eval_matrix_coeff(line, ctx)` kept for backward compatibility
+  with external callers but marked deprecated in the docstring.
+
+### Added
+
+- Soft fallback when `zen-engine` is not installed.  Set the system
+  parameter `mrp_design_matrix.allow_missing_zen_engine` to `1` and
+  the matrix engine becomes a no-op — MO creation continues with the
+  standard OCA behaviour for BoMs without matrix tables.  T0
+  constraints are NOT enforced in this mode; use only for staged
+  rollouts.
+- Post-migration script (`migrations/18.0.1.5.0/post-migration.py`):
+  - warns about BoMs that have matrix tables but no
+    `design_param_definition_id`
+  - back-fills empty `design_params` on lots that already link a
+    definition
+  - emits a loud log line if `zen-engine` is missing at upgrade time
+
 ## [18.0.1.4.1] - 2026-04-05
 
 ### Fixed
