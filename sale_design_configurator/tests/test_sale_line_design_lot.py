@@ -54,9 +54,7 @@ class TestSaleLineDesignLot(TransactionCase):
         )
 
         # Plain product (no design definition)
-        cls.plain = cls.Product.create(
-            {"name": "Plain Product", "is_storable": True}
-        )
+        cls.plain = cls.Product.create({"name": "Plain Product", "is_storable": True})
 
         # Product with a BoM that carries the design definition
         cls.bom_product = cls.Product.create(
@@ -132,9 +130,7 @@ class TestSaleLineDesignLot(TransactionCase):
     def test_company_active_definitions_filter(self):
         """Non-empty active definitions that exclude this one → False."""
         # Create a second definition and restrict the company to only it
-        other_def = self.Definition.create(
-            {"code": "other_def", "name": "Other"}
-        )
+        other_def = self.Definition.create({"code": "other_def", "name": "Other"})
         self.env.company.design_definition_ids = [(6, 0, [other_def.id])]
         # Re-create line to recompute
         line = self._make_so_line(self.direct_product)

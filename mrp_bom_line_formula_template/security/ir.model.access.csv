@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_mrp_bom_line_formula_template_user,mrp.bom.line.formula.template,model_mrp_bom_line_formula_template,base.group_user,1,1,1,1
+access_formula_template_user,mrp.bom.line.formula.template user,model_mrp_bom_line_formula_template,mrp.group_mrp_user,1,0,0,0
+access_formula_template_manager,mrp.bom.line.formula.template manager,model_mrp_bom_line_formula_template,mrp.group_mrp_manager,1,1,1,1

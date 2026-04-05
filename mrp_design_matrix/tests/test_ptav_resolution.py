@@ -66,9 +66,7 @@ class TestPtavResolution(TransactionCase):
                         0,
                         {
                             "attribute_id": cls.attr_material.id,
-                            "value_ids": [
-                                (6, 0, [cls.val_wood.id, cls.val_steel.id])
-                            ],
+                            "value_ids": [(6, 0, [cls.val_wood.id, cls.val_steel.id])],
                         },
                     ),
                     (
@@ -143,9 +141,7 @@ class TestPtavResolution(TransactionCase):
             {"material": "steel", "finish": "glossy"},
         )
         self.assertTrue(result)
-        ptav_names = set(
-            result.product_template_variant_value_ids.mapped("name")
-        )
+        ptav_names = set(result.product_template_variant_value_ids.mapped("name"))
         self.assertEqual(ptav_names, {"steel", "glossy"})
 
     def test_resolve_no_match_returns_false(self):
@@ -181,7 +177,5 @@ class TestPtavResolution(TransactionCase):
         )
         # Bogus attr is skipped; finish still resolves a variant
         self.assertTrue(result)
-        ptav_names = set(
-            result.product_template_variant_value_ids.mapped("name")
-        )
+        ptav_names = set(result.product_template_variant_value_ids.mapped("name"))
         self.assertIn("matte", ptav_names)

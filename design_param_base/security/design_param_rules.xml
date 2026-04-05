@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo noupdate="1">
+
+    <!-- Multi-company rule: definitions with an empty company_ids M2M are
+         global (visible to all companies); otherwise they are visible only
+         to users whose allowed companies intersect the definition's
+         company_ids. -->
+    <record id="design_param_definition_multi_company_rule" model="ir.rule">
+        <field name="name">Design Parameter Definition multi-company</field>
+        <field name="model_id" ref="model_design_param_definition"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">
+            [
+                '|',
+                ('company_ids', '=', False),
+                ('company_ids', 'in', company_ids),
+            ]
+        </field>
+    </record>
+
+</odoo>

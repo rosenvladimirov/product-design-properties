@@ -4,6 +4,13 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.4.1] - 2026-04-05
+
+### Fixed
+
+- `stock_lot._create_child_lot`: moved `safe_eval` import to module
+  level and added explicit warning log on extraction failures.
+
 ## [18.0.1.4.0] - 2026-04-04
 
 ### Added

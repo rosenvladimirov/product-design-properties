@@ -1,7 +1,12 @@
 # Copyright 2026 BL Consulting
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import logging
+
 from odoo import api, models
+from odoo.tools.safe_eval import safe_eval
+
+_logger = logging.getLogger(__name__)
 
 
 class StockLot(models.Model):
@@ -51,10 +56,14 @@ class StockLot(models.Model):
             else:
                 # Formula — safe_eval against parent context
                 try:
-                    from odoo.tools.safe_eval import safe_eval
-
                     child_params[child_key] = safe_eval(source, parent_ctx)
-                except Exception:
+                except Exception as e:
+                    _logger.warning(
+                        "Param extraction failed for %s = %r: %s",
+                        child_key,
+                        source,
+                        e,
+                    )
                     child_params[child_key] = None
 
         return self.create(

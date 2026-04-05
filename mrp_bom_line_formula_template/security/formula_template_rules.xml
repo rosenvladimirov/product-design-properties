@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo noupdate="1">
+
+    <!-- Multi-company rule: a user can only see templates of their
+         allowed companies, or company-less (global) templates. -->
+    <record id="formula_template_multi_company_rule" model="ir.rule">
+        <field name="name">Formula Template multi-company</field>
+        <field name="model_id" ref="model_mrp_bom_line_formula_template"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">
+            ['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]
+        </field>
+    </record>
+
+</odoo>
