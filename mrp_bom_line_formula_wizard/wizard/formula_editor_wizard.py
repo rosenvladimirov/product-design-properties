@@ -1,43 +1,43 @@
 # Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.safe_eval import test_python_expr
 
-FORMULA_HELP = _(
-    "Available variables:\n"
-    "  bom_line         - the current BoM line\n"
-    "  production       - the manufacturing order\n"
-    "  product          - product of this BoM line\n"
-    "  product_uom      - UoM of the product\n"
-    "  product_uom_qty  - quantity from the MO\n"
-    "  operation        - routing workcenter (if set)\n"
-    "  env              - Odoo environment (env.ref(), searches)\n"
-    "\n"
-    "Design context (when design matrix is active):\n"
-    "  width, height, thickness - lot dimensions\n"
-    "  + all T1 geometry outputs as flat variables\n"
-    "  + all design_params from the lot\n"
-    "  design_context   - full context dict\n"
-    "\n"
-    "Output variables (assign in formula):\n"
-    "  result           - computed quantity (or 'quantity')\n"
-    "  product          - override product (optional)\n"
-    "  uom              - override UoM (optional)\n"
-    "\n"
-    "Examples:\n"
-    "  result = product_uom_qty * 1.05\n"
-    "\n"
-    "  # Area-based with design dimensions\n"
-    "  result = (width / 1000) * (height / 1000)\n"
-    "\n"
-    "  # Override product based on param\n"
-    "  result = 1\n"
-    "  if construction == 'glass':\n"
-    "      product = env.ref('my_module.glass_panel')\n"
-    "      uom = env.ref('uom.product_uom_unit')"
-)
+# Technical reference shown verbatim in the wizard — not translated.
+FORMULA_HELP = """\
+Available variables:
+  bom_line         - the current BoM line
+  production       - the manufacturing order
+  product          - product of this BoM line
+  product_uom      - UoM of the product
+  product_uom_qty  - quantity from the MO
+  operation        - routing workcenter (if set)
+  env              - Odoo environment (env.ref(), searches)
+
+Design context (when design matrix is active):
+  width, height, thickness - lot dimensions
+  + all T1 geometry outputs as flat variables
+  + all design_params from the lot
+  design_context   - full context dict
+
+Output variables (assign in formula):
+  result           - computed quantity (or 'quantity')
+  product          - override product (optional)
+  uom              - override UoM (optional)
+
+Examples:
+  result = product_uom_qty * 1.05
+
+  # Area-based with design dimensions
+  result = (width / 1000) * (height / 1000)
+
+  # Override product based on param
+  result = 1
+  if construction == 'glass':
+      product = env.ref('my_module.glass_panel')
+      uom = env.ref('uom.product_uom_unit')"""
 
 
 class FormulaEditorWizard(models.TransientModel):
