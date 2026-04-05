@@ -1,16 +1,14 @@
 # MRP Design Matrix — Project Plan
 
-**Version:** 1.0 | **Date:** March 2026 | **Author:** Rosen Vladimirov \<vladimirov.rosen@gmail.com\> | BL Consulting | Odoo Silver Partner
+**Version:** 2.0 | **Last revision:** 2026-04-05 | **Author:** Rosen Vladimirov \<vladimirov.rosen@gmail.com\> | BL Consulting | Odoo Silver Partner
 
 ---
 
 ## Scope and Objective
 
-Development and publication in OCA of a stack of Odoo 18 modules for design-driven manufacturing. The project includes the core (generic engine) and five industry sub-modules.
+Development and publication in OCA of a stack of Odoo 18 modules for design-driven manufacturing. The project includes the core (generic engine), five+ industry sub-modules, a 3D SO configurator, and AI-assisted formula generation.
 
-**End result:** PR in `OCA/manufacture` and `OCA/stock-logistics-workflow`.
-
-**Total duration:** ~11 weeks
+**End result:** PR in `OCA/manufacture` and `OCA/stock-logistics-workflow` + production-ready deployment.
 
 ---
 
@@ -18,148 +16,276 @@ Development and publication in OCA of a stack of Odoo 18 modules for design-driv
 
 Preparation of existing modules for OCA publication.
 
-| Task | Module | Priority | Effort |
+| Task | Module | Priority | Status |
 |---|---|---|---|
-| PR: `stock_move_forced_lot_multi` | stock-logistics-workflow | Critical | 3 days |
-| PR: `stock_move_forced_lot_multi_dim` | stock-logistics-workflow | Critical | 1 day |
-| Tests for forced lot propagation | the above | Critical | 2 days |
-| OCA pre-commit setup for the new repo | `mrp_design_matrix` | High | 0.5 days |
+| PR: `stock_move_forced_lot_multi` | stock-logistics-workflow | Critical | External (OCA) |
+| PR: `stock_move_forced_lot_multi_dim` | stock-logistics-workflow | Critical | External (OCA) |
+| Tests for forced lot propagation | the above | Critical | **TODO** |
+| OCA pre-commit setup for the new repo | `mrp_design_matrix` | High | **TODO** |
 
 **Key result:** forced_lot PRs in OCA — everything else depends on them.
 
 ---
 
-## Phase 1 — The Bridge (1 week)
+## Phase 1 — The Bridge (1 week) — **REDESIGNED**
 
-`mrp_bom_formula_lot_dimension` — the critical module on which the entire formula logic depends.
+Original plan: a separate `mrp_bom_formula_lot_dimension` module.
+**Actual:** merged into `mrp_bom_line_formula_template` as a more powerful formula system.
 
-| Task | Description | Effort |
+| Task | Location | Status |
 |---|---|---|
-| `_quantity_formula_values` override | Adds lot dims and Properties flatten to the context | 1 day |
-| Tests | Formula uses `width` and `bag_type` from lot Properties | 1 day |
-| README + changelog | OCA standard | 0.5 days |
+| `_quantity_formula_values` override with design context | `mrp_bom_line_formula_template/models/mrp_bom_line.py` | ✓ Done |
+| `env` exposed in formula globals | same | ✓ Done |
+| Extended output: `result`, `product`, `uom` | same | ✓ Done |
+| `_get_move_raw_values` unpacks result dict | `mrp_bom_line_formula_template/models/mrp_production.py` | ✓ Done |
+| Tests — formula uses `width` and `bag_type` from lot Properties | — | **TODO** |
 
-**Key result:** `quantity_formula` sees all design_params without additional code.
+**Key result:** `quantity_formula` sees all design_params + can override product/UoM at MO creation.
 
 ---
 
-## Phase 2 — Core: Models (2 weeks)
+## Phase 2 — Core: Models (2 weeks) — **DONE**
 
-| Task | Description | Effort |
+| Task | Description | Status |
 |---|---|---|
-| `mrp.design.param.definition` | PropertiesDefinition + XML parser | 2 days |
-| `mrp.matrix.template` | 4x JSON fields, basic CRUD | 1 day |
-| `mrp.bom` extension | `design_param_definition_id`, 4x JSON, `action_load_from_template()` | 2 days |
-| `mrp.bom.line` extension | `coeff_default`, `matrix_coeff_rule`, `param_attribute_map`, `param_extraction_map`, `child_definition_id`, `mto_stop` | 2 days |
-| `stock.lot` extension | `design_param_definition_id` + `design_params` Properties | 1 day |
-| `ace_editor` widget | JSON editor in BoM form for the 4 tables | 2 days |
+| `design.param.definition` | PropertiesDefinition + XML parser + inheritance chain | ✓ (in `design_param_base`) |
+| `mrp.matrix.template` | 4× JSON fields, basic CRUD | ✓ |
+| `mrp.bom` extension | `design_param_definition_id`, 4× JSON tables, `action_load_from_template()` | ✓ |
+| `mrp.bom.line` extension | `coeff_default`, `matrix_coeff_rule`, `param_attribute_map`, `param_extraction_map`, `child_definition_id`, `mto_stop` | ✓ |
+| `stock.lot` extension | `design_param_definition_id` + `design_params` Properties | ✓ (in `stock_lot_properties` + helpers in `mrp_design_matrix`) |
+| `design_matrix` OWL widget | Replaces ACE JSON editor — visual DMN table | ✓ (v18.0.1.4.0) |
 
-**Key result:** all models are in place, UI allows matrix configuration.
+**Bonus (not in original plan):**
+- ✓ Matrix Preview dialog on BoM form — live T0/T1/T2/T3 simulation
+- ✓ JSON↔Table toggle, hitPolicy selector, drag-reorder
+- ✓ Smart cell encoding/decoding (no manual quoting)
+
+**Key result:** all models in place, UI allows matrix configuration, live preview available.
 
 ---
 
-## Phase 3 — Core: Logic (2 weeks)
+## Phase 3 — Core: Logic (2 weeks) — **DONE (except tests)**
 
-| Task | Description | Effort |
+| Task | Location | Status |
 |---|---|---|
-| GoRules wrapper class | Loads JSONB, `evaluate()`, error handling | 1 day |
-| `_generate_design_matrix_moves()` | T0/T1 chain, the main algorithm | 3 days |
-| `_resolve_t2_product()` | Type 1/2/3 dispatch | 1 day |
-| `_resolve_variant_by_ptav()` | PTAV matching logic | 2 days |
-| `_create_child_lot()` | `param_extraction_map` with copy and `safe_eval` | 2 days |
-| `_find_matching_lot()` | Stock matching by `design_params` | 1 day |
-| `mto_stop` logic | Branching in `_generate_design_matrix_moves` | 1 day |
-| Integration tests | At least 5 tests covering the main paths | 3 days |
+| GoRules wrapper class | `mrp_design_matrix/models/zen_engine.py` | ✓ |
+| `_generate_design_matrix_moves()` | `mrp_design_matrix/models/mrp_production.py` | ✓ |
+| `_resolve_t2_product()` (Type 1/2/3 dispatch) | same | ✓ |
+| `_resolve_variant_by_ptav()` | same | ✓ |
+| `_create_child_lot()` with `param_extraction_map` | `mrp_design_matrix/models/stock_lot.py` | ✓ |
+| `_find_matching_stock_lot()` | same | ✓ |
+| `mto_stop` branching | `mrp_production.py:_handle_semifinished_lots` | ✓ |
+| Integration tests — at least 5 covering main paths | — | **TODO** |
 
-**Key result:** full MO algorithm works end-to-end with tests.
+**Key result:** full MO algorithm works end-to-end. Tests are the only missing piece.
 
 ---
 
-## Phase 4 — Industry Sub-modules (3 weeks)
+## Phase 4 — Industry Sub-modules (3 weeks) — **DONE (7 modules instead of 5)**
 
-| Sub-module | XML definitions | JSON templates | Tests | Effort |
+| Sub-module | XML definitions | JSON templates | Demo BoM | Status |
 |---|---|---|---|---|
-| `mrp_design_matrix_bags` | `bag_type, has_tie, density...` | standard, with_print | 2 | 3 days |
-| `mrp_design_matrix_corrugated` | `board_type, grammage...` | BC standard, single wall | 2 | 3 days |
-| `mrp_design_matrix_roller_door` | `slat_type, drive_type...` | manual, electric | 2 | 4 days |
-| `mrp_design_matrix_security_door` | `RC_class, sheet_thickness...` | RC2, RC3, RC4 | 3 | 4 days |
-| `mrp_design_matrix_interior_door` | `construction, opening...` | HDF standard, solid premium | 2 | 3 days |
+| `mrp_design_matrix_bags` | ✓ | ✓ | ✓ | Complete |
+| `mrp_design_matrix_corrugated` | ✓ | ✓ | ✓ | Complete |
+| `mrp_design_matrix_roller_door` | ✓ | ✓ | ✓ | Complete |
+| `mrp_design_matrix_security_door` | ✓ | ✓ | ✓ | Complete |
+| `mrp_design_matrix_interior_door` | ✓ | ✓ | ✓ | Complete |
+| `mrp_design_matrix_canned_peppers` | ✓ | ✓ | ✓ | Complete (bonus) |
+| `mrp_design_matrix_smart_display` | ✓ | ✓ | ✓ | Complete (bonus) |
 
-**Key result:** each sub-module is installable, with demo data and working templates.
+**Missing:** per-module `README.rst` and `CHANGELOG.md` — see Phase 5.
 
 ---
 
-## Phase 5 — Finalization and OCA (1 week)
+## Phase 5 — Finalization and OCA (1 week) — **PARTIAL**
 
-| Task | Description | Effort |
+| Task | Status |
+|---|---|
+| Code review and cleanup (`ruff`, `black`, OCA checks) | **TODO** |
+| Per-module `README.rst` | **TODO** (root `README.md` exists) |
+| Per-module `CHANGELOG.md` | Partial — core modules have it, sub-modules do not |
+| Demo data on fresh installation | ✓ (demo_bom_*.xml in every sub-module) |
+| PR to `OCA/manufacture` + `OCA/stock-logistics-workflow` | **TODO** |
+
+---
+
+## Phase 6 — Beyond the original plan — **DONE**
+
+Additional modules and features added during development.
+
+| Module | Version | Purpose |
 |---|---|---|
-| Code review and cleanup | `ruff`, `black`, OCA checks — zero errors | 2 days |
-| Documentation | `README.rst` for each module | 2 days |
-| PR submission | `OCA/manufacture` + `OCA/stock-logistics-workflow` | 1 day |
-| Demo data | `demo_bom_*.xml` for each sub-module | 1 day |
+| `design_param_base` | 18.0.1.0.0 | Shared parameter definitions, schema validation, inheritance |
+| `stock_lot_properties` | 18.0.1.0.0 | `stock.lot` Properties fields (split from mrp_design_matrix for reuse) |
+| `product_design_assets` | 18.0.1.1.0 | GLB / SVG / PNG / DXF assets on product variants |
+| `sale_design_configurator` | 18.0.1.5.0 | SO line 3D configurator (Three.js r128), lot creation flow, RuleMatrixPreview fallback |
+| `mrp_bom_line_formula_template` | 18.0.1.1.0 | **Replaces** the Phase 1 bridge — formula templates + extended `result/product/uom` |
+| `mrp_bom_line_formula_wizard` | 18.0.1.1.0 | Wizard UI for formula editing with template picker |
+| `mrp_bom_line_formula_claude` | 18.0.1.0.0 | Claude AI assistant in wizard (MCP + iframe + live refresh) |
+
+---
+
+## Phase 7 — Production Readiness (NEW) — **IN PROGRESS**
+
+Tasks to bring the whole stack to a deployable production state.
+
+### 7.1 Quality Gates
+- [ ] Add `.pre-commit-config.yaml` at repo root (OCA standard)
+- [ ] Add `pyproject.toml` with ruff/black config
+- [ ] Run `pre-commit run -a` — fix all findings
+- [ ] Run Odoo `manifestoo` — verify no missing dependencies
+- [ ] Run OCA's `oca-gen-addon-readme` for each module
+
+### 7.2 Tests (blocking for production)
+- [ ] `mrp_design_matrix` — T0/T1/T2/T3 evaluation unit tests
+- [ ] `mrp_design_matrix` — MO integration test (5+ scenarios)
+- [ ] `mrp_design_matrix` — PTAV resolution test
+- [ ] `mrp_design_matrix` — mto_stop / _find_matching_stock_lot test
+- [ ] `mrp_design_matrix` — _create_child_lot test with safe_eval extraction
+- [ ] `mrp_bom_line_formula_template` — extended formula eval (result/product/uom)
+- [ ] `design_param_base` — definition inheritance + XML parser test
+- [ ] `sale_design_configurator` — SO line → design lot → MO lot propagation
+- [ ] Sub-modules — smoke test per module (install + demo BoM loads)
+
+### 7.3 Documentation
+- [ ] `README.rst` per module (OCA standard, auto-generated from fragments)
+- [ ] `CHANGELOG.md` per sub-module
+- [ ] User guide: "How to build a new industry sub-module in 30 minutes"
+- [ ] Developer guide: T0/T1/T2/T3 matrix authoring
+- [ ] Update root `README.md` with architecture diagram + module graph
+
+### 7.4 Security & Multi-company
+- [ ] Review `ir.model.access.csv` in every module
+- [ ] Check record rules on `stock.lot.design_params` (multi-company isolation)
+- [ ] Verify `design_param_definition_id.company_ids` filters correctly
+- [ ] Audit `safe_eval` usage in `_create_child_lot` + formulas (restricted globals)
+- [ ] Verify no `sudo()` escapes in matrix evaluation path
+
+### 7.5 Performance
+- [ ] Benchmark `_generate_design_matrix_moves` on a 50-line BoM with T0+T1+T2+T3
+- [ ] Cache `ZenWrapper.evaluate` results per (table_hash, context_hash) in MO transaction
+- [ ] Verify ORM prefetch for `bom_line_ids` + `product_id` in the moves loop
+- [ ] Profile SVG/GLB loading in `sale_design_configurator` on slow networks
+
+### 7.6 Data Migration
+- [ ] Migration script: existing BoMs without `design_param_definition_id`
+- [ ] Migration script: existing lots without `design_params` Properties
+- [ ] Fallback path when `zen-engine` Python package is not installed
+- [ ] Version bump strategy documented (semantic versioning per module)
+
+### 7.7 Deployment
+- [ ] Docker Compose reference for the MCP stack (already in `odoo-claude-mcp`)
+- [ ] Ansible/playbook for production deploy
+- [ ] Per-client branch strategy (source → demo → client)
+- [ ] Rollback procedure documented
+
+### 7.8 OCA Submission
+- [ ] Early precheck with OCA/manufacture maintainer
+- [ ] PR: `stock_move_forced_lot_multi` (Phase 0, prerequisite)
+- [ ] PR: `mrp_bom_line_formula_template` (formula extension)
+- [ ] PR: `design_param_base` + `stock_lot_properties` (foundation layer)
+- [ ] PR: `mrp_design_matrix` (core engine)
+- [ ] PR: industry sub-modules (one per sub-module)
+- [ ] PR: `sale_design_configurator` (optional — sale integration)
 
 ---
 
 ## Summary Timeline
 
-| Phase | Duration | Key Result |
+| Phase | Original | Actual Status |
 |---|---|---|
-| Phase 0 — Foundation | 2 weeks | forced_lot PR in OCA |
-| Phase 1 — Bridge | 1 week | formula module sees Properties |
-| Phase 2 — Models | 2 weeks | All models + UI |
-| Phase 3 — Logic | 2 weeks | Full MO algorithm |
-| Phase 4 — Sub-modules | 3 weeks | 5 industry packages |
-| Phase 5 — OCA | 1 week | PR submitted |
-| **TOTAL** | **11 weeks** | **~3 months** |
+| Phase 0 — Foundation | 2 weeks | External, test TODO |
+| Phase 1 — Bridge | 1 week | ✓ Redesigned as formula template |
+| Phase 2 — Models | 2 weeks | ✓ Complete + bonus features |
+| Phase 3 — Logic | 2 weeks | ✓ Complete (no tests) |
+| Phase 4 — Sub-modules | 3 weeks | ✓ Complete (7/5 modules) |
+| Phase 5 — OCA | 1 week | Partial (docs + tests blocking) |
+| Phase 6 — Beyond plan | — | ✓ 7 extra modules |
+| Phase 7 — Production | — | **In progress** |
 
 ---
 
-## Risks
+## Risks (updated)
 
 | Risk | Probability | Impact | Mitigation |
 |---|---|---|---|
-| OCA review requires substantial changes | Medium | High | Early precheck with OCA maintainer |
-| GoRules does not cover all T0 cases | Low | Medium | cDMN as fallback for constraints |
-| Properties engine changes in Odoo 18.x | Low | High | Tests on every minor version |
-| PTAV matching requires exact name correspondence | High | Medium | Validation on `design_params` save |
-| Industry templates are incomplete | Medium | Low | Demo data + documentation for extension |
+| OCA review requires substantial changes | Medium | High | Early precheck with maintainer (Phase 7.8) |
+| GoRules does not cover all T0 cases | Low | Medium | cDMN fallback (not yet needed) |
+| Properties engine changes in Odoo 18.x | Low | High | Tests on every minor version (Phase 7.2) |
+| PTAV matching requires exact name correspondence | High | Medium | Validation + unit tests (Phase 7.2) |
+| Industry templates incomplete | Medium | Low | Demo data + developer guide (Phase 7.3) |
+| `zen-engine` package unavailable in target env | Medium | High | Bundling strategy + fallback (Phase 7.6) |
+| Multi-company data leakage via design_params | Low | Critical | Security audit (Phase 7.4) |
+| Formula `safe_eval` bypass | Low | Critical | Restricted globals audit (Phase 7.4) |
 
 ---
 
-## Dependencies
+## Dependencies (updated)
 
-- `mrp_bom_line_formula_quantity` — already in OCA, only version compatibility
-- `stock_move_forced_lot_multi` — PR needed **before Phase 3**
-- `zen-engine` — `pip install`, no additional dependencies
-- `product_electrical_properties` — only a conceptual model, **not a runtime dependency**
+**External (OCA):**
+- `mrp_bom_line_formula_quantity` — already in OCA
+- `stock_move_forced_lot_multi` — PR needed (Phase 0)
+- `stock_move_forced_lot_multi_dim` — PR needed (Phase 0)
+
+**External (PyPI):**
+- `zen-engine` — GoRules JDM evaluator (1 line `pip install`, no transitive deps)
+
+**Internal (this repo, in load order):**
+```
+design_param_base
+stock_lot_properties
+product_design_assets
+mrp_bom_line_formula_template
+mrp_bom_line_formula_wizard
+mrp_bom_line_formula_claude   (needs l10n_bg_claude_terminal)
+mrp_design_matrix
+  └── mrp_design_matrix_bags
+  └── mrp_design_matrix_corrugated
+  └── mrp_design_matrix_roller_door
+  └── mrp_design_matrix_security_door
+  └── mrp_design_matrix_interior_door
+  └── mrp_design_matrix_canned_peppers
+  └── mrp_design_matrix_smart_display
+sale_design_configurator
+```
 
 ---
 
-## Definition of Done (DoD)
+## Definition of Done (production)
 
+### For OCA submission (Phase 5)
 - [ ] All tests pass (pytest, no skips)
 - [ ] pre-commit: `ruff`, `black`, OCA checks — no errors
 - [ ] `README.rst` filled in for each module
-- [ ] Changelog (towncrier) up to date
+- [ ] Changelog up to date
 - [ ] Demo data works on fresh installation
-- [ ] PR description contains context, screenshots, and test instructions
+- [ ] PR description contains context, screenshots, test instructions
+
+### For production deployment (Phase 7)
+- [ ] All OCA DoD items above
+- [ ] Security audit passed (multi-company + safe_eval)
+- [ ] Performance benchmarks documented
+- [ ] Migration scripts tested on real customer data
+- [ ] Deployment runbook tested end-to-end
+- [ ] Rollback procedure verified
+- [ ] At least one production customer running for 30 days without blocker bugs
 
 ---
 
-## TODO (current status)
+## Current TODO (priority order)
 
-- [ ] Phase 0: PR `stock_move_forced_lot_multi`
-- [ ] Phase 0: PR `stock_move_forced_lot_multi_dim`
-- [ ] Phase 1: `mrp_bom_formula_lot_dimension` — bridge
-- [ ] Phase 2: `mrp.design.param.definition` model + XML parser
-- [ ] Phase 2: `mrp.matrix.template` model
-- [ ] Phase 2: `mrp.bom` extension + `action_load_from_template()`
-- [ ] Phase 2: `mrp.bom.line` extension (all new fields)
-- [ ] Phase 2: `stock.lot` extension + Properties
-- [ ] Phase 2: `ace_editor` widget
-- [ ] Phase 3: GoRules wrapper class
-- [ ] Phase 3: `_generate_design_matrix_moves()`
-- [ ] Phase 3: `_resolve_variant_by_ptav()`
-- [ ] Phase 3: `_create_child_lot()` + `_find_matching_lot()`
-- [ ] Phase 4: sub-modules bags / corrugated / roller_door / security_door / interior_door
-- [ ] Phase 5: PR → OCA
+**Blocking for production:**
+1. Integration tests for `_generate_design_matrix_moves` (Phase 7.2)
+2. Security audit of `safe_eval` and multi-company (Phase 7.4)
+3. pre-commit + ruff/black clean run (Phase 7.1)
+4. Migration scripts for existing BoMs/lots (Phase 7.6)
+
+**Blocking for OCA PR:**
+5. `README.rst` per module (Phase 7.3)
+6. `CHANGELOG.md` per sub-module (Phase 7.3)
+7. OCA maintainer precheck (Phase 7.8)
+
+**Nice to have:**
+8. Performance benchmarks + caching (Phase 7.5)
+9. Developer guide (Phase 7.3)
+10. Ansible deployment playbook (Phase 7.7)
