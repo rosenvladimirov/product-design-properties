@@ -26,7 +26,7 @@
         <record id="product_tmpl_steel_sheet" model="product.template">
             <field name="name">Steel Sheet (O-variant)</field>
             <field name="type">consu</field>
-            <field name="uom_id" ref="uom.product_uom_kg"/>
+            <field name="uom_id" ref="uom.product_uom_kgm"/>
         </record>
         <record id="product_tmpl_ribs" model="product.template">
             <field name="name">Structural Ribs (O-variant)</field>
@@ -36,7 +36,7 @@
         <record id="product_tmpl_fill" model="product.template">
             <field name="name">Security Fill (RC3+, O-variant)</field>
             <field name="type">consu</field>
-            <field name="uom_id" ref="uom.product_uom_kg"/>
+            <field name="uom_id" ref="uom.product_uom_kgm"/>
         </record>
         <record id="product_tmpl_lock" model="product.template">
             <field name="name">Lock Set (O-variant)</field>

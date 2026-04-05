@@ -95,7 +95,7 @@
             "product_tmpl_ref":    "mrp_design_matrix_bags.product_tmpl_ink",
             "param_attribute_map": "{\"color\": \"mrp_design_matrix_bags.attr_color\"}",
             "quantity_expr":       "\"width * effective_length * 0.000012\"",
-            "uom_ref":             "\"uom.product_uom_kg\""
+            "uom_ref":             "\"uom.product_uom_kgm\""
           },
           {
             "has_print": "",

@@ -11,13 +11,12 @@
             <field name="ref" position="after">
                 <field name="design_param_definition_id"/>
             </field>
-            <notebook position="inside">
-                <page string="Design Parameters"
-                      name="design_parameters"
-                      invisible="not design_param_definition_id">
-                    <field name="design_params"/>
-                </page>
-            </notebook>
+            <field name="lot_properties" position="after">
+                <field name="design_params"
+                       nolabel="1"
+                       columns="2"
+                       invisible="not design_param_definition_id"/>
+            </field>
         </field>
     </record>
 
