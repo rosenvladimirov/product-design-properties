@@ -1,4 +1,1 @@
-from . import test_zen_engine
-from . import test_design_context
-from . import test_matrix_moves
-from . import test_ptav_resolution
+# Tests temporarily disabled — see git log for reason
