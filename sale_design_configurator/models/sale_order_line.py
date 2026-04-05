@@ -72,9 +72,7 @@ class SaleOrderLine(models.Model):
                     ("active", "=", True),
                 ]
                 if active_defs:
-                    domain.append(
-                        ("design_param_definition_id", "in", active_defs.ids)
-                    )
+                    domain.append(("design_param_definition_id", "in", active_defs.ids))
                 bom = self.env["mrp.bom"].search(domain, limit=1)
                 if bom:
                     line.has_design_definition = True
@@ -188,9 +186,7 @@ class SaleOrderLine(models.Model):
             ("active", "=", True),
         ]
         if active_defs:
-            domain.append(
-                ("design_param_definition_id", "in", active_defs.ids)
-            )
+            domain.append(("design_param_definition_id", "in", active_defs.ids))
         bom = self.env["mrp.bom"].search(domain, limit=1)
         if not bom:
             return False

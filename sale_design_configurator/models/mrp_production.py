@@ -1,7 +1,7 @@
 # Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import _, api, fields, models
+from odoo import _, api, models
 
 
 class MrpProduction(models.Model):
@@ -17,7 +17,7 @@ class MrpProduction(models.Model):
         We pick it up and set lot_producing_id automatically.
         """
         recs = super().create(vals_list)
-        for production, vals in zip(recs, vals_list):
+        for production, vals in zip(recs, vals_list, strict=False):
             design_lot_id = vals.get("design_lot_id")
             if design_lot_id and not production.lot_producing_id:
                 production.lot_producing_id = design_lot_id
@@ -37,9 +37,7 @@ class MrpProduction(models.Model):
                 "tag": "display_notification",
                 "params": {
                     "title": _("No design parameter set"),
-                    "message": _(
-                        "The BoM has no design parameter definition."
-                    ),
+                    "message": _("The BoM has no design parameter definition."),
                     "type": "warning",
                 },
             }
@@ -50,9 +48,7 @@ class MrpProduction(models.Model):
                 "productId": self.product_id.id,
                 "definitionId": bom.design_param_definition_id.id,
                 "existingLotId": (
-                    self.lot_producing_id.id
-                    if self.lot_producing_id
-                    else False
+                    self.lot_producing_id.id if self.lot_producing_id else False
                 ),
                 "moId": self.id,
             },

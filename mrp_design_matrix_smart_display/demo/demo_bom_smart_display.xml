@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
         <!-- Demo finished product: Smart Home Display 4" WiFi+Zigbee -->
         <record id="product_tmpl_smart_display_4" model="product.template">
             <field name="name">Smart Home Display 4" WiFi+Zigbee</field>
@@ -174,5 +173,4 @@
             <field name="matrix_coeff_rule">mic-o</field>
         </record>
 
-    </data>
-</odoo>
+    </odoo>

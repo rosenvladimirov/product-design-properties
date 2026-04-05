@@ -2,7 +2,9 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Sale Design Configurator",
-    "summary": "SO line design configurator with 3D preview for parametric manufacturing",
+    "summary": (
+        "SO line design configurator with 3D preview " "for parametric manufacturing"
+    ),
     "version": "18.0.1.5.0",
     "category": "Sales",
     "website": "https://github.com/OCA/manufacture",
@@ -11,7 +13,12 @@
     "license": "AGPL-3",
     "application": False,
     "installable": True,
-    "depends": ["design_param_base", "stock_lot_properties", "product_design_assets", "sale"],
+    "depends": [
+        "design_param_base",
+        "stock_lot_properties",
+        "product_design_assets",
+        "sale",
+    ],
     "data": [
         "security/ir.model.access.csv",
         "views/res_config_settings_views.xml",

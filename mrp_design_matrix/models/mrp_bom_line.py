@@ -41,7 +41,7 @@ class MrpBomLine(models.Model):
         "Parameter → Attribute Map",
         help=(
             "JSON: {design_param_key: product_attribute_external_id}. "
-            "Example: {\"color\": \"module.attr_color\"}. "
+            'Example: {"color": "module.attr_color"}. '
             "Values in design_params must match product.attribute.value.name."
         ),
     )
@@ -54,7 +54,7 @@ class MrpBomLine(models.Model):
             "JSON: {child_key: source}. "
             "source = parent param key (direct copy) "
             "or a safe_eval expression against the parent lot context. "
-            "Example: {\"tie_length\": \"height + 50\", \"color\": \"color\"}."
+            'Example: {"tie_length": "height + 50", "color": "color"}.'
         ),
     )
     child_definition_id = fields.Many2one(

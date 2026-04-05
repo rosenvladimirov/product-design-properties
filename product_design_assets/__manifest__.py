@@ -2,7 +2,10 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Product Design Assets",
-    "summary": "Link design visual assets (GLB, SVG, PNG) from product attachments for 3D configurators",
+    "summary": (
+        "Link design visual assets (GLB, SVG, PNG) "
+        "from product attachments for 3D configurators"
+    ),
     "version": "18.0.1.1.0",
     "category": "Manufacturing",
     "website": "https://github.com/OCA/manufacture",

@@ -9,8 +9,7 @@
     T2: Activates O-variant components (Zigbee module, relays, sensors, speakers, etc.)
     T3: Conditional operations (SMT Zigbee, relay soldering, mic calibration, firmware flash, logo print)
 -->
-<odoo>
-    <data noupdate="1">
+<odoo noupdate="1">
 
         <!-- ── Workcenter stubs ────────────────────────────────────── -->
         <record id="wc_smt" model="mrp.workcenter">
@@ -469,5 +468,4 @@
             "/>
         </record>
 
-    </data>
-</odoo>
+    </odoo>

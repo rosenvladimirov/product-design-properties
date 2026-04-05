@@ -2,7 +2,10 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "MRP Design Matrix — Canned Roasted Peppers",
-    "summary": "Design parameter definitions and matrix templates for canned roasted pepper manufacturers.",
+    "summary": (
+        "Design parameter definitions and matrix templates "
+        "for canned roasted pepper manufacturers."
+    ),
     "version": "18.0.1.0.0",
     "category": "Manufacturing",
     "website": "https://github.com/OCA/manufacture",

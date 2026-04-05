@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo><data noupdate="1">
+<odoo noupdate="1">
   <record id="matrix_template_interior_door_standard" model="mrp.matrix.template">
     <field name="name">Interior Door — Standard</field>
     <field name="industry">doors</field>
@@ -12,4 +12,4 @@ T3: glazing; surface finish.</field>
     <field name="material_table"   eval="{}"/>
     <field name="operation_table"  eval="{}"/>
   </record>
-</data></odoo>
+</odoo>

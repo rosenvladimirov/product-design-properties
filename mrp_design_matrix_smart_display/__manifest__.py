@@ -2,7 +2,10 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "MRP Design Matrix — Smart Home Display",
-    "summary": "Design parameter definitions and matrix templates for smart home display panel manufacturers.",
+    "summary": (
+        "Design parameter definitions and matrix templates "
+        "for smart home display panel manufacturers."
+    ),
     "version": "18.0.1.0.0",
     "category": "Manufacturing",
     "website": "https://github.com/OCA/manufacture",

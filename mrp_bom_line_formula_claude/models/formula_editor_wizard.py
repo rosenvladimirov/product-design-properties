@@ -5,7 +5,6 @@ import json
 
 from odoo import api, fields, models
 
-
 CLAUDE_INSTRUCTIONS = """\
 # BoM Line Quantity Formula — Generation Task
 
@@ -123,7 +122,9 @@ class FormulaEditorWizard(models.TransientModel):
                 "product_uom": line.product_uom_id.name,
                 "product_uom_id": line.product_uom_id.id,
                 "product_qty": line.product_qty,
-                "current_formula": self.quantity_formula or line.quantity_formula or None,
+                "current_formula": (
+                    self.quantity_formula or line.quantity_formula or None
+                ),
             },
             "bom": {
                 "id": bom.id,
@@ -142,17 +143,21 @@ class FormulaEditorWizard(models.TransientModel):
 
         definition = getattr(bom, "design_param_definition_id", False)
         if definition:
-            defn_list = getattr(
-                definition, "full_design_params_definition", None
-            ) or getattr(definition, "design_params_definition", None) or []
+            defn_list = (
+                getattr(definition, "full_design_params_definition", None)
+                or getattr(definition, "design_params_definition", None)
+                or []
+            )
             for prop in defn_list:
-                brief["design_params"].append({
-                    "name": prop.get("name"),
-                    "string": prop.get("string"),
-                    "type": prop.get("type"),
-                    "default": prop.get("default"),
-                    "selection": prop.get("selection"),
-                })
+                brief["design_params"].append(
+                    {
+                        "name": prop.get("name"),
+                        "string": prop.get("string"),
+                        "type": prop.get("type"),
+                        "default": prop.get("default"),
+                        "selection": prop.get("selection"),
+                    }
+                )
 
         # BoM line coefficient fields from mrp_design_matrix
         if hasattr(line, "coeff_default"):

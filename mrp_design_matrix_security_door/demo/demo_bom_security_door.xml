@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
         <record id="product_tmpl_security_door" model="product.template">
             <field name="name">Security Door RC3</field>
             <field name="type">product</field>
@@ -51,5 +50,4 @@ quantity = (width / 1000) * (height / 1000) * (sheet_thickness / 1000) * 7850
             <field name="coeff_default">0.0</field>
             <field name="matrix_coeff_rule">elock-o</field>
         </record>
-    </data>
-</odoo>
+    </odoo>

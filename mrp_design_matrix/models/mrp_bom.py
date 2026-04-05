@@ -44,9 +44,11 @@ class MrpBom(models.Model):
         if not self.matrix_template_id:
             return
         t = self.matrix_template_id
-        self.write({
-            "constraint_table": t.constraint_table,
-            "geometry_table":   t.geometry_table,
-            "material_table":   t.material_table,
-            "operation_table":  t.operation_table,
-        })
+        self.write(
+            {
+                "constraint_table": t.constraint_table,
+                "geometry_table": t.geometry_table,
+                "material_table": t.material_table,
+                "operation_table": t.operation_table,
+            }
+        )

@@ -29,10 +29,12 @@ class MrpBom(models.Model):
             product = line.product_id
             assets = Product.get_design_assets_by_type(product.id)
             if any(v for v in assets.values()):
-                result.append({
-                    "product_id": product.id,
-                    "product_name": product.display_name,
-                    "bom_line_id": line.id,
-                    "assets": assets,
-                })
+                result.append(
+                    {
+                        "product_id": product.id,
+                        "product_name": product.display_name,
+                        "bom_line_id": line.id,
+                        "assets": assets,
+                    }
+                )
         return result

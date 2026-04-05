@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
         <!-- Demo finished product: Roasted Peppers Whole 720ml -->
         <record id="product_tmpl_peppers_720" model="product.template">
             <field name="name">Roasted Peppers Whole 720ml</field>
@@ -384,5 +383,4 @@ quantity = pallet_count
             <field name="matrix_coeff_rule">top-sheet-o</field>
         </record>
 
-    </data>
-</odoo>
+    </odoo>

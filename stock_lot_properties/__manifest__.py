@@ -2,7 +2,10 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Stock Lot Properties",
-    "summary": "Adds dynamic design parameters (Properties) to stock.lot linked to a definition model",
+    "summary": (
+        "Adds dynamic design parameters (Properties) "
+        "to stock.lot linked to a definition model"
+    ),
     "version": "18.0.1.0.0",
     "category": "Inventory",
     "website": "https://github.com/OCA/manufacture",

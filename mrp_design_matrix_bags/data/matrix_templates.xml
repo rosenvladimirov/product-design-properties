@@ -5,8 +5,7 @@
     Stored here as Odoo data so the template is available immediately
     after installation without a separate file-read step.
 -->
-<odoo>
-    <data noupdate="1">
+<odoo noupdate="1">
 
         <!-- ── Workcenter stubs (demo/reference) ─────────────────────── -->
         <record id="wc_extrusion" model="mrp.workcenter">
@@ -127,5 +126,4 @@
             <field name="operation_table" eval="{}"/>
         </record>
 
-    </data>
-</odoo>
+    </odoo>

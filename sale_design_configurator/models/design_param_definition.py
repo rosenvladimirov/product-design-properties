@@ -54,9 +54,7 @@ class DesignParamDefinition(models.Model):
                         child_def = child_product.design_param_definition_id
                         if not child_def or child_def == record:
                             continue
-                        for prop in (
-                            child_def.full_design_params_definition or []
-                        ):
+                        for prop in child_def.full_design_params_definition or []:
                             prop_string = prop.get("string", "")
                             if prop_string and prop_string not in seen:
                                 merged.append(prop)

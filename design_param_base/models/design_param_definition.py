@@ -2,12 +2,15 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import json
+import logging
 import os
 import secrets
 from xml.etree import ElementTree as ET
 
 from odoo import addons, api, fields, models
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
 
 XML_FILENAME = "design_param_definitions.xml"
 
@@ -54,7 +57,6 @@ class DesignParamDefinition(models.Model):
         help="If empty, available for all companies.",
     )
     validation_rules = fields.Json(
-        "Validation Rules",
         help="JSON array of validation rules for client-side evaluation.",
     )
     profile_ids = fields.One2many(
@@ -85,7 +87,7 @@ class DesignParamDefinition(models.Model):
                 current = current.parent_id
             # Apply top-down (base first, then child overrides)
             for defn in reversed(chain):
-                for prop in (defn.design_params_definition or []):
+                for prop in defn.design_params_definition or []:
                     prop_string = prop.get("string", "")
                     if prop_string in seen_strings:
                         # Override: replace existing
@@ -118,7 +120,10 @@ class DesignParamDefinition(models.Model):
             try:
                 text = json.loads(text)
             except json.JSONDecodeError:
-                pass
+                _logger.debug(
+                    "Failed to JSON-parse item text %r — using as string",
+                    text,
+                )
         return {attr.get("name"): text}
 
     @staticmethod
@@ -150,10 +155,7 @@ class DesignParamDefinition(models.Model):
             </properties>
         """
         attr = properties.attrib
-        props = [
-            self._process_items(items)
-            for items in properties.iter("items")
-        ]
+        props = [self._process_items(items) for items in properties.iter("items")]
         vals = {
             "sequence": sequence,
             "code": attr.get("code"),
@@ -207,8 +209,6 @@ class DesignParamDefinition(models.Model):
             values.append(self._process_properties(props, seq))
 
         if values:
-            to_delete = self.search(
-                [("code", "in", [v["code"] for v in values])]
-            )
+            to_delete = self.search([("code", "in", [v["code"] for v in values])])
             to_delete.unlink()
             self.create(values)

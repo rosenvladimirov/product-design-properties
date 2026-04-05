@@ -2,7 +2,10 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "MRP Design Matrix — Roller Shutters",
-    "summary": "Design parameter definitions and matrix templates for roller shutter manufacturers (Teolino).",
+    "summary": (
+        "Design parameter definitions and matrix templates "
+        "for roller shutter manufacturers (Teolino)."
+    ),
     "version": "18.0.1.1.0",
     "category": "Manufacturing",
     "website": "https://github.com/OCA/manufacture",

@@ -20,15 +20,14 @@ class ProductProduct(models.Model):
         "design.param.definition",
         string="Design Definition",
         help="Select the design parameter set for this product. "
-             "Used by the configurator for filtering and PTAV matching.",
+        "Used by the configurator for filtering and PTAV matching.",
     )
 
     # ── Design properties (dynamic fields from definition) ───────────
     design_properties = fields.Properties(
-        "Design Properties",
         definition="design_param_definition_id.full_design_params_definition",
         help="Product-level design properties for configurator filtering. "
-             "Values must match product.attribute.value.name for PTAV resolution.",
+        "Values must match product.attribute.value.name for PTAV resolution.",
     )
 
     # ── Design assets (M2M to ir.attachment) ─────────────────────────
@@ -39,7 +38,7 @@ class ProductProduct(models.Model):
         "attachment_id",
         string="Design Assets",
         help="GLB (3D models), SVG (profiles), PNG/JPG (textures) "
-             "for design configurator visualization.",
+        "for design configurator visualization.",
     )
     design_asset_count = fields.Integer(
         compute="_compute_design_asset_count",
@@ -85,15 +84,17 @@ class ProductProduct(models.Model):
                 lambda a: a.mimetype in ("image/jpeg", "image/png")
             ).read(["id", "name", "mimetype"])
             if textures:
-                ptav_names = variant.product_template_variant_value_ids.mapped(
-                    "name"
+                ptav_names = variant.product_template_variant_value_ids.mapped("name")
+                result.append(
+                    {
+                        "variant_id": variant.id,
+                        "variant_name": variant.display_name,
+                        "ptav_name": ptav_names[0]
+                        if ptav_names
+                        else variant.display_name,
+                        "textures": textures,
+                    }
                 )
-                result.append({
-                    "variant_id": variant.id,
-                    "variant_name": variant.display_name,
-                    "ptav_name": ptav_names[0] if ptav_names else variant.display_name,
-                    "textures": textures,
-                })
         return result
 
     @api.model
@@ -109,15 +110,17 @@ class ProductProduct(models.Model):
         for variant in product.product_tmpl_id.product_variant_ids:
             assets = self.get_design_assets_by_type(variant.id)
             if any(v for v in assets.values()):
-                ptav_names = variant.product_template_variant_value_ids.mapped(
-                    "name"
+                ptav_names = variant.product_template_variant_value_ids.mapped("name")
+                result.append(
+                    {
+                        "variant_id": variant.id,
+                        "variant_name": variant.display_name,
+                        "ptav_name": ptav_names[0]
+                        if ptav_names
+                        else variant.display_name,
+                        "assets": assets,
+                    }
                 )
-                result.append({
-                    "variant_id": variant.id,
-                    "variant_name": variant.display_name,
-                    "ptav_name": ptav_names[0] if ptav_names else variant.display_name,
-                    "assets": assets,
-                })
         return result
 
     def action_view_design_assets(self):
@@ -148,26 +151,31 @@ class ProductTemplate(models.Model):
         search="_search_design_param_definition_id",
     )
     design_properties = fields.Properties(
-        "Design Properties",
         compute="_compute_design_properties",
         inverse="_inverse_design_properties",
         definition="design_param_definition_id.full_design_params_definition",
     )
 
-    @api.depends("product_variant_ids", "product_variant_ids.design_param_definition_id")
+    @api.depends(
+        "product_variant_ids",
+        "product_variant_ids.design_param_definition_id",
+    )
     def _compute_design_param_definition_id(self):
         for record in self:
             if record.product_variant_ids:
-                record.design_param_definition_id = (
-                    record.product_variant_ids[0].design_param_definition_id
-                )
+                record.design_param_definition_id = record.product_variant_ids[
+                    0
+                ].design_param_definition_id
             else:
                 record.design_param_definition_id = False
 
     def _inverse_design_param_definition_id(self):
         for record in self:
             for product in record.product_variant_ids:
-                if product.design_param_definition_id != record.design_param_definition_id:
+                if (
+                    product.design_param_definition_id
+                    != record.design_param_definition_id
+                ):
                     product.write({"design_properties": False})
                 product.design_param_definition_id = record.design_param_definition_id
 
@@ -184,14 +192,17 @@ class ProductTemplate(models.Model):
     def _compute_design_properties(self):
         for record in self:
             if record.product_variant_ids:
-                record.design_properties = record.product_variant_ids[0].design_properties
+                record.design_properties = record.product_variant_ids[
+                    0
+                ].design_properties
             else:
                 record.design_properties = False
 
     def _inverse_design_properties(self):
         for record in self:
             if record.product_variant_count == 1 and record.design_properties:
+                new_props = record.design_properties
                 for product in record.product_variant_ids.filtered(
-                    lambda p: p.design_properties != record.design_properties
+                    lambda p, new_props=new_props: p.design_properties != new_props
                 ):
-                    product.write({"design_properties": record.design_properties})
+                    product.write({"design_properties": new_props})

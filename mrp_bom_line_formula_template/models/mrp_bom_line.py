@@ -109,11 +109,7 @@ class MRPBomLine(models.Model):
 
         # Detect UoM override (formula wrote: uom = env.ref(...))
         ret_uom = values.get("uom")
-        uom_changed = (
-            ret_uom
-            and hasattr(ret_uom, "id")
-            and ret_uom.id != orig_uom_id
-        )
+        uom_changed = ret_uom and hasattr(ret_uom, "id") and ret_uom.id != orig_uom_id
 
         if product_changed or uom_changed:
             return {

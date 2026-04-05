@@ -9,8 +9,7 @@
     T3: Conditional operations (stuffing, pasteurization profile, labeling,
         palletizing).
 -->
-<odoo>
-    <data noupdate="1">
+<odoo noupdate="1">
 
         <!-- ── Workcenter stubs ────────────────────────────────────── -->
         <record id="wc_sorting" model="mrp.workcenter">
@@ -521,5 +520,4 @@
             "/>
         </record>
 
-    </data>
-</odoo>
+    </odoo>

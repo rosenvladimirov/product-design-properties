@@ -20,8 +20,8 @@ class StockLot(models.Model):
         """
         self.ensure_one()
         ctx = {
-            "width":     getattr(self, "width", 0.0),
-            "height":    getattr(self, "height", 0.0),
+            "width": getattr(self, "width", 0.0),
+            "height": getattr(self, "height", 0.0),
             "thickness": getattr(self, "thickness", 0.0),
         }
         for key, value in (self.design_params or {}).items():
@@ -52,21 +52,24 @@ class StockLot(models.Model):
                 # Formula — safe_eval against parent context
                 try:
                     from odoo.tools.safe_eval import safe_eval
+
                     child_params[child_key] = safe_eval(source, parent_ctx)
                 except Exception:
                     child_params[child_key] = None
 
-        return self.create({
-            "name": self._generate_child_lot_name(parent_lot, product),
-            "product_id": product.id,
-            "company_id": parent_lot.company_id.id,
-            "design_param_definition_id": (
-                bom_line.child_definition_id.id
-                if bom_line.child_definition_id
-                else False
-            ),
-            "design_params": child_params or False,
-        })
+        return self.create(
+            {
+                "name": self._generate_child_lot_name(parent_lot, product),
+                "product_id": product.id,
+                "company_id": parent_lot.company_id.id,
+                "design_param_definition_id": (
+                    bom_line.child_definition_id.id
+                    if bom_line.child_definition_id
+                    else False
+                ),
+                "design_params": child_params or False,
+            }
+        )
 
     @api.model
     def _generate_child_lot_name(self, parent_lot, product):
@@ -83,10 +86,12 @@ class StockLot(models.Model):
 
         :returns: matching ``stock.lot`` or empty recordset.
         """
-        candidates = self.search([
-            ("product_id", "=", product.id),
-            ("design_param_definition_id", "!=", False),
-        ])
+        candidates = self.search(
+            [
+                ("product_id", "=", product.id),
+                ("design_param_definition_id", "!=", False),
+            ]
+        )
         for lot in candidates:
             lot_params = dict(lot.design_params or {})
             if all(lot_params.get(k) == v for k, v in required_params.items()):

@@ -10,5 +10,8 @@ class MrpBom(models.Model):
     design_param_definition_id = fields.Many2one(
         "design.param.definition",
         string="Design Parameter Set",
-        help="Defines which design parameters are available for lots produced with this BoM.",
+        help=(
+            "Defines which design parameters are available "
+            "for lots produced with this BoM."
+        ),
     )

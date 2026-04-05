@@ -19,6 +19,7 @@ See https://gorules.io/docs/ for the full specification.
 import json
 import logging
 
+from odoo import _
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
@@ -44,8 +45,10 @@ class ZenWrapper:
     def _get_engine(cls):
         if not _ZEN_AVAILABLE:
             raise UserError(
-                "zen-engine Python package is not installed.\n"
-                "Install it with:  pip install zen-engine"
+                _(
+                    "zen-engine Python package is not installed.\n"
+                    "Install it with:  pip install zen-engine"
+                )
             )
         if cls._engine is None:
             cls._engine = zen.ZenEngine()

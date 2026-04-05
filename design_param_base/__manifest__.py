@@ -2,7 +2,10 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Design Parameter Base",
-    "summary": "Shared design parameter definitions with SVG profiles for parametric manufacturing",
+    "summary": (
+        "Shared design parameter definitions "
+        "with SVG profiles for parametric manufacturing"
+    ),
     "version": "18.0.1.0.0",
     "category": "Manufacturing",
     "website": "https://github.com/OCA/manufacture",

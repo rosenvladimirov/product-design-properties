@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo><data noupdate="1">
+<odoo noupdate="1">
   <record id="matrix_template_corrugated_standard" model="mrp.matrix.template">
     <field name="name">Corrugated Box — Standard</field>
     <field name="industry">corrugated</field>
@@ -11,4 +11,4 @@ T3: print (has_print), die-cut (die_cut). Trim optimizer is external.</field>
     <field name="material_table"   eval="{}"/>
     <field name="operation_table"  eval="{}"/>
   </record>
-</data></odoo>
+</odoo>

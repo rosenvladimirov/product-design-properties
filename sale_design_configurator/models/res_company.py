@@ -10,5 +10,8 @@ class ResCompany(models.Model):
     design_definition_ids = fields.Many2many(
         "design.param.definition",
         string="Active Design Definitions",
-        help="Design parameter definitions available for this company. If empty, all are available.",
+        help=(
+            "Design parameter definitions available for this company. "
+            "If empty, all are available."
+        ),
     )

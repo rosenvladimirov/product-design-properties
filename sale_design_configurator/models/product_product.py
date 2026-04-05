@@ -16,9 +16,7 @@ class ProductProduct(models.Model):
                 "tag": "display_notification",
                 "params": {
                     "title": _("No design definition"),
-                    "message": _(
-                        "Set a Design Definition on this product first."
-                    ),
+                    "message": _("Set a Design Definition on this product first."),
                     "type": "warning",
                 },
             }

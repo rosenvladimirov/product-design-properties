@@ -103,11 +103,13 @@ class MrpProduction(models.Model):
                     continue
                 product = self._resolve_t2_product(item, full_ctx)
                 if not product:
-                    raise UserError(
-                        _("Cannot resolve product for T2 item: %s") % item
-                    )
+                    raise UserError(_("Cannot resolve product for T2 item: %s") % item)
                 qty = self._eval_qty_expr(item.get("quantity", 0), full_ctx)
-                uom = self.env.ref(item["uom_ref"]) if item.get("uom_ref") else product.uom_id
+                uom = (
+                    self.env.ref(item["uom_ref"])
+                    if item.get("uom_ref")
+                    else product.uom_id
+                )
                 self._create_or_update_matrix_move(product, qty * coeff, uom)
 
         # 6. T3 — workorders
@@ -130,9 +132,7 @@ class MrpProduction(models.Model):
         # Type 3 — PTAV resolution
         if "product_tmpl_ref" in item and "param_attribute_map" in item:
             tmpl = self.env.ref(item["product_tmpl_ref"])
-            return self._resolve_variant_by_ptav(
-                tmpl, item["param_attribute_map"], ctx
-            )
+            return self._resolve_variant_by_ptav(tmpl, item["param_attribute_map"], ctx)
         return False
 
     def _resolve_variant_by_ptav(self, tmpl, param_attr_map: dict, design_ctx: dict):
@@ -156,17 +156,22 @@ class MrpProduction(models.Model):
             except ValueError:
                 _logger.warning("Unknown attribute ref: %s", attr_ref)
                 continue
-            ptav = PTAV.search([
-                ("product_tmpl_id", "=", tmpl.id),
-                ("attribute_id",    "=", attribute.id),
-                ("name",            "=", str(value)),
-            ], limit=1)
+            ptav = PTAV.search(
+                [
+                    ("product_tmpl_id", "=", tmpl.id),
+                    ("attribute_id", "=", attribute.id),
+                    ("name", "=", str(value)),
+                ],
+                limit=1,
+            )
             if ptav:
                 needed |= ptav
             else:
                 _logger.warning(
                     "No PTAV found for tmpl=%s attr=%s value=%s",
-                    tmpl.display_name, attribute.name, value,
+                    tmpl.display_name,
+                    attribute.name,
+                    value,
                 )
 
         if not needed:
@@ -249,7 +254,7 @@ class MrpProduction(models.Model):
 
     def _eval_qty_expr(self, expr, ctx: dict) -> float:
         """Evaluate a quantity expression — float literal or safe_eval str."""
-        if isinstance(expr, (int, float)):
+        if isinstance(expr, int | float):
             return float(expr)
         try:
             return float(safe_eval(str(expr), ctx))
@@ -284,10 +289,12 @@ class MrpProduction(models.Model):
         except ValueError:
             _logger.warning("Unknown workcenter ref: %s", workcenter_ref)
             return
-        self.env["mrp.workorder"].create({
-            "name": op.get("name", workcenter.name),
-            "production_id": self.id,
-            "workcenter_id": workcenter.id,
-            "product_uom_id": self.product_uom_id.id,
-            "qty_production": self.product_qty,
-        })
+        self.env["mrp.workorder"].create(
+            {
+                "name": op.get("name", workcenter.name),
+                "production_id": self.id,
+                "workcenter_id": workcenter.id,
+                "product_uom_id": self.product_uom_id.id,
+                "qty_production": self.product_qty,
+            }
+        )

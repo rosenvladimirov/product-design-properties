@@ -2,7 +2,10 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "MRP Design Matrix — Bags",
-    "summary": "Design parameter definitions and matrix templates for garbage bag manufacturers.",
+    "summary": (
+        "Design parameter definitions and matrix templates "
+        "for garbage bag manufacturers."
+    ),
     "version": "18.0.1.0.0",
     "category": "Manufacturing",
     "website": "https://github.com/OCA/manufacture",
