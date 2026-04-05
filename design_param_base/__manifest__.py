@@ -17,6 +17,7 @@
     "depends": ["stock", "mrp"],
     "data": [
         "security/ir.model.access.csv",
+        "security/design_param_rules.xml",
         "data/install_design_params.xml",
         "views/design_param_definition_views.xml",
         "views/design_param_profile_views.xml",
