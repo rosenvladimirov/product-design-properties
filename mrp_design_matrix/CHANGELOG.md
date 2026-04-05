@@ -4,6 +4,16 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.5.1] - 2026-04-05
+
+### Restored
+
+- Post-migration script (`migrations/18.0.1.5.1/post-migration.py`)
+  was temporarily removed in the previous deploy to isolate a build
+  failure on demo.  It is now re-added with defensive exception
+  handling around the BoM search and lot backfill — any failure is
+  logged and the upgrade continues cleanly.
+
 ## [18.0.1.5.0] - 2026-04-05
 
 ### Performance
