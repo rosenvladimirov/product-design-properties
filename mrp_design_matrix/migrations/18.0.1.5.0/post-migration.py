@@ -36,7 +36,9 @@ def _check_boms_without_definition(env):
     # Any BoM with at least one matrix table set but no definition link.
     domain = [
         ("design_param_definition_id", "=", False),
-        "|", "|", "|",
+        "|",
+        "|",
+        "|",
         ("constraint_table", "!=", False),
         ("geometry_table", "!=", False),
         ("material_table", "!=", False),

@@ -6,7 +6,7 @@
         "Design parameter definitions and matrix templates "
         "for garbage bag manufacturers."
     ),
-    "version": "18.0.1.0.0",
+    "version": "19.0.1.0.0",
     "category": "Manufacturing",
     "website": "https://github.com/OCA/manufacture",
     "author": "BL Consulting, Odoo Community Association (OCA)",
