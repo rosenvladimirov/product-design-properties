@@ -15,6 +15,7 @@
     "license": "AGPL-3",
     "data": [
         "security/ir.model.access.csv",
+        "security/formula_template_rules.xml",
         "views/mrp_bom_line_formula_template_views.xml",
     ],
     "installable": True,
