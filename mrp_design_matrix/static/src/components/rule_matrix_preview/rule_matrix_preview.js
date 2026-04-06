@@ -20,6 +20,7 @@ export class RuleMatrixPreview extends Component {
 
     static props = {
         params: { type: Object },
+        paramsVersion: { type: Number, optional: true },
         constraintTable: { type: [Object, { value: false }], optional: true },
         geometryTable: { type: [Object, { value: false }], optional: true },
         materialTable: { type: [Object, { value: false }], optional: true },
