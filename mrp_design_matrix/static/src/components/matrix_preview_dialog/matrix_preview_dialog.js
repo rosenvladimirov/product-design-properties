@@ -32,6 +32,11 @@ export class MatrixPreviewDialog extends Component {
             materialTable: false,
             operationTable: false,
             bomLines: [],
+            // Counter incremented on every param change — passed as a prop
+            // to RuleMatrixPreview so OWL detects a "new" prop value and
+            // triggers a re-render even though the params object reference
+            // itself hasn't changed (it's mutated in-place by useState).
+            paramsVersion: 0,
         });
         this.params = useState({});
         this._load();
@@ -119,20 +124,28 @@ export class MatrixPreviewDialog extends Component {
 
     // ── Event handlers ─────────────────────────────────────────────────
 
+    _bumpVersion() {
+        this.state.paramsVersion++;
+    }
+
     onSliderInput(ev) {
         this.params[ev.target.dataset.param] = parseFloat(ev.target.value) || 0;
+        this._bumpVersion();
     }
 
     onSegmentClick(ev) {
         this.params[ev.target.dataset.param] = ev.target.dataset.value;
+        this._bumpVersion();
     }
 
     onCheckChange(ev) {
         this.params[ev.target.dataset.param] = ev.target.checked;
+        this._bumpVersion();
     }
 
     onTextChange(ev) {
         this.params[ev.target.dataset.param] = ev.target.value;
+        this._bumpVersion();
     }
 
     onSpinnerInput(ev) {

@@ -101,6 +101,7 @@
                     <div class="o_matrix_preview_right">
                         <RuleMatrixPreview
                             params="params"
+                            paramsVersion="state.paramsVersion"
                             constraintTable="state.constraintTable"
                             geometryTable="state.geometryTable"
                             materialTable="state.materialTable"
