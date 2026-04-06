@@ -19,7 +19,7 @@
                     <div class="o_matrix_preview_params">
                         <div class="o_matrix_preview_params_title">Parameters</div>
 
-                        <t t-foreach="displayParams" t-as="param" t-key="param.name">
+                        <t t-foreach="displayParams" t-as="param" t-key="param.key">
 
                             <!-- Float slider -->
                             <t t-if="param.type === 'float'">
@@ -33,7 +33,7 @@
                                            t-att-max="param.max || 9999"
                                            t-att-step="param.step || 1"
                                            t-att-value="param.value"
-                                           t-att-data-param="param.name"
+                                           t-att-data-param="param.key"
                                            t-on-input="onSliderInput"/>
                                     <input type="number"
                                            class="o_mp_spinner"
@@ -41,7 +41,7 @@
                                            t-att-max="param.max || 9999"
                                            step="1"
                                            t-att-value="param.value"
-                                           t-att-data-param="param.name"
+                                           t-att-data-param="param.key"
                                            t-on-input="onSpinnerInput"/>
                                 </div>
                             </t>
@@ -54,9 +54,9 @@
                                     </div>
                                     <div class="o_mp_seg">
                                         <t t-foreach="param.selection" t-as="opt" t-key="opt[0]">
-                                            <button t-att-class="'o_mp_seg_btn' + (params[param.name] === opt[0] ? ' active' : '')"
+                                            <button t-att-class="'o_mp_seg_btn' + (params[param.key] === opt[0] ? ' active' : '')"
                                                     t-att-data-value="opt[0]"
-                                                    t-att-data-param="param.name"
+                                                    t-att-data-param="param.key"
                                                     t-on-click="onSegmentClick">
                                                 <t t-esc="opt[1]"/>
                                             </button>
@@ -69,8 +69,8 @@
                             <t t-if="param.type === 'boolean'">
                                 <label class="o_mp_check">
                                     <input type="checkbox"
-                                           t-att-checked="params[param.name]"
-                                           t-att-data-param="param.name"
+                                           t-att-checked="params[param.key]"
+                                           t-att-data-param="param.key"
                                            t-on-change="onCheckChange"/>
                                     <span><t t-esc="param.string || param.name"/></span>
                                 </label>
@@ -83,8 +83,8 @@
                                         <span><t t-esc="param.string || param.name"/></span>
                                     </div>
                                     <input type="text" class="o_input o_mp_text"
-                                           t-att-value="params[param.name]"
-                                           t-att-data-param="param.name"
+                                           t-att-value="params[param.key]"
+                                           t-att-data-param="param.key"
                                            t-on-change="onTextChange"/>
                                 </div>
                             </t>

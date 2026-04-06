@@ -6,7 +6,7 @@
         "Parametric BoM driven by lot-level design parameters "
         "and a DMN rule matrix. Universal for make-to-order industries."
     ),
-    "version": "18.0.1.5.3",
+    "version": "18.0.1.5.4",
     "category": "Manufacturing",
     "website": "https://github.com/OCA/manufacture",
     "author": "BL Consulting, Odoo Community Association (OCA)",

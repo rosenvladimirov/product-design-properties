@@ -89,14 +89,19 @@ export class MatrixPreviewDialog extends Component {
 
     _initParams(definition) {
         for (const prop of definition || []) {
+            // Use prop.string (field name like "bag_type") as key, not
+            // prop.name (UUID like "60cc0f08b68bc070").  The JDM table
+            // inputs/outputs use field names, so the params dict must
+            // match for RuleMatrixPreview evaluation to find the values.
+            const key = prop.string || prop.name;
             if (prop.type === "boolean") {
-                this.params[prop.name] = prop.default === "true" || prop.default === true;
+                this.params[key] = prop.default === "true" || prop.default === true;
             } else if (prop.type === "float") {
-                this.params[prop.name] = parseFloat(prop.default) || 0;
+                this.params[key] = parseFloat(prop.default) || 0;
             } else if (prop.type === "selection" && prop.selection?.length) {
-                this.params[prop.name] = prop.default || prop.selection[0][0];
+                this.params[key] = prop.default || prop.selection[0][0];
             } else {
-                this.params[prop.name] = prop.default || "";
+                this.params[key] = prop.default || "";
             }
         }
     }
@@ -106,7 +111,9 @@ export class MatrixPreviewDialog extends Component {
     get displayParams() {
         return (this.state.paramDefinition || []).map(p => ({
             ...p,
-            value: this.params[p.name],
+            // Use string (field name) as the key for params lookup
+            key: p.string || p.name,
+            value: this.params[p.string || p.name],
         }));
     }
 
