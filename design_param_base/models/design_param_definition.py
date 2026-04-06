@@ -65,9 +65,10 @@ class DesignParamDefinition(models.Model):
         string="SVG Profiles",
     )
 
-    _sql_constraints = [
-        ("code_unique", "UNIQUE(code)", "The code must be unique."),
-    ]
+    _code_unique = models.Constraint(
+        "UNIQUE(code)",
+        "The code must be unique.",
+    )
 
     def _compute_full_design_params_definition(self):
         """Merge parent chain properties with own properties.
