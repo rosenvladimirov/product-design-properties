@@ -4,6 +4,23 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.6.0] - 2026-04-06
+
+### Added
+
+- T0 constraint table now passes non-reserved output keys (beyond
+  `errors`/`warnings`) as context variables to T1/T2/T3 and BoM line
+  formulas.  Enables condition-driven material injection.
+- Formula `add_products` return: BoM line formulas can now inject
+  extra raw material moves via `add_products = [{"ref": "...", "quantity": ...}]`.
+  New helper `_create_formula_extra_move()` resolves product by recordset
+  or XML ID and creates the stock move.
+
+### Fixed
+
+- `__manifest__.py` version prefix changed from `18.0` to `19.0` — Odoo 19
+  rejected the module as incompatible and refused to load it.
+
 ## [18.0.1.5.0] - 2026-04-05
 
 ### Performance

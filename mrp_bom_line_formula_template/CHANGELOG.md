@@ -4,6 +4,15 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.1.0] - 2026-04-06
+
+### Added
+
+- Formula evaluation now detects `add_products` variable — a list of
+  dicts with `product`/`ref`, `quantity`, and optional `uom` — and
+  includes it in the result dict for the matrix engine to create
+  additional raw material moves.
+
 ## [18.0.1.2.0] - 2026-04-05
 
 ### Security
