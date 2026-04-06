@@ -62,10 +62,11 @@ class MrpProduction(models.Model):
             )
             return
 
-        # 1–2. Build context + T0 validation
+        # 1–2. Build context + T0 validation + T0 context flags
         ctx = lot._get_design_context()
         ctx["qty"] = self.product_qty
-        self._eval_t0_constraints(bom, ctx)
+        t0_ctx = self._eval_t0_constraints(bom, ctx)
+        ctx.update(t0_ctx)
 
         # 3. T1 — geometry + forced values
         full_ctx = self._eval_t1_geometry(bom, ctx)
@@ -88,10 +89,16 @@ class MrpProduction(models.Model):
 
     # ── Step helpers (split from main algorithm for complexity) ──────────
 
-    def _eval_t0_constraints(self, bom, ctx: dict) -> None:
-        """Run T0 constraint_table; raise on errors, log warnings."""
+    def _eval_t0_constraints(self, bom, ctx: dict) -> dict:
+        """Run T0 constraint_table; raise on errors, log warnings.
+
+        Returns any non-reserved keys from the T0 result as context
+        variables that downstream tables (T1/T2/T3) and BoM line
+        formulas can use.  For example a T0 rule can set
+        ``needs_reinforcement = true`` and a formula can react to it.
+        """
         if not bom.constraint_table:
-            return
+            return {}
         t0 = ZenWrapper.evaluate(bom.constraint_table, ctx)
         for err in t0.get("errors", []):
             raise UserError(
@@ -99,6 +106,9 @@ class MrpProduction(models.Model):
             )
         for warn in t0.get("warnings", []):
             self.message_post(body=_("Design warning: %s") % warn.get("message", warn))
+        # Pass non-reserved keys as context additions for T1/T2/T3/formulas
+        _reserved = {"errors", "warnings"}
+        return {k: v for k, v in t0.items() if k not in _reserved}
 
     def _eval_t1_geometry(self, bom, ctx: dict) -> dict:
         """Run T1 geometry_table; return ``ctx`` merged with T1 outputs."""
@@ -146,8 +156,8 @@ class MrpProduction(models.Model):
             ]
         )
         for line in bom_lines:
-            qty_base, move_product, move_uom = self._unpack_formula_result(
-                line, full_ctx
+            qty_base, move_product, move_uom, add_products = (
+                self._unpack_formula_result(line, full_ctx)
             )
             coeff = self._eval_matrix_coeff_cached(line, t2_coeff_by_key)
             qty_final = qty_base * coeff
@@ -155,19 +165,32 @@ class MrpProduction(models.Model):
                 self._create_or_update_matrix_move(
                     move_product, qty_final, move_uom, line
                 )
+            # Extra products injected by the formula's add_products
+            for extra in add_products:
+                self._create_formula_extra_move(extra, full_ctx)
 
     def _unpack_formula_result(self, line, full_ctx: dict) -> tuple:
-        """Evaluate the BoM line formula and return ``(qty, product, uom)``."""
+        """Evaluate the BoM line formula and return ``(qty, product, uom, add_products)``.
+
+        ``add_products`` is a list of dicts that the formula can populate::
+
+            add_products = [
+                {"ref": "module.xml_id", "quantity": width * 0.002},
+                {"product": env.ref("..."), "quantity": 5, "uom": env.ref("...")},
+            ]
+        """
         formula_result = self._eval_bom_line_formula(line, full_ctx)
+        add_products = []
         if isinstance(formula_result, dict):
             qty_base = formula_result.get("quantity", 0) or 0.0
             move_product = formula_result.get("product") or line.product_id
             move_uom = formula_result.get("uom") or line.product_uom_id
+            add_products = formula_result.get("add_products") or []
         else:
             qty_base = formula_result
             move_product = line.product_id
             move_uom = line.product_uom_id
-        return qty_base, move_product, move_uom
+        return qty_base, move_product, move_uom, add_products
 
     def _generate_t2_adhoc_moves(self, t2_rows: list, full_ctx: dict) -> None:
         """Create raw moves for ad-hoc T2 rows (direct ref / PTAV)."""
@@ -347,6 +370,29 @@ class MrpProduction(models.Model):
             return float(safe_eval(str(expr), ctx))
         except Exception:
             return 0.0
+
+    def _create_formula_extra_move(self, item: dict, ctx: dict):
+        """Create a raw move for a product added via formula ``add_products``.
+
+        Supported dict keys:
+            - ``product``: product.product recordset (direct)
+            - ``ref``: XML ID string, resolved via ``env.ref()``
+            - ``quantity``: float or safe_eval expression
+            - ``uom``: product.uom recordset (optional, defaults to product UoM)
+        """
+        product = item.get("product")
+        if not product:
+            ref = item.get("ref")
+            if ref:
+                product = self.env.ref(ref, raise_if_not_found=False)
+        if not product:
+            _logger.warning("add_products: skipping item without product: %s", item)
+            return
+        qty = self._eval_qty_expr(item.get("quantity", 0), ctx)
+        if qty <= 0:
+            return
+        uom = item.get("uom") or product.uom_id
+        self._create_or_update_matrix_move(product, qty, uom)
 
     def _create_or_update_matrix_move(self, product, qty, uom, bom_line=None):
         """Create a raw material move for the MO."""

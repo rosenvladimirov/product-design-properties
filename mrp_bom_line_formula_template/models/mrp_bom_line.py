@@ -111,10 +111,16 @@ class MRPBomLine(models.Model):
         ret_uom = values.get("uom")
         uom_changed = ret_uom and hasattr(ret_uom, "id") and ret_uom.id != orig_uom_id
 
-        if product_changed or uom_changed:
-            return {
+        # Detect extra products (formula wrote: add_products = [...])
+        extra_products = values.get("add_products")
+
+        if product_changed or uom_changed or extra_products:
+            result = {
                 "quantity": qty,
                 "product": ret_product if product_changed else None,
                 "uom": ret_uom if uom_changed else None,
             }
+            if extra_products:
+                result["add_products"] = extra_products
+            return result
         return qty
