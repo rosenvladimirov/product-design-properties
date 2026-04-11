@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Workcenters -->
+    <record id="wc_slab_milling" model="mrp.workcenter">
+        <field name="name">Slab Milling &amp; CNC</field>
+        <field name="code">SDMILL</field>
+    </record>
+    <record id="wc_assembly" model="mrp.workcenter">
+        <field name="name">Door Assembly</field>
+        <field name="code">SDASM</field>
+    </record>
+    <record id="wc_surface_finishing" model="mrp.workcenter">
+        <field name="name">Surface Finishing (3D coating)</field>
+        <field name="code">SDFIN</field>
+    </record>
+    <record id="wc_fire_test" model="mrp.workcenter">
+        <field name="name">Fire-Rated Certification</field>
+        <field name="code">SDFIRE</field>
+    </record>
+    <record id="wc_frame_bending" model="mrp.workcenter">
+        <field name="name">Frame Bending &amp; Welding</field>
+        <field name="code">SDFRM</field>
+    </record>
+
+    <!-- Matrix template -->
+    <record id="matrix_template_solid_door" model="mrp.matrix.template">
+        <field name="name">Solid Door — Standard</field>
+        <field name="industry">doors</field>
+        <field name="description">
+            Template for SolidDoor interior and entrance door range.
+            T0: width/height min/max, slab-line compatibility, fire-rated model check.
+            T1: hinge count and slab weight from width and model.
+            T2: O-variant activation for handle, lock, glass, extras (seal, peephole).
+            T3: operation assignment (milling for 3D coatings, fire test for EI60, assembly, finishing).
+        </field>
+        <field name="constraint_table" eval="{}"/>
+        <field name="geometry_table"   eval="{}"/>
+        <field name="material_table"   eval="{}"/>
+        <field name="operation_table"  eval="{}"/>
+    </record>
+</odoo>

@@ -1,0 +1,131 @@
+{
+  "nodes": [
+    {
+      "id": "t0-solid",
+      "name": "T0 Constraints",
+      "type": "decisionTable",
+      "content": {
+        "hitPolicy": "collect",
+        "inputs": [
+          {"id": "width",       "name": "width"},
+          {"id": "height",      "name": "height"},
+          {"id": "slab_type",   "name": "slab_type"},
+          {"id": "line_type",   "name": "line_type"},
+          {"id": "fire_rated",  "name": "fire_rated"},
+          {"id": "door_model",  "name": "door_model"}
+        ],
+        "outputs": [
+          {"id": "level",   "name": "level"},
+          {"id": "message", "name": "message"}
+        ],
+        "rules": [
+          {
+            "width": "< 600", "height": "", "slab_type": "", "line_type": "", "fire_rated": "", "door_model": "",
+            "level":   "\"error\"",
+            "message": "\"Width must be at least 600 mm for a standard interior door.\""
+          },
+          {
+            "width": "> 1100", "height": "", "slab_type": "", "line_type": "", "fire_rated": "", "door_model": "",
+            "level":   "\"error\"",
+            "message": "\"Width above 1100 mm requires custom project — not configurable as standard.\""
+          },
+          {
+            "width": "", "height": "< 1900", "slab_type": "", "line_type": "", "fire_rated": "", "door_model": "",
+            "level":   "\"error\"",
+            "message": "\"Height must be at least 1900 mm.\""
+          },
+          {
+            "width": "", "height": "> 2400", "slab_type": "", "line_type": "", "fire_rated": "", "door_model": "",
+            "level":   "\"error\"",
+            "message": "\"Height above 2400 mm requires custom project.\""
+          },
+          {
+            "width": "", "height": "", "slab_type": "\"Без\"", "line_type": "!= \"Без\"", "fire_rated": "", "door_model": "",
+            "level":   "\"error\"",
+            "message": "\"Slab 'Без' cannot have decorative lines — set line_type to 'Без'.\""
+          },
+          {
+            "width": "", "height": "", "slab_type": "", "line_type": "", "fire_rated": "true", "door_model": "\"iDoor\",\"iDoor_3_0\",\"B_Smart\"",
+            "level":   "\"error\"",
+            "message": "\"Fire-rated variant not available for this model — use Klasik EI60 series.\""
+          },
+          {
+            "width": "> 1000", "height": "", "slab_type": "", "line_type": "", "fire_rated": "", "door_model": "",
+            "level":   "\"warning\"",
+            "message": "\"Width > 1000 mm: requires 3 hinges instead of 2.\""
+          }
+        ]
+      }
+    },
+    {
+      "id": "t1-solid",
+      "name": "T1 Geometry - weight and hinge count",
+      "type": "decisionTable",
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          {"id": "width",      "name": "width"},
+          {"id": "door_model", "name": "door_model"}
+        ],
+        "outputs": [
+          {"id": "hinge_count",     "name": "hinge_count"},
+          {"id": "slab_weight_kg",  "name": "slab_weight_kg"}
+        ],
+        "rules": [
+          {"width": "> 1000", "door_model": "\"Klasik_EI60\",\"Klasik_EI60i\"", "hinge_count": "4", "slab_weight_kg": "45"},
+          {"width": "> 1000", "door_model": "",                                  "hinge_count": "3", "slab_weight_kg": "35"},
+          {"width": "",       "door_model": "\"Klasik_EI60\",\"Klasik_EI60i\"", "hinge_count": "3", "slab_weight_kg": "38"},
+          {"width": "",       "door_model": "",                                  "hinge_count": "2", "slab_weight_kg": "28"}
+        ]
+      }
+    },
+    {
+      "id": "t2-solid",
+      "name": "T2 Materials - O-variant activation",
+      "type": "decisionTable",
+      "content": {
+        "hitPolicy": "collect",
+        "inputs": [
+          {"id": "handle_type", "name": "handle_type"},
+          {"id": "lock_type",   "name": "lock_type"},
+          {"id": "extras",      "name": "extras"},
+          {"id": "has_glass",   "name": "has_glass"}
+        ],
+        "outputs": [
+          {"id": "component", "name": "component"},
+          {"id": "coeff",     "name": "coeff"}
+        ],
+        "rules": [
+          {"handle_type": "!= \"\"", "lock_type": "",        "extras": "",            "has_glass": "",     "component": "\"handle-o\"",  "coeff": "1"},
+          {"handle_type": "",        "lock_type": "!= \"\"", "extras": "",            "has_glass": "",     "component": "\"lock-o\"",    "coeff": "1"},
+          {"handle_type": "",        "lock_type": "",        "extras": "contains \"seal\"", "has_glass": "", "component": "\"seal-o\"",    "coeff": "1"},
+          {"handle_type": "",        "lock_type": "",        "extras": "contains \"peephole\"", "has_glass": "", "component": "\"peephole-o\"", "coeff": "1"},
+          {"handle_type": "",        "lock_type": "",        "extras": "",            "has_glass": "true", "component": "\"glass-o\"",   "coeff": "1"}
+        ]
+      }
+    },
+    {
+      "id": "t3-solid",
+      "name": "T3 Operations",
+      "type": "decisionTable",
+      "content": {
+        "hitPolicy": "collect",
+        "inputs": [
+          {"id": "coating",    "name": "coating"},
+          {"id": "fire_rated", "name": "fire_rated"},
+          {"id": "door_model", "name": "door_model"}
+        ],
+        "outputs": [
+          {"id": "workcenter_code", "name": "workcenter_code"},
+          {"id": "duration_min",    "name": "duration_min"}
+        ],
+        "rules": [
+          {"coating": "contains \"3D\"",      "fire_rated": "",     "door_model": "", "workcenter_code": "\"SDMILL\"", "duration_min": "20"},
+          {"coating": "",                      "fire_rated": "true", "door_model": "", "workcenter_code": "\"SDFIRE\"", "duration_min": "30"},
+          {"coating": "",                      "fire_rated": "",     "door_model": "", "workcenter_code": "\"SDASM\"",  "duration_min": "45"},
+          {"coating": "",                      "fire_rated": "",     "door_model": "", "workcenter_code": "\"SDFIN\"",  "duration_min": "25"}
+        ]
+      }
+    }
+  ]
+}

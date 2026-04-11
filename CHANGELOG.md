@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **mrp_design_matrix_solid_door** (19.0.1.0.0) — new industrial submodule
+  - Properties definition for SolidDoor product range (portalsolid.com)
+  - 18 door models, coating/frame/slab/line/handle/lock/extras parameters
+  - Matrix template ``Solid Door — Standard`` (T0/T1/T2/T3 GoRules JDM)
+  - Workcenters: SDMILL, SDASM, SDFIN, SDFIRE, SDFRM
+
 ## [18.0.1.6.0] - 2026-04-02
 
 ### Added

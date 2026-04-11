@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Design parameter definitions for SolidDoor product range
+    (portalsolid.com / MySolidDoor). Covers 18 door models with
+    coating, frame, slab, line, handle, lock and extras selections.
+-->
+<records>
+    <properties code="solid_door" name="Solid Door" industry="doors" parent="base_dimensions">
+        <items name="door_model">
+            <item name="type">selection</item>
+            <item name="selection">[["B_Smart","B Smart"],["B_Smart_KK","B Smart КК"],["Solid_Alpha","Solid Alpha"],["Solid_Pulse","Solid Pulse"],["iDoor","iDoor"],["iDoor_3_0","iDoor 3.0"],["iDoor_HH","iDoor HH"],["iDoor_Select_KK","iDoor Селект КК"],["iPS_Select_KK","iPS Селект КК"],["mDoor_1_0","mDoor 1.0"],["mDoor_2_0","mDoor 2.0"],["mDoor_KK","mDoor КК"],["mySolid_HH","mySolid HH"],["mySolid_HHi","mySolid HHi"],["Klasik_EI60","Класик EI60"],["Klasik_EI60i","Класик EI60i"],["Select_HH_KK","Селект HH КК"],["Select_HHi_KK","Селект HHi КК"]]</item>
+            <item name="default">B_Smart</item>
+        </items>
+        <items name="coating">
+            <item name="type">char</item>
+            <item name="default"></item>
+        </items>
+        <items name="frame_type">
+            <item name="type">char</item>
+            <item name="default"></item>
+        </items>
+        <items name="slab_type">
+            <item name="type">char</item>
+            <item name="default">F01</item>
+        </items>
+        <items name="line_type">
+            <item name="type">char</item>
+            <item name="default">L01</item>
+        </items>
+        <items name="handle_type">
+            <item name="type">char</item>
+            <item name="default"></item>
+        </items>
+        <items name="lock_type">
+            <item name="type">char</item>
+            <item name="default"></item>
+        </items>
+        <items name="extras">
+            <item name="type">text</item>
+            <item name="default"></item>
+        </items>
+        <items name="opening_side">
+            <item name="type">selection</item>
+            <item name="selection">[["left","Left (hinge left)"],["right","Right (hinge right)"]]</item>
+            <item name="default">right</item>
+        </items>
+        <items name="has_glass">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+        <items name="fire_rated">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+    </properties>
+</records>
