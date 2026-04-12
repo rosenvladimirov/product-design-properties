@@ -52,7 +52,7 @@
         <field name="model">mrp.production</field>
         <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
         <field name="arch" type="xml">
-            <field name="lot_producing_id" position="after">
+            <field name="lot_producing_ids" position="after">
                 <button name="action_open_design_configurator"
                         string="Configurator"
                         type="object"
