@@ -20,39 +20,39 @@
         ],
         "rules": [
           {
-            "width": "< 600", "height": "", "slab_type": "", "line_type": "", "fire_rated": "", "door_model": "",
+            "width": "< 900", "height": "", "slab_type": "", "line_type": "", "fire_rated": "", "door_model": "",
             "level":   "\"error\"",
-            "message": "\"Width must be at least 600 mm for a standard interior door.\""
+            "message": "\"Minimum width for armored entrance door is 900 mm.\""
           },
           {
-            "width": "> 1100", "height": "", "slab_type": "", "line_type": "", "fire_rated": "", "door_model": "",
+            "width": "> 1020", "height": "", "slab_type": "", "line_type": "", "fire_rated": "", "door_model": "",
             "level":   "\"error\"",
-            "message": "\"Width above 1100 mm requires custom project — not configurable as standard.\""
+            "message": "\"Maximum width is 1020 mm. Standard sizes: 900, 940, 980, 1020 mm.\""
           },
           {
-            "width": "", "height": "< 1900", "slab_type": "", "line_type": "", "fire_rated": "", "door_model": "",
+            "width": "", "height": "< 1980", "slab_type": "", "line_type": "", "fire_rated": "", "door_model": "",
             "level":   "\"error\"",
-            "message": "\"Height must be at least 1900 mm.\""
+            "message": "\"Minimum height for armored entrance door is 1980 mm.\""
           },
           {
-            "width": "", "height": "> 2400", "slab_type": "", "line_type": "", "fire_rated": "", "door_model": "",
+            "width": "", "height": "> 2100", "slab_type": "", "line_type": "", "fire_rated": "", "door_model": "",
             "level":   "\"error\"",
-            "message": "\"Height above 2400 mm requires custom project.\""
+            "message": "\"Maximum height is 2100 mm. Standard sizes: 1980, 2020, 2060, 2100 mm.\""
           },
           {
             "width": "", "height": "", "slab_type": "\"Без\"", "line_type": "!= \"Без\"", "fire_rated": "", "door_model": "",
             "level":   "\"error\"",
-            "message": "\"Slab 'Без' cannot have decorative lines — set line_type to 'Без'.\""
+            "message": "\"Plain slab cannot have decorative lines — set line_type to Без.\""
           },
           {
             "width": "", "height": "", "slab_type": "", "line_type": "", "fire_rated": "true", "door_model": "\"iDoor\",\"iDoor_3_0\",\"B_Smart\"",
             "level":   "\"error\"",
-            "message": "\"Fire-rated variant not available for this model — use Klasik EI60 series.\""
+            "message": "\"EI60 fire rating not available for this model — use Klasik EI60 series.\""
           },
           {
-            "width": "> 1000", "height": "", "slab_type": "", "line_type": "", "fire_rated": "", "door_model": "",
+            "width": "", "height": "", "slab_type": "", "line_type": "", "fire_rated": "", "door_model": "\"Klasik_EI60\",\"Klasik_EI60i\"",
             "level":   "\"warning\"",
-            "message": "\"Width > 1000 mm: requires 3 hinges instead of 2.\""
+            "message": "\"EI60 fire-rated model — slab weight increased, longer assembly time.\""
           }
         ]
       }
@@ -64,18 +64,23 @@
       "content": {
         "hitPolicy": "first",
         "inputs": [
-          {"id": "width",      "name": "width"},
-          {"id": "door_model", "name": "door_model"}
+          {"id": "door_model", "name": "door_model"},
+          {"id": "fire_rated", "name": "fire_rated"}
         ],
         "outputs": [
           {"id": "hinge_count",     "name": "hinge_count"},
-          {"id": "slab_weight_kg",  "name": "slab_weight_kg"}
+          {"id": "slab_weight_kg",  "name": "slab_weight_kg"},
+          {"id": "locking_points",  "name": "locking_points"}
         ],
         "rules": [
-          {"width": "> 1000", "door_model": "\"Klasik_EI60\",\"Klasik_EI60i\"", "hinge_count": "4", "slab_weight_kg": "45"},
-          {"width": "> 1000", "door_model": "",                                  "hinge_count": "3", "slab_weight_kg": "35"},
-          {"width": "",       "door_model": "\"Klasik_EI60\",\"Klasik_EI60i\"", "hinge_count": "3", "slab_weight_kg": "38"},
-          {"width": "",       "door_model": "",                                  "hinge_count": "2", "slab_weight_kg": "28"}
+          {"door_model": "\"iDoor_3_0\"",                       "fire_rated": "",     "hinge_count": "3", "slab_weight_kg": "80", "locking_points": "18"},
+          {"door_model": "\"iDoor_HH\"",                        "fire_rated": "",     "hinge_count": "2", "slab_weight_kg": "75", "locking_points": "8"},
+          {"door_model": "\"iDoor\"",                            "fire_rated": "",     "hinge_count": "2", "slab_weight_kg": "70", "locking_points": "12"},
+          {"door_model": "\"mySolid_HH\",\"mySolid_HHi\"",     "fire_rated": "",     "hinge_count": "2", "slab_weight_kg": "75", "locking_points": "12"},
+          {"door_model": "\"Solid_Alpha\",\"Solid_Pulse\"",     "fire_rated": "",     "hinge_count": "2", "slab_weight_kg": "70", "locking_points": "12"},
+          {"door_model": "\"Klasik_EI60\",\"Klasik_EI60i\"",   "fire_rated": "",     "hinge_count": "3", "slab_weight_kg": "90", "locking_points": "9"},
+          {"door_model": "\"B_Smart\",\"B_Smart_KK\"",         "fire_rated": "",     "hinge_count": "2", "slab_weight_kg": "60", "locking_points": "9"},
+          {"door_model": "",                                     "fire_rated": "",     "hinge_count": "2", "slab_weight_kg": "65", "locking_points": "9"}
         ]
       }
     },
@@ -120,10 +125,10 @@
           {"id": "duration_min",    "name": "duration_min"}
         ],
         "rules": [
-          {"coating": "contains \"3D\"",      "fire_rated": "",     "door_model": "", "workcenter_code": "\"SDMILL\"", "duration_min": "20"},
-          {"coating": "",                      "fire_rated": "true", "door_model": "", "workcenter_code": "\"SDFIRE\"", "duration_min": "30"},
-          {"coating": "",                      "fire_rated": "",     "door_model": "", "workcenter_code": "\"SDASM\"",  "duration_min": "45"},
-          {"coating": "",                      "fire_rated": "",     "door_model": "", "workcenter_code": "\"SDFIN\"",  "duration_min": "25"}
+          {"coating": "contains \"3D\"", "fire_rated": "",     "door_model": "", "workcenter_code": "\"SDMILL\"", "duration_min": "20"},
+          {"coating": "",                "fire_rated": "true", "door_model": "", "workcenter_code": "\"SDFIRE\"", "duration_min": "30"},
+          {"coating": "",                "fire_rated": "",     "door_model": "", "workcenter_code": "\"SDASM\"",  "duration_min": "60"},
+          {"coating": "",                "fire_rated": "",     "door_model": "", "workcenter_code": "\"SDFIN\"",  "duration_min": "30"}
         ]
       }
     }

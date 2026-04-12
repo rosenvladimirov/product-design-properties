@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Design parameter definitions for SolidDoor product range
-    (portalsolid.com / MySolidDoor). Covers 18 door models with
-    frame, slab, line, handle, lock and extras selections.
-    Coating is a product variant attribute, not a design parameter.
+    Design parameter definitions for SolidDoor armored entrance doors
+    (portalsolid.com / MySolidDoor / Solid 55). All 18 models are
+    security entrance doors. Coating is a product variant attribute.
+    Standard sizes: width 900-1020mm, height 1980-2100mm.
 -->
 <records>
     <properties code="solid_door" name="Solid Door" industry="doors" parent="base_dimensions">
