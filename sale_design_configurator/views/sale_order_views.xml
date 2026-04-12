@@ -21,11 +21,12 @@
             <xpath expr="//field[@name='order_line']//list//field[@name='price_subtotal']" position="after">
                 <widget name="design_configurator_open"
                         column_invisible="False"
-                        invisible="not has_design_definition"/>
+                        invisible="not has_design_definition"
+                        width="40px"/>
 
                 <field
                     name="design_lot_id"
-                    optional="hide"
+                    optional="show"
                     string="Design Lot"
                     invisible="not has_design_definition"/>
 
@@ -37,7 +38,8 @@
 
                 <widget name="t0_inline_messages"
                         column_invisible="False"
-                        invisible="not design_lot_id"/>
+                        invisible="not design_lot_id"
+                        width="200px"/>
             </xpath>
 
         </field>
