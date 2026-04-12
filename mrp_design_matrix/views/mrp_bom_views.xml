@@ -21,6 +21,10 @@
                                     type="object"
                                     icon="fa-download"
                                     invisible="not matrix_template_id"/>
+                            <field name="variant_context_map"
+                                   widget="ace"
+                                   options="{'mode': 'json'}"
+                                   invisible="not matrix_template_id"/>
                         </group>
                     </group>
 

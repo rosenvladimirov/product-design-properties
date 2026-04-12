@@ -36,6 +36,16 @@ class MrpBom(models.Model):
         help="GoRules JDM. Produces conditional workorders.",
     )
 
+    variant_context_map = fields.Json(
+        "Variant → Context Map",
+        help=(
+            "Maps design context keys to product attribute names. "
+            "When generating moves, the MO product variant's attribute "
+            "values are injected into the design context using this map.\n"
+            'Example: {"coating": "Покритие (SolidDoor)"}'
+        ),
+    )
+
     # ── Actions ──────────────────────────────────────────────────────────
 
     def action_load_from_template(self):

@@ -62,9 +62,10 @@ class MrpProduction(models.Model):
             )
             return
 
-        # 1–2. Build context + T0 validation + T0 context flags
+        # 1–2. Build context + variant attributes + T0 validation
         ctx = lot._get_design_context()
         ctx["qty"] = self.product_qty
+        ctx.update(self._get_variant_context_values(bom))
         t0_ctx = self._eval_t0_constraints(bom, ctx)
         ctx.update(t0_ctx)
 
@@ -305,6 +306,25 @@ class MrpProduction(models.Model):
         return result
 
     # ── Helpers ───────────────────────────────────────────────────────────
+
+    def _get_variant_context_values(self, bom) -> dict:
+        """Inject product variant attribute values into the design context.
+
+        Uses ``bom.variant_context_map`` to map context keys to attribute
+        names.  For example ``{"coating": "Покритие (SolidDoor)"}`` reads
+        the variant's "Покритие (SolidDoor)" attribute value and injects
+        it as ``coating`` in the context — available to T0/T1/T2/T3.
+        """
+        vmap = bom.variant_context_map
+        if not vmap:
+            return {}
+        result = {}
+        for ctx_key, attr_name in vmap.items():
+            for ptav in self.product_id.product_template_variant_value_ids:
+                if ptav.attribute_id.name == attr_name:
+                    result[ctx_key] = ptav.name
+                    break
+        return result
 
     def _eval_bom_line_formula(self, line, ctx: dict):
         """

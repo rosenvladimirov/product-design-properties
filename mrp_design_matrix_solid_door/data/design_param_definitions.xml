@@ -2,7 +2,8 @@
 <!--
     Design parameter definitions for SolidDoor product range
     (portalsolid.com / MySolidDoor). Covers 18 door models with
-    coating, frame, slab, line, handle, lock and extras selections.
+    frame, slab, line, handle, lock and extras selections.
+    Coating is a product variant attribute, not a design parameter.
 -->
 <records>
     <properties code="solid_door" name="Solid Door" industry="doors" parent="base_dimensions">
@@ -10,10 +11,6 @@
             <item name="type">selection</item>
             <item name="selection">[["B_Smart","B Smart"],["B_Smart_KK","B Smart КК"],["Solid_Alpha","Solid Alpha"],["Solid_Pulse","Solid Pulse"],["iDoor","iDoor"],["iDoor_3_0","iDoor 3.0"],["iDoor_HH","iDoor HH"],["iDoor_Select_KK","iDoor Селект КК"],["iPS_Select_KK","iPS Селект КК"],["mDoor_1_0","mDoor 1.0"],["mDoor_2_0","mDoor 2.0"],["mDoor_KK","mDoor КК"],["mySolid_HH","mySolid HH"],["mySolid_HHi","mySolid HHi"],["Klasik_EI60","Класик EI60"],["Klasik_EI60i","Класик EI60i"],["Select_HH_KK","Селект HH КК"],["Select_HHi_KK","Селект HHi КК"]]</item>
             <item name="default">B_Smart</item>
-        </items>
-        <items name="coating">
-            <item name="type">char</item>
-            <item name="default"></item>
         </items>
         <items name="frame_type">
             <item name="type">char</item>
