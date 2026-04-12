@@ -141,6 +141,45 @@ class SaleOrderLine(models.Model):
             },
         }
 
+    def get_t0_validation_data(self):
+        """
+        RPC target for the inline T0 widget on SO lines.
+        Returns the lot's design params and the BoM's constraint table.
+        """
+        self.ensure_one()
+        if not self.design_lot_id:
+            return False
+        lot = self.design_lot_id
+        # Build params from lot
+        if hasattr(lot, "_get_design_context"):
+            params = lot._get_design_context()
+        else:
+            params = dict(lot.design_params or {})
+        # Find BoM with constraint_table
+        bom_fields = self.env["mrp.bom"]._fields
+        if "constraint_table" not in bom_fields:
+            return False
+        bom = self.env["mrp.bom"].search(
+            [
+                ("product_tmpl_id", "=", self.product_id.product_tmpl_id.id),
+                ("constraint_table", "!=", False),
+            ],
+            limit=1,
+        )
+        if not bom:
+            return False
+        # Inject variant attribute values via variant_context_map
+        if hasattr(bom, "variant_context_map") and bom.variant_context_map:
+            for ctx_key, attr_name in bom.variant_context_map.items():
+                for ptav in self.product_id.product_template_variant_value_ids:
+                    if ptav.attribute_id.name == attr_name:
+                        params[ctx_key] = ptav.name
+                        break
+        return {
+            "params": params,
+            "constraintTable": bom.constraint_table,
+        }
+
     def set_design_lot(self, lot_id):
         """
         RPC target called by the JS configurator after lot creation.

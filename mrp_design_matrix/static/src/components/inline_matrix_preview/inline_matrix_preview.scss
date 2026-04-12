@@ -1,0 +1,42 @@
+// Copyright 2026 BL Consulting
+// License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+.o_inline_matrix_preview {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin: 12px 0;
+    background: #fafafa;
+    overflow: hidden;
+}
+
+.o_inline_mp_header {
+    padding: 8px 14px;
+    cursor: pointer;
+    user-select: none;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+
+    &:hover {
+        background: #eeeeee;
+    }
+}
+
+.o_inline_mp_body {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    max-height: 500px;
+    overflow: hidden;
+}
+
+.o_inline_mp_params {
+    padding: 12px;
+    border-right: 1px solid #e0e0e0;
+    overflow-y: auto;
+    max-height: 500px;
+    background: #fff;
+}
+
+.o_inline_mp_results {
+    overflow-y: auto;
+    max-height: 500px;
+}

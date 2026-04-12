@@ -34,6 +34,10 @@
                     optional="hide"
                     string="Design Params"
                     invisible="not design_lot_id"/>
+
+                <widget name="t0_inline_messages"
+                        column_invisible="False"
+                        invisible="not design_lot_id"/>
             </xpath>
 
         </field>

@@ -1,0 +1,29 @@
+// Copyright 2026 BL Consulting
+// License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+.o_t0_inline_msgs {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 11px;
+    padding: 2px 0;
+}
+
+.o_t0_msg {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    &.error {
+        color: #c62828;
+        font-weight: 600;
+    }
+
+    &.warning {
+        color: #f57f17;
+    }
+
+    .fa {
+        font-size: 12px;
+    }
+}

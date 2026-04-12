@@ -28,6 +28,10 @@
                         </group>
                     </group>
 
+                    <!-- Inline T0-T3 preview with parameter controls -->
+                    <field name="id" widget="matrix_inline_preview" nolabel="1"
+                           invisible="not constraint_table"/>
+
                     <field name="constraint_table"
                            widget="design_matrix"
                            options="{'table_type': 't0'}"
