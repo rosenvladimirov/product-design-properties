@@ -14,20 +14,20 @@ class MrpProduction(models.Model):
         """
         When an MO is created from a SO that has a design_lot_id on the
         line, the procurement passes it in the origin group values.
-        We pick it up and set lot_producing_id automatically.
+        We pick it up and add it to lot_producing_ids automatically.
         """
         recs = super().create(vals_list)
         for production, vals in zip(recs, vals_list, strict=False):
             design_lot_id = vals.get("design_lot_id")
-            if design_lot_id and not production.lot_producing_id:
-                production.lot_producing_id = design_lot_id
+            if design_lot_id and not production.lot_producing_ids:
+                production.lot_producing_ids = [(4, design_lot_id)]
         return recs
 
     def action_open_design_configurator(self):
         """
         Button action on mrp.production form view.
-        Opens the configurator to create/edit the lot_producing_id.
-        On save the lot is linked to this MO.
+        Opens the configurator to create/edit the design lot (first lot
+        in ``lot_producing_ids``). On save the lot is linked to this MO.
         """
         self.ensure_one()
         bom = self.bom_id
@@ -41,15 +41,14 @@ class MrpProduction(models.Model):
                     "type": "warning",
                 },
             }
+        existing = self.lot_producing_ids[:1]
         return {
             "type": "ir.actions.client",
             "tag": "design_configurator_action",
             "params": {
                 "productId": self.product_id.id,
                 "definitionId": bom.design_param_definition_id.id,
-                "existingLotId": (
-                    self.lot_producing_id.id if self.lot_producing_id else False
-                ),
+                "existingLotId": existing.id if existing else False,
                 "moId": self.id,
             },
         }

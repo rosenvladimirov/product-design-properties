@@ -11,6 +11,6 @@ configurable product, a modal opens with:
 
 On confirmation the configurator creates a `stock.lot` carrying the
 chosen `design_params`, links it to the SO line via `design_lot_id`,
-and propagates it to the MO via `lot_producing_id` at confirmation
+and propagates it to the MO via `lot_producing_ids` at confirmation
 time.  The `mrp_design_matrix` engine then uses those parameters to
 drive T0/T1/T2/T3 evaluation.

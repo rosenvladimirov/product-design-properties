@@ -16,5 +16,5 @@
     SO line, and the modal closes.
 
 5.  Confirm the SO.  The generated MO picks up the design lot
-    automatically via `lot_producing_id`, and
+    automatically via `lot_producing_ids`, and
     `_generate_design_matrix_moves` handles the rest.
