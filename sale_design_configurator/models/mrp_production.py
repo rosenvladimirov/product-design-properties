@@ -1,11 +1,41 @@
 # Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import _, api, models
+from odoo import _, api, fields, models
+
+
+class StockMove(models.Model):
+    _inherit = "stock.move"
+
+    design_lot_id = fields.Many2one(
+        "stock.lot",
+        string="Design Lot",
+        help=(
+            "Design lot propagated from the originating sale order line. "
+            "Used to carry design parameters through MTO procurement from "
+            "SO → MO and SO → PO."
+        ),
+    )
+
+    def _prepare_procurement_values(self):
+        """Propagate design_lot_id to upstream MTO procurements, so the
+        manufacture / purchase rule sees it in ``_prepare_mo_vals`` /
+        ``_prepare_purchase_order_vals``.
+        """
+        vals = super()._prepare_procurement_values()
+        if self.design_lot_id:
+            vals["design_lot_id"] = self.design_lot_id.id
+        return vals
 
 
 class MrpProduction(models.Model):
     _inherit = "mrp.production"
+
+    design_lot_id = fields.Many2one(
+        "stock.lot",
+        string="Design Lot",
+        help="Transient design lot from SO procurement; copied into lot_producing_ids on create.",
+    )
 
     # -- Receive design lot from SO procurement values -----------------------
 
@@ -78,8 +108,20 @@ class StockRule(models.Model):
             company_id,
             values,
         )
-        # Pass design_lot_id into the manufacturing order via the
-        # group_id procurement values -> MO create vals
+        # Pass design_lot_id from SO procurement into every downstream move
+        # (delivery + component moves) so the design context travels through
+        # MTO chains to MOs and (future) to POs.
         if values.get("design_lot_id"):
             move_vals["design_lot_id"] = values["design_lot_id"]
         return move_vals
+
+    def _prepare_mo_vals(self, product_id, product_qty, product_uom, location_dest_id,
+                        name, origin, company_id, values, bom):
+        mo_vals = super()._prepare_mo_vals(product_id, product_qty, product_uom,
+                                           location_dest_id, name, origin, company_id,
+                                           values, bom)
+        # Propagate design_lot_id from procurement values → MO create vals.
+        # `MrpProduction.create()` copies vals['design_lot_id'] into lot_producing_ids.
+        if values.get("design_lot_id"):
+            mo_vals["design_lot_id"] = values["design_lot_id"]
+        return mo_vals
