@@ -100,19 +100,41 @@ class MrpProduction(models.Model):
         variables that downstream tables (T1/T2/T3) and BoM line
         formulas can use.  For example a T0 rule can set
         ``needs_reinforcement = true`` and a formula can react to it.
+
+        With zen-engine 0.53+, a ``hitPolicy="collect"`` decision table
+        returns a plain ``list`` of row dicts. Rows with ``level=="error"``
+        raise, rows with ``level=="warning"`` are posted. Other keys
+        from the first row are passed to the downstream context.
         """
         if not bom.constraint_table:
             return {}
         t0 = ZenWrapper.evaluate(bom.constraint_table, ctx)
-        for err in t0.get("errors", []):
-            raise UserError(
-                _("Design constraint violation: %s") % err.get("message", err)
-            )
-        for warn in t0.get("warnings", []):
-            self.message_post(body=_("Design warning: %s") % warn.get("message", warn))
-        # Pass non-reserved keys as context additions for T1/T2/T3/formulas
-        _reserved = {"errors", "warnings"}
-        return {k: v for k, v in t0.items() if k not in _reserved}
+        rows = t0 if isinstance(t0, list) else [t0] if isinstance(t0, dict) else []
+        extra_ctx = {}
+        _reserved = {"errors", "warnings", "level", "message"}
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            level = row.get("level")
+            msg = row.get("message", row)
+            if level == "error":
+                raise UserError(_("Design constraint violation: %s") % msg)
+            if level == "warning":
+                self.message_post(body=_("Design warning: %s") % msg)
+            for k, v in row.items():
+                if k not in _reserved and k != "_id":
+                    extra_ctx[k] = v
+        # Backwards-compat: dict form with explicit errors/warnings arrays
+        if isinstance(t0, dict):
+            for err in t0.get("errors", []):
+                raise UserError(
+                    _("Design constraint violation: %s") % err.get("message", err)
+                )
+            for warn in t0.get("warnings", []):
+                self.message_post(
+                    body=_("Design warning: %s") % warn.get("message", warn)
+                )
+        return extra_ctx
 
     def _eval_t1_geometry(self, bom, ctx: dict) -> dict:
         """Run T1 geometry_table; return ``ctx`` merged with T1 outputs."""
@@ -182,6 +204,10 @@ class MrpProduction(models.Model):
                 {"ref": "module.xml_id", "quantity": width * 0.002},
                 {"product": env.ref("..."), "quantity": 5, "uom": env.ref("...")},
             ]
+
+        If the BoM line defines ``param_attribute_map`` (and references a
+        ``product_tmpl_id``), we resolve the correct PTAV variant from the
+        design context rather than using the static ``product_id`` placeholder.
         """
         formula_result = self._eval_bom_line_formula(line, full_ctx)
         add_products = []
@@ -194,6 +220,13 @@ class MrpProduction(models.Model):
             qty_base = formula_result
             move_product = line.product_id
             move_uom = line.product_uom_id
+        # PTAV resolution for O-variant BoM lines with param_attribute_map
+        if line.param_attribute_map and line.product_tmpl_id:
+            resolved = self._resolve_variant_by_ptav(
+                line.product_tmpl_id, line.param_attribute_map, full_ctx
+            )
+            if resolved:
+                move_product = resolved
         return qty_base, move_product, move_uom, add_products
 
     def _generate_t2_adhoc_moves(self, t2_rows: list, full_ctx: dict) -> None:
@@ -419,9 +452,12 @@ class MrpProduction(models.Model):
         self._create_or_update_matrix_move(product, qty, uom)
 
     def _create_or_update_matrix_move(self, product, qty, uom, bom_line=None):
-        """Create a raw material move for the MO."""
+        """Create a raw material move for the MO.
+
+        Odoo 19 renamed ``stock.move.name`` → ``stock.move.reference``.
+        """
         vals = {
-            "name": product.display_name,
+            "reference": product.display_name,
             "product_id": product.id,
             "product_uom_qty": qty,
             "product_uom": uom.id,
