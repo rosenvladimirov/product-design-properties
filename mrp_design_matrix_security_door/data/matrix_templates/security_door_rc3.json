@@ -1,154 +1,325 @@
 {
   "nodes": [
     {
+      "id": "in_2e0314841eb8",
+      "name": "Request",
+      "type": "inputNode",
+      "position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
       "id": "t0-security",
       "name": "T0 Constraints",
-      "type": "decisionTable",
+      "type": "decisionTableNode",
       "content": {
         "hitPolicy": "collect",
         "inputs": [
-          {"id": "has_glass", "name": "has_glass"},
-          {"id": "RC_class",  "name": "RC_class"},
-          {"id": "width",     "name": "width"}
+          {
+            "id": "has_glass",
+            "name": "has_glass",
+            "field": "has_glass"
+          },
+          {
+            "id": "RC_class",
+            "name": "RC_class",
+            "field": "RC_class"
+          },
+          {
+            "id": "width",
+            "name": "width",
+            "field": "width"
+          }
         ],
         "outputs": [
-          {"id": "level",   "name": "level"},
-          {"id": "message", "name": "message"}
+          {
+            "id": "level",
+            "name": "level",
+            "field": "level"
+          },
+          {
+            "id": "message",
+            "name": "message",
+            "field": "message"
+          }
         ],
         "rules": [
           {
             "has_glass": "true",
-            "RC_class":  ">= \"RC4\"",
-            "width":     "",
-            "level":     "\"error\"",
-            "message":   "\"Glass panel is not permitted for RC4 and above.\""
+            "RC_class": ">= \"RC4\"",
+            "width": "",
+            "level": "\"error\"",
+            "message": "\"Glass panel is not permitted for RC4 and above.\"",
+            "_id": "r_8208d45240f5"
           },
           {
             "has_glass": "",
-            "RC_class":  ">= \"RC5\"",
-            "width":     "",
-            "level":     "\"error\"",
-            "message":   "\"RC5 and RC6 require individual project design — not configurable as standard.\""
+            "RC_class": ">= \"RC5\"",
+            "width": "",
+            "level": "\"error\"",
+            "message": "\"RC5 and RC6 require individual project design — not configurable as standard.\"",
+            "_id": "r_24a000fc61f2"
           },
           {
             "has_glass": "",
-            "RC_class":  "",
-            "width":     "> 1200",
-            "level":     "\"warning\"",
-            "message":   "\"Width > 1200 mm: verify structural reinforcement and hinge count.\""
+            "RC_class": "",
+            "width": "> 1200",
+            "level": "\"warning\"",
+            "message": "\"Width > 1200 mm: verify structural reinforcement and hinge count.\"",
+            "_id": "r_6de99c4668a5"
           }
         ]
+      },
+      "position": {
+        "x": 300,
+        "y": 0
       }
     },
     {
       "id": "t1-security",
       "name": "T1 Geometry + RC forced values",
-      "type": "decisionTable",
+      "type": "decisionTableNode",
       "content": {
         "hitPolicy": "first",
         "inputs": [
-          {"id": "RC_class", "name": "RC_class"}
+          {
+            "id": "RC_class",
+            "name": "RC_class",
+            "field": "RC_class"
+          }
         ],
         "outputs": [
-          {"id": "min_sheet_thickness",   "name": "min_sheet_thickness"},
-          {"id": "min_lock_type",         "name": "min_lock_type"},
-          {"id": "required_fill",         "name": "required_fill"},
-          {"id": "rib_count_per_meter",   "name": "rib_count_per_meter"}
+          {
+            "id": "min_sheet_thickness",
+            "name": "min_sheet_thickness",
+            "field": "min_sheet_thickness"
+          },
+          {
+            "id": "min_lock_type",
+            "name": "min_lock_type",
+            "field": "min_lock_type"
+          },
+          {
+            "id": "required_fill",
+            "name": "required_fill",
+            "field": "required_fill"
+          },
+          {
+            "id": "rib_count_per_meter",
+            "name": "rib_count_per_meter",
+            "field": "rib_count_per_meter"
+          }
         ],
         "rules": [
           {
             "RC_class": "\"RC1\"",
             "min_sheet_thickness": "1.5",
-            "min_lock_type":       "\"standard\"",
-            "required_fill":       "false",
-            "rib_count_per_meter": "1"
+            "min_lock_type": "\"standard\"",
+            "required_fill": "false",
+            "rib_count_per_meter": "1",
+            "_id": "r_ca590723bc7f"
           },
           {
             "RC_class": "\"RC2\"",
             "min_sheet_thickness": "2.0",
-            "min_lock_type":       "\"certified\"",
-            "required_fill":       "false",
-            "rib_count_per_meter": "2"
+            "min_lock_type": "\"certified\"",
+            "required_fill": "false",
+            "rib_count_per_meter": "2",
+            "_id": "r_a409ed3e4751"
           },
           {
             "RC_class": "\"RC3\"",
             "min_sheet_thickness": "3.0",
-            "min_lock_type":       "\"multipoint\"",
-            "required_fill":       "true",
-            "rib_count_per_meter": "3"
+            "min_lock_type": "\"multipoint\"",
+            "required_fill": "true",
+            "rib_count_per_meter": "3",
+            "_id": "r_90c4224164f8"
           },
           {
             "RC_class": "\"RC4\"",
             "min_sheet_thickness": "4.0",
-            "min_lock_type":       "\"multipoint_ind\"",
-            "required_fill":       "true",
-            "rib_count_per_meter": "4"
+            "min_lock_type": "\"multipoint_ind\"",
+            "required_fill": "true",
+            "rib_count_per_meter": "4",
+            "_id": "r_72a3f3324dbe"
           }
         ]
+      },
+      "position": {
+        "x": 300,
+        "y": 100
       }
     },
     {
       "id": "t2-security",
       "name": "T2 Materials",
-      "type": "decisionTable",
+      "type": "decisionTableNode",
       "content": {
         "hitPolicy": "collect",
         "inputs": [
-          {"id": "required_fill",      "name": "required_fill"},
-          {"id": "has_electronic_lock","name": "has_electronic_lock"}
+          {
+            "id": "required_fill",
+            "name": "required_fill",
+            "field": "required_fill"
+          },
+          {
+            "id": "has_electronic_lock",
+            "name": "has_electronic_lock",
+            "field": "has_electronic_lock"
+          }
         ],
         "outputs": [
-          {"id": "bom_line_coeff_key", "name": "bom_line_coeff_key"},
-          {"id": "coefficient",        "name": "coefficient"}
+          {
+            "id": "bom_line_coeff_key",
+            "name": "bom_line_coeff_key",
+            "field": "bom_line_coeff_key"
+          },
+          {
+            "id": "coefficient",
+            "name": "coefficient",
+            "field": "coefficient"
+          }
         ],
         "rules": [
           {
-            "required_fill":       "true",
+            "required_fill": "true",
             "has_electronic_lock": "",
-            "bom_line_coeff_key":  "\"fill-o\"",
-            "coefficient":         "1.0"
+            "bom_line_coeff_key": "\"fill-o\"",
+            "coefficient": "1.0",
+            "_id": "r_4aeb089c72a1"
           },
           {
-            "required_fill":       "",
+            "required_fill": "",
             "has_electronic_lock": "true",
-            "bom_line_coeff_key":  "\"elock-o\"",
-            "coefficient":         "1.0"
+            "bom_line_coeff_key": "\"elock-o\"",
+            "coefficient": "1.0",
+            "_id": "r_5296bb1b3b51"
           }
         ]
+      },
+      "position": {
+        "x": 300,
+        "y": 200
       }
     },
     {
       "id": "t3-security",
       "name": "T3 Operations",
-      "type": "decisionTable",
+      "type": "decisionTableNode",
       "content": {
         "hitPolicy": "collect",
         "inputs": [
-          {"id": "RC_class",           "name": "RC_class"},
-          {"id": "has_electronic_lock","name": "has_electronic_lock"}
+          {
+            "id": "RC_class",
+            "name": "RC_class",
+            "field": "RC_class"
+          },
+          {
+            "id": "has_electronic_lock",
+            "name": "has_electronic_lock",
+            "field": "has_electronic_lock"
+          }
         ],
         "outputs": [
-          {"id": "workcenter_ref",   "name": "workcenter_ref"},
-          {"id": "name",             "name": "name"},
-          {"id": "duration_formula", "name": "duration_formula"}
+          {
+            "id": "workcenter_ref",
+            "name": "workcenter_ref",
+            "field": "workcenter_ref"
+          },
+          {
+            "id": "name",
+            "name": "name",
+            "field": "name"
+          },
+          {
+            "id": "duration_formula",
+            "name": "duration_formula",
+            "field": "duration_formula"
+          }
         ],
         "rules": [
           {
-            "RC_class":           ">= \"RC3\"",
+            "RC_class": ">= \"RC3\"",
             "has_electronic_lock": "",
-            "workcenter_ref":   "\"mrp_design_matrix_security_door.wc_rc_test\"",
-            "name":             "\"RC certification test\"",
-            "duration_formula": "\"120\""
+            "workcenter_ref": "\"mrp_design_matrix_security_door.wc_rc_test\"",
+            "name": "\"RC certification test\"",
+            "duration_formula": "\"120\"",
+            "_id": "r_580f24621788"
           },
           {
-            "RC_class":           "",
+            "RC_class": "",
             "has_electronic_lock": "true",
-            "workcenter_ref":   "\"mrp_design_matrix_security_door.wc_programming\"",
-            "name":             "\"Electronic lock programming\"",
-            "duration_formula": "\"30\""
+            "workcenter_ref": "\"mrp_design_matrix_security_door.wc_programming\"",
+            "name": "\"Electronic lock programming\"",
+            "duration_formula": "\"30\"",
+            "_id": "r_10f4074e996e"
           }
         ]
+      },
+      "position": {
+        "x": 300,
+        "y": 300
       }
+    },
+    {
+      "id": "out_65c67c746c8f",
+      "name": "Response",
+      "type": "outputNode",
+      "position": {
+        "x": 600,
+        "y": 0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_4288e2fe50bb",
+      "sourceId": "in_2e0314841eb8",
+      "targetId": "t0-security",
+      "type": "edge"
+    },
+    {
+      "id": "e_656595747c99",
+      "sourceId": "in_2e0314841eb8",
+      "targetId": "t1-security",
+      "type": "edge"
+    },
+    {
+      "id": "e_f0458cb0fefe",
+      "sourceId": "in_2e0314841eb8",
+      "targetId": "t2-security",
+      "type": "edge"
+    },
+    {
+      "id": "e_b958e7f8088b",
+      "sourceId": "in_2e0314841eb8",
+      "targetId": "t3-security",
+      "type": "edge"
+    },
+    {
+      "id": "e_b8d80fe79ba6",
+      "sourceId": "t0-security",
+      "targetId": "out_65c67c746c8f",
+      "type": "edge"
+    },
+    {
+      "id": "e_b3afd7e2389a",
+      "sourceId": "t1-security",
+      "targetId": "out_65c67c746c8f",
+      "type": "edge"
+    },
+    {
+      "id": "e_25aa72350759",
+      "sourceId": "t2-security",
+      "targetId": "out_65c67c746c8f",
+      "type": "edge"
+    },
+    {
+      "id": "e_c160b5da85f8",
+      "sourceId": "t3-security",
+      "targetId": "out_65c67c746c8f",
+      "type": "edge"
     }
   ]
 }

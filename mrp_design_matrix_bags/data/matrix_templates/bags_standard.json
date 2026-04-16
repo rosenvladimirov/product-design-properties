@@ -1,148 +1,329 @@
 {
   "nodes": [
     {
+      "id": "in_068c0492ae4a",
+      "name": "Request",
+      "type": "inputNode",
+      "position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
       "id": "t0-bags",
       "name": "T0 Constraints",
-      "type": "decisionTable",
+      "type": "decisionTableNode",
       "content": {
         "hitPolicy": "collect",
         "inputs": [
-          {"id": "bag_type", "name": "bag_type"},
-          {"id": "has_tie",  "name": "has_tie"}
+          {
+            "id": "bag_type",
+            "name": "bag_type",
+            "field": "bag_type"
+          },
+          {
+            "id": "has_tie",
+            "name": "has_tie",
+            "field": "has_tie"
+          }
         ],
         "outputs": [
-          {"id": "level",   "name": "level"},
-          {"id": "message", "name": "message"}
+          {
+            "id": "level",
+            "name": "level",
+            "field": "level"
+          },
+          {
+            "id": "message",
+            "name": "message",
+            "field": "message"
+          }
         ],
         "rules": [
           {
             "bag_type": "\"sheet\"",
-            "has_tie":  "true",
-            "level":    "\"warning\"",
-            "message":  "\"Sheet bag with tie: splitting operation will be skipped — fold only.\""
+            "has_tie": "true",
+            "level": "\"warning\"",
+            "message": "\"Sheet bag with tie: splitting operation will be skipped — fold only.\"",
+            "_id": "r_fc566788ce8f"
           }
         ]
+      },
+      "position": {
+        "x": 300,
+        "y": 0
       }
     },
     {
       "id": "t1-bags",
       "name": "T1 Geometry",
-      "type": "decisionTable",
+      "type": "decisionTableNode",
       "content": {
         "hitPolicy": "first",
         "inputs": [
-          {"id": "bag_type", "name": "bag_type"},
-          {"id": "has_tie",  "name": "has_tie"}
+          {
+            "id": "bag_type",
+            "name": "bag_type",
+            "field": "bag_type"
+          },
+          {
+            "id": "has_tie",
+            "name": "has_tie",
+            "field": "has_tie"
+          }
         ],
         "outputs": [
-          {"id": "effective_length_expr", "name": "effective_length_expr"},
-          {"id": "layers",                "name": "layers"}
+          {
+            "id": "effective_length_expr",
+            "name": "effective_length_expr",
+            "field": "effective_length_expr"
+          },
+          {
+            "id": "layers",
+            "name": "layers",
+            "field": "layers"
+          }
         ],
         "rules": [
           {
             "bag_type": "\"sleeve\"",
-            "has_tie":  "true",
+            "has_tie": "true",
             "effective_length_expr": "\"(height + 50) * 2\"",
-            "layers": "2"
+            "layers": "2",
+            "_id": "r_244a1d1e61e2"
           },
           {
             "bag_type": "\"sleeve\"",
-            "has_tie":  "false",
+            "has_tie": "false",
             "effective_length_expr": "\"height * 2\"",
-            "layers": "2"
+            "layers": "2",
+            "_id": "r_387c1b8712bf"
           },
           {
             "bag_type": "\"sheet\"",
-            "has_tie":  "true",
+            "has_tie": "true",
             "effective_length_expr": "\"(height + 50) * 1\"",
-            "layers": "1"
+            "layers": "1",
+            "_id": "r_ad354c682e77"
           },
           {
             "bag_type": "\"sheet\"",
-            "has_tie":  "false",
+            "has_tie": "false",
             "effective_length_expr": "\"height * 1\"",
-            "layers": "1"
+            "layers": "1",
+            "_id": "r_e6d8846b1d62"
           }
         ]
+      },
+      "position": {
+        "x": 300,
+        "y": 100
       }
     },
     {
       "id": "t2-bags",
       "name": "T2 Materials",
-      "type": "decisionTable",
+      "type": "decisionTableNode",
       "content": {
         "hitPolicy": "collect",
         "inputs": [
-          {"id": "has_print", "name": "has_print"},
-          {"id": "color",     "name": "color"},
-          {"id": "has_tie",   "name": "has_tie"}
+          {
+            "id": "has_print",
+            "name": "has_print",
+            "field": "has_print"
+          },
+          {
+            "id": "color",
+            "name": "color",
+            "field": "color"
+          },
+          {
+            "id": "has_tie",
+            "name": "has_tie",
+            "field": "has_tie"
+          }
         ],
         "outputs": [
-          {"id": "bom_line_coeff_key", "name": "bom_line_coeff_key"},
-          {"id": "coefficient",        "name": "coefficient"},
-          {"id": "product_tmpl_ref",   "name": "product_tmpl_ref"},
-          {"id": "param_attribute_map","name": "param_attribute_map"},
-          {"id": "quantity_expr",      "name": "quantity_expr"},
-          {"id": "uom_ref",            "name": "uom_ref"}
+          {
+            "id": "bom_line_coeff_key",
+            "name": "bom_line_coeff_key",
+            "field": "bom_line_coeff_key"
+          },
+          {
+            "id": "coefficient",
+            "name": "coefficient",
+            "field": "coefficient"
+          },
+          {
+            "id": "product_tmpl_ref",
+            "name": "product_tmpl_ref",
+            "field": "product_tmpl_ref"
+          },
+          {
+            "id": "param_attribute_map",
+            "name": "param_attribute_map",
+            "field": "param_attribute_map"
+          },
+          {
+            "id": "quantity_expr",
+            "name": "quantity_expr",
+            "field": "quantity_expr"
+          },
+          {
+            "id": "uom_ref",
+            "name": "uom_ref",
+            "field": "uom_ref"
+          }
         ],
         "rules": [
           {
             "has_print": "true",
-            "color":     "",
-            "has_tie":   "",
-            "bom_line_coeff_key":  "\"ink-o\"",
-            "coefficient":         "1.0",
-            "product_tmpl_ref":    "mrp_design_matrix_bags.product_tmpl_ink",
+            "color": "",
+            "has_tie": "",
+            "bom_line_coeff_key": "\"ink-o\"",
+            "coefficient": "1.0",
+            "product_tmpl_ref": "mrp_design_matrix_bags.product_tmpl_ink",
             "param_attribute_map": "{\"color\": \"mrp_design_matrix_bags.attr_color\"}",
-            "quantity_expr":       "\"width * effective_length * 0.000012\"",
-            "uom_ref":             "\"uom.product_uom_kgm\""
+            "quantity_expr": "\"width * effective_length * 0.000012\"",
+            "uom_ref": "\"uom.product_uom_kgm\"",
+            "_id": "r_d51980637dbb"
           },
           {
             "has_print": "",
-            "color":     "",
-            "has_tie":   "true",
-            "bom_line_coeff_key":  "",
-            "coefficient":         "1.0",
-            "product_tmpl_ref":    "mrp_design_matrix_bags.product_tmpl_tie",
+            "color": "",
+            "has_tie": "true",
+            "bom_line_coeff_key": "",
+            "coefficient": "1.0",
+            "product_tmpl_ref": "mrp_design_matrix_bags.product_tmpl_tie",
             "param_attribute_map": "{}",
-            "quantity_expr":       "\"1\"",
-            "uom_ref":             "\"uom.product_uom_unit\""
+            "quantity_expr": "\"1\"",
+            "uom_ref": "\"uom.product_uom_unit\"",
+            "_id": "r_ca0b9477eac5"
           }
         ]
+      },
+      "position": {
+        "x": 300,
+        "y": 200
       }
     },
     {
       "id": "t3-bags",
       "name": "T3 Operations",
-      "type": "decisionTable",
+      "type": "decisionTableNode",
       "content": {
         "hitPolicy": "collect",
         "inputs": [
-          {"id": "has_tie",  "name": "has_tie"},
-          {"id": "bag_type", "name": "bag_type"}
+          {
+            "id": "has_tie",
+            "name": "has_tie",
+            "field": "has_tie"
+          },
+          {
+            "id": "bag_type",
+            "name": "bag_type",
+            "field": "bag_type"
+          }
         ],
         "outputs": [
-          {"id": "workcenter_ref",    "name": "workcenter_ref"},
-          {"id": "name",              "name": "name"},
-          {"id": "duration_formula",  "name": "duration_formula"}
+          {
+            "id": "workcenter_ref",
+            "name": "workcenter_ref",
+            "field": "workcenter_ref"
+          },
+          {
+            "id": "name",
+            "name": "name",
+            "field": "name"
+          },
+          {
+            "id": "duration_formula",
+            "name": "duration_formula",
+            "field": "duration_formula"
+          }
         ],
         "rules": [
           {
-            "has_tie":  "true",
+            "has_tie": "true",
             "bag_type": "\"sleeve\"",
-            "workcenter_ref":   "\"mrp_design_matrix_bags.wc_slitting\"",
-            "name":             "\"Slitting\"",
-            "duration_formula": "\"qty * 0.5\""
+            "workcenter_ref": "\"mrp_design_matrix_bags.wc_slitting\"",
+            "name": "\"Slitting\"",
+            "duration_formula": "\"qty * 0.5\"",
+            "_id": "r_34a01fd5bc3c"
           },
           {
-            "has_tie":  "true",
+            "has_tie": "true",
             "bag_type": "",
-            "workcenter_ref":   "\"mrp_design_matrix_bags.wc_tie_insertion\"",
-            "name":             "\"Tie insertion\"",
-            "duration_formula": "\"qty * 0.3\""
+            "workcenter_ref": "\"mrp_design_matrix_bags.wc_tie_insertion\"",
+            "name": "\"Tie insertion\"",
+            "duration_formula": "\"qty * 0.3\"",
+            "_id": "r_15ecb4a2b15d"
           }
         ]
+      },
+      "position": {
+        "x": 300,
+        "y": 300
       }
+    },
+    {
+      "id": "out_15fea16b6c80",
+      "name": "Response",
+      "type": "outputNode",
+      "position": {
+        "x": 600,
+        "y": 0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_e9c35763d64f",
+      "sourceId": "in_068c0492ae4a",
+      "targetId": "t0-bags",
+      "type": "edge"
+    },
+    {
+      "id": "e_2b903cc078ca",
+      "sourceId": "in_068c0492ae4a",
+      "targetId": "t1-bags",
+      "type": "edge"
+    },
+    {
+      "id": "e_63cf98ef3b11",
+      "sourceId": "in_068c0492ae4a",
+      "targetId": "t2-bags",
+      "type": "edge"
+    },
+    {
+      "id": "e_fbc3fae47074",
+      "sourceId": "in_068c0492ae4a",
+      "targetId": "t3-bags",
+      "type": "edge"
+    },
+    {
+      "id": "e_6cf7bdce20c1",
+      "sourceId": "t0-bags",
+      "targetId": "out_15fea16b6c80",
+      "type": "edge"
+    },
+    {
+      "id": "e_aeb443a7ce1c",
+      "sourceId": "t1-bags",
+      "targetId": "out_15fea16b6c80",
+      "type": "edge"
+    },
+    {
+      "id": "e_59939a454d25",
+      "sourceId": "t2-bags",
+      "targetId": "out_15fea16b6c80",
+      "type": "edge"
+    },
+    {
+      "id": "e_f9ffe4eb5ab6",
+      "sourceId": "t3-bags",
+      "targetId": "out_15fea16b6c80",
+      "type": "edge"
     }
   ]
 }
