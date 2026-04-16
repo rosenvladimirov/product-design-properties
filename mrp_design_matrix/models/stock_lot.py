@@ -21,7 +21,11 @@ class StockLot(models.Model):
         Return a flat dict suitable for GoRules / formula evaluation.
 
         Merges the three real dimension fields (from _dim sub-module)
-        with all entries from ``design_params`` Properties.
+        with all entries from ``design_params`` Properties, translating:
+          - UUID keys → the schema's ``string`` field (the semantic name
+            used in T1/T2/T3 rules and BoM line formulas).
+          - Display labels → raw selection values (e.g. "Vinegar Brine"
+            → "vinegar") so rule conditions match what is stored.
         """
         self.ensure_one()
         ctx = {
@@ -29,8 +33,32 @@ class StockLot(models.Model):
             "height": getattr(self, "height", 0.0),
             "thickness": getattr(self, "thickness", 0.0),
         }
+
+        # Build UUID → (string_name, display→raw) mapping from schema.
+        definition = self.design_param_definition_id
+        uuid_map = {}
+        if definition:
+            schema = definition.full_design_params_definition or []
+            for prop in schema:
+                if not isinstance(prop, dict):
+                    continue
+                uuid = prop.get("name")
+                if not uuid:
+                    continue
+                string_name = prop.get("string") or uuid
+                # Reverse map for selection: {display_label: raw_value}
+                reverse = {}
+                for entry in (prop.get("selection") or []):
+                    if isinstance(entry, (list, tuple)) and len(entry) == 2:
+                        raw, label = entry
+                        reverse[label] = raw
+                uuid_map[uuid] = (string_name, reverse)
+
         for key, value in (self.design_params or {}).items():
-            ctx[key] = value
+            string_name, reverse = uuid_map.get(key, (key, {}))
+            # Reverse lookup display → raw for selection values only.
+            raw_value = reverse.get(value, value) if reverse else value
+            ctx[string_name] = raw_value
         return ctx
 
     @api.model

@@ -34,7 +34,7 @@ class MrpProduction(models.Model):
         constraint_table defined.
 
         Algorithm:
-            1. Build design_context from lot_producing_id.
+            1. Build design_context from lot_producing_ids (first lot).
             2. T0: validate constraints (ERROR stops, WARNING logs).
             3. T1: compute geometry / forced values → full_context.
             4. T2: evaluate once, reuse for O-variant coeff lookup
@@ -54,10 +54,13 @@ class MrpProduction(models.Model):
         """
         self.ensure_one()
         bom = self.bom_id
-        lot = self.lot_producing_id
+        # Odoo 19 renamed mrp.production.lot_producing_id → lot_producing_ids
+        # (One2many, to support multiple produced lots). Design matrix operates
+        # on the first lot as the "design lot".
+        lot = self.lot_producing_ids[:1]
         if not lot:
             _logger.warning(
-                "MO %s has no lot_producing_id — design matrix skipped.",
+                "MO %s has no lot_producing_ids — design matrix skipped.",
                 self.name,
             )
             return
@@ -287,8 +290,9 @@ class MrpProduction(models.Model):
                     move.forced_lot_ids = [(4, match.id)]
                 # else: procurement will handle the PO with child_params
             else:
+                parent_lot = self.lot_producing_ids[:1]
                 child_lot = self.env["stock.lot"]._create_child_lot(
-                    self.lot_producing_id, line, move.product_id
+                    parent_lot, line, move.product_id
                 )
                 move.forced_lot_ids = [(4, child_lot.id)]
 

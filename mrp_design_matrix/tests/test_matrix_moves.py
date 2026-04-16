@@ -15,7 +15,7 @@ Each test covers a distinct code path:
 - BoM line with coeff_default=0 stays inactive
 - BoM line with coeff_default>0 generates a move
 - T2 material coefficient lookup via matrix_coeff_rule
-- No lot_producing_id → engine is a no-op
+- No lot_producing_ids → engine is a no-op
 """
 
 import unittest
@@ -132,7 +132,7 @@ class TestMatrixMoves(TransactionCase):
                 "product_qty": 1.0,
                 "product_uom_id": self.finished.uom_id.id,
                 "bom_id": bom.id,
-                "lot_producing_id": lot.id,
+                "lot_producing_ids": [(4, lot.id)],
             }
         )
         return mo, lot
@@ -277,7 +277,7 @@ class TestMatrixMoves(TransactionCase):
     # ── Safety nets ───────────────────────────────────────────────────
 
     def test_no_lot_producing_is_noop(self):
-        """MO without lot_producing_id → engine logs and returns quietly."""
+        """MO without lot_producing_ids → engine logs and returns quietly."""
         bom = self._build_bom(
             constraint_table=_jdm(["material"], ["x"], []),
             lines=[

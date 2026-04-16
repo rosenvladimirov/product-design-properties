@@ -6,8 +6,8 @@ needed.
 
 **Flow:**
 
-1.  Matrix engine reads `lot_producing_id._get_design_context()` to
-    build a flat dict of all design parameters.
+1.  Matrix engine reads `lot_producing_ids[:1]._get_design_context()` to
+    build a flat dict of all design parameters (first lot is the design lot).
 2.  T0 evaluation — errors raise `UserError`, warnings post on the MO
     chatter.
 3.  T1 evaluation — geometry outputs override the context (they take
