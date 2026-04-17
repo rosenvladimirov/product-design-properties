@@ -23,7 +23,7 @@
                                     invisible="not matrix_template_id"/>
                             <field name="variant_context_map"
                                    widget="ace"
-                                   options="{'mode': 'json'}"
+                                   options="{'mode': 'javascript'}"
                                    invisible="not matrix_template_id"/>
                         </group>
                     </group>
@@ -89,7 +89,7 @@
                         <field name="product_tmpl_id"/>
                         <field name="param_attribute_map"
                                widget="ace"
-                               options="{'mode': 'json'}"
+                               options="{'mode': 'javascript'}"
                                invisible="not product_tmpl_id"/>
                     </group>
                     <group string="Semi-finished Chain">
@@ -97,7 +97,7 @@
                         <field name="mto_stop"/>
                         <field name="param_extraction_map"
                                widget="ace"
-                               options="{'mode': 'json'}"
+                               options="{'mode': 'javascript'}"
                                invisible="not child_definition_id"/>
                     </group>
                     </page>
