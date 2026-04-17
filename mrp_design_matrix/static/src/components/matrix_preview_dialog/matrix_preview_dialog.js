@@ -6,6 +6,7 @@ import { Component, useState } from "@odoo/owl";
 import { Dialog } from "@web/core/dialog/dialog";
 import { useService } from "@web/core/utils/hooks";
 import { RuleMatrixPreview } from "../rule_matrix_preview/rule_matrix_preview";
+import { coerceTable } from "../rule_matrix_preview/t0_evaluate";
 
 /**
  * MatrixPreviewDialog — simulate matrix evaluation on a BoM.
@@ -56,10 +57,10 @@ export class MatrixPreviewDialog extends Component {
             return;
         }
 
-        this.state.constraintTable = bom.constraint_table || false;
-        this.state.geometryTable = bom.geometry_table || false;
-        this.state.materialTable = bom.material_table || false;
-        this.state.operationTable = bom.operation_table || false;
+        this.state.constraintTable = coerceTable(bom.constraint_table);
+        this.state.geometryTable = coerceTable(bom.geometry_table);
+        this.state.materialTable = coerceTable(bom.material_table);
+        this.state.operationTable = coerceTable(bom.operation_table);
 
         // Load param definition
         if (bom.design_param_definition_id) {

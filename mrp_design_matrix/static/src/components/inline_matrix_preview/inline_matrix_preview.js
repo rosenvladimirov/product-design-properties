@@ -7,6 +7,7 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { RuleMatrixPreview } from "../rule_matrix_preview/rule_matrix_preview";
+import { coerceTable } from "../rule_matrix_preview/t0_evaluate";
 
 /**
  * InlineMatrixPreview -- embedded T0-T3 preview in the BoM form.
@@ -46,19 +47,19 @@ export class InlineMatrixPreview extends Component {
     }
 
     get constraintTable() {
-        return this.recordData.constraint_table || false;
+        return coerceTable(this.recordData.constraint_table);
     }
 
     get geometryTable() {
-        return this.recordData.geometry_table || false;
+        return coerceTable(this.recordData.geometry_table);
     }
 
     get materialTable() {
-        return this.recordData.material_table || false;
+        return coerceTable(this.recordData.material_table);
     }
 
     get operationTable() {
-        return this.recordData.operation_table || false;
+        return coerceTable(this.recordData.operation_table);
     }
 
     get hasMatrix() {

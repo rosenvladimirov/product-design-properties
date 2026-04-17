@@ -14,6 +14,7 @@ import { Component, useState } from "@odoo/owl";
 import { Dialog } from "@web/core/dialog/dialog";
 import { useService } from "@web/core/utils/hooks";
 import { DesignConfiguratorWidget } from "./design_configurator";
+import { coerceTable } from "@mrp_design_matrix/components/rule_matrix_preview/t0_evaluate";
 
 export class DesignConfiguratorDialog extends Component {
     static components = { Dialog, DesignConfiguratorWidget };
@@ -100,10 +101,10 @@ export class DesignConfiguratorDialog extends Component {
                         ["constraint_table", "geometry_table", "material_table", "operation_table"]
                     );
                     if (bomData) {
-                        this.state.constraintTable = bomData.constraint_table || false;
-                        this.state.geometryTable = bomData.geometry_table || false;
-                        this.state.materialTable = bomData.material_table || false;
-                        this.state.operationTable = bomData.operation_table || false;
+                        this.state.constraintTable = coerceTable(bomData.constraint_table);
+                        this.state.geometryTable = coerceTable(bomData.geometry_table);
+                        this.state.materialTable = coerceTable(bomData.material_table);
+                        this.state.operationTable = coerceTable(bomData.operation_table);
                     }
                 } catch (e) {
                     console.warn("Could not load BoM matrix tables:", e.message);

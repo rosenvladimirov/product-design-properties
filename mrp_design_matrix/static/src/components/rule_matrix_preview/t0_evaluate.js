@@ -11,15 +11,34 @@
  */
 
 /**
+ * Coerce a matrix table field value to an object (or false).
+ * Handles double-encoded JSON strings that occasionally land in jsonb
+ * columns when serializers stringify already-serialized values.
+ */
+export function coerceTable(raw) {
+    if (!raw) return false;
+    if (typeof raw === "string") {
+        try {
+            const parsed = JSON.parse(raw);
+            return parsed && typeof parsed === "object" ? parsed : false;
+        } catch {
+            return false;
+        }
+    }
+    return typeof raw === "object" ? raw : false;
+}
+
+/**
  * Extract the first decision table content from a JDM structure.
  */
 export function getTableContent(table) {
-    if (!table) return null;
-    if (table.nodes && table.nodes.length) {
-        return table.nodes[0].content || null;
+    const obj = coerceTable(table);
+    if (!obj) return null;
+    if (obj.nodes && obj.nodes.length) {
+        return obj.nodes[0].content || null;
     }
-    if (table.content) {
-        return table.content;
+    if (obj.content) {
+        return obj.content;
     }
     return null;
 }
