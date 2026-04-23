@@ -1,129 +1,619 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Matrix template records for the bags industry.
-    The JSON content mirrors data/matrix_templates/bags_standard.json.
-    Stored here as Odoo data so the template is available immediately
-    after installation without a separate file-read step.
+    Matrix templates for the bags industry.
+
+    ── Bags — Standard ─────────────────────────────────────────────────────
+    Basic sleeve/sheet template.  T0 + T1 only; T2/T3 handled via BoM line
+    formula_template (O-variant coefficients).
+
+    ── Bags Extended — PoliGroup ───────────────────────────────────────────
+    Full parameterised template covering ALL wizard configurations:
+
+    Design params (from bags_extended definition):
+        width, height, thickness  — mm  (from base_dimensions)
+        density                   — g/cm³
+        construction_type         — tube / gusseted / split / cast
+        gusset_mode               — single / double / none
+        gusset_depth              — mm (one side)
+        cord_fold                 — mm  (split fold length)
+        cord_length               — mm
+        cord_weight_per_lm        — g/m
+        has_tie, has_print        — boolean
+        inline_colors             — number of flexo inline colours
+        confection_colors         — number of flexo confection colours
+        bags_per_roll             — pcs
+        rolls_per_box             — pcs
+        boxes_per_pallet          — pcs
+        rolls_per_pallet          — pcs  (only for roll_pallet packaging_mode)
+        roll_core_weight_per_lm   — kg/m
+        roll_core_length_m        — m
+        box_tare_kg               — kg
+        pallet_tare_kg            — kg
+        packaging_mode            — box_pallet / roll_pallet / bulk_pallet
+
+    Geometry formulas  (all dimensions in mm; density in g/cm³):
+        material_width_mm:
+            tube:             width * 2
+            gusseted/single:  2 * (width + gusset_depth)
+            gusseted/double:  2 * (width + 2 * gusset_depth)
+            gusseted/none:    2 * width
+            split:            width * 2 + cord_fold
+            cast:             width
+
+        bag_weight_g (film only):
+            material_width_mm * height * thickness * density / 1000
+
+        bag_weight_g (with cord, has_tie=true):
+            + cord_weight_per_lm * cord_length / 1000
+
+        roll_weight_kg:
+            bags_per_roll * bag_weight_g / 1000 + roll_core_weight_per_lm * roll_core_length_m
+
+        box_weight_gross_kg  (box_pallet mode):
+            rolls_per_box * roll_weight_kg + box_tare_kg
+
+        pallet_weight_gross_kg (box_pallet):
+            boxes_per_pallet * box_weight_gross_kg + pallet_tare_kg
+
+        pallet_weight_gross_kg (roll_pallet):
+            rolls_per_pallet * roll_weight_kg + pallet_tare_kg
 -->
 <odoo noupdate="1">
 
-        <!-- ── Workcenter stubs (demo/reference) ─────────────────────── -->
-        <record id="wc_extrusion" model="mrp.workcenter">
-            <field name="name">Extrusion Line</field>
-            <field name="code">EXTR</field>
-        </record>
-        <record id="wc_slitting" model="mrp.workcenter">
-            <field name="name">Slitting Machine</field>
-            <field name="code">SLIT</field>
-        </record>
-        <record id="wc_tie_insertion" model="mrp.workcenter">
-            <field name="name">Tie Insertion</field>
-            <field name="code">TIE</field>
-        </record>
+    <!-- ═══════════════════════════════════════════════════════════════════
+         Workcenter stubs (demo/reference)
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="wc_extrusion" model="mrp.workcenter">
+        <field name="name">Extrusion Line</field>
+        <field name="code">EXTR</field>
+    </record>
+    <record id="wc_slitting" model="mrp.workcenter">
+        <field name="name">Slitting Machine</field>
+        <field name="code">SLIT</field>
+    </record>
+    <record id="wc_tie_insertion" model="mrp.workcenter">
+        <field name="name">Tie Insertion</field>
+        <field name="code">TIE</field>
+    </record>
 
-        <!-- ── Product stubs ─────────────────────────────────────────── -->
-        <record id="product_tmpl_resin_hdpe" model="product.template">
-            <field name="name">Resin HDPE (O-variant)</field>
-            <field name="type">consu</field>
-            <field name="uom_id" ref="uom.product_uom_kgm"/>
-        </record>
-        <record id="product_tmpl_ink" model="product.template">
-            <field name="name">Flexo Ink</field>
-            <field name="type">consu</field>
-            <field name="uom_id" ref="uom.product_uom_kgm"/>
-        </record>
-        <record id="product_tmpl_tie" model="product.template">
-            <field name="name">Tie Band</field>
-            <field name="type">consu</field>
-            <field name="uom_id" ref="uom.product_uom_unit"/>
-        </record>
+    <!-- ═══════════════════════════════════════════════════════════════════
+         Product stubs
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="product_tmpl_resin_hdpe" model="product.template">
+        <field name="name">Resin HDPE (O-variant)</field>
+        <field name="type">consu</field>
+        <field name="uom_id" ref="uom.product_uom_kg"/>
+    </record>
+    <record id="product_tmpl_ink" model="product.template">
+        <field name="name">Flexo Ink</field>
+        <field name="type">consu</field>
+        <field name="uom_id" ref="uom.product_uom_kg"/>
+    </record>
+    <record id="product_tmpl_tie" model="product.template">
+        <field name="name">Tie Band</field>
+        <field name="type">consu</field>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+    </record>
 
-        <!-- ── Color attribute (for PTAV resolution) ─────────────────── -->
-        <record id="attr_color" model="product.attribute">
-            <field name="name">Color</field>
-            <field name="create_variant">no_variant</field>
-        </record>
-        <record id="attr_val_black" model="product.attribute.value">
-            <field name="name">black</field>
-            <field name="attribute_id" ref="attr_color"/>
-        </record>
-        <record id="attr_val_green" model="product.attribute.value">
-            <field name="name">green</field>
-            <field name="attribute_id" ref="attr_color"/>
-        </record>
-        <record id="attr_val_white" model="product.attribute.value">
-            <field name="name">white</field>
-            <field name="attribute_id" ref="attr_color"/>
-        </record>
+    <!-- ── Packaging products ─────────────────────────────────────────── -->
+    <record id="product_packaging_tray" model="product.product">
+        <field name="name">Тарелка за опаковане</field>
+        <field name="default_code">PKG-TRAY</field>
+        <field name="type">consu</field>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+    </record>
+    <record id="product_packaging_box" model="product.product">
+        <field name="name">Кашон за опаковане</field>
+        <field name="default_code">PKG-BOX</field>
+        <field name="type">consu</field>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+    </record>
 
-        <!-- ── Matrix template ───────────────────────────────────────── -->
-        <record id="matrix_template_bags_standard" model="mrp.matrix.template">
-            <field name="name">Bags — Standard</field>
-            <field name="industry">bags</field>
-            <field name="description">
-                Standard template for sleeve/sheet garbage bags.
-                Supports: tie band, flexo print, HDPE/LDPE/LLDPE resin.
-                O-variants: ink (activated when has_print=true).
-                Ad-hoc: tie band (injected when has_tie=true).
-            </field>
-            <field name="constraint_table" eval="
-                {
-                    'nodes': [{
-                        'id': 't0-bags',
-                        'name': 'T0 Constraints',
-                        'type': 'decisionTable',
-                        'content': {
-                            'hitPolicy': 'collect',
-                            'inputs': [
-                                {'id': 'bag_type', 'name': 'bag_type'},
-                                {'id': 'has_tie',  'name': 'has_tie'}
-                            ],
-                            'outputs': [
-                                {'id': 'level',   'name': 'level'},
-                                {'id': 'message', 'name': 'message'}
-                            ],
-                            'rules': [{
+    <!-- ── Color attribute (for PTAV resolution) ─────────────────────── -->
+    <record id="attr_color" model="product.attribute">
+        <field name="name">Color</field>
+        <field name="create_variant">no_variant</field>
+    </record>
+    <record id="attr_val_black" model="product.attribute.value">
+        <field name="name">black</field>
+        <field name="attribute_id" ref="attr_color"/>
+    </record>
+    <record id="attr_val_green" model="product.attribute.value">
+        <field name="name">green</field>
+        <field name="attribute_id" ref="attr_color"/>
+    </record>
+    <record id="attr_val_white" model="product.attribute.value">
+        <field name="name">white</field>
+        <field name="attribute_id" ref="attr_color"/>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         Template 1 — Bags Standard (basic sleeve/sheet)
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="matrix_template_bags_standard" model="mrp.matrix.template">
+        <field name="name">Bags — Standard</field>
+        <field name="industry">bags</field>
+        <field name="description">
+            Standard template for sleeve/sheet garbage bags.
+            Supports: tie band, flexo print, HDPE/LDPE/LLDPE resin.
+            O-variants: ink (activated when has_print=true).
+            Ad-hoc: tie band (injected when has_tie=true).
+        </field>
+        <field name="constraint_table" eval="
+            {
+                'nodes': [{
+                    'id': 't0-bags',
+                    'name': 'T0 Constraints',
+                    'type': 'decisionTable',
+                    'content': {
+                        'hitPolicy': 'collect',
+                        'inputs': [
+                            {'id': 'bag_type',       'name': 'bag_type'},
+                            {'id': 'has_tie',        'name': 'has_tie'},
+                            {'id': 'packaging_type', 'name': 'packaging_type'}
+                        ],
+                        'outputs': [
+                            {'id': 'level',                 'name': 'level'},
+                            {'id': 'message',               'name': 'message'},
+                            {'id': 'packaging_product_ref', 'name': 'packaging_product_ref'}
+                        ],
+                        'rules': [
+                            {
                                 'bag_type': '&quot;sheet&quot;',
                                 'has_tie':  'true',
+                                'packaging_type': '',
                                 'level':    '&quot;warning&quot;',
-                                'message':  '&quot;Sheet bag with tie: splitting skipped.&quot;'
-                            }]
-                        }
-                    }]
-                }
-            "/>
-            <field name="geometry_table" eval="
-                {
-                    'nodes': [{
-                        'id': 't1-bags',
-                        'name': 'T1 Geometry',
+                                'message':  '&quot;Sheet bag with tie: splitting skipped.&quot;',
+                                'packaging_product_ref': ''
+                            },
+                            {
+                                'bag_type': '',
+                                'has_tie':  '',
+                                'packaging_type': '&quot;tray&quot;',
+                                'level':    '',
+                                'message':  '',
+                                'packaging_product_ref': '&quot;mrp_design_matrix_bags.product_packaging_tray&quot;'
+                            },
+                            {
+                                'bag_type': '',
+                                'has_tie':  '',
+                                'packaging_type': '&quot;box&quot;',
+                                'level':    '',
+                                'message':  '',
+                                'packaging_product_ref': '&quot;mrp_design_matrix_bags.product_packaging_box&quot;'
+                            }
+                        ]
+                    }
+                }]
+            }
+        "/>
+        <field name="geometry_table" eval="
+            {
+                'nodes': [{
+                    'id': 't1-bags',
+                    'name': 'T1 Geometry',
+                    'type': 'decisionTable',
+                    'content': {
+                        'hitPolicy': 'first',
+                        'inputs': [
+                            {'id': 'bag_type', 'name': 'bag_type'},
+                            {'id': 'has_tie',  'name': 'has_tie'}
+                        ],
+                        'outputs': [
+                            {'id': 'effective_length_expr', 'name': 'effective_length_expr'},
+                            {'id': 'layers',                'name': 'layers'}
+                        ],
+                        'rules': [
+                            {'bag_type': '&quot;sleeve&quot;', 'has_tie': 'true',
+                             'effective_length_expr': '&quot;(height + 50) * 2&quot;', 'layers': '2'},
+                            {'bag_type': '&quot;sleeve&quot;', 'has_tie': 'false',
+                             'effective_length_expr': '&quot;height * 2&quot;', 'layers': '2'},
+                            {'bag_type': '&quot;sheet&quot;',  'has_tie': 'true',
+                             'effective_length_expr': '&quot;(height + 50) * 1&quot;', 'layers': '1'},
+                            {'bag_type': '&quot;sheet&quot;',  'has_tie': 'false',
+                             'effective_length_expr': '&quot;height * 1&quot;', 'layers': '1'}
+                        ]
+                    }
+                }]
+            }
+        "/>
+        <field name="material_table"  eval="{}"/>
+        <field name="operation_table" eval="{}"/>
+    </record>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         Template 2 — Bags Extended — PoliGroup (full wizard matrix)
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="matrix_template_bags_extended" model="mrp.matrix.template">
+        <field name="name">Bags Extended — PoliGroup</field>
+        <field name="industry">bags</field>
+        <field name="description">Full PoliGroup wizard matrix. Uses bags_extended design.param.definition.
+T0: dimension + gusset constraint validation.
+T1: material_width by construction/gusset_mode; bag_weight_g with/without cord; roll/box/pallet weights; per-ton counts.
+T2: packaging material qty_expr (roll core, box, pallet) by packaging_mode.
+T3: Extrusion (always), Confection (always), Flexo Print Inline, Flexo Print Confection, Cord Insertion, Packaging.</field>
+
+        <!-- ── T0 — Constraints ──────────────────────────────────────── -->
+        <field name="constraint_table" eval="
+            {
+                'nodes': [{
+                    'id': 't0-bags-ext',
+                    'name': 'T0 Constraints',
+                    'type': 'decisionTable',
+                    'content': {
+                        'hitPolicy': 'collect',
+                        'inputs': [
+                            {'id': 'width',             'name': 'width'},
+                            {'id': 'height',            'name': 'height'},
+                            {'id': 'thickness',         'name': 'thickness'},
+                            {'id': 'density',           'name': 'density'},
+                            {'id': 'construction_type', 'name': 'construction_type'},
+                            {'id': 'gusset_depth',      'name': 'gusset_depth'}
+                        ],
+                        'outputs': [
+                            {'id': 'level',   'name': 'level'},
+                            {'id': 'message', 'name': 'message'}
+                        ],
+                        'rules': [
+                            {
+                                'width': '0', 'height': '', 'thickness': '',
+                                'density': '', 'construction_type': '', 'gusset_depth': '',
+                                'level': '&quot;error&quot;',
+                                'message': '&quot;Bag width must be greater than 0 mm.&quot;'
+                            },
+                            {
+                                'width': '', 'height': '0', 'thickness': '',
+                                'density': '', 'construction_type': '', 'gusset_depth': '',
+                                'level': '&quot;error&quot;',
+                                'message': '&quot;Bag height (length) must be greater than 0 mm.&quot;'
+                            },
+                            {
+                                'width': '', 'height': '', 'thickness': '0',
+                                'density': '', 'construction_type': '', 'gusset_depth': '',
+                                'level': '&quot;error&quot;',
+                                'message': '&quot;Bag thickness must be greater than 0 mm.&quot;'
+                            },
+                            {
+                                'width': '', 'height': '', 'thickness': '',
+                                'density': '0', 'construction_type': '', 'gusset_depth': '',
+                                'level': '&quot;error&quot;',
+                                'message': '&quot;Material density must be set (g/cm3).&quot;'
+                            },
+                            {
+                                'width': '', 'height': '', 'thickness': '',
+                                'density': '', 'construction_type': '&quot;gusseted&quot;', 'gusset_depth': '0',
+                                'level': '&quot;error&quot;',
+                                'message': '&quot;Gusseted bag requires gusset depth > 0 mm.&quot;'
+                            },
+                            {
+                                'width': '', 'height': '', 'thickness': '',
+                                'density': '', 'construction_type': '&quot;split&quot;', 'gusset_depth': '',
+                                'level': '&quot;warning&quot;',
+                                'message': '&quot;Split/drawtape bag: verify cord_fold and cord_length are set.&quot;'
+                            }
+                        ]
+                    }
+                }]
+            }
+        "/>
+
+        <!-- ── T1 — Geometry (3-node chained graph) ─────────────────── -->
+        <!--
+            Node t1a: construction_type + gusset_mode → material_width_mm, layers
+            Node t1b: has_tie → bag_weight_g (uses material_width_mm from t1a)
+            Node t1c: packaging_mode → roll/box/pallet weights + bags_per_ton
+                      (uses bag_weight_g from t1b; roll_weight inlined in each expression)
+
+            All output-cell values without surrounding quotes are JEL expressions
+            evaluated by GoRules against the current context.
+        -->
+        <field name="geometry_table" eval="
+            {
+                'nodes': [
+                    {'id': 'zen_input', 'type': 'inputNode', 'name': 'Input'},
+
+                    {
+                        'id': 't1a-width',
+                        'name': 'T1a Material Width',
                         'type': 'decisionTable',
                         'content': {
                             'hitPolicy': 'first',
                             'inputs': [
-                                {'id': 'bag_type', 'name': 'bag_type'},
-                                {'id': 'has_tie',  'name': 'has_tie'}
+                                {'id': 'construction_type', 'name': 'construction_type'},
+                                {'id': 'gusset_mode',       'name': 'gusset_mode'}
                             ],
                             'outputs': [
-                                {'id': 'effective_length_expr', 'name': 'effective_length_expr'},
-                                {'id': 'layers',                'name': 'layers'}
+                                {'id': 'material_width_mm', 'name': 'material_width_mm'},
+                                {'id': 'layers',            'name': 'layers'}
                             ],
                             'rules': [
-                                {'bag_type': '&quot;sleeve&quot;', 'has_tie': 'true',
-                                 'effective_length_expr': '&quot;(height + 50) * 2&quot;', 'layers': '2'},
-                                {'bag_type': '&quot;sleeve&quot;', 'has_tie': 'false',
-                                 'effective_length_expr': '&quot;height * 2&quot;', 'layers': '2'},
-                                {'bag_type': '&quot;sheet&quot;',  'has_tie': 'true',
-                                 'effective_length_expr': '&quot;(height + 50) * 1&quot;', 'layers': '1'},
-                                {'bag_type': '&quot;sheet&quot;',  'has_tie': 'false',
-                                 'effective_length_expr': '&quot;height * 1&quot;', 'layers': '1'}
+                                {
+                                    'construction_type': '&quot;tube&quot;',
+                                    'gusset_mode': '',
+                                    'material_width_mm': 'width * 2',
+                                    'layers': '2'
+                                },
+                                {
+                                    'construction_type': '&quot;gusseted&quot;',
+                                    'gusset_mode': '&quot;single&quot;',
+                                    'material_width_mm': '2 * (width + gusset_depth)',
+                                    'layers': '2'
+                                },
+                                {
+                                    'construction_type': '&quot;gusseted&quot;',
+                                    'gusset_mode': '&quot;double&quot;',
+                                    'material_width_mm': '2 * (width + 2 * gusset_depth)',
+                                    'layers': '2'
+                                },
+                                {
+                                    'construction_type': '&quot;gusseted&quot;',
+                                    'gusset_mode': '&quot;none&quot;',
+                                    'material_width_mm': '2 * width',
+                                    'layers': '2'
+                                },
+                                {
+                                    'construction_type': '&quot;gusseted&quot;',
+                                    'gusset_mode': '',
+                                    'material_width_mm': '2 * (width + gusset_depth)',
+                                    'layers': '2'
+                                },
+                                {
+                                    'construction_type': '&quot;split&quot;',
+                                    'gusset_mode': '',
+                                    'material_width_mm': 'width * 2 + cord_fold',
+                                    'layers': '1'
+                                },
+                                {
+                                    'construction_type': '&quot;cast&quot;',
+                                    'gusset_mode': '',
+                                    'material_width_mm': 'width',
+                                    'layers': '1'
+                                },
+                                {
+                                    'construction_type': '',
+                                    'gusset_mode': '',
+                                    'material_width_mm': 'width * 2',
+                                    'layers': '2'
+                                }
                             ]
                         }
-                    }]
-                }
-            "/>
-            <field name="material_table" eval="{}"/>
-            <field name="operation_table" eval="{}"/>
-        </record>
+                    },
 
-    </odoo>
+                    {
+                        'id': 't1b-weight',
+                        'name': 'T1b Bag Weight',
+                        'type': 'decisionTable',
+                        'content': {
+                            'hitPolicy': 'first',
+                            'inputs': [
+                                {'id': 'has_tie', 'name': 'has_tie'}
+                            ],
+                            'outputs': [
+                                {'id': 'bag_weight_g', 'name': 'bag_weight_g'}
+                            ],
+                            'rules': [
+                                {
+                                    'has_tie': 'false',
+                                    'bag_weight_g': 'material_width_mm * height * thickness * density / 1000'
+                                },
+                                {
+                                    'has_tie': 'true',
+                                    'bag_weight_g': 'material_width_mm * height * thickness * density / 1000 + cord_weight_per_lm * cord_length / 1000'
+                                },
+                                {
+                                    'has_tie': '',
+                                    'bag_weight_g': 'material_width_mm * height * thickness * density / 1000'
+                                }
+                            ]
+                        }
+                    },
+
+                    {
+                        'id': 't1c-packaging',
+                        'name': 'T1c Packaging Weights',
+                        'type': 'decisionTable',
+                        'content': {
+                            'hitPolicy': 'first',
+                            'inputs': [
+                                {'id': 'packaging_mode', 'name': 'packaging_mode'}
+                            ],
+                            'outputs': [
+                                {'id': 'roll_weight_kg',        'name': 'roll_weight_kg'},
+                                {'id': 'box_weight_gross_kg',   'name': 'box_weight_gross_kg'},
+                                {'id': 'pallet_weight_gross_kg','name': 'pallet_weight_gross_kg'},
+                                {'id': 'bags_per_ton',          'name': 'bags_per_ton'}
+                            ],
+                            'rules': [
+                                {
+                                    'packaging_mode': '&quot;box_pallet&quot;',
+                                    'roll_weight_kg':
+                                        'bags_per_roll * bag_weight_g / 1000 + roll_core_weight_per_lm * roll_core_length_m',
+                                    'box_weight_gross_kg':
+                                        'rolls_per_box * (bags_per_roll * bag_weight_g / 1000 + roll_core_weight_per_lm * roll_core_length_m) + box_tare_kg',
+                                    'pallet_weight_gross_kg':
+                                        'boxes_per_pallet * (rolls_per_box * (bags_per_roll * bag_weight_g / 1000 + roll_core_weight_per_lm * roll_core_length_m) + box_tare_kg) + pallet_tare_kg',
+                                    'bags_per_ton':
+                                        'if(bag_weight_g &gt; 0, 1000000 / bag_weight_g, 0)'
+                                },
+                                {
+                                    'packaging_mode': '&quot;roll_pallet&quot;',
+                                    'roll_weight_kg':
+                                        'bags_per_roll * bag_weight_g / 1000 + roll_core_weight_per_lm * roll_core_length_m',
+                                    'box_weight_gross_kg':
+                                        '0',
+                                    'pallet_weight_gross_kg':
+                                        'rolls_per_pallet * (bags_per_roll * bag_weight_g / 1000 + roll_core_weight_per_lm * roll_core_length_m) + pallet_tare_kg',
+                                    'bags_per_ton':
+                                        'if(bag_weight_g &gt; 0, 1000000 / bag_weight_g, 0)'
+                                },
+                                {
+                                    'packaging_mode': '&quot;bulk_pallet&quot;',
+                                    'roll_weight_kg': '0',
+                                    'box_weight_gross_kg': '0',
+                                    'pallet_weight_gross_kg': 'pallet_tare_kg',
+                                    'bags_per_ton':
+                                        'if(bag_weight_g &gt; 0, 1000000 / bag_weight_g, 0)'
+                                },
+                                {
+                                    'packaging_mode': '',
+                                    'roll_weight_kg':
+                                        'bags_per_roll * bag_weight_g / 1000 + roll_core_weight_per_lm * roll_core_length_m',
+                                    'box_weight_gross_kg':
+                                        'rolls_per_box * (bags_per_roll * bag_weight_g / 1000 + roll_core_weight_per_lm * roll_core_length_m) + box_tare_kg',
+                                    'pallet_weight_gross_kg':
+                                        'boxes_per_pallet * (rolls_per_box * (bags_per_roll * bag_weight_g / 1000 + roll_core_weight_per_lm * roll_core_length_m) + box_tare_kg) + pallet_tare_kg',
+                                    'bags_per_ton':
+                                        'if(bag_weight_g &gt; 0, 1000000 / bag_weight_g, 0)'
+                                }
+                            ]
+                        }
+                    },
+
+                    {'id': 'zen_output', 'type': 'outputNode', 'name': 'Output'}
+                ],
+                'edges': [
+                    {'id': 'e1', 'sourceId': 'zen_input',    'targetId': 't1a-width'},
+                    {'id': 'e2', 'sourceId': 't1a-width',    'targetId': 't1b-weight'},
+                    {'id': 'e3', 'sourceId': 't1b-weight',   'targetId': 't1c-packaging'},
+                    {'id': 'e4', 'sourceId': 't1c-packaging','targetId': 'zen_output'}
+                ]
+            }
+        "/>
+
+        <!-- ── T2 — Materials (packaging qty_expr) ───────────────────── -->
+        <!--
+            Outputs material_role + qty_expr (formula string evaluated by
+            the BoM formula engine when the MO line quantities are resolved).
+
+            roll_core: per bag = core_weight / bags_per_roll
+            box:       per bag = box_tare_kg / (bags_per_roll * rolls_per_box)
+            pallet (box_pallet): per bag = pallet_tare_kg / (bags_per_roll * rolls_per_box * boxes_per_pallet)
+            pallet (roll_pallet): per bag = pallet_tare_kg / (bags_per_roll * rolls_per_pallet)
+        -->
+        <field name="material_table" eval="
+            {
+                'nodes': [{
+                    'id': 't2-bags-ext',
+                    'name': 'T2 Materials',
+                    'type': 'decisionTable',
+                    'content': {
+                        'hitPolicy': 'collect',
+                        'inputs': [
+                            {'id': 'packaging_mode', 'name': 'packaging_mode'}
+                        ],
+                        'outputs': [
+                            {'id': 'material_role', 'name': 'material_role'},
+                            {'id': 'qty_expr',      'name': 'qty_expr'}
+                        ],
+                        'rules': [
+                            {
+                                'packaging_mode': '',
+                                'material_role': '&quot;roll_core_kg&quot;',
+                                'qty_expr': '&quot;roll_core_weight_per_lm * roll_core_length_m / bags_per_roll if bags_per_roll else 0&quot;'
+                            },
+                            {
+                                'packaging_mode': '&quot;box_pallet&quot;',
+                                'material_role': '&quot;box_tare_kg&quot;',
+                                'qty_expr': '&quot;box_tare_kg / (bags_per_roll * rolls_per_box) if bags_per_roll and rolls_per_box else 0&quot;'
+                            },
+                            {
+                                'packaging_mode': '&quot;box_pallet&quot;',
+                                'material_role': '&quot;pallet_tare_kg&quot;',
+                                'qty_expr': '&quot;pallet_tare_kg / (bags_per_roll * rolls_per_box * boxes_per_pallet) if bags_per_roll and rolls_per_box and boxes_per_pallet else 0&quot;'
+                            },
+                            {
+                                'packaging_mode': '&quot;roll_pallet&quot;',
+                                'material_role': '&quot;pallet_tare_kg&quot;',
+                                'qty_expr': '&quot;pallet_tare_kg / (bags_per_roll * rolls_per_pallet) if bags_per_roll and rolls_per_pallet else 0&quot;'
+                            }
+                        ]
+                    }
+                }]
+            }
+        "/>
+
+        <!-- ── T3 — Operations ───────────────────────────────────────── -->
+        <!--
+            hitPolicy collect → all matching rules fire.
+            Extrusion and Confection/Sealing always run.
+            Print inline/confection only when colors > 0.
+            Cord insertion only when has_tie = true.
+            Packaging operation depends on packaging_mode.
+        -->
+        <field name="operation_table" eval="
+            {
+                'nodes': [{
+                    'id': 't3-bags-ext',
+                    'name': 'T3 Operations',
+                    'type': 'decisionTable',
+                    'content': {
+                        'hitPolicy': 'collect',
+                        'inputs': [
+                            {'id': 'inline_colors',     'name': 'inline_colors'},
+                            {'id': 'confection_colors', 'name': 'confection_colors'},
+                            {'id': 'has_tie',           'name': 'has_tie'},
+                            {'id': 'packaging_mode',    'name': 'packaging_mode'}
+                        ],
+                        'outputs': [
+                            {'id': 'operation',       'name': 'operation'},
+                            {'id': 'workcenter_code', 'name': 'workcenter_code'}
+                        ],
+                        'rules': [
+                            {
+                                'inline_colors': '', 'confection_colors': '',
+                                'has_tie': '', 'packaging_mode': '',
+                                'operation': '&quot;Extrusion&quot;',
+                                'workcenter_code': '&quot;EXTR&quot;'
+                            },
+                            {
+                                'inline_colors': '', 'confection_colors': '',
+                                'has_tie': '', 'packaging_mode': '',
+                                'operation': '&quot;Confection / Sealing&quot;',
+                                'workcenter_code': '&quot;CONF&quot;'
+                            },
+                            {
+                                'inline_colors': '&gt; 0', 'confection_colors': '',
+                                'has_tie': '', 'packaging_mode': '',
+                                'operation': '&quot;Flexo Print (Inline)&quot;',
+                                'workcenter_code': '&quot;PRINT_INLINE&quot;'
+                            },
+                            {
+                                'inline_colors': '', 'confection_colors': '&gt; 0',
+                                'has_tie': '', 'packaging_mode': '',
+                                'operation': '&quot;Flexo Print (Confection)&quot;',
+                                'workcenter_code': '&quot;PRINT_CONF&quot;'
+                            },
+                            {
+                                'inline_colors': '', 'confection_colors': '',
+                                'has_tie': 'true', 'packaging_mode': '',
+                                'operation': '&quot;Cord / Drawtape Insertion&quot;',
+                                'workcenter_code': '&quot;CORD&quot;'
+                            },
+                            {
+                                'inline_colors': '', 'confection_colors': '',
+                                'has_tie': '', 'packaging_mode': '&quot;box_pallet&quot;',
+                                'operation': '&quot;Packaging — Box + Pallet&quot;',
+                                'workcenter_code': '&quot;PKG&quot;'
+                            },
+                            {
+                                'inline_colors': '', 'confection_colors': '',
+                                'has_tie': '', 'packaging_mode': '&quot;roll_pallet&quot;',
+                                'operation': '&quot;Packaging — Roll + Pallet&quot;',
+                                'workcenter_code': '&quot;PKG&quot;'
+                            },
+                            {
+                                'inline_colors': '', 'confection_colors': '',
+                                'has_tie': '', 'packaging_mode': '&quot;bulk_pallet&quot;',
+                                'operation': '&quot;Packaging — Bulk Pallet&quot;',
+                                'workcenter_code': '&quot;PKG&quot;'
+                            }
+                        ]
+                    }
+                }]
+            }
+        "/>
+
+    </record>
+
+</odoo>

@@ -1,12 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Design parameter definitions for garbage bag manufacturers.
+    Design parameter definitions for bag/foil manufacturers.
     Loaded by install_design_params.xml via create_design_param_definitions().
 
     Types supported: char, float, boolean, selection
     Selection format: [["value","Label"], ...]
+
+    Hierarchy:
+        base_dimensions  (width, height, thickness)
+            └─ bags         (bag_type, has_tie, has_print, color, resin_type, density, packaging_type)
+                └─ bags_extended  (+ construction/extrusion/gusset/cord/packaging/cores/print params)
+
+    All dimension params are in mm unless noted otherwise.
+    thickness  — mm   (wizard converts μm → mm before storing)
+    density    — g/cm³
+    cord_weight_per_lm — g/m
+    roll_core_weight_per_lm / extrusion_core_weight_per_lm — kg/m
+    box_tare_kg / pallet_tare_kg — kg
 -->
 <records>
+
+    <!-- ── bags (standard, 8 params) ─────────────────────────────────────── -->
     <properties code="bags" name="Bags - Standard" industry="bags" parent="base_dimensions">
         <items name="bag_type">
             <item name="type">selection</item>
@@ -34,5 +48,150 @@
             <item name="type">float</item>
             <item name="default">0.95</item>
         </items>
+        <items name="packaging_type">
+            <item name="type">selection</item>
+            <item name="selection">[["none","Без опаковка"],["tray","Тарелка"],["box","Кашон"]]</item>
+            <item name="default">none</item>
+        </items>
     </properties>
+
+    <!-- ── bags_extended (full wizard params, parent: bags) ──────────────── -->
+    <!--
+        Adds ALL PoliGroup wizard parameters on top of bags.
+        The full parent chain:  base_dimensions → bags → bags_extended
+
+        Construction / geometry
+        ───────────────────────
+        construction_type  — how the tube is folded / cut
+        extrusion_type     — blown / cast / coextrusion (informational, drives op T3)
+        gusset_mode        — single / double / none  (for gusseted bags)
+        gusset_depth       — mm  (one side; factor applied by matrix: ×1 single, ×2 double)
+        cord_fold          — mm  (fold length for split/drawtape bags)
+        cord_length        — mm  (total cord length per bag)
+        cord_weight_per_lm — g/m (linear weight of the cord/tie)
+
+        Packaging
+        ─────────
+        packaging_mode     — 3-level hierarchy selector
+        bags_per_roll
+        rolls_per_box
+        boxes_per_pallet
+        rolls_per_pallet   — used when packaging_mode = roll_pallet
+
+        Roll cores / spools
+        ───────────────────
+        roll_core_weight_per_lm   — kg/m  (small packaging spool)
+        roll_core_length_m        — m     (length of core per roll)
+        extrusion_core_weight_per_lm  — kg/m  (big extrusion spool)
+        extrusion_core_length_m       — m
+
+        Tare
+        ────
+        box_tare_kg    — empty box weight
+        pallet_tare_kg — empty pallet weight
+
+        Printing
+        ────────
+        inline_colors      — number of flexo inline colours (0 = no print)
+        confection_colors  — number of flexo confection colours
+    -->
+    <properties code="bags_extended" name="Bags / Foils — Extended"
+                industry="bags" parent="bags">
+
+        <!-- Construction -->
+        <items name="construction_type">
+            <item name="type">selection</item>
+            <item name="selection">[["tube","Tube (regular)"],["gusseted","Gusseted (bags/foils)"],["split","With drawtape"],["cast","Cast (half-sleeve)"]]</item>
+            <item name="default">tube</item>
+        </items>
+        <items name="extrusion_type">
+            <item name="type">selection</item>
+            <item name="selection">[["blown","Blown (sleeve)"],["cast","Cast (half-sleeve)"],["coextrusion","Co-extrusion (double slitted)"]]</item>
+            <item name="default">blown</item>
+        </items>
+        <items name="gusset_mode">
+            <item name="type">selection</item>
+            <item name="selection">[["none","None"],["single","Single"],["double","Double (two side gussets)"]]</item>
+            <item name="default">single</item>
+        </items>
+        <items name="gusset_depth">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+        <items name="cord_fold">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+        <items name="cord_length">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+        <items name="cord_weight_per_lm">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+
+        <!-- Packaging hierarchy -->
+        <items name="packaging_mode">
+            <item name="type">selection</item>
+            <item name="selection">[["box_pallet","Box → Pallet"],["roll_pallet","Roll → Pallet (no box)"],["bulk_pallet","Bulk Pallet (no roll/box)"]]</item>
+            <item name="default">box_pallet</item>
+        </items>
+        <items name="bags_per_roll">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+        <items name="rolls_per_box">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+        <items name="boxes_per_pallet">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+        <items name="rolls_per_pallet">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+
+        <!-- Roll cores / spools -->
+        <items name="roll_core_weight_per_lm">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+        <items name="roll_core_length_m">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+        <items name="extrusion_core_weight_per_lm">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+        <items name="extrusion_core_length_m">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+
+        <!-- Tare weights -->
+        <items name="box_tare_kg">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+        <items name="pallet_tare_kg">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+
+        <!-- Printing -->
+        <items name="inline_colors">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+        <items name="confection_colors">
+            <item name="type">float</item>
+            <item name="default">0.0</item>
+        </items>
+
+    </properties>
+
 </records>
