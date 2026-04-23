@@ -140,6 +140,24 @@ class DesignParamDefinition(models.Model):
         }
         for item in items.iter("item"):
             result.update(self._process_item(item))
+        # Coerce default value to the declared type so Owl widgets
+        # (formatInteger/formatFloat/Boolean checkbox) don't crash on strings.
+        type_ = result.get("type")
+        default = result.get("default")
+        if isinstance(default, str):
+            try:
+                if type_ == "integer":
+                    result["default"] = int(default)
+                elif type_ == "float":
+                    result["default"] = float(default)
+                elif type_ == "boolean":
+                    result["default"] = default.strip().lower() in (
+                        "true",
+                        "1",
+                        "yes",
+                    )
+            except (TypeError, ValueError):
+                pass
         return result
 
     def _process_properties(self, properties, sequence):
