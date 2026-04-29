@@ -160,6 +160,22 @@
     <field name="uom_id" ref="uom.product_uom_unit"/>
   </record>
 
+  <!-- ── 3D model attachments (GLB) ──────────────────────────────────── -->
+  <record id="attachment_rs_component_glb" model="ir.attachment">
+    <field name="name">Roller Shutter — Dynamic Component (3D)</field>
+    <field name="type">url</field>
+    <field name="url">/mrp_design_matrix_roller_door/static/models/Roller_Shutter_Dynamic_Component.glb</field>
+    <field name="mimetype">model/gltf-binary</field>
+    <field name="res_model">product.product</field>
+  </record>
+  <record id="attachment_rs_box_glb" model="ir.attachment">
+    <field name="name">Roller Shutter — Box Assembly 122 (3D)</field>
+    <field name="type">url</field>
+    <field name="url">/mrp_design_matrix_roller_door/static/models/122_21010R.glb</field>
+    <field name="mimetype">model/gltf-binary</field>
+    <field name="res_model">product.product</field>
+  </record>
+
   <!-- ── Finished product ──────────────────────────────────────────────── -->
   <record id="product_tmpl_roller_shutter" model="product.template">
     <field name="name">Roller Shutter — Teolino</field>

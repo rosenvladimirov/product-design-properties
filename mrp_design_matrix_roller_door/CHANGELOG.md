@@ -4,6 +4,17 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.3.0] - 2026-04-29
+
+### Added
+
+- Two GLB 3D model attachments for the demo roller shutter product:
+  - `Roller_Shutter_Dynamic_Component.glb` — full shutter assembly (converted from STL, ~280 KB)
+  - `122_21010R.glb` — box assembly (converted from STL scene, 22 meshes, ~250 KB)
+- `hooks.py` `post_init_hook`: links GLB attachments to the demo product via
+  `design_asset_ids` when `product_design_assets` is installed (conditional, non-fatal).
+- Static files directory: `static/models/`.
+
 ## [18.0.1.2.0] - 2026-04-29
 
 ### Added

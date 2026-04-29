@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [18.0.1.7.3] - 2026-04-29
+
+### Added
+
+- **mrp_design_matrix_roller_door** (18.0.1.3.0) — GLB 3D models for Three.js viewer:
+  two converted STL→GLB files (shutter assembly + box assembly) in `static/models/`;
+  `post_init_hook` links them to the demo product via `design_asset_ids`
+  when `product_design_assets` is installed.
+
 ## [18.0.1.7.2] - 2026-04-29
 
 ### Added / Changed
