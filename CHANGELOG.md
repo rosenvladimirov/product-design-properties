@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [18.0.1.7.1] - 2026-04-29
+
+### Added
+
+- **mrp_design_matrix_roller_garage_door** (18.0.1.0.0) — new industry module:
+  7 design params, full T0/T1/T2/T3 template, demo BoM with formula lines
+  and 3 O-variants (motor / side seals / wicket door).
+
 ## [18.0.1.7.0] - 2026-04-29
 
 ### Fixed

@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Roller Garage Door — Standard matrix template.
+
+    Design parameters:
+        width, height          — opening dimensions in mm (from base_dimensions)
+        slat_type              — galv_steel / pre_lacquered / insulated / perforated
+        drive_type             — torsion_spring / electric_side / electric_overhead / smart_remote
+        guide_type             — standard / heavy
+        spring_type            — torsion / lateral
+        has_bottom_seal        — boolean
+        has_side_seal          — boolean
+        has_wicket_door        — boolean
+
+    Slat properties by type:
+        galv_steel:     height_mm=77,  weight_kg_m2=2.6
+        pre_lacquered:  height_mm=77,  weight_kg_m2=2.8
+        insulated:      height_mm=100, weight_kg_m2=4.2
+        perforated:     height_mm=77,  weight_kg_m2=2.4
+
+    Guide rail weight:
+        standard:  2.8 kg/m
+        heavy:     4.2 kg/m
+
+    Bottom bar: 1.4 kg/m (always 1 piece × width)
+    Side seal strip: 0.3 kg/m (per side, 2 sides × height when has_side_seal)
+    Torsion spring: sized by width (≤3000 → 1 spring, >3000 → 2 springs)
+-->
+<odoo noupdate="1">
+
+  <!-- ── Workcenters ────────────────────────────────────────────────────── -->
+  <record id="wc_rgd_cutting" model="mrp.workcenter">
+    <field name="name">Slat Cutting — Garage Door</field>
+    <field name="code">RGDCUT</field>
+  </record>
+  <record id="wc_rgd_assembly" model="mrp.workcenter">
+    <field name="name">Garage Door Assembly</field>
+    <field name="code">RGDASM</field>
+  </record>
+  <record id="wc_rgd_motor" model="mrp.workcenter">
+    <field name="name">Motor Install &amp; Programming</field>
+    <field name="code">RGDMOT</field>
+  </record>
+  <record id="wc_rgd_qc" model="mrp.workcenter">
+    <field name="name">Quality Control — Garage Door</field>
+    <field name="code">RGDQC</field>
+  </record>
+
+  <!-- ── Matrix template ───────────────────────────────────────────────── -->
+  <record id="matrix_template_roller_garage_door_standard" model="mrp.matrix.template">
+    <field name="name">Roller Garage Door — Standard</field>
+    <field name="industry">roller_garage_door</field>
+    <field name="description">Standard roller garage door template.
+T0: dimension validation (min/max width/height, wicket door size requirements).
+T1: slat properties (height, weight/m²) and guide rail weight by type.
+T2: O-variant activation — motor (electric/smart), side seals, wicket door.
+T3: operations — slat cutting + assembly always; motor install when electric/smart; QC always.</field>
+
+    <!-- ── T0 — Constraints ──────────────────────────────────────────────── -->
+    <!--
+        Rules (hitPolicy: collect — all matching rules fire):
+        1. width = 0 → error
+        2. height = 0 → error
+        3. width < 1500 → error (too narrow for garage door)
+        4. width > 6000 → error (exceeds standard production range)
+        5. height < 1800 → error (minimum clearance)
+        6. height > 3500 → error (exceeds standard production range)
+        7. has_wicket_door AND width < 2500 → error (wicket door needs wider opening)
+        8. has_wicket_door AND height < 2000 → error (wicket door min height)
+        9. slat_type=insulated AND slat_type=perforated → impossible combination (not possible via UI, guard only)
+       10. width > 4500 AND guide_type=standard → warning (heavy-duty guides recommended)
+    -->
+    <field name="constraint_table" eval="
+        {
+            'nodes': [{
+                'id': 't0-rgd',
+                'name': 'T0 Constraints',
+                'type': 'decisionTable',
+                'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [
+                        {'id': 'width',          'name': 'width'},
+                        {'id': 'height',         'name': 'height'},
+                        {'id': 'has_wicket_door','name': 'has_wicket_door'},
+                        {'id': 'guide_type',     'name': 'guide_type'}
+                    ],
+                    'outputs': [
+                        {'id': 'level',   'name': 'level'},
+                        {'id': 'message', 'name': 'message'}
+                    ],
+                    'rules': [
+                        {
+                            'width':           '0',
+                            'height':          '',
+                            'has_wicket_door': '',
+                            'guide_type':      '',
+                            'level':   '&quot;error&quot;',
+                            'message': '&quot;Opening width must be greater than 0 mm.&quot;'
+                        },
+                        {
+                            'width':           '',
+                            'height':          '0',
+                            'has_wicket_door': '',
+                            'guide_type':      '',
+                            'level':   '&quot;error&quot;',
+                            'message': '&quot;Opening height must be greater than 0 mm.&quot;'
+                        },
+                        {
+                            'width':           '&lt; 1500',
+                            'height':          '',
+                            'has_wicket_door': '',
+                            'guide_type':      '',
+                            'level':   '&quot;error&quot;',
+                            'message': '&quot;Width must be at least 1500 mm for a garage door.&quot;'
+                        },
+                        {
+                            'width':           '&gt; 6000',
+                            'height':          '',
+                            'has_wicket_door': '',
+                            'guide_type':      '',
+                            'level':   '&quot;error&quot;',
+                            'message': '&quot;Width exceeds maximum production range (6000 mm).&quot;'
+                        },
+                        {
+                            'width':           '',
+                            'height':          '&lt; 1800',
+                            'has_wicket_door': '',
+                            'guide_type':      '',
+                            'level':   '&quot;error&quot;',
+                            'message': '&quot;Height must be at least 1800 mm for a garage door.&quot;'
+                        },
+                        {
+                            'width':           '',
+                            'height':          '&gt; 3500',
+                            'has_wicket_door': '',
+                            'guide_type':      '',
+                            'level':   '&quot;error&quot;',
+                            'message': '&quot;Height exceeds maximum production range (3500 mm).&quot;'
+                        },
+                        {
+                            'width':           '&lt; 2500',
+                            'height':          '',
+                            'has_wicket_door': 'true',
+                            'guide_type':      '',
+                            'level':   '&quot;error&quot;',
+                            'message': '&quot;Wicket door requires opening width of at least 2500 mm.&quot;'
+                        },
+                        {
+                            'width':           '',
+                            'height':          '&lt; 2000',
+                            'has_wicket_door': 'true',
+                            'guide_type':      '',
+                            'level':   '&quot;error&quot;',
+                            'message': '&quot;Wicket door requires opening height of at least 2000 mm.&quot;'
+                        },
+                        {
+                            'width':           '&gt; 4500',
+                            'height':          '',
+                            'has_wicket_door': '',
+                            'guide_type':      '&quot;standard&quot;',
+                            'level':   '&quot;warning&quot;',
+                            'message': '&quot;Width &gt; 4500 mm: heavy-duty C-guides are recommended.&quot;'
+                        }
+                    ]
+                }
+            }]
+        }
+    "/>
+
+    <!-- ── T1 — Geometry ─────────────────────────────────────────────────── -->
+    <!--
+        Outputs per slat_type:
+          slat_height_mm   — height of one slat profile in mm
+          slat_weight_m2   — weight of slat in kg/m²
+          guide_weight_m   — weight of one guide rail in kg/m (from guide_type)
+
+        Derived (computed by BoM formulas using these outputs):
+          slat_count   = ceil(height / slat_height_mm)
+          slat_area_m2 = width/1000 * slat_count * slat_height_mm/1000
+          slat_kg      = slat_area_m2 * slat_weight_m2
+          guide_kg     = 2 * height/1000 * guide_weight_m
+    -->
+    <field name="geometry_table" eval="
+        {
+            'nodes': [{
+                'id': 't1-rgd',
+                'name': 'T1 Geometry',
+                'type': 'decisionTable',
+                'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [
+                        {'id': 'slat_type',  'name': 'slat_type'},
+                        {'id': 'guide_type', 'name': 'guide_type'}
+                    ],
+                    'outputs': [
+                        {'id': 'slat_height_mm', 'name': 'slat_height_mm'},
+                        {'id': 'slat_weight_m2', 'name': 'slat_weight_m2'},
+                        {'id': 'guide_weight_m', 'name': 'guide_weight_m'}
+                    ],
+                    'rules': [
+                        {
+                            'slat_type':      '&quot;galv_steel&quot;',
+                            'guide_type':     '',
+                            'slat_height_mm': '77',
+                            'slat_weight_m2': '2.6',
+                            'guide_weight_m': ''
+                        },
+                        {
+                            'slat_type':      '&quot;pre_lacquered&quot;',
+                            'guide_type':     '',
+                            'slat_height_mm': '77',
+                            'slat_weight_m2': '2.8',
+                            'guide_weight_m': ''
+                        },
+                        {
+                            'slat_type':      '&quot;insulated&quot;',
+                            'guide_type':     '',
+                            'slat_height_mm': '100',
+                            'slat_weight_m2': '4.2',
+                            'guide_weight_m': ''
+                        },
+                        {
+                            'slat_type':      '&quot;perforated&quot;',
+                            'guide_type':     '',
+                            'slat_height_mm': '77',
+                            'slat_weight_m2': '2.4',
+                            'guide_weight_m': ''
+                        },
+                        {
+                            'slat_type':      '',
+                            'guide_type':     '&quot;standard&quot;',
+                            'slat_height_mm': '',
+                            'slat_weight_m2': '',
+                            'guide_weight_m': '2.8'
+                        },
+                        {
+                            'slat_type':      '',
+                            'guide_type':     '&quot;heavy&quot;',
+                            'slat_height_mm': '',
+                            'slat_weight_m2': '',
+                            'guide_weight_m': '4.2'
+                        }
+                    ]
+                }
+            }]
+        }
+    "/>
+
+    <!-- ── T2 — Materials (O-variant activation) ─────────────────────────── -->
+    <!--
+        O-variants activated by matrix rule (coeff_default=0 → matrix sets coeff>0):
+          motor-o        — electric motor (electric_side, electric_overhead, smart_remote)
+          side_seal-o    — side seal strips (has_side_seal=true)
+          wicket_door-o  — wicket door kit (has_wicket_door=true)
+
+        Fixed materials (coeff_default>0, always in BoM):
+          slats, guide rails, bottom bar, torsion spring assembly
+          are handled via BoM line formulas (not O-variant).
+    -->
+    <field name="material_table" eval="
+        {
+            'nodes': [{
+                'id': 't2-rgd',
+                'name': 'T2 Materials',
+                'type': 'decisionTable',
+                'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [
+                        {'id': 'drive_type',     'name': 'drive_type'},
+                        {'id': 'has_side_seal',  'name': 'has_side_seal'},
+                        {'id': 'has_wicket_door','name': 'has_wicket_door'}
+                    ],
+                    'outputs': [
+                        {'id': 'coeff_rule', 'name': 'coeff_rule'},
+                        {'id': 'coeff',      'name': 'coeff'}
+                    ],
+                    'rules': [
+                        {
+                            'drive_type':      '&quot;electric_side&quot;',
+                            'has_side_seal':   '',
+                            'has_wicket_door': '',
+                            'coeff_rule':      '&quot;motor-o&quot;',
+                            'coeff':           '1.0'
+                        },
+                        {
+                            'drive_type':      '&quot;electric_overhead&quot;',
+                            'has_side_seal':   '',
+                            'has_wicket_door': '',
+                            'coeff_rule':      '&quot;motor-o&quot;',
+                            'coeff':           '1.0'
+                        },
+                        {
+                            'drive_type':      '&quot;smart_remote&quot;',
+                            'has_side_seal':   '',
+                            'has_wicket_door': '',
+                            'coeff_rule':      '&quot;motor-o&quot;',
+                            'coeff':           '1.0'
+                        },
+                        {
+                            'drive_type':      '',
+                            'has_side_seal':   'true',
+                            'has_wicket_door': '',
+                            'coeff_rule':      '&quot;side_seal-o&quot;',
+                            'coeff':           '1.0'
+                        },
+                        {
+                            'drive_type':      '',
+                            'has_side_seal':   '',
+                            'has_wicket_door': 'true',
+                            'coeff_rule':      '&quot;wicket_door-o&quot;',
+                            'coeff':           '1.0'
+                        }
+                    ]
+                }
+            }]
+        }
+    "/>
+
+    <!-- ── T3 — Operations ───────────────────────────────────────────────── -->
+    <!--
+        Slat cutting + assembly always present.
+        Motor installation + programming when electric or smart_remote.
+        QC always.
+    -->
+    <field name="operation_table" eval="
+        {
+            'nodes': [{
+                'id': 't3-rgd',
+                'name': 'T3 Operations',
+                'type': 'decisionTable',
+                'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [
+                        {'id': 'drive_type', 'name': 'drive_type'}
+                    ],
+                    'outputs': [
+                        {'id': 'operation',       'name': 'operation'},
+                        {'id': 'workcenter_code', 'name': 'workcenter_code'}
+                    ],
+                    'rules': [
+                        {
+                            'drive_type':     '',
+                            'operation':       '&quot;Slat Cutting&quot;',
+                            'workcenter_code': '&quot;RGDCUT&quot;'
+                        },
+                        {
+                            'drive_type':     '',
+                            'operation':       '&quot;Assembly&quot;',
+                            'workcenter_code': '&quot;RGDASM&quot;'
+                        },
+                        {
+                            'drive_type':     '&quot;electric_side&quot;',
+                            'operation':       '&quot;Motor Install &amp; Programming&quot;',
+                            'workcenter_code': '&quot;RGDMOT&quot;'
+                        },
+                        {
+                            'drive_type':     '&quot;electric_overhead&quot;',
+                            'operation':       '&quot;Motor Install &amp; Programming&quot;',
+                            'workcenter_code': '&quot;RGDMOT&quot;'
+                        },
+                        {
+                            'drive_type':     '&quot;smart_remote&quot;',
+                            'operation':       '&quot;Motor Install &amp; Programming&quot;',
+                            'workcenter_code': '&quot;RGDMOT&quot;'
+                        },
+                        {
+                            'drive_type':     '',
+                            'operation':       '&quot;Quality Control&quot;',
+                            'workcenter_code': '&quot;RGDQC&quot;'
+                        }
+                    ]
+                }
+            }]
+        }
+    "/>
+
+  </record>
+
+</odoo>

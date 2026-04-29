@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Design parameter definitions for roller garage door manufacturers.
+
+    Dimensions (from base_dimensions parent):
+        width  — opening width in mm
+        height — opening height in mm
+
+    Industry-specific parameters:
+        slat_type      — panel material / profile
+        drive_type     — actuation mechanism
+        guide_type     — side guide rail profile
+        spring_type    — counterbalance spring system
+        has_bottom_seal   — rubber/brush bottom seal
+        has_side_seal     — perimeter brush/rubber seals
+        has_wicket_door   — integrated pedestrian door
+
+    Typical dimension ranges:
+        width:  1500–6000 mm
+        height: 1800–3500 mm
+-->
+<records>
+    <properties code="roller_garage_door" name="Roller Garage Door"
+                 industry="roller_garage_door" parent="base_dimensions">
+
+        <items name="slat_type">
+            <item name="type">selection</item>
+            <item name="selection">[
+                ["galv_steel","Galvanized Steel"],
+                ["pre_lacquered","Pre-lacquered Steel"],
+                ["insulated","Insulated Sandwich Panel"],
+                ["perforated","Perforated Steel"]
+            ]</item>
+            <item name="default">pre_lacquered</item>
+        </items>
+
+        <items name="drive_type">
+            <item name="type">selection</item>
+            <item name="selection">[
+                ["torsion_spring","Torsion Spring (manual)"],
+                ["electric_side","Electric Motor — Side-mounted"],
+                ["electric_overhead","Electric Motor — Overhead"],
+                ["smart_remote","Smart Remote (radio + app)"]
+            ]</item>
+            <item name="default">electric_side</item>
+        </items>
+
+        <items name="guide_type">
+            <item name="type">selection</item>
+            <item name="selection">[
+                ["standard","Standard C-guide"],
+                ["heavy","Heavy-duty C-guide"]
+            ]</item>
+            <item name="default">standard</item>
+        </items>
+
+        <items name="spring_type">
+            <item name="type">selection</item>
+            <item name="selection">[
+                ["torsion","Torsion (overhead shaft)"],
+                ["lateral","Lateral (side springs)"]
+            ]</item>
+            <item name="default">torsion</item>
+        </items>
+
+        <items name="has_bottom_seal">
+            <item name="type">boolean</item>
+            <item name="default">true</item>
+        </items>
+
+        <items name="has_side_seal">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+
+        <items name="has_wicket_door">
+            <item name="type">boolean</item>
+            <item name="default">false</item>
+        </items>
+
+    </properties>
+</records>

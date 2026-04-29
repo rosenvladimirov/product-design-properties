@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Finished product -->
+    <record id="product_tmpl_rgd_standard" model="product.template">
+        <field name="name">Roller Garage Door — Standard</field>
+        <field name="type">product</field>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="tracking">lot</field>
+    </record>
+    <record id="product_rgd_standard" model="product.product">
+        <field name="product_tmpl_id" ref="product_tmpl_rgd_standard"/>
+    </record>
+
+    <!-- Components -->
+    <record id="product_tmpl_rgd_slats" model="product.template">
+        <field name="name">Garage Door Slats (O-variant)</field>
+        <field name="type">product</field>
+        <field name="uom_id" ref="uom.product_uom_kg"/>
+    </record>
+    <record id="product_tmpl_rgd_guides" model="product.template">
+        <field name="name">Guide Rails C-profile</field>
+        <field name="type">product</field>
+        <field name="uom_id" ref="uom.product_uom_kg"/>
+    </record>
+    <record id="product_tmpl_rgd_bottom_bar" model="product.template">
+        <field name="name">Bottom Seal Bar</field>
+        <field name="type">product</field>
+        <field name="uom_id" ref="uom.product_uom_kg"/>
+    </record>
+    <record id="product_tmpl_rgd_spring" model="product.template">
+        <field name="name">Torsion Spring Assembly</field>
+        <field name="type">product</field>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+    </record>
+    <record id="product_tmpl_rgd_motor" model="product.template">
+        <field name="name">Garage Door Motor (O-variant)</field>
+        <field name="type">product</field>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+    </record>
+    <record id="product_tmpl_rgd_side_seal" model="product.template">
+        <field name="name">Side Seal Strip (O-variant)</field>
+        <field name="type">product</field>
+        <field name="uom_id" ref="uom.product_uom_kg"/>
+    </record>
+    <record id="product_tmpl_rgd_wicket_door" model="product.template">
+        <field name="name">Wicket Door Kit (O-variant)</field>
+        <field name="type">product</field>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+    </record>
+
+    <!-- Demo BoM -->
+    <record id="bom_rgd_standard" model="mrp.bom">
+        <field name="product_tmpl_id" ref="product_tmpl_rgd_standard"/>
+        <field name="product_qty">1</field>
+        <field name="product_uom_id" ref="uom.product_uom_unit"/>
+        <field name="type">normal</field>
+        <field name="design_param_definition_id"
+               ref="mrp_design_matrix_roller_garage_door.roller_garage_door"/>
+        <field name="matrix_template_id"
+               ref="matrix_template_roller_garage_door_standard"/>
+        <field name="constraint_table" eval="
+            ref('matrix_template_roller_garage_door_standard').constraint_table
+        "/>
+        <field name="geometry_table" eval="
+            ref('matrix_template_roller_garage_door_standard').geometry_table
+        "/>
+        <field name="material_table" eval="
+            ref('matrix_template_roller_garage_door_standard').material_table
+        "/>
+        <field name="operation_table" eval="
+            ref('matrix_template_roller_garage_door_standard').operation_table
+        "/>
+    </record>
+
+    <!-- BoM lines -->
+    <!-- Slats — weight from geometry: slat_count * width/1000 * slat_height_mm/1000 * slat_weight_m2 -->
+    <record id="bom_line_rgd_slats" model="mrp.bom.line">
+        <field name="bom_id" ref="bom_rgd_standard"/>
+        <field name="product_id" ref="product_tmpl_rgd_slats"/>
+        <field name="product_qty">1.0</field>
+        <field name="product_uom_id" ref="uom.product_uom_kg"/>
+        <field name="quantity_formula">
+import math
+slat_count = math.ceil(height / slat_height_mm) if slat_height_mm else 0
+quantity = (width / 1000) * slat_count * (slat_height_mm / 1000) * slat_weight_m2 * product_uom_qty
+        </field>
+        <field name="coeff_default">1.0</field>
+    </record>
+
+    <!-- Guide rails — 2 × height/1000 × guide_weight_m -->
+    <record id="bom_line_rgd_guides" model="mrp.bom.line">
+        <field name="bom_id" ref="bom_rgd_standard"/>
+        <field name="product_id" ref="product_tmpl_rgd_guides"/>
+        <field name="product_qty">1.0</field>
+        <field name="product_uom_id" ref="uom.product_uom_kg"/>
+        <field name="quantity_formula">
+quantity = 2 * (height / 1000) * guide_weight_m * product_uom_qty
+        </field>
+        <field name="coeff_default">1.0</field>
+    </record>
+
+    <!-- Bottom seal bar — 1.4 kg/m × width -->
+    <record id="bom_line_rgd_bottom_bar" model="mrp.bom.line">
+        <field name="bom_id" ref="bom_rgd_standard"/>
+        <field name="product_id" ref="product_tmpl_rgd_bottom_bar"/>
+        <field name="product_qty">1.0</field>
+        <field name="product_uom_id" ref="uom.product_uom_kg"/>
+        <field name="quantity_formula">
+quantity = (width / 1000) * 1.4 * product_uom_qty
+        </field>
+        <field name="coeff_default">1.0</field>
+    </record>
+
+    <!-- Torsion spring — 1 piece (width ≤ 3000) or 2 (width > 3000) -->
+    <record id="bom_line_rgd_spring" model="mrp.bom.line">
+        <field name="bom_id" ref="bom_rgd_standard"/>
+        <field name="product_id" ref="product_tmpl_rgd_spring"/>
+        <field name="product_qty">1.0</field>
+        <field name="product_uom_id" ref="uom.product_uom_unit"/>
+        <field name="quantity_formula">
+quantity = (2 if width > 3000 else 1) * product_uom_qty
+        </field>
+        <field name="coeff_default">1.0</field>
+    </record>
+
+    <!-- Motor — O-variant (coeff=0, activated by T2 rule motor-o) -->
+    <record id="bom_line_rgd_motor" model="mrp.bom.line">
+        <field name="bom_id" ref="bom_rgd_standard"/>
+        <field name="product_id" ref="product_tmpl_rgd_motor"/>
+        <field name="product_qty">1.0</field>
+        <field name="product_uom_id" ref="uom.product_uom_unit"/>
+        <field name="coeff_default">0.0</field>
+        <field name="matrix_coeff_rule">motor-o</field>
+    </record>
+
+    <!-- Side seal — O-variant (coeff=0, activated by T2 rule side_seal-o) -->
+    <!-- qty formula: 0.3 kg/m × 2 sides × height -->
+    <record id="bom_line_rgd_side_seal" model="mrp.bom.line">
+        <field name="bom_id" ref="bom_rgd_standard"/>
+        <field name="product_id" ref="product_tmpl_rgd_side_seal"/>
+        <field name="product_qty">1.0</field>
+        <field name="product_uom_id" ref="uom.product_uom_kg"/>
+        <field name="quantity_formula">
+quantity = 2 * (height / 1000) * 0.3 * product_uom_qty
+        </field>
+        <field name="coeff_default">0.0</field>
+        <field name="matrix_coeff_rule">side_seal-o</field>
+    </record>
+
+    <!-- Wicket door — O-variant (coeff=0, activated by T2 rule wicket_door-o) -->
+    <record id="bom_line_rgd_wicket_door" model="mrp.bom.line">
+        <field name="bom_id" ref="bom_rgd_standard"/>
+        <field name="product_id" ref="product_tmpl_rgd_wicket_door"/>
+        <field name="product_qty">1.0</field>
+        <field name="product_uom_id" ref="uom.product_uom_unit"/>
+        <field name="coeff_default">0.0</field>
+        <field name="matrix_coeff_rule">wicket_door-o</field>
+    </record>
+
+</odoo>
