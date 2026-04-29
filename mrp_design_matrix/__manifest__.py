@@ -24,7 +24,7 @@
         "stock_move_forced_lot_multi",
     ],
     "external_dependencies": {
-        "python": ["zen"],
+        "python": ["zen-engine"],
     },
     "data": [
         "security/ir.model.access.csv",
