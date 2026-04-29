@@ -7,8 +7,7 @@
     display: grid;
     grid-template-columns: 280px 1fr;
     gap: 0;
-    min-height: 500px;
-    max-height: 70vh;
+    height: clamp(500px, 65vh, 900px);
 }
 
 // ── Left panel: param controls ──────────────────────────────────────
@@ -17,6 +16,7 @@
     padding: 12px;
     border-right: 1px solid #dee2e6;
     overflow-y: auto;
+    min-height: 0;
     background: #fff;
 }
 
@@ -123,5 +123,6 @@
 // ── Right panel ─────────────────────────────────────────────────────
 
 .o_matrix_preview_right {
-    overflow-y: auto;
+    overflow-y: hidden;
+    min-height: 0;
 }

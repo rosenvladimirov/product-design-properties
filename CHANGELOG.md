@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [18.0.1.7.4] - 2026-04-29
+
+### Fixed
+
+- **mrp_design_matrix** (18.0.1.7.1) — MatrixPreviewDialog scroll fix:
+  grid layout uses `height: clamp(500px, 65vh, 900px)` instead of `max-height`;
+  both panels get `min-height: 0` so grid children can scroll properly;
+  right panel changed to `overflow-y: hidden` — inner `RuleMatrixPreview` owns the scroll.
+
 ## [18.0.1.7.3] - 2026-04-29
 
 ### Added
