@@ -1,14 +1,241 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Corrugated Box — Standard matrix template.
+
+    Design parameters (from corrugated design.param.definition):
+        box_l, box_w, box_d   — internal dimensions in mm
+        board_type            — E / B / C / BC
+        grammage_outer/medium/inner — g/m²
+        has_print             — boolean
+        die_cut               — boolean
+
+    Blank geometry (RSC — Regular Slotted Container):
+        blank_length_mm = 2*(box_l + box_w) + 35   (+35 mm joining strip)
+        blank_height_mm = box_d + box_w             (flaps = W/2 each side)
+        area_m2         = blank_length * blank_height / 1 000 000
+
+    Flute take-up factors (medium weight multiplier):
+        E → 1.25 | B → 1.35 | C → 1.45 | BC (double-wall) → 2.80
+-->
 <odoo noupdate="1">
+
   <record id="matrix_template_corrugated_standard" model="mrp.matrix.template">
     <field name="name">Corrugated Box — Standard</field>
     <field name="industry">corrugated</field>
-    <field name="description">C/B/E/BC flute carton. T1 chained: dims+board_type to effective_area
-and liner_combo; liner_combo to grammages. T2: kg liner outer/inner/medium.
-T3: print (has_print), die-cut (die_cut). Trim optimizer is external.</field>
-    <field name="constraint_table" eval="{}"/>
-    <field name="geometry_table"   eval="{}"/>
-    <field name="material_table"   eval="{}"/>
-    <field name="operation_table"  eval="{}"/>
+    <field name="description">RSC (Regular Slotted Container). E/B/C/BC flute.
+T0: non-zero dimension checks.
+T1: blank dimensions + flute_factor by board_type.
+T2: liner outer/inner and medium weights in kg.
+T3: conditional operations — Score+Fold always; Flexo Print when has_print; Die-Cut when die_cut.</field>
+
+    <!-- ── T0 — Constraints ──────────────────────────────────────────────── -->
+    <field name="constraint_table" eval="
+        {
+            'nodes': [{
+                'id': 't0-corrugated',
+                'name': 'T0 Constraints',
+                'type': 'decisionTable',
+                'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [
+                        {'id': 'box_l', 'name': 'box_l'},
+                        {'id': 'box_w', 'name': 'box_w'},
+                        {'id': 'box_d', 'name': 'box_d'}
+                    ],
+                    'outputs': [
+                        {'id': 'level',   'name': 'level'},
+                        {'id': 'message', 'name': 'message'}
+                    ],
+                    'rules': [
+                        {
+                            'box_l': '0',
+                            'box_w': '',
+                            'box_d': '',
+                            'level':   '&quot;error&quot;',
+                            'message': '&quot;Box length L must be greater than 0 mm.&quot;'
+                        },
+                        {
+                            'box_l': '',
+                            'box_w': '0',
+                            'box_d': '',
+                            'level':   '&quot;error&quot;',
+                            'message': '&quot;Box width W must be greater than 0 mm.&quot;'
+                        },
+                        {
+                            'box_l': '',
+                            'box_w': '',
+                            'box_d': '0',
+                            'level':   '&quot;error&quot;',
+                            'message': '&quot;Box depth D must be greater than 0 mm.&quot;'
+                        }
+                    ]
+                }
+            }]
+        }
+    "/>
+
+    <!-- ── T1 — Geometry ─────────────────────────────────────────────────── -->
+    <!--
+        Outputs expressions (strings) to be evaluated by the BoM engine:
+          blank_l_expr : mm formula for blank length (RSC circumference + join)
+          blank_h_expr : mm formula for blank height  (depth + width for flaps)
+          flute_factor : numeric multiplier for medium weight calculation
+    -->
+    <field name="geometry_table" eval="
+        {
+            'nodes': [{
+                'id': 't1-corrugated',
+                'name': 'T1 Geometry',
+                'type': 'decisionTable',
+                'content': {
+                    'hitPolicy': 'first',
+                    'inputs': [
+                        {'id': 'board_type', 'name': 'board_type'}
+                    ],
+                    'outputs': [
+                        {'id': 'flute_factor',  'name': 'flute_factor'},
+                        {'id': 'blank_l_expr',  'name': 'blank_l_expr'},
+                        {'id': 'blank_h_expr',  'name': 'blank_h_expr'}
+                    ],
+                    'rules': [
+                        {
+                            'board_type':   '&quot;BC&quot;',
+                            'flute_factor': '2.80',
+                            'blank_l_expr': '&quot;2*(box_l+box_w)+35&quot;',
+                            'blank_h_expr': '&quot;box_d+box_w&quot;'
+                        },
+                        {
+                            'board_type':   '&quot;C&quot;',
+                            'flute_factor': '1.45',
+                            'blank_l_expr': '&quot;2*(box_l+box_w)+35&quot;',
+                            'blank_h_expr': '&quot;box_d+box_w&quot;'
+                        },
+                        {
+                            'board_type':   '&quot;B&quot;',
+                            'flute_factor': '1.35',
+                            'blank_l_expr': '&quot;2*(box_l+box_w)+35&quot;',
+                            'blank_h_expr': '&quot;box_d+box_w&quot;'
+                        },
+                        {
+                            'board_type':   '&quot;E&quot;',
+                            'flute_factor': '1.25',
+                            'blank_l_expr': '&quot;2*(box_l+box_w)+35&quot;',
+                            'blank_h_expr': '&quot;box_d+box_w&quot;'
+                        }
+                    ]
+                }
+            }]
+        }
+    "/>
+
+    <!-- ── T2 — Materials ────────────────────────────────────────────────── -->
+    <!--
+        Outputs material_role and a qty_expr (kg formula, dims in mm):
+          outer/inner liner  kg = grammage / 1000 * area_m2
+          medium (fluting)   kg = grammage / 1000 * flute_factor * area_m2
+          area_m2 = (2*(box_l+box_w)+35) * (box_d+box_w) / 1e6
+        Blank area is expanded inline (no cross-node variable passing).
+    -->
+    <field name="material_table" eval="
+        {
+            'nodes': [{
+                'id': 't2-corrugated',
+                'name': 'T2 Materials',
+                'type': 'decisionTable',
+                'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [
+                        {'id': 'board_type', 'name': 'board_type'}
+                    ],
+                    'outputs': [
+                        {'id': 'material_role', 'name': 'material_role'},
+                        {'id': 'qty_expr',      'name': 'qty_expr'}
+                    ],
+                    'rules': [
+                        {
+                            'board_type':    '',
+                            'material_role': '&quot;outer_liner_kg&quot;',
+                            'qty_expr':      '&quot;grammage_outer/1000*(2*(box_l+box_w)+35)*(box_d+box_w)/1e6&quot;'
+                        },
+                        {
+                            'board_type':    '',
+                            'material_role': '&quot;inner_liner_kg&quot;',
+                            'qty_expr':      '&quot;grammage_inner/1000*(2*(box_l+box_w)+35)*(box_d+box_w)/1e6&quot;'
+                        },
+                        {
+                            'board_type':    '&quot;BC&quot;',
+                            'material_role': '&quot;medium_kg&quot;',
+                            'qty_expr':      '&quot;grammage_medium/1000*2.80*(2*(box_l+box_w)+35)*(box_d+box_w)/1e6&quot;'
+                        },
+                        {
+                            'board_type':    '&quot;C&quot;',
+                            'material_role': '&quot;medium_kg&quot;',
+                            'qty_expr':      '&quot;grammage_medium/1000*1.45*(2*(box_l+box_w)+35)*(box_d+box_w)/1e6&quot;'
+                        },
+                        {
+                            'board_type':    '&quot;B&quot;',
+                            'material_role': '&quot;medium_kg&quot;',
+                            'qty_expr':      '&quot;grammage_medium/1000*1.35*(2*(box_l+box_w)+35)*(box_d+box_w)/1e6&quot;'
+                        },
+                        {
+                            'board_type':    '&quot;E&quot;',
+                            'material_role': '&quot;medium_kg&quot;',
+                            'qty_expr':      '&quot;grammage_medium/1000*1.25*(2*(box_l+box_w)+35)*(box_d+box_w)/1e6&quot;'
+                        }
+                    ]
+                }
+            }]
+        }
+    "/>
+
+    <!-- ── T3 — Operations ───────────────────────────────────────────────── -->
+    <!--
+        Score+Fold always present (blank row = any input).
+        Flexo Print added when has_print = true.
+        Die-Cut added when die_cut = true.
+        workcenter_code must match an mrp.workcenter with that code in the DB.
+    -->
+    <field name="operation_table" eval="
+        {
+            'nodes': [{
+                'id': 't3-corrugated',
+                'name': 'T3 Operations',
+                'type': 'decisionTable',
+                'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [
+                        {'id': 'has_print', 'name': 'has_print'},
+                        {'id': 'die_cut',   'name': 'die_cut'}
+                    ],
+                    'outputs': [
+                        {'id': 'operation',       'name': 'operation'},
+                        {'id': 'workcenter_code', 'name': 'workcenter_code'}
+                    ],
+                    'rules': [
+                        {
+                            'has_print':       '',
+                            'die_cut':         '',
+                            'operation':       '&quot;Score and Fold&quot;',
+                            'workcenter_code': '&quot;SCORE&quot;'
+                        },
+                        {
+                            'has_print':       'true',
+                            'die_cut':         '',
+                            'operation':       '&quot;Flexo Print&quot;',
+                            'workcenter_code': '&quot;PRINT&quot;'
+                        },
+                        {
+                            'has_print':       '',
+                            'die_cut':         'true',
+                            'operation':       '&quot;Die Cut&quot;',
+                            'workcenter_code': '&quot;DIECUT&quot;'
+                        }
+                    ]
+                }
+            }]
+        }
+    "/>
+
   </record>
+
 </odoo>

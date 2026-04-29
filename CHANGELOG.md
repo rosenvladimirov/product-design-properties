@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [18.0.1.7.0] - 2026-04-29
+
+### Fixed
+
+- **mrp_design_matrix** (18.0.1.7.0) — zen-engine >=0.50 compatibility:
+  legacy node type migration, `field` injection, bare-table wrapping,
+  `hitPolicy: collect` list output normalization.
+- **design_param_base** (18.0.1.0.3) — coerce XML `default` string to
+  declared type (integer/float/boolean) to prevent Owl widget crashes.
+- **mrp_design_matrix_corrugated** (18.0.1.1.0) — full T0/T1/T2/T3 matrix
+  template for RSC corrugated boxes (was empty `eval="{}"`).
+
 ## [18.0.1.6.0] - 2026-04-02
 
 ### Added

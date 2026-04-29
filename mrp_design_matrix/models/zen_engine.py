@@ -125,15 +125,132 @@ class ZenWrapper:
 
         engine = cls._get_engine()
 
-        if isinstance(table_json, dict):
-            content = json.dumps(table_json)
+        # Normalise to dict so we can migrate deprecated node types
+        if isinstance(table_json, str):
+            try:
+                data = json.loads(table_json)
+            except Exception:
+                data = None
+        else:
+            data = table_json
+
+        if isinstance(data, dict):
+            data = cls._migrate_node_types(data)
+            content = json.dumps(data)
         else:
             content = table_json
 
         try:
             decision = engine.create_decision(content)
             result = decision.evaluate(context)
-            return result.get("result", result)
+            payload = result.get("result", result)
+            return cls._normalize_payload(payload)
         except Exception as e:
             _logger.error("GoRules evaluation error: %s", e)
             raise UserError(_("Design matrix evaluation error: %s") % e) from e
+
+    @classmethod
+    def _normalize_payload(cls, payload):
+        """Normalise engine output to the legacy dict form expected by callers.
+
+        Older GoRules engines returned ``{"errors": [...], "warnings": [...], ...}``.
+        Newer engines may return a list of matched rule outputs (for hitPolicy
+        "collect") or an empty dict when nothing matched.  Callers of
+        ``evaluate()`` still want a dict with ``errors``/``warnings`` keys —
+        so we bucket list items by the ``level`` field (case-insensitive).
+        """
+        if isinstance(payload, list):
+            errors, warnings, others = [], [], []
+            for item in payload:
+                if not isinstance(item, dict):
+                    others.append(item)
+                    continue
+                level = str(item.get("level", "")).strip().strip('"').lower()
+                if level == "error":
+                    errors.append(item)
+                elif level == "warning":
+                    warnings.append(item)
+                else:
+                    others.append(item)
+            out = {"errors": errors, "warnings": warnings}
+            if others:
+                out["result"] = others
+            return out
+        if isinstance(payload, dict):
+            return payload
+        return {"result": payload}
+
+    # Newer zen-engine versions (>=0.50) renamed node types:
+    #   decisionTable → decisionTableNode
+    #   expression    → expressionNode
+    #   switch        → switchNode
+    #   function      → functionNode
+    #   inputNode/outputNode stayed the same.
+    _NODE_TYPE_ALIASES = {
+        "decisionTable": "decisionTableNode",
+        "expression": "expressionNode",
+        "switch": "switchNode",
+        "function": "functionNode",
+    }
+
+    @classmethod
+    def _migrate_node_types(cls, data: dict) -> dict:
+        """Rewrite legacy GoRules JDM node types to the v0.50+ graph format.
+
+        Migrations applied:
+        - Rename ``type`` on each node per ``_NODE_TYPE_ALIASES``.
+        - Fill ``field`` on inputs/outputs of decision-table nodes.
+        - Wrap the graph with ``inputNode`` + ``outputNode`` + ``edges``
+          if the stored graph is just a bare list of decision-table nodes.
+        """
+        nodes = data.get("nodes")
+        if not isinstance(nodes, list):
+            return data
+        for node in nodes:
+            if not isinstance(node, dict):
+                continue
+            old_type = node.get("type")
+            new_type = cls._NODE_TYPE_ALIASES.get(old_type)
+            if new_type:
+                node["type"] = new_type
+            content = node.get("content") or {}
+            for key in ("inputs", "outputs"):
+                items = content.get(key)
+                if not isinstance(items, list):
+                    continue
+                for col in items:
+                    if isinstance(col, dict) and "field" not in col:
+                        col["field"] = col.get("name") or col.get("id") or ""
+
+        # Engine >=0.50 needs an inputNode and outputNode with edges.
+        has_input = any(n.get("type") == "inputNode" for n in nodes if isinstance(n, dict))
+        has_output = any(n.get("type") == "outputNode" for n in nodes if isinstance(n, dict))
+        if not (has_input and has_output):
+            first_dt = next(
+                (n for n in nodes if isinstance(n, dict) and n.get("type") == "decisionTableNode"),
+                None,
+            )
+            if first_dt:
+                input_node = {"id": "zen_input", "type": "inputNode", "name": "Input"}
+                output_node = {"id": "zen_output", "type": "outputNode", "name": "Output"}
+                if not has_input:
+                    nodes.insert(0, input_node)
+                if not has_output:
+                    nodes.append(output_node)
+                edges = data.get("edges") or []
+                existing = {(e.get("sourceId"), e.get("targetId")) for e in edges if isinstance(e, dict)}
+                to_add = []
+                if ("zen_input", first_dt.get("id")) not in existing:
+                    to_add.append({
+                        "id": "zen_edge_in",
+                        "sourceId": "zen_input",
+                        "targetId": first_dt.get("id"),
+                    })
+                if (first_dt.get("id"), "zen_output") not in existing:
+                    to_add.append({
+                        "id": "zen_edge_out",
+                        "sourceId": first_dt.get("id"),
+                        "targetId": "zen_output",
+                    })
+                data["edges"] = edges + to_add
+        return data

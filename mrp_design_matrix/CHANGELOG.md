@@ -4,6 +4,19 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.7.0] - 2026-04-29
+
+### Fixed
+
+- zen-engine >=0.50 compatibility: migrate legacy node types (`decisionTable` →
+  `decisionTableNode`, `expression` → `expressionNode`, etc.) on every evaluate call.
+- zen-engine >=0.50: inject missing `field` property on decision table
+  inputs/outputs columns so the engine no longer rejects stored BoM tables.
+- zen-engine >=0.50: wrap bare decision-table graphs (no `inputNode`/`outputNode`)
+  with the required graph frame and edge stitching automatically.
+- Normalize list output from `hitPolicy: collect` tables to the legacy
+  `{"errors": [...], "warnings": [...]}` dict form expected by all callers.
+
 ## [18.0.1.6.0] - 2026-04-06
 
 ### Added
