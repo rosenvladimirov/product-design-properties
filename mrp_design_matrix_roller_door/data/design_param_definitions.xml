@@ -18,7 +18,7 @@
         </items>
         <items name="box_size">
             <item name="type">selection</item>
-            <item name="selection">[["137","137x137 мм"],["165","165x165 мм"],["180","180x180 мм"]]</item>
+            <item name="selection">[["137","137x137 мм"],["165","165x165 мм"],["180","180x180 мм"],["205","205x205 мм"]]</item>
             <item name="default">165</item>
         </items>
         <items name="guide_type">

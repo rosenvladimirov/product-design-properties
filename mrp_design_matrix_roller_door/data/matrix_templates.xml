@@ -1,32 +1,348 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo noupdate="1">
-        <!-- Workcenters -->
-        <record id="wc_slat_cutting" model="mrp.workcenter">
-            <field name="name">Slat Cutting</field>
-            <field name="code">RSCUT</field>
-        </record>
-        <record id="wc_assembly" model="mrp.workcenter">
-            <field name="name">Roller Shutter Assembly</field>
-            <field name="code">RSASM</field>
-        </record>
-        <record id="wc_motor_install" model="mrp.workcenter">
-            <field name="name">Motor Installation &amp; Programming</field>
-            <field name="code">RSMOT</field>
-        </record>
+<!--
+    Roller Shutter — Standard matrix template.
 
-        <!-- Matrix template -->
-        <record id="matrix_template_roller_shutter" model="mrp.matrix.template">
-            <field name="name">Roller Shutter — Standard</field>
-            <field name="industry">doors</field>
-            <field name="description">
-                T0: PC+insulation error, width/height limits, manual+wide warning.
-                T1: slat weight, min box size, slat height from slat_type.
-                T2: motor/crank/insulation/mosquito O-variant activation.
-                T3: motor install+programming ops if electric/radio.
-            </field>
-            <field name="constraint_table" eval="{}"/>
-            <field name="geometry_table"   eval="{}"/>
-            <field name="material_table"   eval="{}"/>
-            <field name="operation_table"  eval="{}"/>
-        </record>
-    </odoo>
+    Design parameters:
+        width, height        — opening in mm (base_dimensions)
+        slat_type            — PVC | AL | AL_foam | PC
+        drive_type           — manual | chain | electric | radio
+        box_size             — 137 | 165 | 180 | 205
+        guide_type           — PVC_double | AL_feather
+        has_insulation       — boolean
+        has_mosquito_net     — boolean
+
+    Excel BoM reference ("roller shuters.xlsx"):
+        Slat 40 profile (PVC/AL/AL_foam): slat_height_mm = 40
+        Slat 50 profile (PC):             slat_height_mm = 50
+
+    Key formulas (derived from Excel):
+        AL Guide (703001)       = 2 × (height − box_mm) / 1000 м
+        Brush Guide (730043)    = AL_Guide × 2
+        Gasket XMO (1052001)   = (height − 72) / 1000 м
+        Terminal (704005)       = (height − 72) / 1000 м
+        Box / Standard (701001) = (width − 10) / 1000 м
+        Axis 40 (723040)       = (width − 55) / 1000 м  [manual/chain]
+        Axis 60 (723041)       = (width − 70) / 1000 м  [electric/radio]
+        slat_count             = ceil((height − box_mm/2) / slat_height_mm)
+        slat_linear_m          = slat_count × (width − 72) / 1000
+        Security springs (727044): max(2, floor((height − box_mm) / 500) + 1)
+        Taps WT-900 (733069):  max(6, ceil(AL_Guide / 0.5) + 3)  [approx]
+
+    Shaft collar diameter by box (Axis sheet):
+        137 → 125 mm | 165 → 150 mm | 180 → 170 mm | 205 → 195 mm
+-->
+<odoo noupdate="1">
+
+  <!-- Workcenters (reuse existing ids) -->
+  <record id="wc_slat_cutting" model="mrp.workcenter">
+    <field name="name">Slat Cutting</field>
+    <field name="code">RSCUT</field>
+  </record>
+  <record id="wc_assembly" model="mrp.workcenter">
+    <field name="name">Roller Shutter Assembly</field>
+    <field name="code">RSASM</field>
+  </record>
+  <record id="wc_motor_install" model="mrp.workcenter">
+    <field name="name">Motor Installation &amp; Programming</field>
+    <field name="code">RSMOT</field>
+  </record>
+
+  <record id="matrix_template_roller_shutter" model="mrp.matrix.template">
+    <field name="name">Roller Shutter — Standard</field>
+    <field name="industry">doors</field>
+    <field name="description">T0: PC+insulation error, dimension limits (width≤3300, height per box_size), manual+wide warning.
+T1: slat_height_mm + slat_weight_kg_m2 + min_box_size by slat_type; axis/shaft data by drive_type+box_size.
+T2: O-variant activation — motor (electric/radio), crank (chain), insulation, mosquito net.
+T3: motor install + programming workorder when drive is electric or radio.</field>
+
+    <!-- ── T0 — Constraints ──────────────────────────────────────────────── -->
+    <field name="constraint_table" eval="
+        {
+            'nodes': [{
+                'id': 't0-roller',
+                'name': 'T0 Constraints',
+                'type': 'decisionTable',
+                'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [
+                        {'id': 'slat_type',      'name': 'slat_type'},
+                        {'id': 'drive_type',     'name': 'drive_type'},
+                        {'id': 'box_size',       'name': 'box_size'},
+                        {'id': 'width',          'name': 'width'},
+                        {'id': 'height',         'name': 'height'},
+                        {'id': 'has_insulation', 'name': 'has_insulation'}
+                    ],
+                    'outputs': [
+                        {'id': 'level',   'name': 'level'},
+                        {'id': 'message', 'name': 'message'}
+                    ],
+                    'rules': [
+                        {
+                            'slat_type':      '&quot;PC&quot;',
+                            'drive_type':     '',
+                            'box_size':       '',
+                            'width':          '',
+                            'height':         '',
+                            'has_insulation': 'true',
+                            'level':   '&quot;error&quot;',
+                            'message': '&quot;Polycarbonate slats cannot be combined with insulation.&quot;'
+                        },
+                        {
+                            'slat_type':      '',
+                            'drive_type':     '',
+                            'box_size':       '',
+                            'width':          '&lt; 500',
+                            'height':         '',
+                            'has_insulation': '',
+                            'level':   '&quot;error&quot;',
+                            'message': '&quot;Minimum width is 500 mm.&quot;'
+                        },
+                        {
+                            'slat_type':      '',
+                            'drive_type':     '',
+                            'box_size':       '',
+                            'width':          '&gt; 3300',
+                            'height':         '',
+                            'has_insulation': '',
+                            'level':   '&quot;error&quot;',
+                            'message': '&quot;Maximum width is 3300 mm.&quot;'
+                        },
+                        {
+                            'slat_type':      '',
+                            'drive_type':     '',
+                            'box_size':       '',
+                            'width':          '',
+                            'height':         '&lt; 300',
+                            'has_insulation': '',
+                            'level':   '&quot;error&quot;',
+                            'message': '&quot;Minimum height is 300 mm.&quot;'
+                        },
+                        {
+                            'slat_type':      '',
+                            'drive_type':     '',
+                            'box_size':       '',
+                            'width':          '',
+                            'height':         '&gt; 3500',
+                            'has_insulation': '',
+                            'level':   '&quot;error&quot;',
+                            'message': '&quot;Maximum height is 3500 mm.&quot;'
+                        },
+                        {
+                            'slat_type':      '',
+                            'drive_type':     '&quot;manual&quot;',
+                            'box_size':       '',
+                            'width':          '&gt; 2000',
+                            'height':         '',
+                            'has_insulation': '',
+                            'level':   '&quot;warning&quot;',
+                            'message': '&quot;Width &gt; 2000 mm with cord drive — electric motor recommended.&quot;'
+                        },
+                        {
+                            'slat_type':      '',
+                            'drive_type':     '',
+                            'box_size':       '&quot;137&quot;',
+                            'width':          '',
+                            'height':         '&gt; 1500',
+                            'has_insulation': '',
+                            'level':   '&quot;warning&quot;',
+                            'message': '&quot;Box 137mm: max recommended height 1500 mm. Consider box 165mm.&quot;'
+                        },
+                        {
+                            'slat_type':      '',
+                            'drive_type':     '',
+                            'box_size':       '&quot;165&quot;',
+                            'width':          '',
+                            'height':         '&gt; 2400',
+                            'has_insulation': '',
+                            'level':   '&quot;warning&quot;',
+                            'message': '&quot;Box 165mm: max recommended height 2400 mm. Consider box 180mm.&quot;'
+                        },
+                        {
+                            'slat_type':      '',
+                            'drive_type':     '',
+                            'box_size':       '&quot;180&quot;',
+                            'width':          '',
+                            'height':         '&gt; 2800',
+                            'has_insulation': '',
+                            'level':   '&quot;warning&quot;',
+                            'message': '&quot;Box 180mm: max recommended height 2800 mm. Consider box 205mm.&quot;'
+                        }
+                    ]
+                }
+            }]
+        }
+    "/>
+
+    <!-- ── T1 — Geometry ─────────────────────────────────────────────────── -->
+    <!--
+        hitPolicy: first — matches on slat_type, returns slat geometry.
+        BoM formulas compute axis length directly from drive_type
+        (Axis40 = width-55, Axis60 = width-70) without needing T1.
+
+        Slat weights from Excel reference (2.68 kg/m² for Slat 40/AL).
+        min_box_size: minimum box required to accommodate the rolled curtain.
+
+        slat_type  | profile_mm | weight_kg_m2 | min_box
+        PVC        |    40      |    2.20      |   137
+        AL         |    40      |    2.68      |   137
+        AL_foam    |    40      |    3.80      |   165
+        PC         |    50      |    3.00      |   137
+    -->
+    <field name="geometry_table" eval="
+        {
+            'nodes': [{
+                'id': 't1-roller',
+                'name': 'T1 Geometry',
+                'type': 'decisionTable',
+                'content': {
+                    'hitPolicy': 'first',
+                    'inputs': [
+                        {'id': 'slat_type', 'name': 'slat_type'}
+                    ],
+                    'outputs': [
+                        {'id': 'slat_height_mm',  'name': 'slat_height_mm'},
+                        {'id': 'slat_weight_kg_m2','name': 'slat_weight_kg_m2'},
+                        {'id': 'min_box_size',    'name': 'min_box_size'}
+                    ],
+                    'rules': [
+                        {
+                            'slat_type':          '&quot;PVC&quot;',
+                            'slat_height_mm':     '40',
+                            'slat_weight_kg_m2':  '2.20',
+                            'min_box_size':       '&quot;137&quot;'
+                        },
+                        {
+                            'slat_type':          '&quot;AL&quot;',
+                            'slat_height_mm':     '40',
+                            'slat_weight_kg_m2':  '2.68',
+                            'min_box_size':       '&quot;137&quot;'
+                        },
+                        {
+                            'slat_type':          '&quot;AL_foam&quot;',
+                            'slat_height_mm':     '40',
+                            'slat_weight_kg_m2':  '3.80',
+                            'min_box_size':       '&quot;165&quot;'
+                        },
+                        {
+                            'slat_type':          '&quot;PC&quot;',
+                            'slat_height_mm':     '50',
+                            'slat_weight_kg_m2':  '3.00',
+                            'min_box_size':       '&quot;137&quot;'
+                        }
+                    ]
+                }
+            }]
+        }
+    "/>
+
+    <!-- ── T2 — Materials (O-variant activation) ─────────────────────────── -->
+    <!--
+        bom_line_coeff_key matches mrp.bom.line.matrix_coeff_rule.
+        O-variants:
+          motor-o       — Somfy motor (electric/radio drive)
+          crank-o       — Crank / chain drive handle
+          insulation-o  — Insulation kit (AL_foam upgrade)
+          mosquito-o    — Mosquito net kit
+    -->
+    <field name="material_table" eval="
+        {
+            'nodes': [{
+                'id': 't2-roller',
+                'name': 'T2 Materials',
+                'type': 'decisionTable',
+                'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [
+                        {'id': 'drive_type',       'name': 'drive_type'},
+                        {'id': 'has_insulation',   'name': 'has_insulation'},
+                        {'id': 'has_mosquito_net', 'name': 'has_mosquito_net'}
+                    ],
+                    'outputs': [
+                        {'id': 'bom_line_coeff_key', 'name': 'bom_line_coeff_key'},
+                        {'id': 'coefficient',        'name': 'coefficient'}
+                    ],
+                    'rules': [
+                        {
+                            'drive_type':       '&quot;electric&quot;',
+                            'has_insulation':   '',
+                            'has_mosquito_net': '',
+                            'bom_line_coeff_key': '&quot;motor-o&quot;',
+                            'coefficient':        '1.0'
+                        },
+                        {
+                            'drive_type':       '&quot;radio&quot;',
+                            'has_insulation':   '',
+                            'has_mosquito_net': '',
+                            'bom_line_coeff_key': '&quot;motor-o&quot;',
+                            'coefficient':        '1.0'
+                        },
+                        {
+                            'drive_type':       '&quot;chain&quot;',
+                            'has_insulation':   '',
+                            'has_mosquito_net': '',
+                            'bom_line_coeff_key': '&quot;crank-o&quot;',
+                            'coefficient':        '1.0'
+                        },
+                        {
+                            'drive_type':       '',
+                            'has_insulation':   'true',
+                            'has_mosquito_net': '',
+                            'bom_line_coeff_key': '&quot;insulation-o&quot;',
+                            'coefficient':        '1.0'
+                        },
+                        {
+                            'drive_type':       '',
+                            'has_insulation':   '',
+                            'has_mosquito_net': 'true',
+                            'bom_line_coeff_key': '&quot;mosquito-o&quot;',
+                            'coefficient':        '1.0'
+                        }
+                    ]
+                }
+            }]
+        }
+    "/>
+
+    <!-- ── T3 — Operations ───────────────────────────────────────────────── -->
+    <!--
+        Slat cutting and assembly are permanent BoM routing operations.
+        T3 adds motor install + programming only for motorised drives.
+    -->
+    <field name="operation_table" eval="
+        {
+            'nodes': [{
+                'id': 't3-roller',
+                'name': 'T3 Operations',
+                'type': 'decisionTable',
+                'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [
+                        {'id': 'drive_type', 'name': 'drive_type'}
+                    ],
+                    'outputs': [
+                        {'id': 'workcenter_ref',   'name': 'workcenter_ref'},
+                        {'id': 'name',             'name': 'name'},
+                        {'id': 'duration_formula', 'name': 'duration_formula'}
+                    ],
+                    'rules': [
+                        {
+                            'drive_type':      '&quot;electric&quot;',
+                            'workcenter_ref':  '&quot;mrp_design_matrix_roller_door.wc_motor_install&quot;',
+                            'name':            '&quot;Motor Install &amp; Programming&quot;',
+                            'duration_formula':'&quot;45&quot;'
+                        },
+                        {
+                            'drive_type':      '&quot;radio&quot;',
+                            'workcenter_ref':  '&quot;mrp_design_matrix_roller_door.wc_motor_install&quot;',
+                            'name':            '&quot;Radio Motor Install, Programming &amp; Test&quot;',
+                            'duration_formula':'&quot;60&quot;'
+                        }
+                    ]
+                }
+            }]
+        }
+    "/>
+
+  </record>
+
+</odoo>

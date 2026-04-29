@@ -1,3 +1,491 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- TODO: demo BoM for roller door -->
-<odoo/>
+<!--
+    Demo BoM for roller shutter — size 1000×2300, box 165, AL slat, manual drive.
+
+    All quantity formulas derived from "roller shuters.xlsx":
+      - AL Guide 53x22 (703001): 2 × (height - box_mm) / 1000 m
+      - Brush Guide 6x6 (730043): guide_m × 2
+      - Gasket XMO 60 (1052001): (height - 72) / 1000 m
+      - Terminal 51x8 (704005):  (height - 72) / 1000 m
+      - Box Standard 165x165 (701001): (width - 10) / 1000 m
+      - Axis 40 (723040): (width - 55) / 1000 m  [manual/chain]
+      - Axis 60 (723041): (width - 70) / 1000 m  [electric/radio — O-variant via coeff formula]
+      - Slat count: ceil((height - box_mm/2) / slat_height_mm)
+      - Slat linear m: slat_count × (width - 72) / 1000
+      - Security springs: max(2, floor((height - box_mm) / 500) + 1)
+      - Caps: = slat_count (1 cap per slat)
+      - Rivets 3×8 + 4×10: 10 each (fixed)
+      - Taps WT-900: max(6, ceil(guide_m / 0.5))
+
+    slat_height_mm and slat_weight_kg_m2 come from T1 geometry table.
+    box_mm is int(box_size) — e.g. box_size="165" → box_mm=165.
+-->
+<odoo>
+
+  <!-- ── Workcenters (reuse from matrix_templates.xml) ──────────────────── -->
+
+  <!-- ── Component products ────────────────────────────────────────────── -->
+  <record id="product_tmpl_rs_al_guide" model="product.template">
+    <field name="name">RS — AL Guide 53x22 (703001)</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_meter"/>
+  </record>
+  <record id="product_tmpl_rs_brush_guide" model="product.template">
+    <field name="name">RS — Brush Guide 6x6 (730043)</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_meter"/>
+  </record>
+  <record id="product_tmpl_rs_gasket" model="product.template">
+    <field name="name">RS — Gasket XMO 60 (1052001)</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_meter"/>
+  </record>
+  <record id="product_tmpl_rs_terminal" model="product.template">
+    <field name="name">RS — Terminal 51x8 (704005)</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_meter"/>
+  </record>
+  <record id="product_tmpl_rs_box_165" model="product.template">
+    <field name="name">RS — Box Standard 165x165 (701002)</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_meter"/>
+  </record>
+  <record id="product_tmpl_rs_axis40" model="product.template">
+    <field name="name">RS — Axis 40 (723040)</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_meter"/>
+  </record>
+  <record id="product_tmpl_rs_axis60" model="product.template">
+    <field name="name">RS — Axis 60 (723041) [motor O-variant]</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_meter"/>
+  </record>
+  <record id="product_tmpl_rs_slat_al" model="product.template">
+    <field name="name">RS — Slat AL 40mm profile (702001)</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_meter"/>
+  </record>
+  <record id="product_tmpl_rs_end_cap" model="product.template">
+    <field name="name">RS — End Cap 165x165 (705002)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_rs_safety_plate" model="product.template">
+    <field name="name">RS — Safety Plate 165x165 (706013)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_rs_pulley" model="product.template">
+    <field name="name">RS — Pulley 135mm (712050)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_rs_caps" model="product.template">
+    <field name="name">RS — Slat Caps 40mm (713058)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_rs_bearing" model="product.template">
+    <field name="name">RS — Metal Ball Bearing 28x12 (717045)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_rs_cup40" model="product.template">
+    <field name="name">RS — Cup 40 (718052)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_rs_cup60" model="product.template">
+    <field name="name">RS — Cup 60 (718053) [motor O-variant]</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_rs_entry_guide" model="product.template">
+    <field name="name">RS — Entry Guide 45 (725046)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_rs_sec_spring" model="product.template">
+    <field name="name">RS — Security Spring 100x130 (727044)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_rs_rivet_3x8" model="product.template">
+    <field name="name">RS — Rivet 3x8 (731034)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_rs_rivet_4x10" model="product.template">
+    <field name="name">RS — Rivet 4x10 (731035)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_rs_tap" model="product.template">
+    <field name="name">RS — Tap WT-900 (733069)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_rs_stopper" model="product.template">
+    <field name="name">RS — Invisible Stopper 51x8.1 (735062)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_rs_package" model="product.template">
+    <field name="name">RS — Shutter Package 165 (734002)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <!-- O-variant: motor -->
+  <record id="product_tmpl_rs_motor" model="product.template">
+    <field name="name">RS — Somfy Motor ALTUS 50 iO [O-variant]</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <!-- O-variant: crank -->
+  <record id="product_tmpl_rs_crank" model="product.template">
+    <field name="name">RS — Crank Handle Set [O-variant]</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <!-- O-variant: insulation -->
+  <record id="product_tmpl_rs_insulation" model="product.template">
+    <field name="name">RS — Insulation Kit [O-variant]</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <!-- O-variant: mosquito net -->
+  <record id="product_tmpl_rs_mosquito" model="product.template">
+    <field name="name">RS — Mosquito Net Kit [O-variant]</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+
+  <!-- ── Finished product ──────────────────────────────────────────────── -->
+  <record id="product_tmpl_roller_shutter" model="product.template">
+    <field name="name">Roller Shutter — Teolino</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+    <field name="tracking">lot</field>
+  </record>
+  <record id="product_roller_shutter" model="product.product">
+    <field name="product_tmpl_id" ref="product_tmpl_roller_shutter"/>
+  </record>
+
+  <!-- ── Demo BoM ──────────────────────────────────────────────────────── -->
+  <record id="bom_roller_shutter_standard" model="mrp.bom">
+    <field name="product_tmpl_id" ref="product_tmpl_roller_shutter"/>
+    <field name="product_qty">1</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="type">normal</field>
+    <field name="design_param_definition_id"
+           ref="mrp_design_matrix_roller_door.roller_door"/>
+    <field name="matrix_template_id"
+           ref="matrix_template_roller_shutter"/>
+    <field name="constraint_table" eval="
+        ref('matrix_template_roller_shutter').constraint_table
+    "/>
+    <field name="geometry_table" eval="
+        ref('matrix_template_roller_shutter').geometry_table
+    "/>
+    <field name="material_table" eval="
+        ref('matrix_template_roller_shutter').material_table
+    "/>
+    <field name="operation_table" eval="
+        ref('matrix_template_roller_shutter').operation_table
+    "/>
+  </record>
+
+  <!-- ── BoM lines ─────────────────────────────────────────────────────── -->
+
+  <!-- AL Guide: 2 × (height - box_mm) / 1000 m  [box_size is string "165" → int=165] -->
+  <record id="bl_rs_al_guide" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_al_guide"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_meter"/>
+    <field name="quantity_formula">
+box_mm = int(box_size)
+quantity = 2 * (height - box_mm) / 1000 * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Brush Guide: AL Guide × 2 (brush strip on both sides of each guide) -->
+  <record id="bl_rs_brush_guide" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_brush_guide"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_meter"/>
+    <field name="quantity_formula">
+box_mm = int(box_size)
+guide_m = 2 * (height - box_mm) / 1000
+quantity = guide_m * 2 * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Gasket XMO 60: (height - 72) / 1000 m -->
+  <record id="bl_rs_gasket" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_gasket"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_meter"/>
+    <field name="quantity_formula">
+quantity = (height - 72) / 1000 * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Terminal 51x8 (bottom bar): same as gasket -->
+  <record id="bl_rs_terminal" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_terminal"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_meter"/>
+    <field name="quantity_formula">
+quantity = (height - 72) / 1000 * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Box Standard 165×165: (width - 10) / 1000 m -->
+  <record id="bl_rs_box" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_box_165"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_meter"/>
+    <field name="quantity_formula">
+quantity = (width - 10) / 1000 * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Axis 40: (width - 55) / 1000 m [manual/chain — coeff=1; motor drives → Axis 60 O-variant] -->
+  <record id="bl_rs_axis40" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_axis40"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_meter"/>
+    <field name="quantity_formula">
+quantity = (width - 55) / 1000 * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Axis 60 [O-variant — activated when motor replaces Axis 40]: (width - 70) / 1000 m -->
+  <!-- NOTE: in production, Axis 40 and Axis 60 are mutually exclusive via coeff logic.
+       coeff_default=0 here; a separate formula override should set coeff=0 for Axis40 when motor-o fires. -->
+  <record id="bl_rs_axis60" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_axis60"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_meter"/>
+    <field name="quantity_formula">
+quantity = (width - 70) / 1000 * product_uom_qty
+    </field>
+    <field name="coeff_default">0.0</field>
+    <field name="matrix_coeff_rule">motor-o</field>
+  </record>
+
+  <!-- Slat AL 40mm: slat_count × (width - 72) / 1000 linear meters -->
+  <record id="bl_rs_slat" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_slat_al"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_meter"/>
+    <field name="quantity_formula">
+import math
+box_mm = int(box_size)
+# slat_height_mm comes from T1 geometry table
+slat_count = math.ceil((height - box_mm / 2) / slat_height_mm)
+quantity = slat_count * (width - 72) / 1000 * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- End cap 165×165: 1 set -->
+  <record id="bl_rs_end_cap" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_end_cap"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Safety plate: 1 set -->
+  <record id="bl_rs_safety_plate" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_safety_plate"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Pulley 135mm: 1 set -->
+  <record id="bl_rs_pulley" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_pulley"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Caps: 1 per slat = slat_count -->
+  <record id="bl_rs_caps" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_caps"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="quantity_formula">
+import math
+box_mm = int(box_size)
+quantity = math.ceil((height - box_mm / 2) / slat_height_mm) * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Ball Bearing: 2 pcs (without motor — with motor uses different type, handled as O-variant) -->
+  <record id="bl_rs_bearing" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_bearing"/>
+    <field name="product_qty">2.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Cup 40 (without motor) -->
+  <record id="bl_rs_cup40" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_cup40"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Cup 60 [O-variant motor] -->
+  <record id="bl_rs_cup60" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_cup60"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">0.0</field>
+    <field name="matrix_coeff_rule">motor-o</field>
+  </record>
+
+  <!-- Entry Guide 45: 1 set -->
+  <record id="bl_rs_entry_guide" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_entry_guide"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Security springs: max(2, floor((height - box_mm) / 500) + 1) -->
+  <record id="bl_rs_sec_spring" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_sec_spring"/>
+    <field name="product_qty">2.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="quantity_formula">
+import math
+box_mm = int(box_size)
+quantity = max(2, math.floor((height - box_mm) / 500) + 1) * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Rivet 3×8: 10 per box -->
+  <record id="bl_rs_rivet_3x8" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_rivet_3x8"/>
+    <field name="product_qty">10.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Rivet 4×10: 10 per box -->
+  <record id="bl_rs_rivet_4x10" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_rivet_4x10"/>
+    <field name="product_qty">10.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Taps WT-900: min 6, approx 3 per AL guide + 1 per 500mm height -->
+  <record id="bl_rs_tap" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_tap"/>
+    <field name="product_qty">6.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="quantity_formula">
+import math
+box_mm = int(box_size)
+guide_m = 2 * (height - box_mm) / 1000
+quantity = max(6, math.ceil(guide_m / 0.5)) * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Invisible Stopper: 2 pcs (for terminal / bottom bar) -->
+  <record id="bl_rs_stopper" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_stopper"/>
+    <field name="product_qty">2.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Package set: 1 -->
+  <record id="bl_rs_package" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_package"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- ── O-variants ────────────────────────────────────────────────────── -->
+
+  <!-- Motor Somfy [motor-o] -->
+  <record id="bl_rs_motor" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_motor"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">0.0</field>
+    <field name="matrix_coeff_rule">motor-o</field>
+  </record>
+
+  <!-- Crank handle [crank-o] -->
+  <record id="bl_rs_crank" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_crank"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">0.0</field>
+    <field name="matrix_coeff_rule">crank-o</field>
+  </record>
+
+  <!-- Insulation kit [insulation-o] -->
+  <record id="bl_rs_insulation" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_insulation"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">0.0</field>
+    <field name="matrix_coeff_rule">insulation-o</field>
+  </record>
+
+  <!-- Mosquito net [mosquito-o] -->
+  <record id="bl_rs_mosquito" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_roller_shutter_standard"/>
+    <field name="product_id" ref="product_tmpl_rs_mosquito"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">0.0</field>
+    <field name="matrix_coeff_rule">mosquito-o</field>
+  </record>
+
+</odoo>

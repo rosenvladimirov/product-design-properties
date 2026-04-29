@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [18.0.1.7.2] - 2026-04-29
+
+### Added / Changed
+
+- **mrp_design_matrix_roller_door** (18.0.1.2.0) — full T0/T1/T2/T3 matrix
+  from Excel BoM reference; box_size 205 added; complete demo BoM with 20 lines
+  (formula-driven + O-variants for motor/crank/insulation/mosquito).
+
 ## [18.0.1.7.1] - 2026-04-29
 
 ### Added
