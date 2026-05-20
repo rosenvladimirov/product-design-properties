@@ -12,7 +12,7 @@
                 <field name="sequence" widget="handle" />
                 <field name="code" />
                 <field name="name" />
-                <field name="industry" />
+                <field name="industry_id" />
                 <field name="parent_id" />
             </list>
         </field>
@@ -29,7 +29,7 @@
                         <group>
                             <field name="code" />
                             <field name="name" />
-                            <field name="industry" />
+                            <field name="industry_id" />
                         </group>
                         <group>
                             <field name="parent_id" />
@@ -39,10 +39,18 @@
                     </group>
                     <notebook>
                         <page string="Parameter Definitions" name="param_definitions">
-                            <field name="design_params_definition" />
+                            <field
+                                name="design_params_definition"
+                                widget="ace"
+                                options="{'mode': 'json'}"
+                            />
                         </page>
                         <page string="Validation Rules" name="validation_rules">
-                            <field name="validation_rules" widget="json" />
+                            <field
+                                name="validation_rules"
+                                widget="ace"
+                                options="{'mode': 'json'}"
+                            />
                         </page>
                         <page string="SVG Profiles" name="svg_profiles">
                             <field name="profile_ids">

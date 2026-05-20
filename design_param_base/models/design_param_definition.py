@@ -34,8 +34,14 @@ class DesignParamDefinition(models.Model):
     sequence = fields.Integer(default=10)
     code = fields.Char(required=True)
     name = fields.Char(required=True)
-    industry = fields.Char(
-        help="Industry tag for filtering: bags, doors, corrugated, etc."
+    industry_id = fields.Many2one(
+        "design.industry",
+        string="Industry",
+        ondelete="restrict",
+        index=True,
+        help="Canonical industry classification. Resolved automatically "
+        "from the data tag (e.g. industry=\"bags\") via "
+        "design.industry._resolve — no data-file changes needed.",
     )
     parent_id = fields.Many2one(
         "design.param.definition",
@@ -68,6 +74,30 @@ class DesignParamDefinition(models.Model):
     _sql_constraints = [
         ("code_unique", "UNIQUE(code)", "The code must be unique."),
     ]
+
+    # -- Zero-churn industry resolution --------------------------------------
+    # Историческият парсер и data файловете подават `industry` като свободен
+    # стринг (attr.get("industry","")). Тук го прехващаме и резолваме към
+    # design.industry → 8-те sibling модула остават непокътнати.
+
+    @api.model
+    def _pop_industry_tag(self, vals):
+        """Translate a string ``industry`` key in *vals* to ``industry_id``."""
+        if "industry" in vals and not isinstance(vals.get("industry"), int):
+            tag = vals.pop("industry")
+            industry = self.env["design.industry"].sudo()._resolve(tag)
+            vals["industry_id"] = industry.id or False
+        return vals
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            self._pop_industry_tag(vals)
+        return super().create(vals_list)
+
+    def write(self, vals):
+        self._pop_industry_tag(vals)
+        return super().write(vals)
 
     def _compute_full_design_params_definition(self):
         """Merge parent chain properties with own properties.

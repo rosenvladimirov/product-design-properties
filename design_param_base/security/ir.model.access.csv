@@ -3,3 +3,5 @@ access_design_param_def_user,design.param.definition.user,model_design_param_def
 access_design_param_def_manager,design.param.definition.manager,model_design_param_definition,stock.group_stock_manager,1,1,1,1
 access_design_param_profile_user,design.param.profile.user,model_design_param_profile,stock.group_stock_user,1,0,0,0
 access_design_param_profile_manager,design.param.profile.manager,model_design_param_profile,stock.group_stock_manager,1,1,1,1
+access_design_industry_user,design.industry.user,model_design_industry,stock.group_stock_user,1,0,0,0
+access_design_industry_manager,design.industry.manager,model_design_industry,stock.group_stock_manager,1,1,1,1

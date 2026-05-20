@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+  <record id="design_industry_view_tree" model="ir.ui.view">
+    <field name="name">design.industry.tree</field>
+    <field name="model">design.industry</field>
+    <field name="arch" type="xml">
+      <list>
+        <field name="sequence" widget="handle" />
+        <field name="code" />
+        <field name="name" />
+        <field name="description" />
+      </list>
+    </field>
+  </record>
+
+  <record id="design_industry_view_form" model="ir.ui.view">
+    <field name="name">design.industry.form</field>
+    <field name="model">design.industry</field>
+    <field name="arch" type="xml">
+      <form>
+        <sheet>
+          <group>
+            <group>
+              <field name="code" />
+              <field name="name" />
+            </group>
+            <group>
+              <field name="sequence" />
+              <field name="active" />
+            </group>
+          </group>
+          <field name="description" placeholder="Description…" />
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="design_industry_action" model="ir.actions.act_window">
+    <field name="name">Design Industries</field>
+    <field name="res_model">design.industry</field>
+    <field name="view_mode">list,form</field>
+  </record>
+
+  <menuitem
+      id="menu_design_industry"
+      name="Design Industries"
+      parent="mrp.menu_mrp_configuration"
+      action="design_industry_action"
+      sequence="54"
+  />
+
+</odoo>
