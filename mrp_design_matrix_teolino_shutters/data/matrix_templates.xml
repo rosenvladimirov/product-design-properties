@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Teolino Shutters — model-aware T0-T3 matrix template.
+
+    ЕДИН template обслужва 5-те модела. `shutter_model` е decision-table
+    вход; per-model геометрията/ограниченията се връщат от таблиците —
+    без variant explosion и без 5 отделни template-а.
+
+    Параметри:
+        width, height        — отвор L × H в mm (base_dimensions)
+        shutter_model        — standard | round | t_roll | built_in | thermo_comfort
+        box_size             — none | 137 | 165 | 180 | 205 | 170 | 210
+        slat_size            — 40 | 50
+        axis_size            — 40 | 60
+        control_type         — rope | shirit | motor
+        guide_type           — standard | feather
+        shutter_count        — "1".."4"
+
+    Източник на формулите: project memory `project_odoo_teolino.md`
+    (bom_engine.py прототип; 17 заключени production проби).
+
+    Per-model offsets (T1), verified в посочените проби:
+        model        | slat_off    | term_off | axis_off(40/60) | box_off | slat_count_mode      | caps_mode
+        standard     | 40→70 50→76 |    72    |     55 / 70     |   10    | floor((H-Box/2)/S)-1 | n_slats+1
+        round        | 40→70 50→76 |    72    |     55 / 70     |   10    | (= standard)         | n_slats+1
+        t_roll       |     90      |    92    |     90 / 90     |   10    | (= standard)         | n_slats+1
+        built_in     |     18      |    20    |     70 / 70     |   —     | ceil(H/S)-1          | = n_slats
+        thermo_comf. | 40→70 50→76 |    72    |     55 / 70     |   15    | floor((H-Box/2)/S)
+                     |             |          |                 |         |   + (1 if S==50)     | direct count
+
+    ⚠ TBD (каталогът/прототипът не дава): пълната H_MAX таблица per
+    (model, box, slat, axis) — max ever 2800; T-Roll Lamella 50 H_MAX.
+    T0 налага глобалните граници + per-model warning при H>2800.
+-->
+<odoo noupdate="1">
+
+  <!-- ── Workcenters ───────────────────────────────────────────────────── -->
+  <record id="wc_teo_cutting" model="mrp.workcenter">
+    <field name="name">Slat &amp; Profile Cutting</field>
+    <field name="code">TEOCUT</field>
+  </record>
+  <record id="wc_teo_assembly" model="mrp.workcenter">
+    <field name="name">Shutter Assembly</field>
+    <field name="code">TEOASM</field>
+  </record>
+  <record id="wc_teo_motor" model="mrp.workcenter">
+    <field name="name">Motor Installation &amp; Programming</field>
+    <field name="code">TEOMOT</field>
+  </record>
+
+  <record id="matrix_template_teolino_shutters" model="mrp.matrix.template">
+    <field name="name">Teolino Shutters — 5 models</field>
+    <field name="industry">doors</field>
+    <field name="description">T0: global L/H limits, per-model box family, Built-In no-box, feather-guide only Thermo, per-model shutter_count, H&gt;2800 warning.
+T1: per-model slat/terminal/axis/box offsets + slat-count mode + caps mode + guide mode (keyed on shutter_model + slat_size).
+T2: O-variant kits — rope / shirit / motor (Somfy) / motor_rs100 (Thermo RS100 IO) / feather guide.
+T3: motor install workorder (standard 45 min; Thermo RS100 60 min).</field>
+
+    <!-- ── T0 — Constraints ──────────────────────────────────────────────── -->
+    <field name="constraint_table" eval="
+        {
+            'nodes': [{
+                'id': 't0-teo',
+                'name': 'T0 Constraints',
+                'type': 'decisionTable',
+                'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [
+                        {'id': 'shutter_model', 'name': 'shutter_model'},
+                        {'id': 'box_size',      'name': 'box_size'},
+                        {'id': 'slat_size',     'name': 'slat_size'},
+                        {'id': 'axis_size',     'name': 'axis_size'},
+                        {'id': 'width',         'name': 'width'},
+                        {'id': 'height',        'name': 'height'},
+                        {'id': 'control_type',  'name': 'control_type'},
+                        {'id': 'guide_type',    'name': 'guide_type'},
+                        {'id': 'shutter_count', 'name': 'shutter_count'}
+                    ],
+                    'outputs': [
+                        {'id': 'level',   'name': 'level'},
+                        {'id': 'message', 'name': 'message'}
+                    ],
+                    'rules': [
+                        {'shutter_model': '', 'box_size': '', 'slat_size': '', 'axis_size': '', 'width': '&lt; 300', 'height': '', 'control_type': '', 'guide_type': '', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;Minimum L (width) is 300 mm.&quot;'},
+                        {'shutter_model': '', 'box_size': '', 'slat_size': '', 'axis_size': '', 'width': '&gt; 4000', 'height': '', 'control_type': '', 'guide_type': '', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;Maximum L (width) is 4000 mm (L_MAX global).&quot;'},
+                        {'shutter_model': '', 'box_size': '', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '&lt; 300', 'control_type': '', 'guide_type': '', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;Minimum H (height) is 300 mm.&quot;'},
+                        {'shutter_model': '', 'box_size': '', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '&gt; 3500', 'control_type': '', 'guide_type': '', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;Maximum H (height) is 3500 mm.&quot;'},
+
+                        {'shutter_model': '&quot;built_in&quot;', 'box_size': '!= &quot;none&quot;', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;Built-In has no box — set Box to none.&quot;'},
+                        {'shutter_model': '&quot;standard&quot;', 'box_size': '&quot;none&quot;', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;This model requires a box (137/165/180/205).&quot;'},
+                        {'shutter_model': '&quot;round&quot;', 'box_size': '&quot;none&quot;', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;This model requires a box (137/165/180/205).&quot;'},
+                        {'shutter_model': '&quot;t_roll&quot;', 'box_size': '&quot;none&quot;', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;This model requires a box (170/210).&quot;'},
+                        {'shutter_model': '&quot;thermo_comfort&quot;', 'box_size': '&quot;none&quot;', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;This model requires a box (170/210).&quot;'},
+
+                        {'shutter_model': '&quot;standard&quot;', 'box_size': '&quot;170&quot;, &quot;210&quot;', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;Standard uses box 137/165/180/205.&quot;'},
+                        {'shutter_model': '&quot;round&quot;', 'box_size': '&quot;170&quot;, &quot;210&quot;', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;Round uses box 137/165/180/205.&quot;'},
+                        {'shutter_model': '&quot;t_roll&quot;', 'box_size': '&quot;137&quot;, &quot;165&quot;, &quot;180&quot;, &quot;205&quot;', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;T-Roll uses box 170/210.&quot;'},
+                        {'shutter_model': '&quot;thermo_comfort&quot;', 'box_size': '&quot;137&quot;, &quot;165&quot;, &quot;180&quot;, &quot;205&quot;', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;Thermo Comfort uses box 170/210.&quot;'},
+
+                        {'shutter_model': '&quot;standard&quot;', 'box_size': '', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '&quot;feather&quot;', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;Feather guide is only available on Thermo Comfort.&quot;'},
+                        {'shutter_model': '&quot;round&quot;', 'box_size': '', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '&quot;feather&quot;', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;Feather guide is only available on Thermo Comfort.&quot;'},
+                        {'shutter_model': '&quot;t_roll&quot;', 'box_size': '', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '&quot;feather&quot;', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;Feather guide is only available on Thermo Comfort.&quot;'},
+                        {'shutter_model': '&quot;built_in&quot;', 'box_size': '', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '&quot;feather&quot;', 'shutter_count': '',
+                         'level': '&quot;error&quot;', 'message': '&quot;Feather guide is only available on Thermo Comfort.&quot;'},
+
+                        {'shutter_model': '&quot;round&quot;', 'box_size': '', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '', 'shutter_count': '!= &quot;1&quot;',
+                         'level': '&quot;error&quot;', 'message': '&quot;Round supports a single shutter only.&quot;'},
+                        {'shutter_model': '&quot;thermo_comfort&quot;', 'box_size': '', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '', 'shutter_count': '!= &quot;1&quot;',
+                         'level': '&quot;error&quot;', 'message': '&quot;Thermo Comfort supports a single shutter only.&quot;'},
+                        {'shutter_model': '&quot;built_in&quot;', 'box_size': '', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '', 'shutter_count': '!= &quot;1&quot;',
+                         'level': '&quot;error&quot;', 'message': '&quot;Built-In supports a single shutter only.&quot;'},
+                        {'shutter_model': '&quot;t_roll&quot;', 'box_size': '', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '', 'shutter_count': '&quot;3&quot;, &quot;4&quot;',
+                         'level': '&quot;error&quot;', 'message': '&quot;T-Roll supports a maximum of 2 shutters.&quot;'},
+
+                        {'shutter_model': '', 'box_size': '', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '&gt; 2800', 'control_type': '', 'guide_type': '', 'shutter_count': '',
+                         'level': '&quot;warning&quot;', 'message': '&quot;H &gt; 2800 mm is outside the validated range — verify H_MAX for this (model, box, slat, axis).&quot;'},
+                        {'shutter_model': '&quot;built_in&quot;', 'box_size': '', 'slat_size': '', 'axis_size': '', 'width': '', 'height': '', 'control_type': '', 'guide_type': '', 'shutter_count': '',
+                         'level': '&quot;warning&quot;', 'message': '&quot;Built-In is weight-driven (catalogue zones &#8804;11 / &#8804;18 / &#8804;28 / &gt;28 kg) — verify load class.&quot;'},
+                        {'shutter_model': '', 'box_size': '', 'slat_size': '', 'axis_size': '', 'width': '&gt; 2000', 'height': '', 'control_type': '&quot;rope&quot;', 'guide_type': '', 'shutter_count': '',
+                         'level': '&quot;warning&quot;', 'message': '&quot;L &gt; 2000 mm with cord — electric motor recommended.&quot;'}
+                    ]
+                }
+            }]
+        }
+    "/>
+
+    <!-- ── T1 — Geometry (per-model offsets, keyed on model + slat) ───────── -->
+    <!--
+        hitPolicy: first — връща per-model геометрия.
+        slat_len_offset е slat-зависим само за std/round/thermo (40→70,
+        50→76). T-Roll(90) и Built-In(18) са slat-независими (повтаряме
+        стойността за двата ламела за да има точен ред).
+        BoM формулите ползват тези изходи (slat_len_offset, terminal_offset,
+        axis_off_40, axis_off_60, box_form_offset, slat_count_mode,
+        caps_mode, guide_mode) — виж demo_bom_teolino_standard.xml.
+    -->
+    <field name="geometry_table" eval="
+        {
+            'nodes': [{
+                'id': 't1-teo',
+                'name': 'T1 Geometry',
+                'type': 'decisionTable',
+                'content': {
+                    'hitPolicy': 'first',
+                    'inputs': [
+                        {'id': 'shutter_model', 'name': 'shutter_model'},
+                        {'id': 'slat_size',     'name': 'slat_size'}
+                    ],
+                    'outputs': [
+                        {'id': 'slat_len_offset', 'name': 'slat_len_offset'},
+                        {'id': 'terminal_offset', 'name': 'terminal_offset'},
+                        {'id': 'axis_off_40',     'name': 'axis_off_40'},
+                        {'id': 'axis_off_60',     'name': 'axis_off_60'},
+                        {'id': 'box_form_offset', 'name': 'box_form_offset'},
+                        {'id': 'slat_count_mode', 'name': 'slat_count_mode'},
+                        {'id': 'caps_mode',       'name': 'caps_mode'},
+                        {'id': 'guide_mode',      'name': 'guide_mode'}
+                    ],
+                    'rules': [
+                        {'shutter_model': '&quot;standard&quot;', 'slat_size': '&quot;40&quot;',
+                         'slat_len_offset': '70', 'terminal_offset': '72', 'axis_off_40': '55', 'axis_off_60': '70', 'box_form_offset': '10', 'slat_count_mode': '&quot;std&quot;', 'caps_mode': '&quot;n1&quot;', 'guide_mode': '&quot;h_minus_box&quot;'},
+                        {'shutter_model': '&quot;standard&quot;', 'slat_size': '&quot;50&quot;',
+                         'slat_len_offset': '76', 'terminal_offset': '72', 'axis_off_40': '55', 'axis_off_60': '70', 'box_form_offset': '10', 'slat_count_mode': '&quot;std&quot;', 'caps_mode': '&quot;n1&quot;', 'guide_mode': '&quot;h_minus_box&quot;'},
+
+                        {'shutter_model': '&quot;round&quot;', 'slat_size': '&quot;40&quot;',
+                         'slat_len_offset': '70', 'terminal_offset': '72', 'axis_off_40': '55', 'axis_off_60': '70', 'box_form_offset': '10', 'slat_count_mode': '&quot;std&quot;', 'caps_mode': '&quot;n1&quot;', 'guide_mode': '&quot;h_minus_box&quot;'},
+                        {'shutter_model': '&quot;round&quot;', 'slat_size': '&quot;50&quot;',
+                         'slat_len_offset': '76', 'terminal_offset': '72', 'axis_off_40': '55', 'axis_off_60': '70', 'box_form_offset': '10', 'slat_count_mode': '&quot;std&quot;', 'caps_mode': '&quot;n1&quot;', 'guide_mode': '&quot;h_minus_box&quot;'},
+
+                        {'shutter_model': '&quot;t_roll&quot;', 'slat_size': '&quot;40&quot;',
+                         'slat_len_offset': '90', 'terminal_offset': '92', 'axis_off_40': '90', 'axis_off_60': '90', 'box_form_offset': '10', 'slat_count_mode': '&quot;std&quot;', 'caps_mode': '&quot;n1&quot;', 'guide_mode': '&quot;fixed_pvc&quot;'},
+                        {'shutter_model': '&quot;t_roll&quot;', 'slat_size': '&quot;50&quot;',
+                         'slat_len_offset': '90', 'terminal_offset': '92', 'axis_off_40': '90', 'axis_off_60': '90', 'box_form_offset': '10', 'slat_count_mode': '&quot;std&quot;', 'caps_mode': '&quot;n1&quot;', 'guide_mode': '&quot;fixed_pvc&quot;'},
+
+                        {'shutter_model': '&quot;built_in&quot;', 'slat_size': '&quot;40&quot;',
+                         'slat_len_offset': '18', 'terminal_offset': '20', 'axis_off_40': '70', 'axis_off_60': '70', 'box_form_offset': '0', 'slat_count_mode': '&quot;builtin&quot;', 'caps_mode': '&quot;equal&quot;', 'guide_mode': '&quot;h_minus_1&quot;'},
+                        {'shutter_model': '&quot;built_in&quot;', 'slat_size': '&quot;50&quot;',
+                         'slat_len_offset': '18', 'terminal_offset': '20', 'axis_off_40': '70', 'axis_off_60': '70', 'box_form_offset': '0', 'slat_count_mode': '&quot;builtin&quot;', 'caps_mode': '&quot;equal&quot;', 'guide_mode': '&quot;h_minus_1&quot;'},
+
+                        {'shutter_model': '&quot;thermo_comfort&quot;', 'slat_size': '&quot;40&quot;',
+                         'slat_len_offset': '70', 'terminal_offset': '72', 'axis_off_40': '55', 'axis_off_60': '70', 'box_form_offset': '15', 'slat_count_mode': '&quot;thermo&quot;', 'caps_mode': '&quot;direct&quot;', 'guide_mode': '&quot;thermo_sel&quot;'},
+                        {'shutter_model': '&quot;thermo_comfort&quot;', 'slat_size': '&quot;50&quot;',
+                         'slat_len_offset': '76', 'terminal_offset': '72', 'axis_off_40': '55', 'axis_off_60': '70', 'box_form_offset': '15', 'slat_count_mode': '&quot;thermo&quot;', 'caps_mode': '&quot;direct&quot;', 'guide_mode': '&quot;thermo_sel&quot;'}
+                    ]
+                }
+            }]
+        }
+    "/>
+
+    <!-- ── T2 — Materials (O-variant activation) ─────────────────────────── -->
+    <!--
+        bom_line_coeff_key съвпада с mrp.bom.line.matrix_coeff_rule.
+        O-варианти:
+          rope-o          — въжен комплект (Standard 733121/124/126/153/738039 + 727044;
+                             Thermo + DCR8)
+          shirit-o        — ширит комплект (733124/125/128 + 727044; маха 733121/733153)
+          motor-o         — Somfy мотор (не-Thermo)
+          motor_rs100-o   — S&amp;SO RS100 IO мотор (Thermo Comfort, със safety)
+          guide_feather-o — водач с перо 703002 (само Thermo)
+        Стандартният водач е default BoM ред (coeff=1), затова няма O-вариант
+        за него.
+    -->
+    <field name="material_table" eval="
+        {
+            'nodes': [{
+                'id': 't2-teo',
+                'name': 'T2 Materials',
+                'type': 'decisionTable',
+                'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [
+                        {'id': 'control_type',  'name': 'control_type'},
+                        {'id': 'shutter_model', 'name': 'shutter_model'},
+                        {'id': 'guide_type',    'name': 'guide_type'}
+                    ],
+                    'outputs': [
+                        {'id': 'bom_line_coeff_key', 'name': 'bom_line_coeff_key'},
+                        {'id': 'coefficient',        'name': 'coefficient'}
+                    ],
+                    'rules': [
+                        {'control_type': '&quot;rope&quot;', 'shutter_model': '', 'guide_type': '',
+                         'bom_line_coeff_key': '&quot;rope-o&quot;', 'coefficient': '1.0'},
+                        {'control_type': '&quot;shirit&quot;', 'shutter_model': '', 'guide_type': '',
+                         'bom_line_coeff_key': '&quot;shirit-o&quot;', 'coefficient': '1.0'},
+                        {'control_type': '&quot;motor&quot;', 'shutter_model': '!= &quot;thermo_comfort&quot;', 'guide_type': '',
+                         'bom_line_coeff_key': '&quot;motor-o&quot;', 'coefficient': '1.0'},
+                        {'control_type': '&quot;motor&quot;', 'shutter_model': '&quot;thermo_comfort&quot;', 'guide_type': '',
+                         'bom_line_coeff_key': '&quot;motor_rs100-o&quot;', 'coefficient': '1.0'},
+                        {'control_type': '', 'shutter_model': '&quot;thermo_comfort&quot;', 'guide_type': '&quot;feather&quot;',
+                         'bom_line_coeff_key': '&quot;guide_feather-o&quot;', 'coefficient': '1.0'}
+                    ]
+                }
+            }]
+        }
+    "/>
+
+    <!-- ── T3 — Operations ───────────────────────────────────────────────── -->
+    <!--
+        Cutting + Assembly са постоянни BoM routing операции.
+        T3 добавя motor install само за моторни управления; Thermo Comfort
+        ползва RS100 IO серия → отделен (по-дълъг) ред.
+    -->
+    <field name="operation_table" eval="
+        {
+            'nodes': [{
+                'id': 't3-teo',
+                'name': 'T3 Operations',
+                'type': 'decisionTable',
+                'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [
+                        {'id': 'control_type',  'name': 'control_type'},
+                        {'id': 'shutter_model', 'name': 'shutter_model'}
+                    ],
+                    'outputs': [
+                        {'id': 'workcenter_ref',   'name': 'workcenter_ref'},
+                        {'id': 'name',             'name': 'name'},
+                        {'id': 'duration_formula', 'name': 'duration_formula'}
+                    ],
+                    'rules': [
+                        {'control_type': '&quot;motor&quot;', 'shutter_model': '!= &quot;thermo_comfort&quot;',
+                         'workcenter_ref': '&quot;mrp_design_matrix_teolino_shutters.wc_teo_motor&quot;',
+                         'name': '&quot;Motor Install &amp; Programming&quot;', 'duration_formula': '&quot;45&quot;'},
+                        {'control_type': '&quot;motor&quot;', 'shutter_model': '&quot;thermo_comfort&quot;',
+                         'workcenter_ref': '&quot;mrp_design_matrix_teolino_shutters.wc_teo_motor&quot;',
+                         'name': '&quot;RS100 IO Motor Install, Programming &amp; Test&quot;', 'duration_formula': '&quot;60&quot;'}
+                    ]
+                }
+            }]
+        }
+    "/>
+
+  </record>
+
+</odoo>

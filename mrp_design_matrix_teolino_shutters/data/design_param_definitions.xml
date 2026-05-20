@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Design parameter definitions for the Teolino roller-shutter range.
+
+    Покрива 5-те модела (Standard / Round / T-Roll / Built-In / Thermo
+    Comfort). Параметрите са унифицирани; per-model ограниченията се
+    налагат в T0 (constraint_table), а per-model геометрията в T1
+    (geometry_table) на matrix_templates.xml — БЕЗ variant explosion.
+
+    Параметрите от base_dimensions (parent) се наследяват:
+        width  — отвор по дължина L (mm)  [Teolino "L"]
+        height — отвор по височина H (mm) [Teolino "H"]
+
+    Източник на правилата: project memory `project_odoo_teolino.md`
+    (bom_engine.py прототип, 17 заключени проби през 5-те модела).
+-->
+<records>
+    <properties code="teolino_shutters" name="Teolino Shutter (5 models)"
+                industry="doors" parent="base_dimensions">
+
+        <!-- Кой от 5-те модела се произвежда. Драйвър за T0/T1. -->
+        <items name="shutter_model">
+            <item name="type">selection</item>
+            <item name="selection">[["standard","Standard"],["round","Round"],["t_roll","T-Roll"],["built_in","Built-In"],["thermo_comfort","Thermo Comfort"]]</item>
+            <item name="default">standard</item>
+        </items>
+
+        <!-- Кутия (формулна размерност). Built-In НЯМА кутия → "none".
+             Standard/Round: 137/165/180/205. T-Roll/Thermo: 170/210. -->
+        <items name="box_size">
+            <item name="type">selection</item>
+            <item name="selection">[["none","No box (Built-In)"],["137","137"],["165","165"],["180","180"],["205","205"],["170","170 (T-Roll/Thermo)"],["210","210 (T-Roll/Thermo)"]]</item>
+            <item name="default">165</item>
+        </items>
+
+        <!-- Ламел: 40 или 50 mm (43 е спрян — не се поддържа). -->
+        <items name="slat_size">
+            <item name="type">selection</item>
+            <item name="selection">[["40","40 mm"],["50","50 mm"]]</item>
+            <item name="default">40</item>
+        </items>
+
+        <!-- Ос: Ø40 или Ø60 (универсално за всички модели/ламели). -->
+        <items name="axis_size">
+            <item name="type">selection</item>
+            <item name="selection">[["40","Axis 40"],["60","Axis 60"]]</item>
+            <item name="default">40</item>
+        </items>
+
+        <!-- Управление: въже / ширит / ел. мотор. Драйвър за T2 O-варианти. -->
+        <items name="control_type">
+            <item name="type">selection</item>
+            <item name="selection">[["rope","Cord"],["shirit","Tape (shirit)"],["motor","Electric motor"]]</item>
+            <item name="default">rope</item>
+        </items>
+
+        <!-- Водач: стандартен или "с перо". "feather" е разрешен САМО за
+             Thermo Comfort (налага се в T0); за останалите модели водачът е
+             фиксиран по модел и този избор се игнорира. -->
+        <items name="guide_type">
+            <item name="type">selection</item>
+            <item name="selection">[["standard","Standard guide"],["feather","Feather guide (Thermo Comfort only)"]]</item>
+            <item name="default">standard</item>
+        </items>
+
+        <!-- Брой щори в една кутия. Max по модел (налага се в T0):
+             Standard 1-4, T-Roll 1-2, Round/Thermo/Built-In = 1. -->
+        <items name="shutter_count">
+            <item name="type">selection</item>
+            <item name="selection">[["1","1"],["2","2"],["3","3"],["4","4"]]</item>
+            <item name="default">1</item>
+        </items>
+
+    </properties>
+</records>
