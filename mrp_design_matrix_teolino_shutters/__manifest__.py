@@ -1,9 +1,9 @@
 # Copyright 2026 BL Consulting
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
-    "name": "MRP Design Matrix — Teolino Shutters (5 models)",
+    "name": "MRP Design Matrix — Roller Shutters (5 models)",
     "summary": (
-        "Full parametric design matrix for the Teolino roller-shutter "
+        "Full parametric design matrix for a 5-model roller-shutter "
         "range: Standard, Round, T-Roll, Built-In and Thermo Comfort."
     ),
     "version": "19.0.1.0.0",

@@ -1,28 +1,29 @@
-**Triggering the matrix engine:**
+**Активиране на matrix engine-а:**
 
-The engine runs automatically in `action_confirm()` of any MO whose
-BoM has a non-empty `constraint_table`.  No explicit invocation is
-needed.
+Engine-ът се пуска автоматично в `action_confirm()` на всяко MO, чийто
+BoM има непразен `constraint_table`. Не е нужно явно извикване.
 
-**Flow:**
+**Поток:**
 
-1.  Matrix engine reads `lot_producing_ids[:1]._get_design_context()` to
-    build a flat dict of all design parameters (first lot is the design lot).
-2.  T0 evaluation — errors raise `UserError`, warnings post on the MO
-    chatter.
-3.  T1 evaluation — geometry outputs override the context (they take
-    precedence over user-supplied values).
-4.  BoM line iteration — `qty_formula × matrix_coeff` determines the
-    final raw move quantity.  O-variants with `coeff_default=0.0` are
-    skipped unless the matrix activates them.
-5.  T2 ad-hoc rows — adds moves for products not listed on the BoM
-    lines (direct ref or PTAV).
-6.  T3 evaluation — creates workorders for matching operations.
-7.  Semi-finished chain — spawns child lots or stops at existing
-    stock lots depending on `mto_stop`.
+1.  Matrix engine-ът чете `lot_producing_ids[:1]._get_design_context()`,
+    за да изгради плосък dict с всички design параметри (първият lot е
+    design lot-ът).
+2.  T0 оценка — error-ите вдигат `UserError`, warning-ите се постват в
+    MO chatter.
+3.  T1 оценка — geometry изходите презаписват контекста (имат
+    предимство пред подадените от потребителя стойности).
+4.  Итерация по BoM линиите — `qty_formula × matrix_coeff` определя
+    финалното количество на raw move-а. O-варианти с
+    `coeff_default=0.0` се пропускат, освен ако матрицата ги активира.
+5.  T2 ad-hoc редове — добавя move-ове за продукти, които не са в BoM
+    линиите (direct ref или PTAV).
+6.  T3 оценка — създава workorder-и за съвпадащите операции.
+7.  Semi-finished верига — поражда child lots или спира при
+    съществуващи stock lots според `mto_stop`.
 
-**Testing without creating an MO:**
+**Тестване без създаване на MO:**
 
-Click the _Matrix Rules_ smart button on the BoM form.  The preview
-dialog loads the BoM's parameter definition, lets you move sliders and
-toggle options, and shows T0/T1/T2/T3 evaluation results in real time.
+Натиснете _Matrix Rules_ smart бутона на BoM формата. Preview диалогът
+зарежда дефиницията на параметрите за BoM-а, позволява движение на
+слайдъри и превключване на опции, и показва T0/T1/T2/T3 резултатите от
+оценката в реално време.

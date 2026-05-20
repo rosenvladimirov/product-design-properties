@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Teolino Shutters — model-aware T0-T3 matrix template.
+    Roller Shutters — model-aware T0-T3 matrix template.
 
     ЕДИН template обслужва 5-те модела. `shutter_model` е decision-table
     вход; per-model геометрията/ограниченията се връщат от таблиците —
@@ -16,8 +16,8 @@
         guide_type           — standard | feather
         shutter_count        — "1".."4"
 
-    Източник на формулите: project memory `project_odoo_teolino.md`
-    (bom_engine.py прототип; 17 заключени production проби).
+    Източник на формулите: вътрешна спецификация (параметричен BoM
+    с 17 заключени production проби през 5-те модела).
 
     Per-model offsets (T1), verified в посочените проби:
         model        | slat_off    | term_off | axis_off(40/60) | box_off | slat_count_mode      | caps_mode
@@ -49,12 +49,12 @@
   </record>
 
   <record id="matrix_template_teolino_shutters" model="mrp.matrix.template">
-    <field name="name">Teolino Shutters — 5 models</field>
+    <field name="name">Roller Shutters — 5 models</field>
     <field name="industry">doors</field>
     <field name="description">T0: global L/H limits, per-model box family, Built-In no-box, feather-guide only Thermo, per-model shutter_count, H&gt;2800 warning.
 T1: per-model slat/terminal/axis/box offsets + slat-count mode + caps mode + guide mode (keyed on shutter_model + slat_size).
-T2: O-variant kits — rope / shirit / motor (Somfy) / motor_rs100 (Thermo RS100 IO) / feather guide.
-T3: motor install workorder (standard 45 min; Thermo RS100 60 min).</field>
+T2: O-variant kits — rope / shirit / motor (standard) / motor_safety (Thermo with safety profile) / feather guide.
+T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
 
     <!-- ── T0 — Constraints ──────────────────────────────────────────────── -->
     <field name="constraint_table" eval="
@@ -210,8 +210,8 @@ T3: motor install workorder (standard 45 min; Thermo RS100 60 min).</field>
           rope-o          — въжен комплект (Standard 733121/124/126/153/738039 + 727044;
                              Thermo + DCR8)
           shirit-o        — ширит комплект (733124/125/128 + 727044; маха 733121/733153)
-          motor-o         — Somfy мотор (не-Thermo)
-          motor_rs100-o   — S&amp;SO RS100 IO мотор (Thermo Comfort, със safety)
+          motor-o         — стандартен мотор (не-Thermo)
+          motor_safety-o  — мотор със safety профил (Thermo Comfort, радио IO)
           guide_feather-o — водач с перо 703002 (само Thermo)
         Стандартният водач е default BoM ред (coeff=1), затова няма O-вариант
         за него.
@@ -241,7 +241,7 @@ T3: motor install workorder (standard 45 min; Thermo RS100 60 min).</field>
                         {'control_type': '&quot;motor&quot;', 'shutter_model': '!= &quot;thermo_comfort&quot;', 'guide_type': '',
                          'bom_line_coeff_key': '&quot;motor-o&quot;', 'coefficient': '1.0'},
                         {'control_type': '&quot;motor&quot;', 'shutter_model': '&quot;thermo_comfort&quot;', 'guide_type': '',
-                         'bom_line_coeff_key': '&quot;motor_rs100-o&quot;', 'coefficient': '1.0'},
+                         'bom_line_coeff_key': '&quot;motor_safety-o&quot;', 'coefficient': '1.0'},
                         {'control_type': '', 'shutter_model': '&quot;thermo_comfort&quot;', 'guide_type': '&quot;feather&quot;',
                          'bom_line_coeff_key': '&quot;guide_feather-o&quot;', 'coefficient': '1.0'}
                     ]
@@ -254,7 +254,7 @@ T3: motor install workorder (standard 45 min; Thermo RS100 60 min).</field>
     <!--
         Cutting + Assembly са постоянни BoM routing операции.
         T3 добавя motor install само за моторни управления; Thermo Comfort
-        ползва RS100 IO серия → отделен (по-дълъг) ред.
+        ползва вариант със safety профил → отделен (по-дълъг) ред.
     -->
     <field name="operation_table" eval="
         {
@@ -279,7 +279,7 @@ T3: motor install workorder (standard 45 min; Thermo RS100 60 min).</field>
                          'name': '&quot;Motor Install &amp; Programming&quot;', 'duration_formula': '&quot;45&quot;'},
                         {'control_type': '&quot;motor&quot;', 'shutter_model': '&quot;thermo_comfort&quot;',
                          'workcenter_ref': '&quot;mrp_design_matrix_teolino_shutters.wc_teo_motor&quot;',
-                         'name': '&quot;RS100 IO Motor Install, Programming &amp; Test&quot;', 'duration_formula': '&quot;60&quot;'}
+                         'name': '&quot;Safety Motor Install, Programming &amp; Test&quot;', 'duration_formula': '&quot;60&quot;'}
                     ]
                 }
             }]

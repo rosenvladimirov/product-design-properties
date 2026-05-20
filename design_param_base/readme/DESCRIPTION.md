@@ -1,16 +1,17 @@
-Foundation layer for design-driven manufacturing. Defines reusable design
-parameter sets (via Odoo Properties) that describe what parameters are
-available for a given product family — dimensions, material choices,
-feature flags — together with SVG profile templates for 2D/3D
-visualization.
+Фундаментен слой за design-driven производство. Дефинира преизползваеми
+набори от design параметри (през Odoo Properties), които описват кои
+параметри са налични за дадено продуктово семейство — размери, избор на
+материал, feature флагове — заедно с SVG profile шаблони за 2D/3D
+визуализация.
 
-The module is a prerequisite for:
+Модулът е предпоставка за:
 
-- `stock_lot_properties` — stores per-lot design parameter values
-- `mrp_design_matrix` — the matrix-driven MO generator
-- `sale_design_configurator` — the SO line configurator
+- `stock_lot_properties` — съхранява per-lot стойностите на design
+  параметрите
+- `mrp_design_matrix` — matrix-driven генератор на производствени поръчки
+- `sale_design_configurator` — конфигуратор на SO линиите
 
-Parameter sets are authored in XML (`design_param_definitions.xml`) and
-loaded via a small XML → PropertiesDefinition parser.  The parser
-supports inheritance chains so industry sub-modules can extend a base set
-without duplicating fields.
+Наборите параметри се описват в XML (`design_param_definitions.xml`) и
+се зареждат през малък XML → PropertiesDefinition парсер. Парсерът
+поддържа вериги на наследяване, така че индустриалните под-модули могат
+да разширяват базов набор без да дублират полета.

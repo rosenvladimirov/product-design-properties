@@ -1,40 +1,39 @@
-Core engine for design-driven manufacturing.  Turns a parametric BoM
-into a concrete Manufacturing Order by evaluating four GoRules DMN
-tables (T0/T1/T2/T3) against a flat design context gathered from the
-production lot:
+Ядро на design-driven производството. Превръща параметричен BoM в
+конкретна производствена поръчка (MO) чрез оценка на четири GoRules DMN
+таблици (T0/T1/T2/T3) спрямо плосък design контекст, събран от
+производствения lot:
 
-- **T0 — Constraints** (`constraint_table`) — blocks or warns on
-  invalid parameter combinations (e.g. "height < 1900 mm" →
+- **T0 — Constraints** (`constraint_table`) — блокира или предупреждава
+  при невалидни комбинации от параметри (напр. „height < 1900 mm“ →
   `level=error`).
-- **T1 — Geometry** (`geometry_table`) — computes derived dimensions
-  and forced values (e.g. `door_weight_kg_m2`, `min_thickness_mm`)
-  that become available to T2/T3 and BoM line formulas.
-- **T2 — Materials** (`material_table`) — the bill-of-material
-  composition.  Supports three row types:
+- **T1 — Geometry** (`geometry_table`) — изчислява производни размери и
+  forced стойности (напр. `door_weight_kg_m2`, `min_thickness_mm`),
+  които стават налични за T2/T3 и BoM line формулите.
+- **T2 — Materials** (`material_table`) — съставът на ведомостта.
+  Поддържа три типа редове:
 
-  1.  _Coefficient_ — adjusts a standard BoM line's quantity via
-      `matrix_coeff_rule` lookup.
-  2.  _Direct ref_ — adds an ad-hoc move for an externally referenced
-      product.
-  3.  _PTAV_ — resolves a product variant by matching design parameter
-      values against `product.template.attribute.value.name`.
+  1.  _Coefficient_ — настройва количеството на стандартна BoM линия
+      през lookup по `matrix_coeff_rule`.
+  2.  _Direct ref_ — добавя ad-hoc move за външно референциран продукт.
+  3.  _PTAV_ — резолва вариант на продукт, мачвайки стойностите на
+      design параметрите спрямо `product.template.attribute.value.name`.
 
-- **T3 — Operations** (`operation_table`) — conditional workorders
-  that are added only when their activation rule matches.
+- **T3 — Operations** (`operation_table`) — условни workorder-и, които
+  се добавят само когато правилото им за активиране съвпадне.
 
-The engine is stateless — it reads the matrix JSON from the BoM and
-the design context from the lot, then generates raw moves and
-workorders on the MO.  No caching, no side effects outside of
-`stock.move` and `mrp.workorder` creation.
+Engine-ът е stateless — чете матрицата JSON от BoM-а и design контекста
+от lot-а, после генерира raw moves и workorder-и върху MO-то. Без
+caching, без странични ефекти извън създаване на `stock.move` и
+`mrp.workorder`.
 
-Complementary features:
+Допълнителни функционалности:
 
-- **`DesignMatrixField`** — OWL widget that replaces the ACE JSON
-  editor with a visual DMN table (read-only + edit mode, JSON↔Table
-  toggle, hitPolicy selector, drag-reorder).
-- **Matrix Preview** — smart button on the BoM form that opens a
-  dialog with parameter controls and live T0/T1/T2/T3 evaluation for
-  rapid iteration without creating real MOs.
-- **Semi-finished chain** — `child_definition_id` + `mto_stop` let a
-  BoM line either spawn a child lot (new MO) or search existing stock
-  lots by design parameters (MTO stop).
+- **`DesignMatrixField`** — OWL widget, който заменя ACE JSON редактора
+  с визуална DMN таблица (read-only + edit режим, JSON↔Table
+  превключване, hitPolicy селектор, drag-reorder).
+- **Matrix Preview** — smart бутон на BoM формата, който отваря диалог
+  с контроли за параметрите и live T0/T1/T2/T3 оценка за бърза итерация
+  без създаване на реални MO-та.
+- **Semi-finished chain** — `child_definition_id` + `mto_stop` позволяват
+  BoM линията или да породи child lot (ново MO), или да търси
+  съществуващи stock lots по design параметри (MTO stop).

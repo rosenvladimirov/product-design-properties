@@ -1,82 +1,103 @@
-==============================================
-MRP Design Matrix — Teolino Shutters (5 models)
-==============================================
+========================================================
+MRP Design Matrix — Параметрични ролетни щори (5 модела)
+========================================================
 
-Full parametric design matrix for the Teolino roller-shutter range.
-Sibling of ``mrp_design_matrix_roller_door`` (which ships a single
-simplified template); this module encodes the **five real Teolino
-models** in one model-aware T0-T3 template — no variant explosion,
-no five separate templates.
+Параметрична design матрица за ролетни щори с 5 модела
+(Standard / Round / T-Roll / Built-In / Thermo Comfort).
+Подобен на ``mrp_design_matrix_roller_door`` (който носи един опростен
+template) — този модул кодира **петте реални модела** в **един
+model-aware T0–T3 темплейт**: ``shutter_model`` е decision-table вход и
+per-model правилата живеят в T0 (ограничения) и T1 (геометрия). Без
+variant explosion, без пет отделни темплейта.
 
-Models covered
-==============
+Параметри
+=========
 
-Standard, Round, T-Roll, Built-In, Thermo Comfort.
+Наследени от ``base_dimensions`` (parent):
 
-``shutter_model`` is a decision-table input; per-model constraints live
-in T0 and per-model geometry in T1.
+* ``width`` — отвор по дължина L (mm)
+* ``height`` — отвор по височина H (mm)
 
-Parameters
-==========
+Модулно-специфични:
 
-Inherited from ``base_dimensions``: ``width`` (L), ``height`` (H) in mm.
+* ``shutter_model`` — Standard / Round / T-Roll / Built-In / Thermo Comfort
+* ``box_size`` — none / 137 / 165 / 180 / 205 / 170 / 210
+* ``slat_size`` — 40 / 50
+* ``axis_size`` — 40 / 60
+* ``control_type`` — rope / shirit / motor
+* ``guide_type`` — standard / feather (feather е САМО за Thermo Comfort)
+* ``shutter_count`` — 1..4 (per-model максимум, налаган в T0)
 
-Module-specific: ``shutter_model``, ``box_size``, ``slat_size``,
-``axis_size``, ``control_type``, ``guide_type``, ``shutter_count``.
+Per-model правила (T0/T1/T2/T3)
+===============================
 
-Rule source
-===========
+**T0 — ограничения** (24 правила, ``hitPolicy: collect``): глобални L/H
+лимити; per-model семейство кутии (Standard/Round → 137/165/180/205;
+T-Roll/Thermo → 170/210; Built-In → без кутия); feather guide само за
+Thermo; per-model максимум брой щори (Standard 1-4, T-Roll 1-2,
+Round/Thermo/Built-In = 1); предупреждение при ``H > 2800``.
 
-All formulas/offsets are transcribed from the project knowledge base
-``project_odoo_teolino.md`` (the ``bom_engine.py`` prototype; 17 locked
-production samples across the 5 models).
+**T1 — геометрия** (10 правила, ``hitPolicy: first`` по ``shutter_model``
++ ``slat_size``): връща per-model offset-и (``slat_len_offset``,
+``terminal_offset``, ``axis_off_40/60``, ``box_form_offset``), режим на
+броене на ламелите (``slat_count_mode``: ``std`` / ``builtin`` /
+``thermo``), режим на caps (``caps_mode``: ``n1`` / ``equal`` /
+``direct``) и тип на водача (``guide_mode``).
 
-Verified vs TBD
-===============
+**T2 — материали** (5 правила, ``hitPolicy: collect``): O-варианти за
+управлението — ``rope-o`` (въжен комплект), ``shirit-o`` (ширит),
+``motor-o`` (стандартен мотор за не-Thermo), ``motor_safety-o`` (мотор
+със safety профил за Thermo Comfort), ``guide_feather-o`` (водач с перо
+за Thermo).
 
-Verified (per the locked samples):
+**T3 — операции** (2 правила, ``hitPolicy: collect``): добавя workorder
+за инсталация на мотор; стандартен 45 мин, safety вариант 60 мин.
 
-* Per-model slat/terminal/axis/box offsets (T1).
-* Slat-count modes: ``std`` ``floor((H-Box/2)/S)-1``; ``builtin``
-  ``ceil(H/S)-1``; ``thermo`` ``floor((H-Box/2)/S)+(1 if S==50)``.
-* Caps modes: Standard/Round/T-Roll ``n+1``; Built-In ``=n``;
-  Thermo direct.
-* Control kits as O-variants; Thermo motor = RS100 IO; feather guide
-  Thermo-only.
+Покритие — потвърдено vs TBD
+============================
 
-TBD (not in the catalogue/prototype yet — handled as warnings, not
-hard limits):
+**Потвърдено** (от заключените production проби):
 
-* Full ``H_MAX`` table per ``(model, box, slat, axis)`` (max ever
-  2800; T-Roll Lamella 50 ``H_MAX``). T0 enforces the global L/H
-  limits and warns when ``H > 2800``.
-* Exact verified Odoo SKU numbers — demo products use descriptive
-  placeholders (indicative code in the name), same convention as
-  ``mrp_design_matrix_roller_door``. The real SKU mapping is owned by
-  the downstream ``teolino_shutters_bom`` (Vladimir/Lyubomir).
+* per-model offset-и (slat / terminal / axis / box) — T1
+* slat-count modes: ``std``: ``floor((H−Box/2)/S)−1``; ``builtin``:
+  ``ceil(H/S)−1``; ``thermo``: ``floor((H−Box/2)/S) + (1 if S==50)``
+* caps modes: Standard/Round/T-Roll → ``n+1``; Built-In → ``=n``;
+  Thermo Comfort → директен брой
+* O-варианти за управление; за Thermo Comfort = мотор със safety профил;
+  feather guide само за Thermo
 
-Known limitations
-=================
+**TBD** (липсва в спецификацията — кодирано като warning, не hard limit):
 
-* **``industry`` tag → ``design.industry``.** This module's data files
-  still declare ``industry="doors"`` as a plain string (zero-churn
-  convention). Since ``design_param_base`` 19.0.1.1.0 /
-  ``mrp_design_matrix`` 19.0.1.9.0 that string is auto-resolved to the
-  canonical ``design.industry`` record via ``design.industry._resolve``
-  (full-normalization alias map; ``doors`` → ``doors``). No data-file
-  change is needed here.
-* **Demo BoM xml-id / table-copy fragility (repo-wide).** The demo
-  follows the established sibling convention
-  (``ref="<module>.<code>"`` for ``design_param_definition_id`` and
-  ``eval="ref('tmpl').constraint_table"`` for the four tables).
-  ``design.param.definition.create_design_param_definitions`` does not
-  register ``ir.model.data``, and ``ref()`` in eval returns an
-  ``int`` — so this convention is technically fragile in stock Odoo
-  (``bags`` even stubs ``material_table`` to ``{}``). Mirrored here as-is
-  for consistency with the reference module; fixing it properly is a
-  separate ecosystem task, not specific to this module.
+* Пълна ``H_MAX`` таблица per ``(model, box, slat, axis)`` (max ever
+  2800; T-Roll Lamella 50 ``H_MAX``). T0 налага глобални L/H лимити и
+  предупреждава при ``H > 2800``.
+* Точни Odoo SKU номера — demo продуктите са описателни placeholder-и
+  (индикативен код в името), консистентно с
+  ``mrp_design_matrix_roller_door``. Реалното SKU мапиране е
+  отговорност на downstream BoM модул (отделен проект).
 
-License
-=======
+Известни ограничения
+====================
 
-AGPL-3. Copyright 2026 BL Consulting.
+* **Резолване на ``industry`` тага.** Data файловете декларират
+  ``industry="doors"`` като свободен стринг (zero-churn конвенция).
+  От ``design_param_base`` 19.0.1.1.0 / ``mrp_design_matrix`` 19.0.1.9.0
+  стрингът се auto-резолва към канонично ``design.industry`` чрез
+  ``design.industry._resolve`` (full-normalization alias map;
+  ``doors → doors``). Не се налагат промени в data файловете.
+
+* **Demo BoM xml-id / table-copy fragility (repo-wide).** Demo-то
+  следва установената sibling конвенция (``ref="<module>.<code>"`` за
+  ``design_param_definition_id`` и
+  ``eval="ref('tmpl').constraint_table"`` за четирите таблици).
+  ``design.param.definition.create_design_param_definitions`` не
+  регистрира ``ir.model.data``, а ``ref()`` в eval връща ``int`` — така
+  че тази конвенция е технически крехка в stock Odoo (``bags`` дори
+  заглушава ``material_table`` с ``{}``). Огледано 1:1 с референтния
+  модул заради консистентност; коректното решение е repo-wide задача,
+  не специфична за този модул.
+
+Лиценз
+======
+
+AGPL-3.

@@ -1,7 +1,7 @@
-1.  Create an XML file in your module's `data/` directory named
+1.  Създайте XML файл в `data/` директорията на вашия модул, с име
     `design_param_definitions.xml`.
 
-2.  Declare a definition with its parameter list:
+2.  Декларирайте дефиниция със списъка параметри:
 
     ```xml
     <odoo>
@@ -20,7 +20,8 @@
     </odoo>
     ```
 
-3.  Register it via a data function call in `install_design_params.xml`:
+3.  Регистрирайте я през data function call в
+    `install_design_params.xml`:
 
     ```xml
     <odoo noupdate="1">
@@ -31,5 +32,5 @@
     </odoo>
     ```
 
-4.  Link the definition to a BoM via the `design_param_definition_id`
-    field on `mrp.bom`.
+4.  Свържете дефиницията към BoM през полето
+    `design_param_definition_id` на `mrp.bom`.

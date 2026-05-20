@@ -1,47 +1,61 @@
 # Changelog
 
+## 19.0.1.9.0 — 2026-05-20
+
+### Подобрения
+
+- `industry` свободен Char на `mrp.matrix.template` преминава в
+  `industry_id` Many2one към новия модел `design.industry` (canonical
+  таксономия + INDUSTRY_ALIASES full-normalization map). Zero-churn за
+  съществуващите индустриални под-модули — `create`/`write` override
+  резолва легитимните `industry="…"` стойности преди ORM.
+- Документацията (README + `readme/*.md`) е преведена на български.
+
 ## 19.0.1.8.0 — 2026-04-16
 
-### Fixes
+### Корекции
 
-- Migrate to Odoo 19 `mrp.production.lot_producing_ids` (was `lot_producing_id`
-  Many2one; now One2many). Uses `lot_producing_ids[:1]` as the design lot.
-- `stock.lot._get_design_context()` now translates UUID keys → schema
-  `string` names and display labels → raw selection values, so T1/T2/T3
-  rules match the values stored on the lot.
-- `_eval_t0_constraints` accepts both list (zen-engine 0.53+ `collect`
-  hit policy) and dict (legacy) return shapes.
-- `_create_or_update_matrix_move` writes `stock.move.reference` instead
-  of the removed `stock.move.name` field.
-- `_unpack_formula_result` calls `_resolve_variant_by_ptav` for O-variant
-  BoM lines that define `param_attribute_map`, so the matrix-selected
-  move uses the correct product variant from the design context — not
-  the static placeholder stored on the BoM line.
+- Миграция към Odoo 19 `mrp.production.lot_producing_ids` (преди беше
+  `lot_producing_id` Many2one; сега One2many). Ползва
+  `lot_producing_ids[:1]` като design lot.
+- `stock.lot._get_design_context()` сега превежда UUID ключовете към
+  schema `string` имена и display label-ите към raw selection
+  стойностите, така че T1/T2/T3 правилата мачват записаните на lot-а
+  стойности.
+- `_eval_t0_constraints` приема и list (zen-engine 0.53+ `collect`
+  hit policy), и dict (legacy) shape на връщане.
+- `_create_or_update_matrix_move` пише в `stock.move.reference` вместо
+  в премахнатото `stock.move.name`.
+- `_unpack_formula_result` извиква `_resolve_variant_by_ptav` за
+  O-вариантни BoM линии с дефиниран `param_attribute_map`, така че
+  избраното от матрицата move ползва правилния вариант от design
+  контекста — не статичния placeholder, записан върху BoM линията.
 
-### Known issues
+### Известни проблеми
 
-- Duplicate move_raw lines: standard MRP and the matrix engine both
-  generate moves for the same BoM line. Planned fix in 19.0.1.9.0.
-- XML `eval=""` matrix templates (canned_peppers, doors) still use
-  Python dict literals that a fresh install reverts to the old zen
-  schema. Migration of the XML files is tracked as a separate commit
-  in the repo.
+- Дублирани move_raw линии: стандартният MRP и matrix engine-ът
+  генерират move-ове за една и съща BoM линия. Планирана корекция в
+  19.0.1.9.0.
+- XML `eval=""` matrix templates все още ползват Python dict литерали,
+  които fresh install връща към старата zen schema. Миграцията на XML
+  файловете се води като отделен commit в repo-то.
 
 ## 19.0.1.7.0 — 2026-04-16
 
-### Fixes
+### Корекции
 
-- Matrix template JDM migration helper (string → node schema, edges,
-  `field` on I/O, wildcard `""` for missing input ids in rules).
+- Helper за миграция на matrix template JDM-а (string → node schema,
+  edges, `field` на I/O, wildcard `""` за липсващи input id-та в
+  правилата).
 
 ## 19.0.1.6.0 — 2026-04-12
 
-### Fixes
+### Корекции
 
-- Initial Odoo 19 + zen-engine 0.53 compatibility work (reverted and
-  re-done in 19.0.1.7/8.0).
+- Начална работа по съвместимост с Odoo 19 + zen-engine 0.53 (върната
+  и преправена в 19.0.1.7/8.0).
 
-## 19.0.1.0.0 — 2026-03 (initial)
+## 19.0.1.0.0 — 2026-03 (първа версия)
 
-- Parametric BoM driven by lot-level design parameters and a DMN rule
-  matrix. T0/T1/T2/T3 tables via GoRules zen-engine.
+- Параметричен BoM, задвижван от lot-level design параметри и DMN
+  правилна матрица. T0/T1/T2/T3 таблици през GoRules zen-engine.
