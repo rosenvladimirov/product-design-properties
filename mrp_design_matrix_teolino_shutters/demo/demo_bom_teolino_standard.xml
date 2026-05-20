@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Demo BoM — Teolino Shutter, единен 5-моделен BoM.
+
+    Конфигурацията по подразбиране на demo лота е Standard 1000×2300,
+    box 165, slat 40, axis 40, rope. Формулите ОБАЧЕ са model-aware: четат
+    `shutter_model` + T1 изходите (slat_len_offset / terminal_offset /
+    axis_off_40 / axis_off_60 / box_form_offset / slat_count_mode /
+    caps_mode / guide_mode) и важат за всичките 5 модела при смяна на лота.
+
+    Източник: project memory `project_odoo_teolino.md`.
+    Помощни величини, налични в quantity_formula контекста:
+        width, height                 — L × H (mm)
+        shutter_model, box_size,      — design параметри
+        slat_size, axis_size,
+        control_type, guide_type,
+        shutter_count
+        slat_len_offset, terminal_offset, axis_off_40, axis_off_60,
+        box_form_offset, slat_count_mode, caps_mode, guide_mode   — от T1
+        product_uom_qty               — брой произвеждани щори
+
+    Конвенция за артикулите: човешко име + индикативен код в името
+    (като roller_door demo) — реалните Odoo SKU се мапват от
+    teolino_shutters_bom (Vladimir/Lyubomir). НЕ се измислят потвърдени
+    номенклатурни номера тук.
+
+    slat_count / caps по режим (project_odoo_teolino.md):
+        std    : slat_count = floor((H - box_mm/2)/Slat) - 1 ; caps = slat_count + 1
+        builtin: slat_count = ceil(H/Slat) - 1               ; caps = slat_count
+        thermo : caps = floor((H - box_mm/2)/Slat) + (1 if Slat==50 else 0)
+                 slat_count = caps
+-->
+<odoo>
+
+  <!-- ── Component products (descriptive placeholders) ─────────────────── -->
+  <record id="product_tmpl_teo_al_guide" model="product.template">
+    <field name="name">TEO — AL Guide 53x22 (703001)</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_meter"/>
+  </record>
+  <record id="product_tmpl_teo_brush_guide" model="product.template">
+    <field name="name">TEO — Brush Guide 6x6 (730043)</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_meter"/>
+  </record>
+  <record id="product_tmpl_teo_slat" model="product.template">
+    <field name="name">TEO — Slat profile 40/50 (70200x)</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_meter"/>
+  </record>
+  <record id="product_tmpl_teo_terminal" model="product.template">
+    <field name="name">TEO — Terminal / bottom bar (704005)</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_meter"/>
+  </record>
+  <record id="product_tmpl_teo_gasket" model="product.template">
+    <field name="name">TEO — Gasket XMO (1052001)</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_meter"/>
+  </record>
+  <record id="product_tmpl_teo_box" model="product.template">
+    <field name="name">TEO — Main Box (70100x) [skip on Built-In]</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_meter"/>
+  </record>
+  <record id="product_tmpl_teo_axis" model="product.template">
+    <field name="name">TEO — Axis Ø40/Ø60 (72304x)</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_meter"/>
+  </record>
+  <record id="product_tmpl_teo_end_cap" model="product.template">
+    <field name="name">TEO — End Cap (70500x) [skip on Built-In]</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_teo_safety_plate" model="product.template">
+    <field name="name">TEO — Safety Plate (70601x)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_teo_pulley" model="product.template">
+    <field name="name">TEO — Pulley 135mm (712050)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_teo_caps" model="product.template">
+    <field name="name">TEO — Slat Caps (71305x)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_teo_bearing" model="product.template">
+    <field name="name">TEO — Ball Bearing (717xxx)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_teo_cup" model="product.template">
+    <field name="name">TEO — Cup per axis (718052/718053)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_teo_entry_guide" model="product.template">
+    <field name="name">TEO — Entry Guide (725046/726047)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_teo_sec_spring" model="product.template">
+    <field name="name">TEO — Security Spring (727044)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_teo_rivet_3x8" model="product.template">
+    <field name="name">TEO — Rivet 3x8 (731034)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_teo_rivet_4x10" model="product.template">
+    <field name="name">TEO — Rivet 4x10 (731035)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_teo_package" model="product.template">
+    <field name="name">TEO — Shutter Package (73400x)</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <!-- O-variants -->
+  <record id="product_tmpl_teo_rope_kit" model="product.template">
+    <field name="name">TEO — Cord Kit (733121/124/126/153 + 738039 + 727044) [O]</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_teo_shirit_kit" model="product.template">
+    <field name="name">TEO — Tape Kit (733124/125 + 733128 + 727044) [O]</field>
+    <field name="type">consu</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_teo_motor" model="product.template">
+    <field name="name">TEO — Somfy Motor (Solus 2 PA / ALTUS) [O]</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_teo_motor_rs100" model="product.template">
+    <field name="name">TEO — S&amp;SO RS100 IO Motor (1033116) [O — Thermo]</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+  </record>
+  <record id="product_tmpl_teo_guide_feather" model="product.template">
+    <field name="name">TEO — Feather Guide 50x160 (703002) [O — Thermo]</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_meter"/>
+  </record>
+
+  <!-- ── Finished product ──────────────────────────────────────────────── -->
+  <record id="product_tmpl_teolino_shutter" model="product.template">
+    <field name="name">Teolino Shutter (parametric)</field>
+    <field name="type">product</field>
+    <field name="uom_id" ref="uom.product_uom_unit"/>
+    <field name="tracking">lot</field>
+  </record>
+  <record id="product_teolino_shutter" model="product.product">
+    <field name="product_tmpl_id" ref="product_tmpl_teolino_shutter"/>
+  </record>
+
+  <!-- ── Demo BoM ──────────────────────────────────────────────────────── -->
+  <record id="bom_teolino_shutter" model="mrp.bom">
+    <field name="product_tmpl_id" ref="product_tmpl_teolino_shutter"/>
+    <field name="product_qty">1</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="type">normal</field>
+    <!-- NOTE: следва точно конвенцията на roller_door / bags. `ref(xmlid)`
+         в Odoo 18 eval връща int, а base парсерът не регистрира ir.model.data
+         за definition-а → това е известна repo-wide demo крехкост (виж
+         README „Known limitations"), НЕ специфична за този модул. -->
+    <field name="design_param_definition_id"
+           ref="mrp_design_matrix_teolino_shutters.teolino_shutters"/>
+    <field name="matrix_template_id"
+           ref="matrix_template_teolino_shutters"/>
+    <field name="constraint_table" eval="
+        ref('matrix_template_teolino_shutters').constraint_table
+    "/>
+    <field name="geometry_table" eval="
+        ref('matrix_template_teolino_shutters').geometry_table
+    "/>
+    <field name="material_table" eval="
+        ref('matrix_template_teolino_shutters').material_table
+    "/>
+    <field name="operation_table" eval="
+        ref('matrix_template_teolino_shutters').operation_table
+    "/>
+  </record>
+
+  <!-- ── BoM lines (model-aware) ───────────────────────────────────────── -->
+
+  <!-- AL Guide: per guide_mode.
+       h_minus_box  (std/round): 2 × (H - box_mm) / 1000 m
+       h_minus_1    (built_in) : 2 × (H - 1)      / 1000 m
+       fixed_pvc    (t_roll)   : 2 × (H - box_mm) / 1000 m (703062 PVC double)
+       thermo_sel   (thermo)   : standard 703001 ред (feather → O-вариант) -->
+  <record id="bl_teo_al_guide" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_al_guide"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_meter"/>
+    <field name="quantity_formula">
+box_mm = int(box_size) if box_size not in ('none', '', None) else 0
+if guide_mode == 'h_minus_1':
+    base = 2 * (height - 1)
+else:
+    base = 2 * (height - box_mm)
+quantity = base / 1000 * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Brush Guide: AL Guide × 2 (built_in: 4 × (H-1)) -->
+  <record id="bl_teo_brush_guide" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_brush_guide"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_meter"/>
+    <field name="quantity_formula">
+box_mm = int(box_size) if box_size not in ('none', '', None) else 0
+if guide_mode == 'h_minus_1':
+    base = 4 * (height - 1)
+else:
+    base = 4 * (height - box_mm)
+quantity = base / 1000 * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Slat: slat_count × (L - slat_len_offset) / 1000 linear m -->
+  <record id="bl_teo_slat" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_slat"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_meter"/>
+    <field name="quantity_formula">
+import math
+slat = int(slat_size)
+box_mm = int(box_size) if box_size not in ('none', '', None) else 0
+off = int(slat_len_offset)
+if slat_count_mode == 'builtin':
+    n_slats = math.ceil(height / slat) - 1
+elif slat_count_mode == 'thermo':
+    n_slats = math.floor((height - box_mm / 2) / slat) + (1 if slat == 50 else 0)
+else:  # std (standard / round / t_roll)
+    n_slats = math.floor((height - box_mm / 2) / slat) - 1
+quantity = n_slats * (width - off) / 1000 * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Terminal (bottom bar): (L - terminal_offset) / 1000 m -->
+  <record id="bl_teo_terminal" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_terminal"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_meter"/>
+    <field name="quantity_formula">
+quantity = (width - int(terminal_offset)) / 1000 * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Gasket: same length as terminal -->
+  <record id="bl_teo_gasket" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_gasket"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_meter"/>
+    <field name="quantity_formula">
+quantity = (width - int(terminal_offset)) / 1000 * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Main Box: (L - box_form_offset) / 1000 m. Built-In = НЯМА кутия → 0. -->
+  <record id="bl_teo_box" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_box"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_meter"/>
+    <field name="quantity_formula">
+if shutter_model == 'built_in' or box_size in ('none', '', None):
+    quantity = 0.0
+else:
+    quantity = (width - int(box_form_offset)) / 1000 * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Axis: (L - axis_off) / 1000 m ; axis_off по axis_size (T1: axis_off_40/60) -->
+  <record id="bl_teo_axis" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_axis"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_meter"/>
+    <field name="quantity_formula">
+axis_off = int(axis_off_60) if int(axis_size) == 60 else int(axis_off_40)
+quantity = (width - axis_off) / 1000 * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- End Cap: 1 set (Built-In: НЯМА кутия → 0) -->
+  <record id="bl_teo_end_cap" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_end_cap"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="quantity_formula">
+quantity = (0.0 if shutter_model == 'built_in' else 1.0) * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Safety Plate: 1 -->
+  <record id="bl_teo_safety_plate" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_safety_plate"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Pulley: 1 (Thermo: ВИНАГИ 1, не motor-reduced — вече е 1) -->
+  <record id="bl_teo_pulley" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_pulley"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Caps: caps_mode. n1: n_slats+1 ; equal/direct: = n_slats -->
+  <record id="bl_teo_caps" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_caps"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="quantity_formula">
+import math
+slat = int(slat_size)
+box_mm = int(box_size) if box_size not in ('none', '', None) else 0
+if slat_count_mode == 'builtin':
+    n_slats = math.ceil(height / slat) - 1
+elif slat_count_mode == 'thermo':
+    n_slats = math.floor((height - box_mm / 2) / slat) + (1 if slat == 50 else 0)
+else:
+    n_slats = math.floor((height - box_mm / 2) / slat) - 1
+caps = n_slats + 1 if caps_mode == 'n1' else n_slats
+quantity = caps * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Ball Bearing: 2 (Thermo: ВИНАГИ 1 — locked S1-S4) -->
+  <record id="bl_teo_bearing" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_bearing"/>
+    <field name="product_qty">2.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="quantity_formula">
+quantity = (1.0 if shutter_model == 'thermo_comfort' else 2.0) * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Cup: 1 per axis end (Thermo: Cup ВИНАГИ се добавя, SKU per axis) -->
+  <record id="bl_teo_cup" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_cup"/>
+    <field name="product_qty">2.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Entry Guide: 1 -->
+  <record id="bl_teo_entry_guide" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_entry_guide"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Security Spring:
+       std/thermo : max(2, floor((H - box_mm)/500) + 1)
+       t_roll     : shutter_count × ceil(L/500)
+       built_in   : 2 (без кутия) -->
+  <record id="bl_teo_sec_spring" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_sec_spring"/>
+    <field name="product_qty">2.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="quantity_formula">
+import math
+box_mm = int(box_size) if box_size not in ('none', '', None) else 0
+sc = int(shutter_count)
+if shutter_model == 't_roll':
+    qty = sc * math.ceil(width / 500)
+elif shutter_model == 'built_in':
+    qty = 2
+else:
+    qty = max(2, math.floor((height - box_mm) / 500) + 1)
+quantity = qty * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Rivet 3×8: 10 (box-level; Built-In без кутия → 0) -->
+  <record id="bl_teo_rivet_3x8" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_rivet_3x8"/>
+    <field name="product_qty">10.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="quantity_formula">
+quantity = (0.0 if shutter_model == 'built_in' else 10.0) * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Rivet 4×10: 10 (box-level; Built-In → 0) -->
+  <record id="bl_teo_rivet_4x10" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_rivet_4x10"/>
+    <field name="product_qty">10.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="quantity_formula">
+quantity = (0.0 if shutter_model == 'built_in' else 10.0) * product_uom_qty
+    </field>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- Package: 1 -->
+  <record id="bl_teo_package" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_package"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">1.0</field>
+  </record>
+
+  <!-- ── O-variants ────────────────────────────────────────────────────── -->
+
+  <!-- Cord kit [rope-o]: × meters (брой щори × дължина-фактор) -->
+  <record id="bl_teo_rope_kit" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_rope_kit"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="quantity_formula">
+quantity = int(shutter_count) * product_uom_qty
+    </field>
+    <field name="coeff_default">0.0</field>
+    <field name="matrix_coeff_rule">rope-o</field>
+  </record>
+
+  <!-- Tape (shirit) kit [shirit-o] -->
+  <record id="bl_teo_shirit_kit" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_shirit_kit"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="quantity_formula">
+quantity = int(shutter_count) * product_uom_qty
+    </field>
+    <field name="coeff_default">0.0</field>
+    <field name="matrix_coeff_rule">shirit-o</field>
+  </record>
+
+  <!-- Somfy motor [motor-o] (не-Thermo) -->
+  <record id="bl_teo_motor" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_motor"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">0.0</field>
+    <field name="matrix_coeff_rule">motor-o</field>
+  </record>
+
+  <!-- S&SO RS100 IO motor [motor_rs100-o] (Thermo Comfort) -->
+  <record id="bl_teo_motor_rs100" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_motor_rs100"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_unit"/>
+    <field name="coeff_default">0.0</field>
+    <field name="matrix_coeff_rule">motor_rs100-o</field>
+  </record>
+
+  <!-- Feather guide [guide_feather-o] (Thermo Comfort): замества стандартния
+       водач; дължина = 2 × (H - box_mm) / 1000 m -->
+  <record id="bl_teo_guide_feather" model="mrp.bom.line">
+    <field name="bom_id" ref="bom_teolino_shutter"/>
+    <field name="product_id" ref="product_tmpl_teo_guide_feather"/>
+    <field name="product_qty">1.0</field>
+    <field name="product_uom_id" ref="uom.product_uom_meter"/>
+    <field name="quantity_formula">
+box_mm = int(box_size) if box_size not in ('none', '', None) else 0
+quantity = 2 * (height - box_mm) / 1000 * product_uom_qty
+    </field>
+    <field name="coeff_default">0.0</field>
+    <field name="matrix_coeff_rule">guide_feather-o</field>
+  </record>
+
+</odoo>
