@@ -1,26 +1,29 @@
-1.  Install the Python dependency (GoRules JDM evaluator):
+1.  Инсталирайте Python зависимостта (GoRules JDM evaluator):
 
     ```bash
     pip install zen-engine
     ```
 
-2.  Create a `design.param.definition` for the product family (see
-    `design_param_base`).  Link it to the BoM via
+2.  Създайте `design.param.definition` за продуктовото семейство (виж
+    `design_param_base`). Свържете я към BoM-а през полето
     `design_param_definition_id`.
 
-3.  Either load matrix templates via _Load from Template_ on the BoM
-    or paste GoRules JDM JSON directly into the four table fields
+3.  Заредете матрични шаблони през _Load from Template_ на BoM-а, или
+    поставете GoRules JDM JSON директно в четирите table полета
     (`constraint_table`, `geometry_table`, `material_table`,
     `operation_table`).
 
-4.  On each BoM line, configure:
+4.  За всяка BoM линия конфигурирайте:
 
-    - `coeff_default` — 0.0 for O-variants (placeholder lines that
-      matrix must activate), 1.0 for always-used components.
-    - `matrix_coeff_rule` — key string that must match a row in
-      `material_table.content.rules` for runtime coefficient lookup.
-    - `quantity_formula` — optional Python formula (see
+    - `coeff_default` — 0.0 за O-варианти (placeholder редове, които
+      матрицата трябва да активира), 1.0 за постоянно използвани
+      компоненти.
+    - `matrix_coeff_rule` — ключов стринг, който трябва да съвпадне с
+      ред в `material_table.content.rules` за runtime lookup на
+      коефициента.
+    - `quantity_formula` — опционална Python формула (виж
       `mrp_bom_line_formula_template`).
 
-5.  For semi-finished chains, set `child_definition_id` and
-    `param_extraction_map` (JSON mapping parent keys to child keys).
+5.  За semi-finished вериги задайте `child_definition_id` и
+    `param_extraction_map` (JSON, който мапва родителски ключове към
+    child ключове).

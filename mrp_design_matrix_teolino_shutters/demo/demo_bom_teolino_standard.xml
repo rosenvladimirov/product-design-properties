@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Demo BoM — Teolino Shutter, единен 5-моделен BoM.
+    Demo BoM — Roller Shutter, единен 5-моделен BoM.
 
     Конфигурацията по подразбиране на demo лота е Standard 1000×2300,
     box 165, slat 40, axis 40, rope. Формулите ОБАЧЕ са model-aware: четат
@@ -8,7 +8,7 @@
     axis_off_40 / axis_off_60 / box_form_offset / slat_count_mode /
     caps_mode / guide_mode) и важат за всичките 5 модела при смяна на лота.
 
-    Източник: project memory `project_odoo_teolino.md`.
+    Източник: вътрешна спецификация (параметричен BoM).
     Помощни величини, налични в quantity_formula контекста:
         width, height                 — L × H (mm)
         shutter_model, box_size,      — design параметри
@@ -21,10 +21,10 @@
 
     Конвенция за артикулите: човешко име + индикативен код в името
     (като roller_door demo) — реалните Odoo SKU се мапват от
-    teolino_shutters_bom (Vladimir/Lyubomir). НЕ се измислят потвърдени
+    downstream BoM module (отделен проект). НЕ се измислят потвърдени
     номенклатурни номера тук.
 
-    slat_count / caps по режим (project_odoo_teolino.md):
+    slat_count / caps по режим (per spec):
         std    : slat_count = floor((H - box_mm/2)/Slat) - 1 ; caps = slat_count + 1
         builtin: slat_count = ceil(H/Slat) - 1               ; caps = slat_count
         thermo : caps = floor((H - box_mm/2)/Slat) + (1 if Slat==50 else 0)
@@ -135,12 +135,12 @@
     <field name="uom_id" ref="uom.product_uom_unit"/>
   </record>
   <record id="product_tmpl_teo_motor" model="product.template">
-    <field name="name">TEO — Somfy Motor (Solus 2 PA / ALTUS) [O]</field>
+    <field name="name">TEO — Tubular Motor (standard) [O]</field>
     <field name="type">product</field>
     <field name="uom_id" ref="uom.product_uom_unit"/>
   </record>
-  <record id="product_tmpl_teo_motor_rs100" model="product.template">
-    <field name="name">TEO — S&amp;SO RS100 IO Motor (1033116) [O — Thermo]</field>
+  <record id="product_tmpl_teo_motor_safety" model="product.template">
+    <field name="name">TEO — Tubular Motor (with safety profile, radio IO) [O — Thermo]</field>
     <field name="type">product</field>
     <field name="uom_id" ref="uom.product_uom_unit"/>
   </record>
@@ -152,7 +152,7 @@
 
   <!-- ── Finished product ──────────────────────────────────────────────── -->
   <record id="product_tmpl_teolino_shutter" model="product.template">
-    <field name="name">Teolino Shutter (parametric)</field>
+    <field name="name">Roller Shutter (parametric)</field>
     <field name="type">product</field>
     <field name="uom_id" ref="uom.product_uom_unit"/>
     <field name="tracking">lot</field>
@@ -470,7 +470,7 @@ quantity = int(shutter_count) * product_uom_qty
     <field name="matrix_coeff_rule">shirit-o</field>
   </record>
 
-  <!-- Somfy motor [motor-o] (не-Thermo) -->
+  <!-- Standard motor [motor-o] (не-Thermo) -->
   <record id="bl_teo_motor" model="mrp.bom.line">
     <field name="bom_id" ref="bom_teolino_shutter"/>
     <field name="product_id" ref="product_tmpl_teo_motor"/>
@@ -480,14 +480,14 @@ quantity = int(shutter_count) * product_uom_qty
     <field name="matrix_coeff_rule">motor-o</field>
   </record>
 
-  <!-- S&SO RS100 IO motor [motor_rs100-o] (Thermo Comfort) -->
-  <record id="bl_teo_motor_rs100" model="mrp.bom.line">
+  <!-- Safety motor [motor_safety-o] (Thermo Comfort) -->
+  <record id="bl_teo_motor_safety" model="mrp.bom.line">
     <field name="bom_id" ref="bom_teolino_shutter"/>
-    <field name="product_id" ref="product_tmpl_teo_motor_rs100"/>
+    <field name="product_id" ref="product_tmpl_teo_motor_safety"/>
     <field name="product_qty">1.0</field>
     <field name="product_uom_id" ref="uom.product_uom_unit"/>
     <field name="coeff_default">0.0</field>
-    <field name="matrix_coeff_rule">motor_rs100-o</field>
+    <field name="matrix_coeff_rule">motor_safety-o</field>
   </record>
 
   <!-- Feather guide [guide_feather-o] (Thermo Comfort): замества стандартния

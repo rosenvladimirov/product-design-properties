@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Design parameter definitions for the Teolino roller-shutter range.
+    Design parameter definitions for a parametric roller-shutter range.
 
     Покрива 5-те модела (Standard / Round / T-Roll / Built-In / Thermo
     Comfort). Параметрите са унифицирани; per-model ограниченията се
@@ -8,14 +8,14 @@
     (geometry_table) на matrix_templates.xml — БЕЗ variant explosion.
 
     Параметрите от base_dimensions (parent) се наследяват:
-        width  — отвор по дължина L (mm)  [Teolino "L"]
-        height — отвор по височина H (mm) [Teolino "H"]
+        width  — отвор по дължина L (mm)
+        height — отвор по височина H (mm)
 
-    Източник на правилата: project memory `project_odoo_teolino.md`
-    (bom_engine.py прототип, 17 заключени проби през 5-те модела).
+    Източник на правилата: вътрешна спецификация (параметричен BoM
+    с 17 заключени проби през 5-те модела).
 -->
 <records>
-    <properties code="teolino_shutters" name="Teolino Shutter (5 models)"
+    <properties code="teolino_shutters" name="Roller Shutter (5 models)"
                 industry="doors" parent="base_dimensions">
 
         <!-- Кой от 5-те модела се произвежда. Драйвър за T0/T1. -->
