@@ -1,7 +1,7 @@
 # Copyright 2026 BL Consulting
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class MrpMatrixTemplate(models.Model):
@@ -22,13 +22,43 @@ class MrpMatrixTemplate(models.Model):
     _name = "mrp.matrix.template"
     _description = "Design Matrix Template"
     _rec_name = "name"
-    _order = "industry, name"
+    _order = "industry_id, name"
 
     name = fields.Char(required=True)
-    industry = fields.Char(
-        help="Industry tag for filtering: bags, doors, corrugated, …"
+    industry_id = fields.Many2one(
+        "design.industry",
+        string="Industry",
+        ondelete="restrict",
+        index=True,
+        help="Canonical industry classification. Resolved automatically "
+        "from the data tag (e.g. industry=\"doors\") via "
+        "design.industry._resolve — no data-file changes needed.",
     )
     description = fields.Text()
+
+    # -- Zero-churn industry resolution --------------------------------------
+    # 8-те sibling модула подават `<field name="industry">doors</field>` като
+    # свободен стринг. Прехващаме го и резолваме към design.industry, така че
+    # data файловете им остават непокътнати.
+
+    @api.model
+    def _pop_industry_tag(self, vals):
+        """Translate a string ``industry`` key in *vals* to ``industry_id``."""
+        if "industry" in vals and not isinstance(vals.get("industry"), int):
+            tag = vals.pop("industry")
+            industry = self.env["design.industry"].sudo()._resolve(tag)
+            vals["industry_id"] = industry.id or False
+        return vals
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            self._pop_industry_tag(vals)
+        return super().create(vals_list)
+
+    def write(self, vals):
+        self._pop_industry_tag(vals)
+        return super().write(vals)
 
     constraint_table = fields.Json(
         "T0 — Constraints",
