@@ -525,6 +525,7 @@ export class DesignConfiguratorWidget extends Component {
         }
         this.ui.saving = true;
         try {
+            this._resolveUseMainSentinels();
             const lotId = await this._saveDesignLot();
             this.notification.add("Design lot created successfully.", { type: "success" });
             // onLotCreated in dialog already calls close() — don't call onClose again
@@ -533,6 +534,44 @@ export class DesignConfiguratorWidget extends Component {
             this.notification.add(`Error: ${e.message}`, { type: "danger" });
         } finally {
             this.ui.saving = false;
+        }
+    }
+
+    /**
+     * Expand the "use_main" UI sentinel into the real value before the lot
+     * is saved.  Sub-property params (e.g. ``color_slat``, ``color_box``)
+     * may carry the literal string ``"use_main"`` to signal "inherit from
+     * the matching main_X param" (e.g. ``main_color``).  PTAV resolution
+     * downstream needs concrete values, so we resolve the sentinel here.
+     *
+     * Resolution rule: for any param ``X_Y`` whose current value is
+     * ``"use_main"``, look up ``main_X``.  If it exists and is non-empty,
+     * copy its value.  Generalizes the shutter case (color_* → main_color)
+     * to any prefix-based cascade.
+     */
+    _resolveUseMainSentinels() {
+        const allDefs = [
+            ...(this.props.paramDefinition || []),
+            ...((this.props.childComponents || []).flatMap(c => c.paramDefinition || [])),
+        ];
+        const byName = {};
+        for (const d of allDefs) {
+            if (d && d.name) byName[d.name] = d;
+        }
+        for (const [key, val] of Object.entries(this.params)) {
+            if (val !== "use_main") continue;
+            const def = byName[key];
+            const parts = (def && def.string || key).split("_");
+            if (parts.length < 2) continue;
+            const mainKey = `main_${parts[0]}`;
+            // Look both by `name` (UUID) and by `string` (human label)
+            const mainDef = byName[mainKey]
+                || allDefs.find(d => d && d.string === mainKey);
+            if (!mainDef) continue;
+            const mainVal = this.params[mainDef.name];
+            if (mainVal && mainVal !== "use_main") {
+                this.params[key] = mainVal;
+            }
         }
     }
 
