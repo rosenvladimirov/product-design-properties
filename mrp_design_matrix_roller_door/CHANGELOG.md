@@ -4,6 +4,26 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.5.0] - 2026-05-23
+
+### Added
+
+- TΠ availability_table seed за template "Roller Shutter — Standard".
+  Минимален пример: когато `slat_type = "PC"` → `has_insulation` enabled=false,
+  default_override=false. Изпреварваща защита срещу T0 ERROR
+  "Polycarbonate slats cannot be combined with insulation".
+
+## [18.0.1.4.0] - 2026-05-23
+
+### Changed
+
+- `data/matrix_templates.xml` — T0/T1/T2/T3 seed-овете преписани в modern
+  zen-engine ≥ 0.50 формат: `inputNode → decisionTableNode → outputNode`
+  с explicit `edges`, и `field` (= id) на всички input/output колони.
+  При fresh install `ZenWrapper._migrate_node_types` става no-op за тези
+  template-и. `noupdate="1"` — съществуващи записи на работещи бази НЕ се
+  пренаписват.
+
 ## [18.0.1.3.0] - 2026-04-29
 
 ### Added

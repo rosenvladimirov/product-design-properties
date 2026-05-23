@@ -1,7 +1,11 @@
 # Copyright 2026 BL Consulting
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import fields, models
+import logging
+
+from odoo import api, fields, models
+
+_logger = logging.getLogger(__name__)
 
 
 class MrpBom(models.Model):
@@ -35,6 +39,14 @@ class MrpBom(models.Model):
         "T3 — Operations",
         help="GoRules JDM. Produces conditional workorders.",
     )
+    availability_table = fields.Json(
+        "TΠ — Param Availability",
+        help=(
+            "GoRules JDM. Reactive UI control table consumed by the design "
+            "configurator (sale_design_configurator). При празно — fallback "
+            "на ``matrix_template_id.availability_table``."
+        ),
+    )
 
     # ── Actions ──────────────────────────────────────────────────────────
 
@@ -50,5 +62,77 @@ class MrpBom(models.Model):
                 "geometry_table": t.geometry_table,
                 "material_table": t.material_table,
                 "operation_table": t.operation_table,
+                "availability_table": t.availability_table,
             }
         )
+
+    # ── T2 wiring sanity check ──────────────────────────────────────────
+    # T2 material_table emit-ва `bom_line_coeff_key` стойности (rope-o,
+    # motor-o, …), които mrp.bom.line.matrix_coeff_rule трябва да декларира
+    # за да получат runtime coefficient. Без декларация — coeff lookup-ът
+    # отива в нищото (виж project_mrp_design_matrix_dev_teo_audit_20260523
+    # за реален пример: BoM 580 на dev-teo има 5 ключа в T2, 0 декларации
+    # по 45 реда). Тук log-ваме предупреждение, НЕ raise — T2 е optional
+    # layer и блокираният save би влошил UX.
+
+    # ── TΠ Availability — public entry за sale_design_configurator ──────
+    # Извиква се чрез orm.call от OWL widget на всяка промяна на param
+    # (debounced 150ms client-side). Връща normalised dict per param.
+    # `@api.model` — context е dict client-side, не record state.
+
+    @api.model
+    def _configurator_evaluate_availability(self, bom_id, context):
+        """Return TΠ availability state за дадения BoM и текущ param context.
+
+        :param bom_id: int — mrp.bom id (от dialog props)
+        :param context: dict — текущи param стойности (design_params)
+        :returns: dict ``{param_name: {visible?, enabled?, allowed_values?,
+            default_override?}}``. Празен dict ако TΠ не е дефиниран.
+        """
+        bom = self.browse(bom_id).exists()
+        if not bom:
+            return {}
+        # BoM-копието има приоритет; fallback на template-а.
+        table = bom.availability_table
+        owner = bom
+        if not table and bom.matrix_template_id:
+            table = bom.matrix_template_id.availability_table
+            owner = bom.matrix_template_id
+        if not table:
+            return {}
+        Template = self.env["mrp.matrix.template"]
+        # Reuse the normalisation pipeline regardless of owner.
+        from .zen_engine import ZenWrapper
+        raw = ZenWrapper.evaluate(table, context or {}, env=self.env)
+        return Template._normalize_availability(raw)
+
+    @api.constrains(
+        "matrix_template_id",
+        "material_table",
+        "bom_line_ids.matrix_coeff_rule",
+    )
+    def _check_t2_wiring(self):
+        Template = self.env["mrp.matrix.template"]
+        for bom in self:
+            if not bom.matrix_template_id:
+                continue
+            # BoM-копието има приоритет над template (потребителят може да е
+            # редактирал собственото си копие); fallback на template-а ако е
+            # празно.
+            table = bom.material_table or bom.matrix_template_id.material_table
+            required = Template._extract_t2_coeff_keys(table)
+            if not required:
+                continue
+            declared = {r for r in bom.bom_line_ids.mapped("matrix_coeff_rule") if r}
+            missing = sorted(required - declared)
+            if missing:
+                _logger.warning(
+                    "T2 wiring incomplete на BoM %s (id=%s, template=%r): "
+                    "material_table иска ключове %s, но никой ред в "
+                    "bom_line_ids.matrix_coeff_rule не ги декларира — "
+                    "T2 coefficient-ите за тях няма да достигнат до stock moves.",
+                    bom.display_name,
+                    bom.id,
+                    bom.matrix_template_id.name,
+                    missing,
+                )

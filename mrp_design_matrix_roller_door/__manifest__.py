@@ -6,7 +6,7 @@
         "Design parameter definitions and matrix templates "
         "for roller shutter manufacturers (Teolino)."
     ),
-    "version": "18.0.1.3.0",
+    "version": "18.0.1.5.0",
     "category": "Manufacturing",
     "website": "https://github.com/OCA/manufacture",
     "author": "BL Consulting, Odoo Community Association (OCA)",

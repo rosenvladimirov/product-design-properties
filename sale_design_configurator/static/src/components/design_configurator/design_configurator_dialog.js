@@ -44,6 +44,8 @@ export class DesignConfiguratorDialog extends Component {
             geometryTable: false,
             materialTable: false,
             operationTable: false,
+            availabilityTable: false,
+            bomId: false,
             bomLines: [],
         });
         this._loadDefinition();
@@ -93,17 +95,21 @@ export class DesignConfiguratorDialog extends Component {
                 );
                 this.state.bomAssets = bomAssets;
 
-                // Load BoM matrix tables (T0-T3) for RuleMatrixPreview
+                // Load BoM matrix tables (T0-T3 + TΠ) for RuleMatrixPreview
+                // и за reactive availability eval в configurator-а.
+                this.state.bomId = boms[0].id;
                 try {
                     const [bomData] = await this.orm.read(
                         "mrp.bom", [boms[0].id],
-                        ["constraint_table", "geometry_table", "material_table", "operation_table"]
+                        ["constraint_table", "geometry_table", "material_table",
+                         "operation_table", "availability_table"]
                     );
                     if (bomData) {
                         this.state.constraintTable = bomData.constraint_table || false;
                         this.state.geometryTable = bomData.geometry_table || false;
                         this.state.materialTable = bomData.material_table || false;
                         this.state.operationTable = bomData.operation_table || false;
+                        this.state.availabilityTable = bomData.availability_table || false;
                     }
                 } catch (e) {
                     console.warn("Could not load BoM matrix tables:", e.message);

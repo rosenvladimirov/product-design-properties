@@ -56,25 +56,32 @@ T2: O-variant activation — motor (electric/radio), crank (chain), insulation, 
 T3: motor install + programming workorder when drive is electric or radio.</field>
 
     <!-- ── T0 — Constraints ──────────────────────────────────────────────── -->
+    <!--
+        Modern zen-engine ≥ 0.50 граф: inputNode → decisionTableNode → outputNode
+        с explicit edges. Inputs/outputs носят `field` (= id) за да не се
+        патчат на всеки evaluate от ZenWrapper._migrate_node_types.
+    -->
     <field name="constraint_table" eval="
         {
-            'nodes': [{
+            'nodes': [
+                {'id': 'zen_input', 'name': 'Input', 'type': 'inputNode'},
+                {
                 'id': 't0-roller',
                 'name': 'T0 Constraints',
-                'type': 'decisionTable',
+                'type': 'decisionTableNode',
                 'content': {
                     'hitPolicy': 'collect',
                     'inputs': [
-                        {'id': 'slat_type',      'name': 'slat_type'},
-                        {'id': 'drive_type',     'name': 'drive_type'},
-                        {'id': 'box_size',       'name': 'box_size'},
-                        {'id': 'width',          'name': 'width'},
-                        {'id': 'height',         'name': 'height'},
-                        {'id': 'has_insulation', 'name': 'has_insulation'}
+                        {'id': 'slat_type',      'name': 'slat_type',      'field': 'slat_type'},
+                        {'id': 'drive_type',     'name': 'drive_type',     'field': 'drive_type'},
+                        {'id': 'box_size',       'name': 'box_size',       'field': 'box_size'},
+                        {'id': 'width',          'name': 'width',          'field': 'width'},
+                        {'id': 'height',         'name': 'height',         'field': 'height'},
+                        {'id': 'has_insulation', 'name': 'has_insulation', 'field': 'has_insulation'}
                     ],
                     'outputs': [
-                        {'id': 'level',   'name': 'level'},
-                        {'id': 'message', 'name': 'message'}
+                        {'id': 'level',   'name': 'level',   'field': 'level'},
+                        {'id': 'message', 'name': 'message', 'field': 'message'}
                     ],
                     'rules': [
                         {
@@ -169,7 +176,13 @@ T3: motor install + programming workorder when drive is electric or radio.</fiel
                         }
                     ]
                 }
-            }]
+                },
+                {'id': 'zen_output', 'name': 'Output', 'type': 'outputNode'}
+            ],
+            'edges': [
+                {'id': 'zen_edge_in',  'sourceId': 'zen_input', 'targetId': 't0-roller'},
+                {'id': 'zen_edge_out', 'sourceId': 't0-roller', 'targetId': 'zen_output'}
+            ]
         }
     "/>
 
@@ -190,19 +203,21 @@ T3: motor install + programming workorder when drive is electric or radio.</fiel
     -->
     <field name="geometry_table" eval="
         {
-            'nodes': [{
+            'nodes': [
+                {'id': 'zen_input', 'name': 'Input', 'type': 'inputNode'},
+                {
                 'id': 't1-roller',
                 'name': 'T1 Geometry',
-                'type': 'decisionTable',
+                'type': 'decisionTableNode',
                 'content': {
                     'hitPolicy': 'first',
                     'inputs': [
-                        {'id': 'slat_type', 'name': 'slat_type'}
+                        {'id': 'slat_type', 'name': 'slat_type', 'field': 'slat_type'}
                     ],
                     'outputs': [
-                        {'id': 'slat_height_mm',  'name': 'slat_height_mm'},
-                        {'id': 'slat_weight_kg_m2','name': 'slat_weight_kg_m2'},
-                        {'id': 'min_box_size',    'name': 'min_box_size'}
+                        {'id': 'slat_height_mm',   'name': 'slat_height_mm',   'field': 'slat_height_mm'},
+                        {'id': 'slat_weight_kg_m2','name': 'slat_weight_kg_m2','field': 'slat_weight_kg_m2'},
+                        {'id': 'min_box_size',     'name': 'min_box_size',     'field': 'min_box_size'}
                     ],
                     'rules': [
                         {
@@ -231,7 +246,13 @@ T3: motor install + programming workorder when drive is electric or radio.</fiel
                         }
                     ]
                 }
-            }]
+                },
+                {'id': 'zen_output', 'name': 'Output', 'type': 'outputNode'}
+            ],
+            'edges': [
+                {'id': 'zen_edge_in',  'sourceId': 'zen_input', 'targetId': 't1-roller'},
+                {'id': 'zen_edge_out', 'sourceId': 't1-roller', 'targetId': 'zen_output'}
+            ]
         }
     "/>
 
@@ -246,20 +267,22 @@ T3: motor install + programming workorder when drive is electric or radio.</fiel
     -->
     <field name="material_table" eval="
         {
-            'nodes': [{
+            'nodes': [
+                {'id': 'zen_input', 'name': 'Input', 'type': 'inputNode'},
+                {
                 'id': 't2-roller',
                 'name': 'T2 Materials',
-                'type': 'decisionTable',
+                'type': 'decisionTableNode',
                 'content': {
                     'hitPolicy': 'collect',
                     'inputs': [
-                        {'id': 'drive_type',       'name': 'drive_type'},
-                        {'id': 'has_insulation',   'name': 'has_insulation'},
-                        {'id': 'has_mosquito_net', 'name': 'has_mosquito_net'}
+                        {'id': 'drive_type',       'name': 'drive_type',       'field': 'drive_type'},
+                        {'id': 'has_insulation',   'name': 'has_insulation',   'field': 'has_insulation'},
+                        {'id': 'has_mosquito_net', 'name': 'has_mosquito_net', 'field': 'has_mosquito_net'}
                     ],
                     'outputs': [
-                        {'id': 'bom_line_coeff_key', 'name': 'bom_line_coeff_key'},
-                        {'id': 'coefficient',        'name': 'coefficient'}
+                        {'id': 'bom_line_coeff_key', 'name': 'bom_line_coeff_key', 'field': 'bom_line_coeff_key'},
+                        {'id': 'coefficient',        'name': 'coefficient',        'field': 'coefficient'}
                     ],
                     'rules': [
                         {
@@ -299,7 +322,13 @@ T3: motor install + programming workorder when drive is electric or radio.</fiel
                         }
                     ]
                 }
-            }]
+                },
+                {'id': 'zen_output', 'name': 'Output', 'type': 'outputNode'}
+            ],
+            'edges': [
+                {'id': 'zen_edge_in',  'sourceId': 'zen_input', 'targetId': 't2-roller'},
+                {'id': 'zen_edge_out', 'sourceId': 't2-roller', 'targetId': 'zen_output'}
+            ]
         }
     "/>
 
@@ -308,21 +337,66 @@ T3: motor install + programming workorder when drive is electric or radio.</fiel
         Slat cutting and assembly are permanent BoM routing operations.
         T3 adds motor install + programming only for motorised drives.
     -->
-    <field name="operation_table" eval="
+    <!-- ── TΠ — Param Availability (reactive UI control) ───────────────── -->
+    <!--
+        Изпреварваща UI логика — disable-ва param-и **преди** да станат
+        грешка в T0. Пример:
+        - PC ламели не приемат insulation → has_insulation enabled=false
+          + default_override=false. Без TΠ потребителят би избрал и
+          получил T0 error на финал.
+    -->
+    <field name="availability_table" eval="
         {
-            'nodes': [{
-                'id': 't3-roller',
-                'name': 'T3 Operations',
-                'type': 'decisionTable',
+            'nodes': [
+                {'id': 'zen_input', 'name': 'Input', 'type': 'inputNode'},
+                {
+                'id': 'tpi-roller',
+                'name': 'TΠ Availability',
+                'type': 'decisionTableNode',
                 'content': {
                     'hitPolicy': 'collect',
                     'inputs': [
-                        {'id': 'drive_type', 'name': 'drive_type'}
+                        {'id': 'slat_type',  'name': 'slat_type',  'field': 'slat_type'},
+                        {'id': 'drive_type', 'name': 'drive_type', 'field': 'drive_type'}
                     ],
                     'outputs': [
-                        {'id': 'workcenter_ref',   'name': 'workcenter_ref'},
-                        {'id': 'name',             'name': 'name'},
-                        {'id': 'duration_formula', 'name': 'duration_formula'}
+                        {'id': 'param',            'name': 'param',            'field': 'param'},
+                        {'id': 'enabled',          'name': 'enabled',          'field': 'enabled'},
+                        {'id': 'allowed_values',   'name': 'allowed_values',   'field': 'allowed_values'},
+                        {'id': 'default_override', 'name': 'default_override', 'field': 'default_override'}
+                    ],
+                    'rules': [
+                        {'slat_type': '&quot;PC&quot;', 'drive_type': '',
+                         'param': '&quot;has_insulation&quot;', 'enabled': 'false', 'allowed_values': '[false]', 'default_override': 'false'}
+                    ]
+                }
+                },
+                {'id': 'zen_output', 'name': 'Output', 'type': 'outputNode'}
+            ],
+            'edges': [
+                {'id': 'zen_edge_in',  'sourceId': 'zen_input',  'targetId': 'tpi-roller'},
+                {'id': 'zen_edge_out', 'sourceId': 'tpi-roller', 'targetId': 'zen_output'}
+            ]
+        }
+    "/>
+
+    <field name="operation_table" eval="
+        {
+            'nodes': [
+                {'id': 'zen_input', 'name': 'Input', 'type': 'inputNode'},
+                {
+                'id': 't3-roller',
+                'name': 'T3 Operations',
+                'type': 'decisionTableNode',
+                'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [
+                        {'id': 'drive_type', 'name': 'drive_type', 'field': 'drive_type'}
+                    ],
+                    'outputs': [
+                        {'id': 'workcenter_ref',   'name': 'workcenter_ref',   'field': 'workcenter_ref'},
+                        {'id': 'name',             'name': 'name',             'field': 'name'},
+                        {'id': 'duration_formula', 'name': 'duration_formula', 'field': 'duration_formula'}
                     ],
                     'rules': [
                         {
@@ -339,7 +413,13 @@ T3: motor install + programming workorder when drive is electric or radio.</fiel
                         }
                     ]
                 }
-            }]
+                },
+                {'id': 'zen_output', 'name': 'Output', 'type': 'outputNode'}
+            ],
+            'edges': [
+                {'id': 'zen_edge_in',  'sourceId': 'zen_input', 'targetId': 't3-roller'},
+                {'id': 'zen_edge_out', 'sourceId': 't3-roller', 'targetId': 'zen_output'}
+            ]
         }
     "/>
 

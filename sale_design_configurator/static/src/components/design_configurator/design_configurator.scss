@@ -352,3 +352,14 @@
         border-bottom: 1px solid #dee2e6;
     }
 }
+
+// TΠ availability — disabled state на param control-ите.
+// Прилага се когато TΠ rule връща `enabled: false`.
+.o_cfg_disabled {
+    opacity: 0.45;
+    pointer-events: none;
+    cursor: not-allowed;
+    input, button {
+        pointer-events: none;
+    }
+}

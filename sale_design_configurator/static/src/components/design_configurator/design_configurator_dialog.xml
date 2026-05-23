@@ -25,6 +25,8 @@
                 geometryTable="state.geometryTable"
                 materialTable="state.materialTable"
                 operationTable="state.operationTable"
+                availabilityTable="state.availabilityTable"
+                bomId="state.bomId"
                 bomLines="state.bomLines"
                 existingLotId="props.existingLotId or false"
                 onLotCreated.bind="onLotCreated"

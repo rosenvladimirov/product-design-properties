@@ -43,6 +43,11 @@
                            widget="design_matrix"
                            options="{'table_type': 't3'}"
                            nolabel="1"/>
+
+                    <field name="availability_table"
+                           widget="design_matrix"
+                           options="{'table_type': 'tpi'}"
+                           nolabel="1"/>
                 </page>
             </notebook>
 

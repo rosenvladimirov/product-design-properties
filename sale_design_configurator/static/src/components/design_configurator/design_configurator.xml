@@ -12,7 +12,7 @@
 
                     <!-- Float: Width/Height/Thickness → slider, Wall Width → spinner, rest → slider -->
                     <t t-if="param.type === 'float' and param.string and (param.string.includes('Wall') or param.string.includes('Каса'))">
-                        <div class="o_cfg_spinner_row">
+                        <div class="o_cfg_spinner_row" t-att-class="param.tpiEnabled === false ? 'o_cfg_spinner_row o_cfg_disabled' : 'o_cfg_spinner_row'">
                             <span class="o_cfg_spinner_label"><t t-esc="param.string"/></span>
                             <input
                                 type="number"
@@ -22,13 +22,14 @@
                                 step="1"
                                 t-att-value="param.value"
                                 t-att-data-param="param.name"
+                                t-att-disabled="param.tpiEnabled === false ? 'disabled' : undefined"
                                 t-on-input="onSliderInput"
                             />
                         </div>
                     </t>
 
                     <t t-if="param.type === 'float' and (!param.string or !(param.string.includes('Wall') or param.string.includes('Каса')))">
-                        <div class="o_cfg_param_row">
+                        <div class="o_cfg_param_row" t-att-class="param.tpiEnabled === false ? 'o_cfg_param_row o_cfg_disabled' : 'o_cfg_param_row'">
                             <div class="o_cfg_param_label">
                                 <span><t t-esc="param.string"/></span>
                                 <strong><t t-esc="param.value"/></strong>
@@ -40,6 +41,7 @@
                                 t-att-step="param.step || 1"
                                 t-att-value="param.value"
                                 t-att-data-param="param.name"
+                                t-att-disabled="param.tpiEnabled === false ? 'disabled' : undefined"
                                 t-on-input="onSliderInput"
                             />
                         </div>
@@ -47,7 +49,7 @@
 
                     <!-- Selection: segmented buttons -->
                     <t t-if="param.type === 'selection' and param.selection">
-                        <div class="o_cfg_param_row">
+                        <div class="o_cfg_param_row" t-att-class="param.tpiEnabled === false ? 'o_cfg_param_row o_cfg_disabled' : 'o_cfg_param_row'">
                             <div class="o_cfg_param_label">
                                 <span><t t-esc="param.string"/></span>
                             </div>
@@ -57,6 +59,7 @@
                                         t-att-class="'o_cfg_seg_btn' + (params[param.name] === opt[0] ? ' active' : '')"
                                         t-att-data-value="opt[0]"
                                         t-att-data-param="param.name"
+                                        t-att-disabled="param.tpiEnabled === false ? 'disabled' : undefined"
                                         t-on-click="onSegmentClick"
                                     >
                                         <t t-esc="opt[1]"/>
@@ -68,11 +71,12 @@
 
                     <!-- Boolean: checkbox -->
                     <t t-if="param.type === 'boolean'">
-                        <label class="o_cfg_check">
+                        <label class="o_cfg_check" t-att-class="param.tpiEnabled === false ? 'o_cfg_check o_cfg_disabled' : 'o_cfg_check'">
                             <input
                                 type="checkbox"
                                 t-att-checked="params[param.name]"
                                 t-att-data-param="param.name"
+                                t-att-disabled="param.tpiEnabled === false ? 'disabled' : undefined"
                                 t-on-change="onCheckChange"
                             />
                             <span><t t-esc="param.string"/></span>
@@ -81,7 +85,7 @@
 
                     <!-- Char: text input -->
                     <t t-if="param.type === 'char'">
-                        <div class="o_cfg_param_row">
+                        <div class="o_cfg_param_row" t-att-class="param.tpiEnabled === false ? 'o_cfg_param_row o_cfg_disabled' : 'o_cfg_param_row'">
                             <div class="o_cfg_param_label">
                                 <span><t t-esc="param.string"/></span>
                             </div>
@@ -90,6 +94,7 @@
                                 class="o_input"
                                 t-att-value="params[param.name]"
                                 t-att-data-param="param.name"
+                                t-att-disabled="param.tpiEnabled === false ? 'disabled' : undefined"
                                 t-on-change="onTextChange"
                                 style="width: 100%;"/>
                         </div>

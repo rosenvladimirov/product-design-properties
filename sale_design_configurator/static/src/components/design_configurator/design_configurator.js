@@ -37,6 +37,8 @@ export class DesignConfiguratorWidget extends Component {
         geometryTable: { type: [Object, { value: false }], optional: true },
         materialTable: { type: [Object, { value: false }], optional: true },
         operationTable: { type: [Object, { value: false }], optional: true },
+        availabilityTable: { type: [Object, { value: false }], optional: true },
+        bomId: { type: [Number, { value: false }], optional: true },
         bomLines: { type: Array, optional: true },
         existingLotId: { type: [Number, Boolean], optional: true },
         onLotCreated: { type: Function },
@@ -62,7 +64,15 @@ export class DesignConfiguratorWidget extends Component {
             overlayOpen: false,
             overlayHeight: 24,
             description: "",
+            // TΠ — per-param availability state, populated reactively от сървъра.
+            // Schema: { paramName: {visible?: bool, enabled?: bool,
+            //                       allowed_values?: any[], default_override?: any} }
+            // Празно ⇒ всичко visible+enabled (default behaviour).
+            availability: {},
         });
+        // Debounce за TΠ eval — да не bомбардираме сървъра при бързо driving
+        // на slider-и. 150ms е sweet spot между responsivenes и rate-limit.
+        this._availabilityTimer = null;
 
         this._three = {
             renderer: null, scene: null, camera: null, group: null,
@@ -111,6 +121,8 @@ export class DesignConfiguratorWidget extends Component {
             }
             this._validate();
             this._updateDescription();
+            // Initial TΠ pass — установява първоначални disable/restrict-и
+            this._scheduleAvailabilityEval(0);
         });
 
         onWillUpdateProps((newProps) => {
@@ -233,6 +245,105 @@ export class DesignConfiguratorWidget extends Component {
         });
     }
 
+    // ── TΠ availability — reactive UI control ───────────────────────────
+
+    /** Schedule a debounced TΠ evaluate. `delay=0` за initial sync пас. */
+    _scheduleAvailabilityEval(delay = 150) {
+        if (!this.props.bomId || !this.props.availabilityTable) return;
+        if (this._availabilityTimer) {
+            clearTimeout(this._availabilityTimer);
+        }
+        this._availabilityTimer = setTimeout(() => {
+            this._availabilityTimer = null;
+            this._evaluateAvailability();
+        }, delay);
+    }
+
+    /** Call server-side TΠ eval с текущия param context. */
+    async _evaluateAvailability() {
+        const ctx = this._buildAvailabilityContext();
+        let result = {};
+        try {
+            result = await this.orm.call(
+                "mrp.bom",
+                "_configurator_evaluate_availability",
+                [this.props.bomId, ctx],
+            );
+        } catch (e) {
+            console.warn("TΠ availability eval failed:", e.message);
+            return;
+        }
+        this.ui.availability = result || {};
+        this._enforceAvailability();
+    }
+
+    /** Build flat context dict — both UUID hash names AND human strings,
+     *  така че TΠ rules могат да match-нат и по двата ключа (DPD shortcut). */
+    _buildAvailabilityContext() {
+        const ctx = { ...this.params };
+        for (const def of (this.props.paramDefinition || [])) {
+            // Permit rules да референцират param-а по човешкия `string` ключ
+            // (`shutter_model`) дори когато DPD го записва по hash (`f7692…`).
+            if (def.string && def.name in this.params) {
+                ctx[def.string] = this.params[def.name];
+            }
+        }
+        return ctx;
+    }
+
+    /** Если default_override е зададено за param и текущата стойност е
+     *  извън allowed_values → auto-apply override-а. Това не trigger-ва нова
+     *  TΠ eval (avoid recursion) — заа потребителя resolve-ва дилемата.
+     */
+    _enforceAvailability() {
+        const av = this.ui.availability || {};
+        let changed = false;
+        for (const [paramKey, state] of Object.entries(av)) {
+            if (!state || typeof state !== "object") continue;
+            // Resolve param hash name ако TΠ ползва човешкия `string`
+            const def = this._resolveParamDef(paramKey);
+            const name = def ? def.name : paramKey;
+            const cur = this.params[name];
+            const allowed = state.allowed_values;
+            const isInAllowed = Array.isArray(allowed)
+                ? allowed.includes(cur)
+                : true;
+            if (state.default_override !== undefined
+                && state.default_override !== ""
+                && !isInAllowed) {
+                this.params[name] = state.default_override;
+                changed = true;
+            }
+        }
+        if (changed) {
+            this._validate();
+            this._updateDescription();
+        }
+    }
+
+    _resolveParamDef(key) {
+        const defs = [
+            ...(this.props.paramDefinition || []),
+            ...((this.props.childComponents || []).flatMap(c => c.paramDefinition || [])),
+        ];
+        return defs.find(d => d.name === key || d.string === key);
+    }
+
+    /** Return UI state за param, merged from TΠ availability + defaults. */
+    _availabilityFor(def) {
+        const av = this.ui.availability || {};
+        // TΠ може да адресира param-а по hash name (`f7692…`) ИЛИ по string
+        // ключа (`shutter_model`); пробваме и двете.
+        const state = av[def.name] || av[def.string] || {};
+        return {
+            visible: state.visible !== false,
+            enabled: state.enabled !== false,
+            allowedValues: Array.isArray(state.allowed_values)
+                ? state.allowed_values
+                : null,
+        };
+    }
+
     // Legacy hardcoded validation (used when no validation_rules are defined)
     _validateLegacy(p) {
         const errs = [], warns = [];
@@ -307,6 +418,7 @@ export class DesignConfiguratorWidget extends Component {
         this.params[key] = value;
         this._validate();
         this._updateDescription();
+        this._scheduleAvailabilityEval();
 
         // Find the param definition to check what changed
         const allDefs = [
@@ -1107,6 +1219,11 @@ export class DesignConfiguratorWidget extends Component {
             // Clean up window event listeners added in _initThree
             if (this._onMouseUp) window.removeEventListener("mouseup", this._onMouseUp);
             if (this._onMouseMove) window.removeEventListener("mousemove", this._onMouseMove);
+            // Изчисти pending TΠ eval ако има
+            if (this._availabilityTimer) {
+                clearTimeout(this._availabilityTimer);
+                this._availabilityTimer = null;
+            }
         } catch (e) {
             console.warn("Three.js cleanup error:", e);
         }
@@ -1225,23 +1342,50 @@ export class DesignConfiguratorWidget extends Component {
         );
         return this.props.paramDefinition
             .filter(def => !childNames.has(def.name))
-            .map(def => ({
-                ...def,
-                value: this.params[def.name],
-            }));
+            .map(def => this._decorateParam(def))
+            .filter(def => def.tpiVisible);
+    }
+
+    /** Mix TΠ state into a param definition for the template:
+     *  - ``tpiVisible`` (bool) — false => template филтрира param-а навън
+     *  - ``tpiEnabled`` (bool) — false => input disabled
+     *  - ``selection`` се филтрира до ``allowed_values`` ако са зададени
+     */
+    _decorateParam(def) {
+        const state = this._availabilityFor(def);
+        let selection = def.selection;
+        if (state.allowedValues && Array.isArray(def.selection)) {
+            selection = def.selection.filter(
+                opt => state.allowedValues.includes(opt[0])
+            );
+        }
+        return {
+            ...def,
+            value: this.params[def.name],
+            selection,
+            tpiVisible: state.visible,
+            tpiEnabled: state.enabled,
+        };
     }
 
     get childDisplayParams() {
-        // Returns child component params with current values for Fine Tuning
+        // Returns child component params with current values for Fine Tuning.
+        // Child params също минават през TΠ decorator-а.
         const children = this.props.childComponents || [];
         return children.map(child => ({
             ...child,
-            params: (child.paramDefinition || []).map(def => ({
-                ...def,
-                value: this.params[def.name] !== undefined
-                    ? this.params[def.name]
-                    : (def.type === 'float' ? (parseFloat(def.default) || 0) : (def.default || '')),
-            })),
+            params: (child.paramDefinition || []).map(def => {
+                const decorated = this._decorateParam(def);
+                const fallback = def.type === 'float'
+                    ? (parseFloat(def.default) || 0)
+                    : (def.default || '');
+                return {
+                    ...decorated,
+                    value: this.params[def.name] !== undefined
+                        ? this.params[def.name]
+                        : fallback,
+                };
+            }).filter(p => p.tpiVisible),
         }));
     }
 

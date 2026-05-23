@@ -52,6 +52,20 @@
                                    options="{'table_type': 't3'}"
                                    nolabel="1"/>
                         </page>
+                        <page string="TΠ — Availability">
+                            <div class="alert alert-info" role="alert">
+                                <strong>Reactive UI control table.</strong>
+                                Consumed от sale_design_configurator на всяка
+                                промяна на param. Outputs: <code>param</code>,
+                                <code>visible</code>, <code>enabled</code>,
+                                <code>allowed_values</code>,
+                                <code>default_override</code>.
+                            </div>
+                            <field name="availability_table"
+                                   widget="design_matrix"
+                                   options="{'table_type': 'tpi'}"
+                                   nolabel="1"/>
+                        </page>
                     </notebook>
                 </sheet>
             </form>

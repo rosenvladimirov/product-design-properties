@@ -6,6 +6,12 @@ import { Component, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 
+// Both legacy (≤ 0.49) and modern (≥ 0.50) zen-engine decision-table
+// node types — `_migrate_node_types` rewrites the legacy form on every
+// evaluate, but the widget must read both so we don't break editors of
+// records that have already been normalised.
+const DECISION_TABLE_TYPES = new Set(["decisionTable", "decisionTableNode"]);
+
 /**
  * DMN decision table widget for GoRules JDM JSON fields.
  *
@@ -47,12 +53,19 @@ export class DesignMatrixField extends Component {
         return this.props.record.data[this.props.name];
     }
 
-    /** Extract the first decision table node from the JDM structure. */
+    /** Extract the first decision-table node from the JDM structure.
+     *
+     *  Tolerates both the legacy bare-table layout (single node with
+     *  ``type: "decisionTable"`` at ``nodes[0]``) and the modern
+     *  ``inputNode → decisionTableNode → outputNode`` graph from
+     *  zen-engine ≥ 0.50 — in which case ``nodes[0]`` is the inputNode
+     *  and we must filter by type to find the actual table.
+     */
     get table() {
         const raw = this.rawValue;
         if (!raw) return null;
         if (raw.nodes && raw.nodes.length) {
-            return raw.nodes[0];
+            return raw.nodes.find((n) => DECISION_TABLE_TYPES.has(n?.type)) || null;
         }
         if (raw.content) {
             return raw;
@@ -328,10 +341,11 @@ export class DesignMatrixField extends Component {
         return JSON.parse(JSON.stringify(raw));
     }
 
-    /** Get mutable content from a cloned JDM. */
+    /** Get mutable content from a cloned JDM. Same tolerance as :py:meth:`table`. */
     _getContent(jdm) {
         if (jdm.nodes && jdm.nodes.length) {
-            return jdm.nodes[0].content;
+            const node = jdm.nodes.find((n) => DECISION_TABLE_TYPES.has(n?.type));
+            return node ? node.content : null;
         }
         if (jdm.content) {
             return jdm.content;
@@ -453,7 +467,8 @@ export class DesignMatrixField extends Component {
         const content = this._getContent(jdm);
         if (!content) return;
 
-        const colDef = { id: colId, name: name };
+        // ``field`` мирори ``id`` — изисквано от zen-engine ≥ 0.50.
+        const colDef = { id: colId, name: name, field: colId };
 
         if (this.state.addingInput) {
             // Check duplicate
@@ -495,7 +510,13 @@ export class DesignMatrixField extends Component {
         this._save(jdm);
     }
 
-    /** Create a blank JDM structure when field is empty. */
+    /** Create a blank JDM structure when field is empty.
+     *
+     *  Emits the modern zen-engine ≥ 0.50 graph: ``inputNode →
+     *  decisionTableNode → outputNode`` with edges. Avoids the runtime
+     *  patches that ``ZenWrapper._migrate_node_types`` applies for the
+     *  legacy bare-table layout.
+     */
     _createEmptyJDM() {
         const tableType = this.props.tableType || "t0";
         const names = {
@@ -503,13 +524,15 @@ export class DesignMatrixField extends Component {
             t1: "T1 Geometry",
             t2: "T2 Materials",
             t3: "T3 Operations",
+            tpi: "TΠ Availability",
         };
         return {
             nodes: [
+                { id: "zen_input", name: "Input", type: "inputNode" },
                 {
                     id: tableType,
                     name: names[tableType] || "Decision Table",
-                    type: "decisionTable",
+                    type: "decisionTableNode",
                     content: {
                         hitPolicy: "collect",
                         inputs: [],
@@ -517,6 +540,11 @@ export class DesignMatrixField extends Component {
                         rules: [],
                     },
                 },
+                { id: "zen_output", name: "Output", type: "outputNode" },
+            ],
+            edges: [
+                { id: "zen_edge_in", sourceId: "zen_input", targetId: tableType },
+                { id: "zen_edge_out", sourceId: tableType, targetId: "zen_output" },
             ],
         };
     }

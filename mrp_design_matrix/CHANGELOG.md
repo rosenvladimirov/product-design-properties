@@ -4,6 +4,71 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.10.0] - 2026-05-23
+
+### Added
+
+- **TΠ — Param Availability** (5-ти DMN слой). Reactive UI control table,
+  консумирана от `sale_design_configurator` на всяка промяна на param.
+  Изпреварваща disable/restrict логика — отрязва invalid комбинации в
+  момента на избор, преди да станат T0 errors.
+  - `mrp.matrix.template.availability_table` (Json) + 5-ти notebook tab
+    (`design_matrix` widget с `options="{'table_type': 'tpi'}"`).
+  - `mrp.bom.availability_table` (Json) + `action_load_from_template`
+    копира и него; нов tab във form-а.
+  - `mrp.matrix.template._evaluate_availability(context)` — eval през
+    `ZenWrapper.evaluate`.
+  - `mrp.matrix.template._normalize_availability(raw)` — превръща zen-output
+    в `{param: {visible?, enabled?, allowed_values?, default_override?}}`.
+    Merge logic: `visible`/`enabled` се AND-натрупват (false побеждава);
+    `allowed_values` се intersect-ват (по-рестриктивно); `default_override`
+    е last-write-wins.
+  - `mrp.bom._configurator_evaluate_availability(bom_id, context)` —
+    `@api.model` RPC endpoint за OWL widget-а; чете BoM-копието с
+    fallback на template-а.
+- `DesignMatrixField` OWL widget разпознава `table_type: 'tpi'` (за
+  display name "TΠ Availability" в `_createEmptyJDM`).
+
+### Known limitations
+
+- TΠ eval-ът е server-side roundtrip per param change (debounced 150ms).
+  За много fast slider-driving може да усетите latency; future optimisation:
+  client-side JDM eval или зен-engine WASM bundle.
+
+## [18.0.1.9.0] - 2026-05-23
+
+### Changed
+
+- `DesignMatrixField` OWL widget вече толерира двата JDM формата:
+  - Legacy bare-table (`'type': 'decisionTable'` в `nodes[0]`) — както досега.
+  - Modern wrapped graph (`inputNode → decisionTableNode → outputNode` + `edges`)
+    от zen-engine ≥ 0.50 — `nodes[0]` става `inputNode`, затова `table` getter-ът
+    и `_getContent()` сега филтрират първия node по type вместо да взимат `[0]`.
+- `_createEmptyJDM()` emit-ва modern формат — нова таблица през "Create Table"
+  бутона вече не изисква runtime патч от `ZenWrapper._migrate_node_types`.
+- `confirmAddCol()` добавя `field: <colId>` на новите input/output колони.
+
+### Added
+
+- `mrp.matrix.template._extract_t2_coeff_keys(table_json)` — staticmethod,
+  връща set от distinct `bom_line_coeff_key` стойности, които material_table
+  emit-ва. Tolerира и двата decision-table node типа. Strip-ва JDM string-литерал
+  кавичките.
+- `mrp.matrix.template._get_t2_coeff_keys()` — convenience wrapper.
+- `mrp.bom._check_t2_wiring()` — `@api.constrains` на `matrix_template_id`,
+  `material_table` и `bom_line_ids.matrix_coeff_rule`. Сравнява T2 ключовете с
+  тези, декларирани в `bom_line_ids.matrix_coeff_rule`. **Log warning, без raise**
+  — T2 е optional layer и блокиран save би влошил UX. Цел: предупреждава за
+  "висящ" T2 (виж audit от 2026-05-23 за BoM 580 на dev-teo-accounting — 5 ключа в
+  T2, 0 декларации по 45 реда).
+
+### Known limitations
+
+- Записаните JDM payload-и (например в dev-teo-accounting templates 1 и 2)
+  остават в legacy format — `_migrate_node_types` продължава да ги пач-ва на
+  всеки evaluate. Auto write-back и BoM↔DPD auto-link migration са планирани,
+  но изискват изрично разрешение защото пишат в потребителски данни на upgrade.
+
 ## [18.0.1.7.0] - 2026-04-29
 
 ### Fixed

@@ -4,6 +4,31 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.8.0] - 2026-05-23
+
+### Added
+
+- TΠ availability — reactive UI control в `DesignConfiguratorWidget`:
+  - Нови props: `availabilityTable` (Json) + `bomId` (Number).
+  - `this.ui.availability` state — populated на всеки `onParamChange` чрез
+    `mrp.bom._configurator_evaluate_availability(bom_id, context)` (debounced
+    150ms, clearTimeout на unmount).
+  - `_buildAvailabilityContext()` подава както hash имена (`f7692…`), така
+    и string ключове (`shutter_model`) — TΠ rules могат да match-нат и по
+    двата.
+  - `_enforceAvailability()` — auto-apply на `default_override` ако текущата
+    стойност излиза от `allowed_values` (напр. switching на `shutter_model`
+    отрязва невалиден `shutter_count` → auto-set на `"1"`).
+  - `displayParams` + `childDisplayParams` getter-и са декорирани с
+    `_decorateParam()` — filter-ват `selection` опции до `allowed_values`
+    и излагат `tpiVisible` / `tpiEnabled` за template-а.
+  - XML template-а уважава `param.tpiEnabled === false` — добавя CSS клас
+    `o_cfg_disabled` (opacity 0.45, pointer-events:none) + HTML `disabled`
+    атрибут на input/button.
+- `DesignConfiguratorDialog` чете `availability_table` от BoM-а и подава
+  `bomId` + `availabilityTable` на widget-а. Defaults на false → когато
+  BoM-ът няма TΠ, widget-ът се държи както досега.
+
 ## [18.0.1.5.0] - 2026-04-04
 
 ### Added
