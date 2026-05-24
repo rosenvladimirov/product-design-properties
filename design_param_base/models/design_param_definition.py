@@ -54,6 +54,7 @@ class DesignParamDefinition(models.Model):
     full_design_params_definition = fields.PropertiesDefinition(
         "Full Design Parameter Definitions (with inherited)",
         compute="_compute_full_design_params_definition",
+        search="_search_full_design_params_definition",
     )
 
     # NEW fields:
@@ -129,6 +130,24 @@ class DesignParamDefinition(models.Model):
                         merged.append(prop)
                         seen_strings.add(prop_string)
             record.full_design_params_definition = merged
+
+    def _search_full_design_params_definition(self, operator, value):
+        """Search support for the non-stored merged definition.
+
+        Без този метод Odoo 18 хвърля
+        ``Cannot convert design.param.definition.full_design_params_definition
+        to SQL because it is not stored`` при всеки domain филтър върху полето
+        (saved filters, search panels, или вътрешен prefetch от Properties
+        field-ове чийто ``definition="…full_design_params_definition"``).
+
+        Делегира към ``design_params_definition`` (own definition) — inherited
+        стойности от parent chain няма да match-нат, но typical ``!= False`` /
+        ``= False`` (filter "definitions with content") работи правилно за
+        records с собствени параметри. Records които наследяват само parent
+        няма да match-нат — приемлив trade-off, защото alternative-ата
+        е recursive search.
+        """
+        return [("design_params_definition", operator, value)]
 
     # -- XML loading ---------------------------------------------------------
 
