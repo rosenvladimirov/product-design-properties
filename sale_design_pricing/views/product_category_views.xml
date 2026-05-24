@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_category_form_view_design_markups" model="ir.ui.view">
+        <field name="name">product.category.form.design.markups</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group" position="after">
+                <group string="Design Pricing Markups" name="design_pricing_markups">
+                    <field name="design_material_markup_percent"/>
+                    <field name="design_labor_markup_percent"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

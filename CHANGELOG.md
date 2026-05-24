@@ -6,6 +6,53 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [18.0.1.10.0] - 2026-05-24
+
+### Added — 3 нови модула от Teolino design pipeline (Vladimir Kanchev)
+
+- **sale_design_pricing** v18.0.1.2.1 — cost-plus pricing engine за parametric
+  design products. Separate material/labor markups (configurable per company
+  + per product category override). Adds computed fields на sale.order.line
+  (cost_material, cost_labor, list_price_material, list_price_labor,
+  list_price_total, cost_breakdown_html) + `mrp.bom._evaluate_cost_with_params(params)`.
+  Generic (без teolino_ префикс) — приложим за всеки cost-plus design домейн.
+  Views temporarily disabled (виж manifest comment — stale view records в
+  Vladimir's Odoo build).
+- **teolino_mrp_design_recompute** v18.0.1.2.1 — server-side BoM simulation
+  engine + auto-recompute hook:
+  - `mrp.bom.simulate_with_params(params, qty, per_shutter_pairs=[])` —
+    evaluates всеки `quantity_formula` срещу flat params namespace; връща
+    breakdown (lines/operations) + totals.
+  - `mrp.production.action_confirm` hook → `_teolino_recompute_raw_moves()`
+    autо-update на raw move qty след MO confirm. Елиминира нуждата от
+    manual `recompute_mo_v2.py`.
+  - Резолва design lot чрез lot_producing_id или SO line lookup.
+- **teolino_sale_design_configurator_ui** v18.0.1.8.4 — Teolino-specific UI
+  overrides на `DesignConfiguratorWidget`:
+  - Per-shutter dimension state (L/H array когато shutter_count > 1)
+  - Color cascade helpers (main_color → 12 component colors)
+  - Color sub-modal (`teolino_color_dialog`) с customer-pickable subset
+  - Hardcoded shutter constraints (`teolino_constraints.js` — H_HARD_MAX,
+    L_HARD_MAX, BOX_BY_HEIGHT_AND_SLAT)
+  - LIVE BoM preview (debounced RPC → `mrp.bom.simulate_for_variant`)
+  - Full template override на `sale_design_configurator.DesignConfiguratorWidget`
+
+### Known issues (документирани, без resolve)
+
+- **T1 rules duplication**: `teolino_mrp_design_recompute._T1_RULES` (Python
+  dict) дублира `mrp_design_matrix_teolino_shutters/data/matrix_templates.xml`
+  geometry_table. Single source-of-truth би било XML seed-ът, но prod-ът
+  на teolinobisness.com има zen-engine pip package, който не работи (TBD
+  causes). Дотогава Python hardcode е runtime fallback. **Drift риск**:
+  всяка промяна на T1 правилата в XML трябва ръчно да се огледа и тук.
+- **TΠ Availability UI override**: когато `teolino_sale_design_configurator_ui`
+  е installed, неговото teolino_dialog.xml пълно override-ва template-а на
+  upstream `DesignConfiguratorWidget` → моят TΠ reactive disable
+  (`tpiEnabled`/`o_cfg_disabled`) **не работи в UI**. Teolino-specific
+  constraints се покриват от `teolinoFiltered()` hardcoded JS rules. TΠ
+  data остава полезен за generic модули (без custom UI override) и за
+  server-side проверки.
+
 ## [18.0.1.7.5] - 2026-05-04
 
 ### Fixed

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="teolino_sale_design_configurator_ui.TeolinoColorDialog">
+        <Dialog title="'Цветове на компонентите'" size="'xl'">
+            <div class="o_teo_color_dialog">
+                <div class="o_teo_color_intro">
+                    <span>Главен цвят:</span>
+                    <strong t-esc="props.mainColorLabel or '—'"/>
+                    <button class="btn btn-link btn-sm ms-auto"
+                            t-on-click="resetAllToMain"
+                            t-att-disabled="!props.mainColorValue">
+                        Възстанови всички към главния
+                    </button>
+                </div>
+                <p class="o_teo_color_hint">
+                    "Стандартен" = взема главния цвят. Промени само това, което искаш да различно от главния.
+                </p>
+                <t t-foreach="props.colorParams" t-as="cp" t-key="cp.name">
+                    <div class="o_teo_color_row">
+                        <div class="o_teo_color_label" t-esc="cp.label"/>
+                        <div class="o_teo_color_choices">
+                            <t t-foreach="cp.selection" t-as="opt" t-key="opt[0]">
+                                <button
+                                    t-att-class="'o_teo_color_btn' + (opt[0] === 'use_main' ? ' use-main' : '') + (isActive(cp, opt[0]) ? ' active' : '')"
+                                    t-att-data-color="opt[0]"
+                                    t-att-title="opt[1]"
+                                    t-on-click="() => this.onPick(cp.name, opt[0])">
+                                    <t t-if="opt[0] === 'use_main'">
+                                        Стандартен
+                                    </t>
+                                    <t t-else="">
+                                        <t t-esc="opt[1]"/>
+                                    </t>
+                                </button>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-on-click="onSaveClick">Запази</button>
+                <button class="btn btn-secondary ms-2" t-on-click="onCancelClick">Отказ</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

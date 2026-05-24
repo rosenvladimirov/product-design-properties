@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_design_pricing" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.design.pricing</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Design Pricing" string="Design Pricing" name="sale_design_pricing" notApp="1" groups="base.group_system">
+                    <block title="Default Markups" name="design_pricing_block">
+                        <setting id="design_material_markup" string="Material Markup (%)"
+                                 help="Default markup applied on top of material cost. Can be overridden per category or product.">
+                            <field name="design_material_markup_percent"/>
+                        </setting>
+                        <setting id="design_labor_markup" string="Labor Markup (%)"
+                                 help="Default markup applied on top of labor cost (workcenter time × hourly rate).">
+                            <field name="design_labor_markup_percent"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

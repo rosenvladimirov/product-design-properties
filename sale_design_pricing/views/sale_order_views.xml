@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sale_order_form_design_pricing_breakdown" model="ir.ui.view">
+        <field name="name">sale.order.form.design.pricing.breakdown</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='order_line']/list/field[@name='price_unit']" position="after">
+                <field name="list_price_total" optional="hide" readonly="1" string="List Price"/>
+                <field name="cost_material" optional="hide" readonly="1"/>
+                <field name="cost_labor" optional="hide" readonly="1"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/form//notebook" position="inside">
+                <page string="Cost Breakdown" name="cost_breakdown" invisible="not design_lot_id">
+                    <group>
+                        <field name="cost_material" readonly="1"/>
+                        <field name="list_price_material" readonly="1"/>
+                        <field name="cost_labor" readonly="1"/>
+                        <field name="list_price_labor" readonly="1"/>
+                        <field name="list_price_total" readonly="1"/>
+                    </group>
+                    <field name="cost_breakdown_html" readonly="1" nolabel="1"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
