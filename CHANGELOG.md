@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [18.0.1.7.5] - 2026-05-04
+
+### Fixed
+
+- **sale_design_configurator** (18.0.1.6.0) — Human-readable design params in
+  SO line summary + auto-append to description (folded in from
+  `sale_design_configurator_summary_fix` v18.0.1.0.0):
+  - `_compute_design_params_summary` now reads through
+    `lot.read(['design_params'])` so the properties framework merges template
+    + definition metadata; selection values are resolved to their human label
+    instead of leaking the internal code.
+  - New `_get_sale_order_line_multiline_description_sale` override appends
+    the summary as a bullet list under the SO line `name` — visible in form,
+    PDF report, and downstream invoice.
+  - New `write` and `_onchange_design_lot_refresh_name` keep the SO line
+    `name` in sync whenever `design_lot_id` changes (live UI refresh + ORM
+    write path).
+- **design_param_base** (18.0.1.0.4) — `design_param_definition` form view:
+  `widget="json"` (does not exist in v18) replaced by
+  `widget="ace" options="{'mode': 'json'}"` on `validation_rules`; same widget
+  added to `design_params_definition` so the *Parameter Definitions* tab is
+  no longer blank.
+
 ## [18.0.1.7.4] - 2026-04-29
 
 ### Fixed

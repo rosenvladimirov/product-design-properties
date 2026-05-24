@@ -1,11 +1,40 @@
 # Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import _, api, models
+from odoo import _, api, fields, models
+
+
+class StockMove(models.Model):
+    _inherit = "stock.move"
+
+    design_lot_id = fields.Many2one(
+        "stock.lot",
+        string="Design Lot",
+        help=(
+            "Design lot propagated from the originating sale order line. "
+            "Carries design context through MTO procurement chains "
+            "(SO → delivery move → component move → MO)."
+        ),
+    )
+
+    def _prepare_procurement_values(self):
+        """Forward design_lot_id to upstream MTO procurements so manufacture
+        and purchase rules see it in their _prepare_mo_vals / _get_stock_move_values.
+        """
+        vals = super()._prepare_procurement_values()
+        if self.design_lot_id:
+            vals["design_lot_id"] = self.design_lot_id.id
+        return vals
 
 
 class MrpProduction(models.Model):
     _inherit = "mrp.production"
+
+    design_lot_id = fields.Many2one(
+        "stock.lot",
+        string="Design Lot",
+        help="Transient inlet from SO procurement; copied into lot_producing_id on create.",
+    )
 
     # -- Receive design lot from SO procurement values -----------------------
 
@@ -84,3 +113,30 @@ class StockRule(models.Model):
         if values.get("design_lot_id"):
             move_vals["design_lot_id"] = values["design_lot_id"]
         return move_vals
+
+    def _prepare_mo_vals(
+        self,
+        product_id,
+        product_qty,
+        product_uom,
+        location_dest_id,
+        name,
+        origin,
+        company_id,
+        values,
+        bom,
+    ):
+        mo_vals = super()._prepare_mo_vals(
+            product_id,
+            product_qty,
+            product_uom,
+            location_dest_id,
+            name,
+            origin,
+            company_id,
+            values,
+            bom,
+        )
+        if values.get("design_lot_id"):
+            mo_vals["design_lot_id"] = values["design_lot_id"]
+        return mo_vals

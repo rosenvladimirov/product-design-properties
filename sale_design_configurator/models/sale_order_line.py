@@ -83,18 +83,93 @@ class SaleOrderLine(models.Model):
                 line.has_design_definition = False
                 line.design_param_definition_id = False
 
+    def _build_design_param_bullets(self):
+        """Return ``["label: value", ...]`` \u0437\u0430 \u0430\u043a\u0442\u0438\u0432\u043d\u0438\u0442\u0435 design_params \u043d\u0430 lot-\u0430.
+
+        \u0415\u0434\u0438\u043d source-of-truth \u0437\u0430 \u0432\u0441\u0438\u0447\u043a\u0438 render call site-\u043e\u0432\u0435:
+        - ``_compute_design_params_summary`` (\u043a\u043e\u043c\u043f\u0430\u043a\u0442\u0435\u043d `\u00b7`-\u0440\u0430\u0437\u0434\u0435\u043b\u0435\u043d summary)
+        - ``_get_sale_order_line_multiline_description_sale`` (PDF/invoice bullets)
+        - ``_regenerate_design_description`` (line.name rebuild)
+
+        Hide rules (\u043e\u0442 PR #1):
+        - empty / False / "" / ``"use_main"`` sentinel (UI placeholder \u0437\u0430
+          "inherit from main_X" \u2014 \u0440\u0435\u0437\u043e\u043b\u0432\u0430 \u0441\u0435 \u0432 JS \u043f\u0440\u0435\u0434\u0438 save, \u043d\u043e fallback \u0437\u0430
+          legacy lot-\u043e\u0432\u0435)
+        - ``color_X`` rows \u043a\u044a\u0434\u0435\u0442\u043e \u0441\u0442\u043e\u0439\u043d\u043e\u0441\u0442\u0442\u0430 \u0441\u044a\u0432\u043f\u0430\u0434\u0430 \u0441 ``main_color`` (\u0438\u0437\u0431\u044f\u0433\u0432\u0430
+          13 \u0438\u0434\u0435\u043d\u0442\u0438\u0447\u043d\u0438 bullets \u0437\u0430 shutter color cascade)
+
+        Resolution (\u043e\u0442 host's hot-fix 4-5 \u043c\u0430\u0439):
+        - \u0427\u0435\u0442\u0435 \u043f\u0440\u0435\u0437 ``lot.read(["design_params"])`` \u0437\u0430 \u0434\u0430 merge-\u043d\u0435 properties
+          framework metadata (string label, type, selection mapping)
+        - Selection \u0441\u0442\u043e\u0439\u043d\u043e\u0441\u0442\u0438 \u2192 human label (``"standard"`` \u2192 ``"Standard"``)
+          \u0432\u043c\u0435\u0441\u0442\u043e \u043c\u0430\u0448\u0438\u043d\u043d\u0438 \u043a\u043e\u0434\u043e\u0432\u0435
+        """
+        self.ensure_one()
+        if not self.design_lot_id:
+            return []
+        rich = self.design_lot_id.read(["design_params"])[0].get("design_params") or []
+        main_color_val = None
+        for prop in rich:
+            if isinstance(prop, dict) and prop.get("name") == "main_color":
+                main_color_val = prop.get("value")
+                break
+        bullets = []
+        for prop in rich:
+            if not isinstance(prop, dict):
+                continue
+            value = prop.get("value")
+            if value in (None, False, "", "use_main"):
+                continue
+            name = prop.get("name") or ""
+            label = prop.get("string") or name
+            if not label:
+                continue
+            if name.startswith("color_") and main_color_val and value == main_color_val:
+                continue
+            if prop.get("type") == "selection":
+                for code, human in prop.get("selection") or []:
+                    if code == value:
+                        value = human
+                        break
+            bullets.append(f"{label}: {value}")
+        return bullets
+
     @api.depends("design_lot_id", "design_lot_id.design_params")
     def _compute_design_params_summary(self):
         for line in self:
-            lot = line.design_lot_id
-            if not lot or not lot.design_params:
-                line.design_params_summary = ""
-                continue
-            parts = []
-            for k, v in (lot.design_params or {}).items():
-                if v not in (None, False, ""):
-                    parts.append(f"{k}: {v}")
-            line.design_params_summary = "  \u00b7  ".join(parts[:6])
+            bullets = line._build_design_param_bullets() if line.design_lot_id else []
+            line.design_params_summary = "  \u00b7  ".join(bullets[:8])
+
+    def _get_sale_order_line_multiline_description_sale(self):
+        """Append bullet list \u043f\u043e\u0434 product display name \u0432 quote/invoice PDF-\u0438\u0442\u0435.
+
+        super-pattern (host hot-fix) \u2014 \u0437\u0430\u043f\u0430\u0437\u0432\u0430 extras \u043e\u0442 \u0434\u0440\u0443\u0433\u0438 \u043c\u043e\u0434\u0443\u043b\u0438.
+        Reuse-\u0432\u0430 ``_build_design_param_bullets`` \u0437\u0430 UUID\u2192label resolution.
+        """
+        desc = super()._get_sale_order_line_multiline_description_sale()
+        if self.design_lot_id:
+            bullets = self._build_design_param_bullets()
+            if bullets:
+                formatted = "\n".join(f"\u2022 {b}" for b in bullets)
+                desc = f"{desc}\n{formatted}"
+        return desc
+
+    def write(self, vals):
+        """Refresh ``line.name`` \u043a\u043e\u0433\u0430\u0442\u043e design_lot_id \u0441\u0435 \u0441\u043c\u0435\u043d\u044f \u043f\u0440\u0435\u0437 ORM
+        (host's trigger \u2014 covers automation flows, \u043d\u0435 \u0441\u0430\u043c\u043e configurator)."""
+        res = super().write(vals)
+        if "design_lot_id" in vals:
+            for line in self:
+                if line.design_lot_id and line.product_id:
+                    line._regenerate_design_description()
+        return res
+
+    @api.onchange("design_lot_id")
+    def _onchange_design_lot_refresh_name(self):
+        """Live UI refresh \u043d\u0430 ``line.name`` \u043f\u0440\u0438 \u0441\u043c\u044f\u043d\u0430 \u043d\u0430 design_lot_id."""
+        for line in self:
+            if line.design_lot_id and line.product_id:
+                line._regenerate_design_description()
 
     # -- Onchange: reset design lot when product changes ---------------------
 
@@ -162,47 +237,20 @@ class SaleOrderLine(models.Model):
         return True
 
     def _regenerate_design_description(self):
-        """Rebuild ``line.name`` as the product display name + a bullet list
-        of the lot's design_params.  Hidden from the description:
+        """Rebuild ``line.name`` като product display name + bullet list от
+        lot's design_params. Render логиката е в ``_build_design_param_bullets``
+        (споделена с _get_sale_order_line_multiline_description_sale и
+        _compute_design_params_summary за consistency).
 
-        - empty / False values
-        - sub-property sentinels equal to ``use_main`` (UI placeholder for
-          "inherit from main_X" — see ``_resolve_use_main_sentinels`` on the
-          configurator widget)
-        - color_X rows that resolve to the same value as ``main_color``
-          (avoids 13 identical lines in the common case where every
-          component inherits the main shutter color)
-
-        Subclasses may override to inject extra rendering (per-shutter dims,
-        custom labels, etc.); call ``super()`` to keep the bullet base.
+        Subclasses могат да override-нат за extra rendering — call ``super()``
+        за да запазите bullet base.
         """
         for line in self:
             if not line.design_lot_id or not line.product_id:
                 continue
-            lot = line.design_lot_id
-            rich = lot.read(["design_params"])[0].get("design_params") or []
-            main_color_val = None
-            for prop in rich:
-                if isinstance(prop, dict) and prop.get("name") == "main_color":
-                    main_color_val = prop.get("value")
-                    break
+            bullets = line._build_design_param_bullets()
             parts = [line.product_id.display_name]
-            for prop in rich:
-                if not isinstance(prop, dict):
-                    continue
-                value = prop.get("value")
-                if value in (None, False, "", "use_main"):
-                    continue
-                name = prop.get("name") or ""
-                label = prop.get("string") or name
-                if not label:
-                    continue
-                if name.startswith("color_") and main_color_val and value == main_color_val:
-                    continue
-                if prop.get("type") == "selection":
-                    sel = dict(prop.get("selection") or [])
-                    value = sel.get(value, value)
-                parts.append(f"• {label}: {value}")
+            parts.extend(f"• {b}" for b in bullets)
             line.name = "\n".join(parts)
 
     @api.model
