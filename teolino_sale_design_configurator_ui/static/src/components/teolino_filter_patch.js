@@ -95,6 +95,19 @@ patch(DesignConfiguratorWidget.prototype, {
     /**
      * When main_color changes, cascade its value to all 12 component
      * color_* params.  User can later override individual colors.
+     *
+     * @deprecated mrp_design_matrix ≥ 1.11.0 — TΦ Cascade слоят (cascade_table
+     * на mrp.matrix.template + mrp.bom) покрива този case декларативно.
+     * Виж `mrp_design_matrix_teolino_shutters/data/matrix_templates.xml` →
+     * cascade_table (12 rules за main_color → component_colors). Когато BoM
+     * има cascade_table, upstream `_applyCascade` на DesignConfiguratorWidget
+     * вече ще е приложил cascade-а преди тоя метод да се извика — current
+     * values ще match-нат main_color, така че `cur !== "use_main"` ще guard-не
+     * write-а тук (no-op за TΦ-enabled flow).
+     *
+     * Оставен като fallback за BoM-ове без cascade_table (legacy data).
+     * За пълно premium: премахни TΦ-enabled flow и този метод след валидация
+     * на dev-teo-2305.
      */
     _teolinoColorCascade(changedKey, newValue) {
         const base = this.props.paramDefinition || [];

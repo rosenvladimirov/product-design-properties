@@ -38,6 +38,7 @@ export class DesignConfiguratorWidget extends Component {
         materialTable: { type: [Object, { value: false }], optional: true },
         operationTable: { type: [Object, { value: false }], optional: true },
         availabilityTable: { type: [Object, { value: false }], optional: true },
+        cascadeTable: { type: [Object, { value: false }], optional: true },
         bomId: { type: [Number, { value: false }], optional: true },
         bomLines: { type: Array, optional: true },
         existingLotId: { type: [Number, Boolean], optional: true },
@@ -245,6 +246,68 @@ export class DesignConfiguratorWidget extends Component {
         });
     }
 
+    // ── TΦ cascade — value propagation на onParamChange ────────────────
+
+    /** Извикай TΦ eval синхронно и приложи cascade върху this.params.
+     *
+     *  Strategy:
+     *  - Resolve `changed_param` to human label (DPD `string`) ако в bagaге
+     *    е hash UUID name.
+     *  - Server RPC: `mrp.bom._configurator_evaluate_cascade(bom_id, changed_param, context)`
+     *  - За всеки target_param от резултата: ако `only_if_empty` && current
+     *    не е празно/sentinel → skip; иначе set new value.
+     *  - source value за `copy_from` се чете директно от текущия this.params
+     *    (resolve-нат hash name).
+     *
+     *  Reentry guard: НЕ викай _applyCascade за TΦ-induced changes (би
+     *  предизвикало loop ако rule сетва param, който е и changed_param на
+     *  друг rule). За MVP — single-pass; multi-step cascade chains се
+     *  решават с multiple onParamChange calls от потребителя.
+     */
+    async _applyCascade(changedKey, newValue) {
+        if (!this.props.bomId || !this.props.cascadeTable) return;
+        if (this._cascadeInProgress) return;
+        this._cascadeInProgress = true;
+        try {
+            const def = this._resolveParamDef(changedKey);
+            const changedParam = def && def.string ? def.string : changedKey;
+            const ctx = this._buildAvailabilityContext();
+            let cascade = {};
+            try {
+                cascade = await this.orm.call(
+                    "mrp.bom",
+                    "_configurator_evaluate_cascade",
+                    [this.props.bomId, changedParam, ctx],
+                );
+            } catch (e) {
+                console.warn("TΦ cascade eval failed:", e.message);
+                return;
+            }
+            for (const [targetParam, spec] of Object.entries(cascade || {})) {
+                const targetDef = this._resolveParamDef(targetParam);
+                const targetName = targetDef ? targetDef.name : targetParam;
+                const cur = this.params[targetName];
+                const isEmpty = cur === undefined || cur === null
+                    || cur === "" || cur === false || cur === "use_main";
+                const onlyIfEmpty = spec.only_if_empty !== false;
+                if (onlyIfEmpty && !isEmpty) continue;
+                let nextVal;
+                if (spec.derive_value !== undefined && spec.derive_value !== "") {
+                    nextVal = spec.derive_value;
+                } else if (spec.copy_from) {
+                    const sourceDef = this._resolveParamDef(spec.copy_from);
+                    const sourceName = sourceDef ? sourceDef.name : spec.copy_from;
+                    nextVal = this.params[sourceName];
+                }
+                if (nextVal !== undefined && nextVal !== this.params[targetName]) {
+                    this.params[targetName] = nextVal;
+                }
+            }
+        } finally {
+            this._cascadeInProgress = false;
+        }
+    }
+
     // ── TΠ availability — reactive UI control ───────────────────────────
 
     /** Schedule a debounced TΠ evaluate. `delay=0` за initial sync пас. */
@@ -416,6 +479,9 @@ export class DesignConfiguratorWidget extends Component {
 
     onParamChange(key, value) {
         this.params[key] = value;
+        // TΦ Cascade — синхронно (без debounce) преди TΠ: cascade-нати
+        // стойности са новата база, върху която TΠ ще валидира allowed_values.
+        this._applyCascade(key, value);
         this._validate();
         this._updateDescription();
         this._scheduleAvailabilityEval();

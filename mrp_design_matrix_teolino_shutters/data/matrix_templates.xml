@@ -285,6 +285,67 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
         T3 добавя motor install само за моторни управления; Thermo Comfort
         ползва вариант със safety профил → отделен (по-дълъг) ред.
     -->
+    <!-- ── TΦ — Cascade Resolutions (value propagation) ──────────────────── -->
+    <!--
+        Consumed от sale_design_configurator на всяка onParamChange.
+        hitPolicy: collect — натрупване на rules; _normalize_cascade ги сливa
+        per target_param. Output schema:
+          target_param   — кой param да получи стойност
+          copy_from      — името на param чиято current value да копираме
+          derive_value   — explicit стойност (alternative на copy_from)
+          only_if_empty  — bool: не overwrite-вай user choice (default = true
+                           при празно cell)
+
+        Color cascade (12 rules): когато `main_color` се промени → всеки от
+        12-те `color_*` sub-property params получава новата стойност (само
+        ако не е explicit user choice — current value е "", false или
+        sentinel "use_main").
+
+        Замества `_teolinoColorCascade` (JS hardcode в VK module).
+    -->
+    <field name="cascade_table" eval="
+        {
+            'nodes': [
+                {'id': 'zen_input', 'name': 'Input', 'type': 'inputNode'},
+                {
+                'id': 'tphi-teo',
+                'name': 'TΦ Cascade',
+                'type': 'decisionTableNode',
+                'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [
+                        {'id': 'changed_param', 'name': 'changed_param', 'field': 'changed_param'}
+                    ],
+                    'outputs': [
+                        {'id': 'target_param',  'name': 'target_param',  'field': 'target_param'},
+                        {'id': 'copy_from',     'name': 'copy_from',     'field': 'copy_from'},
+                        {'id': 'only_if_empty', 'name': 'only_if_empty', 'field': 'only_if_empty'}
+                    ],
+                    'rules': [
+                        {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_slat&quot;',          'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'},
+                        {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_caps&quot;',          'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'},
+                        {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_box&quot;',           'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'},
+                        {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_endcap&quot;',        'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'},
+                        {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_central_endcap&quot;','copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'},
+                        {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_terminal&quot;',      'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'},
+                        {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_guide&quot;',         'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'},
+                        {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_brush&quot;',         'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'},
+                        {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_package&quot;',       'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'},
+                        {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_rope&quot;',          'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'},
+                        {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_shirit&quot;',        'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'},
+                        {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_safety&quot;',        'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'}
+                    ]
+                }
+                },
+                {'id': 'zen_output', 'name': 'Output', 'type': 'outputNode'}
+            ],
+            'edges': [
+                {'id': 'zen_edge_in',  'sourceId': 'zen_input', 'targetId': 'tphi-teo'},
+                {'id': 'zen_edge_out', 'sourceId': 'tphi-teo',  'targetId': 'zen_output'}
+            ]
+        }
+    "/>
+
     <!-- ── TΠ — Param Availability (reactive UI control) ───────────────── -->
     <!--
         Consumed от sale_design_configurator на всяка промяна на param.

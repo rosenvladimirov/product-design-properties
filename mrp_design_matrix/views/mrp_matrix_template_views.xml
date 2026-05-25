@@ -66,6 +66,21 @@
                                    options="{'table_type': 'tpi'}"
                                    nolabel="1"/>
                         </page>
+                        <page string="TΦ — Cascade">
+                            <div class="alert alert-info" role="alert">
+                                <strong>Reactive value propagation.</strong>
+                                Когато <code>changed_param</code> се промени →
+                                derive стойност за <code>target_param</code>.
+                                Outputs: <code>copy_from</code> (друг param чиято
+                                стойност копираме), <code>derive_value</code>
+                                (explicit стойност), <code>only_if_empty</code>
+                                (bool — не overwrite-вай user choice).
+                            </div>
+                            <field name="cascade_table"
+                                   widget="design_matrix"
+                                   options="{'table_type': 'tphi'}"
+                                   nolabel="1"/>
+                        </page>
                     </notebook>
                 </sheet>
             </form>

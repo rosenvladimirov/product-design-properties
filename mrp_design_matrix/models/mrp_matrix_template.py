@@ -89,6 +89,17 @@ class MrpMatrixTemplate(models.Model):
         "T3 — Operations",
         help="GoRules JDM JSON: conditionally adds workorders to the MO.",
     )
+    cascade_table = fields.Json(
+        "TΦ — Cascade Resolutions",
+        help=(
+            "GoRules JDM JSON: reactive value propagation. Когато param X се "
+            "промени → derive стойност за param Y. Output schema per rule: "
+            "`target_param`, `copy_from` (другият param чиято стойност копираме), "
+            "`derive_value` (explicit стойност), `only_if_empty` (bool — не overwrite-вай "
+            "explicit user choice). Eval-ва се на всяка onParamChange в "
+            "configurator-а. Optional layer."
+        ),
+    )
     availability_table = fields.Json(
         "TΠ — Param Availability",
         help=(
@@ -217,6 +228,78 @@ class MrpMatrixTemplate(models.Model):
                     # default_override — last write wins (по rule order)
                     state[key] = value
         return out
+
+    # -- TΦ Cascade Resolutions evaluation ----------------------------------
+    # TΦ е reactive cascade слой: когато param X се промени, derive стойност
+    # за param Y (copy from друг param OR explicit value). Engine-ът е
+    # същият (zen-engine). hitPolicy=collect — натрупване на всички matching
+    # rules; _normalize_cascade ги сливa per target_param (last wins).
+
+    _CASCADE_KEYS = ("copy_from", "derive_value", "only_if_empty")
+
+    @classmethod
+    def _normalize_cascade(cls, raw_payload):
+        """Take raw zen-engine output and produce ``{target_param: {copy_from?,
+        derive_value?, only_if_empty?}}``.
+
+        Приема list (collect output), dict с "result" key (legacy wrapper),
+        или single rule dict. Невалидни/празни rule-ове се игнорират.
+        За multiple rules с един target_param: last write wins (rule order
+        в JDM е canonical).
+        """
+        items = []
+        if isinstance(raw_payload, list):
+            items = raw_payload
+        elif isinstance(raw_payload, dict):
+            if "result" in raw_payload and isinstance(raw_payload["result"], list):
+                items = raw_payload["result"]
+            elif "target_param" in raw_payload:
+                items = [raw_payload]
+            else:
+                return {
+                    k: v for k, v in raw_payload.items()
+                    if isinstance(v, dict) and "target_param" not in (v or {})
+                }
+
+        out = {}
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            target = item.get("target_param")
+            if not target:
+                continue
+            spec = out.setdefault(target, {})
+            for key in cls._CASCADE_KEYS:
+                if key not in item:
+                    continue
+                value = item[key]
+                if key == "only_if_empty":
+                    spec[key] = bool(value)
+                elif value not in (None, "", False):
+                    spec[key] = value
+        return out
+
+    def _evaluate_cascade(self, changed_param, context):
+        """Evaluate ``cascade_table`` за дадена промяна.
+
+        :param changed_param: string — името на param-а който се промени
+            (както е в DPD's ``string`` field — `shutter_model`, `main_color`).
+        :param context: dict от текущите param стойности.
+        :returns: dict ``{target_param: {copy_from?, derive_value?,
+            only_if_empty?}}``. Празен dict ако TΦ не е дефиниран.
+        """
+        self.ensure_one()
+        if not self.cascade_table:
+            return {}
+        from .zen_engine import ZenWrapper
+        full_context = dict(context or {})
+        full_context["changed_param"] = changed_param
+        raw = ZenWrapper.evaluate(
+            self.cascade_table,
+            full_context,
+            env=self.env,
+        )
+        return self._normalize_cascade(raw)
 
     def _evaluate_availability(self, context):
         """Evaluate ``availability_table`` за дадения param context.

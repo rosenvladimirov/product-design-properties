@@ -4,6 +4,18 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.3.0] - 2026-05-25
+
+### Added
+
+- `cascade_table` seed (TΦ Cascade — Phase A) — 12 rules за color cascade:
+  когато `main_color` се промени → 12-те `color_*` sub-property params
+  (`color_slat`, `color_caps`, `color_box`, `color_endcap`, `color_central_endcap`,
+  `color_terminal`, `color_guide`, `color_brush`, `color_package`, `color_rope`,
+  `color_shirit`, `color_safety`) получават новата стойност с `only_if_empty=true`.
+  Modern JDM format from the start (inputNode → decisionTableNode → outputNode + edges).
+  Заменя `_teolinoColorCascade` JS hardcode в teolino_sale_design_configurator_ui.
+
 ## [18.0.1.2.0] - 2026-05-23
 
 ### Added

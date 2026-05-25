@@ -48,6 +48,11 @@
                            widget="design_matrix"
                            options="{'table_type': 'tpi'}"
                            nolabel="1"/>
+
+                    <field name="cascade_table"
+                           widget="design_matrix"
+                           options="{'table_type': 'tphi'}"
+                           nolabel="1"/>
                 </page>
             </notebook>
 

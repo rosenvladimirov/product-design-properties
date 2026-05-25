@@ -26,6 +26,7 @@
                 materialTable="state.materialTable"
                 operationTable="state.operationTable"
                 availabilityTable="state.availabilityTable"
+                cascadeTable="state.cascadeTable"
                 bomId="state.bomId"
                 bomLines="state.bomLines"
                 existingLotId="props.existingLotId or false"

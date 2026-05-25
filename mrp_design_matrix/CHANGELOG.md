@@ -4,6 +4,49 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.11.0] - 2026-05-25
+
+### Added — TΦ Cascade Resolutions (Phase A от universal engine vision)
+
+- **`mrp.matrix.template.cascade_table`** (Json) + 6-ти notebook tab
+  "TΦ — Cascade" с `design_matrix` widget (`tphi` table_type).
+- **`mrp.bom.cascade_table`** (Json) + tab във form-а; `action_load_from_template`
+  копира и него.
+- **`mrp.matrix.template._evaluate_cascade(changed_param, context)`** — eval
+  на cascade_table през `ZenWrapper.evaluate`. Inject-ва `changed_param` в
+  context-а като input.
+- **`mrp.matrix.template._normalize_cascade(raw)`** — нормализира zen output
+  до `{target_param: {copy_from?, derive_value?, only_if_empty?}}`. За
+  multiple rules за един target: last write wins (rule order canonical).
+- **`mrp.bom._configurator_evaluate_cascade(bom_id, changed_param, context)`**
+  — `@api.model` RPC endpoint за OWL widget. BoM-копието има приоритет;
+  fallback на template-а.
+
+### Output schema
+
+- `target_param` (string, required) — кой param да получи стойност
+- `copy_from` (string) — име на param чиято current value да копираме
+- `derive_value` (any) — explicit стойност (alternative)
+- `only_if_empty` (bool, default true) — guard срещу overwriting на explicit
+  user choice. Treats `""`, `null`, `false`, `"use_main"` като "empty".
+
+### Use case (от teolino_shutters seed)
+
+12 правила за color cascade: когато `main_color` се промени → всеки от 12-те
+`color_*` sub-property params получава новата стойност (само ако още не е
+explicit user choice). Заменя `_teolinoColorCascade` от
+`teolino_sale_design_configurator_ui` (което остана като deprecated
+no-op fallback за legacy BoM-ове без cascade_table).
+
+### Roadmap
+
+- Phase B: `derive_value` + `derive_expression` за box-by-height lookup
+- Phase C: TΩ Multiplicity (per-shutter L/H expansion)
+- Phase D: TΛ Layout (UX hints)
+- Phase E: TΠ integration cleanup в VK module
+
+Виж [[project_matrix_universal_engine_vision]] в memory за детайлен план.
+
 ## [18.0.1.10.0] - 2026-05-23
 
 ### Added

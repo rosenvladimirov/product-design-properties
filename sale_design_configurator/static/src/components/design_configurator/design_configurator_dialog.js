@@ -45,6 +45,7 @@ export class DesignConfiguratorDialog extends Component {
             materialTable: false,
             operationTable: false,
             availabilityTable: false,
+            cascadeTable: false,
             bomId: false,
             bomLines: [],
         });
@@ -102,7 +103,7 @@ export class DesignConfiguratorDialog extends Component {
                     const [bomData] = await this.orm.read(
                         "mrp.bom", [boms[0].id],
                         ["constraint_table", "geometry_table", "material_table",
-                         "operation_table", "availability_table"]
+                         "operation_table", "availability_table", "cascade_table"]
                     );
                     if (bomData) {
                         this.state.constraintTable = bomData.constraint_table || false;
@@ -110,6 +111,7 @@ export class DesignConfiguratorDialog extends Component {
                         this.state.materialTable = bomData.material_table || false;
                         this.state.operationTable = bomData.operation_table || false;
                         this.state.availabilityTable = bomData.availability_table || false;
+                        this.state.cascadeTable = bomData.cascade_table || false;
                     }
                 } catch (e) {
                     console.warn("Could not load BoM matrix tables:", e.message);

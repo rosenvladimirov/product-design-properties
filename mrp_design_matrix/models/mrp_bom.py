@@ -39,6 +39,14 @@ class MrpBom(models.Model):
         "T3 — Operations",
         help="GoRules JDM. Produces conditional workorders.",
     )
+    cascade_table = fields.Json(
+        "TΦ — Cascade Resolutions",
+        help=(
+            "GoRules JDM. Reactive value propagation rules consumed by the "
+            "design configurator (sale_design_configurator). При празно — "
+            "fallback на ``matrix_template_id.cascade_table``."
+        ),
+    )
     availability_table = fields.Json(
         "TΠ — Param Availability",
         help=(
@@ -63,6 +71,7 @@ class MrpBom(models.Model):
                 "material_table": t.material_table,
                 "operation_table": t.operation_table,
                 "availability_table": t.availability_table,
+                "cascade_table": t.cascade_table,
             }
         )
 
@@ -79,6 +88,31 @@ class MrpBom(models.Model):
     # Извиква се чрез orm.call от OWL widget на всяка промяна на param
     # (debounced 150ms client-side). Връща normalised dict per param.
     # `@api.model` — context е dict client-side, не record state.
+
+    @api.model
+    def _configurator_evaluate_cascade(self, bom_id, changed_param, context):
+        """Return TΦ cascade state за дадена param промяна.
+
+        :param bom_id: int — mrp.bom id.
+        :param changed_param: string — param name (DPD ``string`` field) който се промени.
+        :param context: dict — текущи param стойности (design_params).
+        :returns: dict ``{target_param: {copy_from?, derive_value?, only_if_empty?}}``.
+            Празен dict ако TΦ не е дефиниран на BoM-а и template-а.
+        """
+        bom = self.browse(bom_id).exists()
+        if not bom:
+            return {}
+        table = bom.cascade_table
+        if not table and bom.matrix_template_id:
+            table = bom.matrix_template_id.cascade_table
+        if not table:
+            return {}
+        Template = self.env["mrp.matrix.template"]
+        from .zen_engine import ZenWrapper
+        full_context = dict(context or {})
+        full_context["changed_param"] = changed_param
+        raw = ZenWrapper.evaluate(table, full_context, env=self.env)
+        return Template._normalize_cascade(raw)
 
     @api.model
     def _configurator_evaluate_availability(self, bom_id, context):

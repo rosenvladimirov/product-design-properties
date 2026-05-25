@@ -4,6 +4,26 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.10.0] - 2026-05-25
+
+### Added — TΦ Cascade integration в configurator (Phase A)
+
+- `DesignConfiguratorWidget`:
+  - Нов prop `cascadeTable` (Json, optional).
+  - `_applyCascade(changedKey, newValue)` — async helper извикан на всяка
+    `onParamChange` **преди** `_validate` и TΠ eval. Извиква
+    `mrp.bom._configurator_evaluate_cascade(bom_id, changed_param, context)`
+    и applies резултата върху `this.params`.
+  - Param name resolution: подава DPD `string` ключ (`main_color`) на сървъра,
+    обратно резолва `target_param`/`copy_from` от string до hash UUID name.
+  - Reentry guard `_cascadeInProgress` (single-pass MVP — multi-step chains
+    се правят с повторен user input).
+  - `only_if_empty` default true; treats `""`, `null`, `false`, `"use_main"`
+    като "empty" → user explicit choice не се overwrite-ва.
+- `DesignConfiguratorDialog` чете `cascade_table` от BoM, passes `cascadeTable`
+  на widget-а. Defaults на false → когато BoM няма TΦ, widget-ът работи както
+  досега.
+
 ## [18.0.1.9.0] - 2026-05-24
 
 ### Added
