@@ -4,6 +4,33 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.11.0] - 2026-05-25
+
+### Added — TΩ + TΛ widget consumption (Phase E)
+
+- `DesignConfiguratorWidget`:
+  - Нови props: `multiplicityTable`, `layoutTable` (Json, optional).
+  - Getter `multiplicityMetadata` — extract {count_param, per_instance_params,
+    aggregator} от TΩ rule (strips JDM quoting + parses list literals).
+  - Getter `multiplicityCount` — current count value за UI iteration.
+  - Method `getLayoutForParam(paramKey)` — TΛ layout state {section?,
+    widget_hint?, customer_visible?, submodal?} per DPD string ключ.
+  - Convenience `isCustomerVisibleParam(paramKey)` — default true backward
+    compat (когато TΛ не казва нищо).
+- `DesignConfiguratorDialog` чете `multiplicity_table` + `layout_table` от
+  BoM и passes-ва ги. Defaults на false → widget работи както досега за
+  BoM-ове без новите слоеве.
+
+### Use case
+
+VK template (teolino_dialog.xml) ИЛИ бъдещи customer UI templates вече могат
+да викат `this.multiplicityCount` вместо hardcoded `teolinoShutterCount()`,
+`getLayoutForParam(...).customer_visible` вместо `CUSTOMER_PICKABLE_COLOR_KEYS`,
+`this.multiplicityMetadata.per_instance_params` вместо hardcoded `["width","height"]`.
+
+Само API + helpers MVP — пълна UI integration (per-instance renderer,
+widget_hint switch) остава за future iteration.
+
 ## [18.0.1.10.0] - 2026-05-25
 
 ### Added — TΦ Cascade integration в configurator (Phase A)

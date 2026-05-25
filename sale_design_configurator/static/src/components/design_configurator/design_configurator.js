@@ -39,6 +39,8 @@ export class DesignConfiguratorWidget extends Component {
         operationTable: { type: [Object, { value: false }], optional: true },
         availabilityTable: { type: [Object, { value: false }], optional: true },
         cascadeTable: { type: [Object, { value: false }], optional: true },
+        multiplicityTable: { type: [Object, { value: false }], optional: true },
+        layoutTable: { type: [Object, { value: false }], optional: true },
         bomId: { type: [Number, { value: false }], optional: true },
         bomLines: { type: Array, optional: true },
         existingLotId: { type: [Number, Boolean], optional: true },
@@ -244,6 +246,86 @@ export class DesignConfiguratorWidget extends Component {
             }
             return p[key] ?? key;
         });
+    }
+
+    // ── TΩ Multiplicity + TΛ Layout — generic helpers за UI consumption ─
+
+    /** Return TΩ metadata loaded with the dialog: ``{count_param?,
+     *  per_instance_params?, aggregator?}`` или празен dict.
+     *
+     *  VK template (и бъдещи) могат да викат това вместо да hardcode-ват
+     *  ``teolinoShutterCount()`` / ``teolinoShutterIndices()``.
+     */
+    get multiplicityMetadata() {
+        const t = this.props.multiplicityTable;
+        if (!t || !t.nodes) return {};
+        // First decisionTableNode with first rule = canonical metadata.
+        const dt = t.nodes.find(n => n && (n.type === "decisionTableNode" || n.type === "decisionTable"));
+        if (!dt || !dt.content || !dt.content.rules || !dt.content.rules.length) return {};
+        const rule = dt.content.rules[0];
+        const out = {};
+        for (const key of ["count_param", "per_instance_params", "aggregator"]) {
+            const raw = rule[key];
+            if (!raw) continue;
+            // Strip JDM string-literal quoting
+            if (typeof raw === "string" && raw.startsWith('"') && raw.endsWith('"')) {
+                out[key] = raw.slice(1, -1);
+            } else if (typeof raw === "string" && raw.startsWith("[")) {
+                try { out[key] = JSON.parse(raw); } catch { out[key] = raw; }
+            } else {
+                out[key] = raw;
+            }
+        }
+        return out;
+    }
+
+    /** Return current count for the multi-instance dimension (default 1). */
+    get multiplicityCount() {
+        const meta = this.multiplicityMetadata;
+        if (!meta.count_param) return 1;
+        const def = this._resolveParamDef(meta.count_param);
+        const cur = def ? this.params[def.name] : this.params[meta.count_param];
+        const n = parseInt(cur, 10);
+        return Number.isFinite(n) && n > 0 ? n : 1;
+    }
+
+    /** Return TΛ layout state for a given param (DPD string ключ):
+     *  ``{section?, widget_hint?, customer_visible?, submodal?}``.
+     *  Празен dict (= "no hint") когато TΛ не е дефиниран или няма rule.
+     *
+     *  Note: layoutTable е full-graph JDM; за MVP filtering е flat (rules
+     *  без conditional inputs). Бъдещи rules с conditional inputs трябва
+     *  server-side `_configurator_evaluate_layout` RPC.
+     */
+    getLayoutForParam(paramKey) {
+        const t = this.props.layoutTable;
+        if (!t || !t.nodes) return {};
+        const dt = t.nodes.find(n => n && (n.type === "decisionTableNode" || n.type === "decisionTable"));
+        if (!dt || !dt.content || !dt.content.rules) return {};
+        const target = `"${paramKey}"`;
+        const rule = dt.content.rules.find(r => r && r.param === target);
+        if (!rule) return {};
+        const out = {};
+        for (const key of ["section", "widget_hint", "submodal"]) {
+            const raw = rule[key];
+            if (!raw || raw === '""') continue;
+            if (typeof raw === "string" && raw.startsWith('"') && raw.endsWith('"')) {
+                out[key] = raw.slice(1, -1);
+            } else {
+                out[key] = raw;
+            }
+        }
+        if (rule.customer_visible !== undefined && rule.customer_visible !== "") {
+            out.customer_visible = rule.customer_visible === "true" || rule.customer_visible === true;
+        }
+        return out;
+    }
+
+    /** Convenience: param visible to customer-facing UI? Default true когато TΛ
+     *  не казва нищо (backward compat). */
+    isCustomerVisibleParam(paramKey) {
+        const layout = this.getLayoutForParam(paramKey);
+        return layout.customer_visible !== false;
     }
 
     // ── TΦ cascade — value propagation на onParamChange ────────────────

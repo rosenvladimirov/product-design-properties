@@ -27,6 +27,8 @@
                 operationTable="state.operationTable"
                 availabilityTable="state.availabilityTable"
                 cascadeTable="state.cascadeTable"
+                multiplicityTable="state.multiplicityTable"
+                layoutTable="state.layoutTable"
                 bomId="state.bomId"
                 bomLines="state.bomLines"
                 existingLotId="props.existingLotId or false"

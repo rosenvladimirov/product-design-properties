@@ -31,11 +31,30 @@ function _restrictSelection(param, allowedValues) {
     return Object.assign({}, param, { selection: filtered });
 }
 
+// @deprecated блок (mrp_design_matrix ≥ 1.14.0, Phase E):
+// Upstream DesignConfiguratorWidget (sale_design_configurator ≥ 1.10.0) вече има
+// `_decorateParam` + TΠ availability eval, които покриват displayParams filter
+// + auto-snap functionality чрез matrix data (mrp_design_matrix_teolino_shutters
+// availability_table + cascade_table seed).
+//
+// Този patch остава като UI fallback за следните случаи:
+// 1. BoM-ове без матричен template (legacy data) — продължава да работи както досега
+// 2. Кодов път където upstream TΠ flow още не покрива edge case
+//
+// План за пълно премахване:
+// - Phase E+1: уверете се че всички BoM-ове на dev-teo-2305 имат matrix_template_id
+// - Phase E+2: уверете се че матрицата покрива всички shutter constraints
+// - Phase E+3: премахни патча и приеми upstream `displayParams`
+
 patch(DesignConfiguratorWidget.prototype, {
     /**
      * Filter selection options per current shutter_model.  Falls back to
      * upstream behavior when the definition is not a shutter (no
      * `shutter_model` property found).
+     *
+     * @deprecated Phase E — upstream `displayParams` + `_decorateParam`
+     * консумира TΠ availability_table (matrix-driven, same logic). Този
+     * override остава като legacy fallback за non-matrix BoM-ове.
      */
     get displayParams() {
         const base = super.displayParams;
@@ -79,6 +98,10 @@ patch(DesignConfiguratorWidget.prototype, {
      * Override the central change handler to auto-snap dependent values
      * when shutter_model changes (e.g. switching from Standard to Round
      * with shutter_count = 3 → snap to 1).
+     *
+     * @deprecated Phase E — upstream `_enforceAvailability` (TΠ) +
+     * `_applyCascade` (TΦ) покриват auto-snap семантиката чрез matrix-driven
+     * rules. Този override остава за edge cases и legacy non-matrix BoM-ове.
      */
     onParamChange(key, value) {
         const ret = super.onParamChange(key, value);
