@@ -66,6 +66,21 @@
                                    options="{'table_type': 'tpi'}"
                                    nolabel="1"/>
                         </page>
+                        <page string="TΩ — Multiplicity">
+                            <div class="alert alert-info" role="alert">
+                                <strong>Multi-instance metadata.</strong>
+                                Declarative описание на multi-shutter / multi-door /
+                                multi-shelf продукти. Outputs: <code>count_param</code>
+                                (param с N), <code>per_instance_params</code>
+                                (list — кои params са per-instance), <code>aggregator</code>
+                                (sum/list/concat), <code>skip_when</code> (optional
+                                expression да skip multiplicity).
+                            </div>
+                            <field name="multiplicity_table"
+                                   widget="design_matrix"
+                                   options="{'table_type': 'tomega'}"
+                                   nolabel="1"/>
+                        </page>
                         <page string="TΦ — Cascade">
                             <div class="alert alert-info" role="alert">
                                 <strong>Reactive value propagation.</strong>

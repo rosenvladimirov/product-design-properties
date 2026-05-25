@@ -4,6 +4,17 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.5.0] - 2026-05-25
+
+### Added
+
+- `multiplicity_table` seed (TΩ Multiplicity — Phase C): single rule —
+  `count_param="shutter_count"`, `per_instance_params=["width", "height"]`,
+  `aggregator="sum"`. Engine consumers (simulate_with_params) loop-ват
+  per-shutter L/H pairs от `stock.lot.multi_instance_data` и сумират
+  line.qty. Замества Teolino-specific `teolino_per_shutter_dims` Char
+  (deprecated, backward-compat fallback запазен).
+
 ## [18.0.1.4.0] - 2026-05-25
 
 ### Added

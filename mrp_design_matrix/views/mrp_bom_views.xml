@@ -53,6 +53,11 @@
                            widget="design_matrix"
                            options="{'table_type': 'tphi'}"
                            nolabel="1"/>
+
+                    <field name="multiplicity_table"
+                           widget="design_matrix"
+                           options="{'table_type': 'tomega'}"
+                           nolabel="1"/>
                 </page>
             </notebook>
 

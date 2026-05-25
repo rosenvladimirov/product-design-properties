@@ -47,6 +47,13 @@ class MrpBom(models.Model):
             "fallback на ``matrix_template_id.cascade_table``."
         ),
     )
+    multiplicity_table = fields.Json(
+        "TΩ — Multiplicity",
+        help=(
+            "GoRules JDM. Declarative multi-instance metadata. При празно — "
+            "fallback на ``matrix_template_id.multiplicity_table``."
+        ),
+    )
     lookup_tables = fields.Json(
         "Lookup Tables",
         help=(
@@ -79,6 +86,7 @@ class MrpBom(models.Model):
                 "operation_table": t.operation_table,
                 "availability_table": t.availability_table,
                 "cascade_table": t.cascade_table,
+                "multiplicity_table": t.multiplicity_table,
                 "lookup_tables": t.lookup_tables,
             }
         )
@@ -96,6 +104,28 @@ class MrpBom(models.Model):
     # Извиква се чрез orm.call от OWL widget на всяка промяна на param
     # (debounced 150ms client-side). Връща normalised dict per param.
     # `@api.model` — context е dict client-side, не record state.
+
+    @api.model
+    def _configurator_evaluate_multiplicity(self, bom_id, context):
+        """Return TΩ multiplicity metadata за дадения BoM context.
+
+        :param bom_id: int — mrp.bom id.
+        :param context: dict — current param values.
+        :returns: dict ``{count_param?, per_instance_params?, aggregator?, skip_when?}``
+            или празен dict ако TΩ не е дефиниран.
+        """
+        bom = self.browse(bom_id).exists()
+        if not bom:
+            return {}
+        table = bom.multiplicity_table
+        if not table and bom.matrix_template_id:
+            table = bom.matrix_template_id.multiplicity_table
+        if not table:
+            return {}
+        Template = self.env["mrp.matrix.template"]
+        from .zen_engine import ZenWrapper
+        raw = ZenWrapper.evaluate(table, context or {}, env=self.env)
+        return Template._normalize_multiplicity(raw)
 
     @api.model
     def _configurator_evaluate_cascade(self, bom_id, changed_param, context):

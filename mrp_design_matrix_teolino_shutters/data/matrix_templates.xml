@@ -285,6 +285,54 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
         T3 добавя motor install само за моторни управления; Thermo Comfort
         ползва вариант със safety профил → отделен (по-дълъг) ред.
     -->
+    <!-- ── TΩ — Multiplicity (multi-instance metadata) ──────────────────── -->
+    <!--
+        Single declarative rule: за shutter_count > 1 → expand evaluation с
+        per-shutter (width, height) pairs.
+        - count_param = "shutter_count" — int param с N panels
+        - per_instance_params = ["width", "height"] — кои params се replace-ват
+          per instance (loop body на simulate_with_params)
+        - aggregator = "sum" — line.qty се сумира по всички instances
+
+        Engine consumers:
+        - sale_design_pricing.mrp.bom.simulate_with_params чете metadata-та,
+          loop-ва върху stock.lot.multi_instance_data entries per shutter
+          (или backward-compat на teolino_per_shutter_dims string parsing)
+        - configurator widget renderer добавя per-shutter L/H controls когато
+          count_param > 1
+
+        hitPolicy: first — single match достатъчно (тук имаме wildcard rule).
+    -->
+    <field name="multiplicity_table" eval="
+        {
+            'nodes': [
+                {'id': 'zen_input', 'name': 'Input', 'type': 'inputNode'},
+                {
+                'id': 'tomega-teo',
+                'name': 'TΩ Multiplicity',
+                'type': 'decisionTableNode',
+                'content': {
+                    'hitPolicy': 'first',
+                    'inputs': [],
+                    'outputs': [
+                        {'id': 'count_param',         'name': 'count_param',         'field': 'count_param'},
+                        {'id': 'per_instance_params', 'name': 'per_instance_params', 'field': 'per_instance_params'},
+                        {'id': 'aggregator',          'name': 'aggregator',          'field': 'aggregator'}
+                    ],
+                    'rules': [
+                        {'count_param': '&quot;shutter_count&quot;', 'per_instance_params': '[&quot;width&quot;, &quot;height&quot;]', 'aggregator': '&quot;sum&quot;'}
+                    ]
+                }
+                },
+                {'id': 'zen_output', 'name': 'Output', 'type': 'outputNode'}
+            ],
+            'edges': [
+                {'id': 'zen_edge_in',  'sourceId': 'zen_input',  'targetId': 'tomega-teo'},
+                {'id': 'zen_edge_out', 'sourceId': 'tomega-teo', 'targetId': 'zen_output'}
+            ]
+        }
+    "/>
+
     <!-- ── Lookup Tables (data за TΦ derive_expression) ────────────────── -->
     <!--
         box_by_height — за всеки (shutter_model, slat_size) → ordered

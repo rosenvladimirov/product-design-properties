@@ -526,6 +526,7 @@ export class DesignMatrixField extends Component {
             t3: "T3 Operations",
             tpi: "TΠ Availability",
             tphi: "TΦ Cascade",
+            tomega: "TΩ Multiplicity",
         };
         return {
             nodes: [

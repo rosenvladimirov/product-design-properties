@@ -6,7 +6,7 @@
         "Full parametric design matrix for a 5-model roller-shutter "
         "range: Standard, Round, T-Roll, Built-In and Thermo Comfort."
     ),
-    "version": "18.0.1.4.0",
+    "version": "18.0.1.5.0",
     "category": "Manufacturing",
     "website": "https://github.com/OCA/manufacture",
     "author": "BL Consulting, Odoo Community Association (OCA)",

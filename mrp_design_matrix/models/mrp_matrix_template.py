@@ -104,6 +104,18 @@ class MrpMatrixTemplate(models.Model):
             "onParamChange в configurator-а. Optional layer."
         ),
     )
+    multiplicity_table = fields.Json(
+        "TΩ — Multiplicity",
+        help=(
+            "GoRules JDM JSON: declarative metadata за multi-instance продукти "
+            "(multi-shutter, multi-door, multi-shelf). Output schema per rule: "
+            "`count_param` (string — името на param-а който носи N), "
+            "`per_instance_params` (list — кои params са per-instance, напр. "
+            "[\"width\", \"height\"]), `aggregator` (string — sum/list/concat). "
+            "Engine (simulate_with_params, configurator UI) чете metadata-ta и "
+            "loop-ва върху ``stock.lot.multi_instance_data`` entries. Optional layer."
+        ),
+    )
     lookup_tables = fields.Json(
         "Lookup Tables",
         help=(
@@ -396,6 +408,58 @@ class MrpMatrixTemplate(models.Model):
             if value is not None and "derive_value" not in spec:
                 spec["derive_value"] = value
         return normalized
+
+    # -- TΩ Multiplicity evaluation -----------------------------------------
+    # TΩ е metadata layer: декларативно описва кой param е count + кои са
+    # per-instance + аggregation strategy. Engine-ът (simulate_with_params)
+    # чете metadata-ta и loop-ва върху stock.lot.multi_instance_data entries.
+
+    _MULTIPLICITY_KEYS = ("count_param", "per_instance_params", "aggregator", "skip_when")
+
+    @classmethod
+    def _normalize_multiplicity(cls, raw_payload):
+        """Take raw zen-engine output and produce single metadata dict.
+
+        За multiplicity_table обикновено е single-rule (hitPolicy=first), но
+        ако engine върне list — взимаме първия match. Output schema:
+        ``{count_param, per_instance_params, aggregator, skip_when}``.
+        """
+        items = []
+        if isinstance(raw_payload, list):
+            items = raw_payload
+        elif isinstance(raw_payload, dict):
+            if "result" in raw_payload and isinstance(raw_payload["result"], list):
+                items = raw_payload["result"]
+            elif "count_param" in raw_payload:
+                items = [raw_payload]
+        if not items:
+            return {}
+        first = items[0]
+        if not isinstance(first, dict):
+            return {}
+        out = {}
+        for key in cls._MULTIPLICITY_KEYS:
+            if key in first and first[key] not in (None, "", False):
+                out[key] = first[key]
+        return out
+
+    def _evaluate_multiplicity(self, context):
+        """Evaluate ``multiplicity_table`` за дадения context.
+
+        :param context: dict с current param values.
+        :returns: dict ``{count_param?, per_instance_params?, aggregator?, skip_when?}``
+            или празен dict ако TΩ не е дефиниран.
+        """
+        self.ensure_one()
+        if not self.multiplicity_table:
+            return {}
+        from .zen_engine import ZenWrapper
+        raw = ZenWrapper.evaluate(
+            self.multiplicity_table,
+            context or {},
+            env=self.env,
+        )
+        return self._normalize_multiplicity(raw)
 
     def _evaluate_availability(self, context):
         """Evaluate ``availability_table`` за дадения param context.

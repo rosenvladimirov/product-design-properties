@@ -4,6 +4,58 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.13.0] - 2026-05-25
+
+### Added — TΩ Multiplicity (Phase C — C3 Hybrid declarative)
+
+- **`mrp.matrix.template.multiplicity_table`** (Json) + нов 8-ми notebook tab
+  "TΩ — Multiplicity" с `design_matrix` widget (`tomega` table_type).
+- **`mrp.bom.multiplicity_table`** (Json) + fallback на template-а.
+  `action_load_from_template` копира и него.
+- **`mrp.matrix.template._evaluate_multiplicity(context)`** + `_normalize_multiplicity(raw)`
+  → връща `{count_param?, per_instance_params?, aggregator?, skip_when?}`.
+  hitPolicy типично `first` (single rule).
+- **`mrp.bom._configurator_evaluate_multiplicity(bom_id, context)`** RPC.
+- **`stock.lot.multi_instance_data`** (Json) — generic per-instance values
+  storage. Structure: ``[{param1: value1, param2: value2}, ...]``. Заменя
+  Teolino-specific `teolino_per_shutter_dims` Char.
+- **`stock.lot.multi_get_per_instance_pairs(per_instance_params)`** — helper
+  extract-ва ordered tuples от `multi_instance_data` според списъка
+  per_instance_params. Backward compat: ако празно AND lot има
+  `teolino_get_per_shutter_pairs` AND per_instance_params покрива
+  `{width, height, L, H}` → fallback на legacy parser.
+
+### TΩ Schema
+
+| Output | Тип | Описание |
+|---|---|---|
+| `count_param` | string | Името на param-а който носи N (брой инстанции) |
+| `per_instance_params` | list of strings | Кои params се replace-ват per instance в loop body |
+| `aggregator` | string | `sum` (default) / `list` / `concat` за per-instance line.qty |
+| `skip_when` | string (optional) | safe_eval expression — skip multiplicity ако evaluate-нe true |
+
+### Use case (от teolino_shutters seed)
+
+Single rule: за shutter_count → expand evaluation per panel с (width, height)
+от `lot.multi_instance_data`. Engine consumers (simulate_with_params) loop-ват
+върху pairs и сумират line.qty.
+
+### Engine integration
+
+`sale_design_pricing.mrp.bom.simulate_with_params` вече има per-shutter loop
+(приема `per_shutter_pairs=[]` param). Caller convention update:
+
+```python
+metadata = bom.matrix_template_id._evaluate_multiplicity(context)
+if metadata.get("count_param"):
+    pairs = lot.multi_get_per_instance_pairs(metadata.get("per_instance_params") or [])
+    sim = bom.simulate_with_params(rich, qty, per_shutter_pairs=pairs)
+```
+
+Backward compat: ако lot няма `multi_instance_data` но има
+`teolino_per_shutter_dims` (legacy Char) → helper се fallback-ва на
+`teolino_get_per_shutter_pairs()`. Existing data продължава да работи.
+
 ## [18.0.1.12.0] - 2026-05-25
 
 ### Added — TΦ derive_expression + lookup_tables (Phase B)
