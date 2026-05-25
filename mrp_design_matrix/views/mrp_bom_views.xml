@@ -58,6 +58,11 @@
                            widget="design_matrix"
                            options="{'table_type': 'tomega'}"
                            nolabel="1"/>
+
+                    <field name="layout_table"
+                           widget="design_matrix"
+                           options="{'table_type': 'tlambda'}"
+                           nolabel="1"/>
                 </page>
             </notebook>
 

@@ -47,6 +47,13 @@ class MrpBom(models.Model):
             "fallback на ``matrix_template_id.cascade_table``."
         ),
     )
+    layout_table = fields.Json(
+        "TΛ — Layout / UX Hints",
+        help=(
+            "GoRules JDM. Declarative UX rules. При празно — fallback на "
+            "``matrix_template_id.layout_table``."
+        ),
+    )
     multiplicity_table = fields.Json(
         "TΩ — Multiplicity",
         help=(
@@ -87,6 +94,7 @@ class MrpBom(models.Model):
                 "availability_table": t.availability_table,
                 "cascade_table": t.cascade_table,
                 "multiplicity_table": t.multiplicity_table,
+                "layout_table": t.layout_table,
                 "lookup_tables": t.lookup_tables,
             }
         )
@@ -104,6 +112,28 @@ class MrpBom(models.Model):
     # Извиква се чрез orm.call от OWL widget на всяка промяна на param
     # (debounced 150ms client-side). Връща normalised dict per param.
     # `@api.model` — context е dict client-side, не record state.
+
+    @api.model
+    def _configurator_evaluate_layout(self, bom_id, context=None):
+        """Return TΛ layout metadata за дадения BoM.
+
+        :param bom_id: int — mrp.bom id.
+        :param context: dict (optional) — за условни layout rules.
+        :returns: dict ``{param: {section?, widget_hint?, customer_visible?,
+            submodal?, order?}}`` или празен dict.
+        """
+        bom = self.browse(bom_id).exists()
+        if not bom:
+            return {}
+        table = bom.layout_table
+        if not table and bom.matrix_template_id:
+            table = bom.matrix_template_id.layout_table
+        if not table:
+            return {}
+        Template = self.env["mrp.matrix.template"]
+        from .zen_engine import ZenWrapper
+        raw = ZenWrapper.evaluate(table, context or {}, env=self.env)
+        return Template._normalize_layout(raw)
 
     @api.model
     def _configurator_evaluate_multiplicity(self, bom_id, context):

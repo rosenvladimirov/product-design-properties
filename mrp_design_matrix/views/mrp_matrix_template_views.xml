@@ -66,6 +66,21 @@
                                    options="{'table_type': 'tpi'}"
                                    nolabel="1"/>
                         </page>
+                        <page string="TΛ — Layout">
+                            <div class="alert alert-info" role="alert">
+                                <strong>UX hints per param.</strong>
+                                Outputs: <code>param</code>, <code>section</code>
+                                (групиране в UI), <code>widget_hint</code>
+                                (segment/spinner/slider/color_picker),
+                                <code>customer_visible</code> (bool — customer-pickable
+                                vs internal), <code>submodal</code> (sub-modal id),
+                                <code>order</code> (ordering hint).
+                            </div>
+                            <field name="layout_table"
+                                   widget="design_matrix"
+                                   options="{'table_type': 'tlambda'}"
+                                   nolabel="1"/>
+                        </page>
                         <page string="TΩ — Multiplicity">
                             <div class="alert alert-info" role="alert">
                                 <strong>Multi-instance metadata.</strong>

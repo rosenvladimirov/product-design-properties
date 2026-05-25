@@ -285,6 +285,66 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
         T3 добавя motor install само за моторни управления; Thermo Comfort
         ползва вариант със safety профил → отделен (по-дълъг) ред.
     -->
+    <!-- ── TΛ — Layout / UX Hints (per-param visibility + widget hint) ──── -->
+    <!--
+        Customer-pickable scope: 6 от 12-те color sub-properties (slat, caps,
+        box, endcap, terminal, guide) са exterior parts → customer-visible.
+        Останалите 6 (central_endcap, brush, package, rope, shirit, safety)
+        са produced in single fixed color → hide-нати в customer-facing UI
+        (но запазват value за internal use).
+        Source: teolino_dialog.js CUSTOMER_PICKABLE_COLOR_KEYS.
+
+        widget_hint=color_picker → UI render-ва color swatch + sub-modal trigger
+        вместо segmented selection. main_color получава "main" hint за
+        special treatment (cascade source).
+
+        hitPolicy=collect — multiple rules, _normalize_layout merge-нa
+        per-param (last write per cell).
+    -->
+    <field name="layout_table" eval="
+        {
+            'nodes': [
+                {'id': 'zen_input', 'name': 'Input', 'type': 'inputNode'},
+                {
+                'id': 'tlambda-teo',
+                'name': 'TΛ Layout',
+                'type': 'decisionTableNode',
+                'content': {
+                    'hitPolicy': 'collect',
+                    'inputs': [],
+                    'outputs': [
+                        {'id': 'param',            'name': 'param',            'field': 'param'},
+                        {'id': 'section',          'name': 'section',          'field': 'section'},
+                        {'id': 'widget_hint',      'name': 'widget_hint',      'field': 'widget_hint'},
+                        {'id': 'customer_visible', 'name': 'customer_visible', 'field': 'customer_visible'},
+                        {'id': 'submodal',         'name': 'submodal',         'field': 'submodal'}
+                    ],
+                    'rules': [
+                        {'param': '&quot;main_color&quot;', 'section': '&quot;colors&quot;', 'widget_hint': '&quot;color_main&quot;',   'customer_visible': 'true',  'submodal': ''},
+                        {'param': '&quot;color_slat&quot;', 'section': '&quot;colors&quot;', 'widget_hint': '&quot;color_picker&quot;', 'customer_visible': 'true',  'submodal': '&quot;teolino_color_dialog&quot;'},
+                        {'param': '&quot;color_caps&quot;', 'section': '&quot;colors&quot;', 'widget_hint': '&quot;color_picker&quot;', 'customer_visible': 'true',  'submodal': '&quot;teolino_color_dialog&quot;'},
+                        {'param': '&quot;color_box&quot;', 'section': '&quot;colors&quot;', 'widget_hint': '&quot;color_picker&quot;', 'customer_visible': 'true',  'submodal': '&quot;teolino_color_dialog&quot;'},
+                        {'param': '&quot;color_endcap&quot;', 'section': '&quot;colors&quot;', 'widget_hint': '&quot;color_picker&quot;', 'customer_visible': 'true',  'submodal': '&quot;teolino_color_dialog&quot;'},
+                        {'param': '&quot;color_terminal&quot;', 'section': '&quot;colors&quot;', 'widget_hint': '&quot;color_picker&quot;', 'customer_visible': 'true',  'submodal': '&quot;teolino_color_dialog&quot;'},
+                        {'param': '&quot;color_guide&quot;', 'section': '&quot;colors&quot;', 'widget_hint': '&quot;color_picker&quot;', 'customer_visible': 'true',  'submodal': '&quot;teolino_color_dialog&quot;'},
+                        {'param': '&quot;color_central_endcap&quot;', 'section': '&quot;colors&quot;', 'widget_hint': '&quot;color_picker&quot;', 'customer_visible': 'false', 'submodal': ''},
+                        {'param': '&quot;color_brush&quot;', 'section': '&quot;colors&quot;', 'widget_hint': '&quot;color_picker&quot;', 'customer_visible': 'false', 'submodal': ''},
+                        {'param': '&quot;color_package&quot;', 'section': '&quot;colors&quot;', 'widget_hint': '&quot;color_picker&quot;', 'customer_visible': 'false', 'submodal': ''},
+                        {'param': '&quot;color_rope&quot;', 'section': '&quot;colors&quot;', 'widget_hint': '&quot;color_picker&quot;', 'customer_visible': 'false', 'submodal': ''},
+                        {'param': '&quot;color_shirit&quot;', 'section': '&quot;colors&quot;', 'widget_hint': '&quot;color_picker&quot;', 'customer_visible': 'false', 'submodal': ''},
+                        {'param': '&quot;color_safety&quot;', 'section': '&quot;colors&quot;', 'widget_hint': '&quot;color_picker&quot;', 'customer_visible': 'false', 'submodal': ''}
+                    ]
+                }
+                },
+                {'id': 'zen_output', 'name': 'Output', 'type': 'outputNode'}
+            ],
+            'edges': [
+                {'id': 'zen_edge_in',  'sourceId': 'zen_input',    'targetId': 'tlambda-teo'},
+                {'id': 'zen_edge_out', 'sourceId': 'tlambda-teo', 'targetId': 'zen_output'}
+            ]
+        }
+    "/>
+
     <!-- ── TΩ — Multiplicity (multi-instance metadata) ──────────────────── -->
     <!--
         Single declarative rule: за shutter_count > 1 → expand evaluation с

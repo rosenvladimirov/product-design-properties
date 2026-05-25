@@ -4,6 +4,39 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.14.0] - 2026-05-25
+
+### Added — TΛ Layout / UX Hints (Phase D)
+
+- **`mrp.matrix.template.layout_table`** (Json) + 9-ти notebook tab
+  "TΛ — Layout" с `design_matrix` widget (`tlambda` table_type).
+- **`mrp.bom.layout_table`** (Json) + fallback на template.
+- **`mrp.matrix.template._evaluate_layout(context=None)`** +
+  `_normalize_layout(raw)` → връща `{param: {section?, widget_hint?,
+  customer_visible?, submodal?, order?}}`. Multiple rules per param: last
+  write wins per cell.
+- **`mrp.bom._configurator_evaluate_layout(bom_id, context=None)`** RPC.
+
+### TΛ Schema
+
+| Output | Type | Описание |
+|---|---|---|
+| `param` | string (req) | Името на param-а (DPD `string`) |
+| `section` | string | UI grouping (`colors`, `dimensions`, `accessories`) |
+| `widget_hint` | string | Render hint: `segment`/`spinner`/`slider`/`color_picker`/`color_main` |
+| `customer_visible` | bool | true=customer-pickable, false=internal-only |
+| `submodal` | string | Sub-modal component id (напр. `teolino_color_dialog`) |
+| `order` | int (optional) | Override ordering hint |
+
+### Use case (от teolino_shutters seed)
+
+13 rules за color params:
+- main_color: widget_hint=color_main, customer_visible=true
+- 6 customer-pickable colors (slat/caps/box/endcap/terminal/guide): widget_hint=color_picker, customer_visible=true, submodal=teolino_color_dialog
+- 6 internal colors (central_endcap/brush/package/rope/shirit/safety): customer_visible=false (hidden от customer UI; visible in internal/ops view)
+
+Заменя `CUSTOMER_PICKABLE_COLOR_KEYS` JS constant от teolino_sale_design_configurator_ui (deprecation в Phase E).
+
 ## [18.0.1.13.0] - 2026-05-25
 
 ### Added — TΩ Multiplicity (Phase C — C3 Hybrid declarative)

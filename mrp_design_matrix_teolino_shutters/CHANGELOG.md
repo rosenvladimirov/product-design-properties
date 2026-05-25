@@ -4,6 +4,17 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.6.0] - 2026-05-25
+
+### Added
+
+- `layout_table` seed (TΛ Layout — Phase D): 13 rules за color params'
+  UX hints. main_color → widget_hint=color_main; 6 customer-pickable
+  colors (slat/caps/box/endcap/terminal/guide) → customer_visible=true +
+  submodal=teolino_color_dialog; 6 internal colors (central_endcap/brush/
+  package/rope/shirit/safety) → customer_visible=false. Заменя
+  `CUSTOMER_PICKABLE_COLOR_KEYS` JS constant.
+
 ## [18.0.1.5.0] - 2026-05-25
 
 ### Added

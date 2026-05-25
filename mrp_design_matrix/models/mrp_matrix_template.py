@@ -104,6 +104,18 @@ class MrpMatrixTemplate(models.Model):
             "onParamChange в configurator-а. Optional layer."
         ),
     )
+    layout_table = fields.Json(
+        "TΛ — Layout / UX Hints",
+        help=(
+            "GoRules JDM JSON: declarative UX rules. За всеки param — къде да се "
+            "покаже (section), какъв widget (segment/spinner/slider/color_picker), "
+            "видимост per audience (customer-pickable vs internal), sub-modal "
+            "trigger. Outputs per rule: `param` (string), `section` (string), "
+            "`widget_hint` (string), `customer_visible` (bool), `submodal` "
+            "(string — sub-modal component id). Eval-ва се веднъж per load на "
+            "configurator-а (не reactive). Optional layer."
+        ),
+    )
     multiplicity_table = fields.Json(
         "TΩ — Multiplicity",
         help=(
@@ -442,6 +454,65 @@ class MrpMatrixTemplate(models.Model):
             if key in first and first[key] not in (None, "", False):
                 out[key] = first[key]
         return out
+
+    # -- TΛ Layout / UX hints evaluation ------------------------------------
+    # TΛ е decorative metadata: грид/widget/scope hints per param. Eval-ва
+    # се веднъж per configurator load (не reactive). Merge logic за multiple
+    # rules per param: last write wins per cell.
+
+    _LAYOUT_KEYS = ("section", "widget_hint", "customer_visible", "submodal", "order")
+
+    @classmethod
+    def _normalize_layout(cls, raw_payload):
+        """Take raw zen-engine output and produce ``{param: {section?, widget_hint?,
+        customer_visible?, submodal?, order?}}``.
+
+        За multiple rules с един и същ ``param``: last write wins per cell.
+        """
+        items = []
+        if isinstance(raw_payload, list):
+            items = raw_payload
+        elif isinstance(raw_payload, dict):
+            if "result" in raw_payload and isinstance(raw_payload["result"], list):
+                items = raw_payload["result"]
+            elif "param" in raw_payload:
+                items = [raw_payload]
+        out = {}
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            param = item.get("param")
+            if not param:
+                continue
+            spec = out.setdefault(param, {})
+            for key in cls._LAYOUT_KEYS:
+                if key not in item:
+                    continue
+                value = item[key]
+                if key == "customer_visible":
+                    spec[key] = bool(value)
+                elif value not in (None, "", False):
+                    spec[key] = value
+        return out
+
+    def _evaluate_layout(self, context=None):
+        """Evaluate ``layout_table`` за даден configurator context.
+
+        :param context: dict (optional) — за условни layout rules. Обикновено
+            празно — rules се matching-ват по wildcard.
+        :returns: dict ``{param: {section?, widget_hint?, customer_visible?,
+            submodal?, order?}}``. Празен dict ако TΛ не е дефиниран.
+        """
+        self.ensure_one()
+        if not self.layout_table:
+            return {}
+        from .zen_engine import ZenWrapper
+        raw = ZenWrapper.evaluate(
+            self.layout_table,
+            context or {},
+            env=self.env,
+        )
+        return self._normalize_layout(raw)
 
     def _evaluate_multiplicity(self, context):
         """Evaluate ``multiplicity_table`` за дадения context.
