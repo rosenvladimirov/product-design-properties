@@ -285,6 +285,40 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
         T3 добавя motor install само за моторни управления; Thermo Comfort
         ползва вариант със safety профил → отделен (по-дълъг) ред.
     -->
+    <!-- ── Lookup Tables (data за TΦ derive_expression) ────────────────── -->
+    <!--
+        box_by_height — за всеки (shutter_model, slat_size) → ordered
+        [(H_max_mm, box_code), ...]. Replace-ва `BOX_BY_HEIGHT_AND_SLAT`
+        от teolino_constraints.js (hardcoded JS dict).
+        Source: Teolino catalog 2022.
+        Used by TΦ rule: target_param=box_size, derive_expression=
+        "lookup('box_by_height', shutter_model, slat_size, h_mm)"
+    -->
+    <field name="lookup_tables" eval="{
+        'box_by_height': {
+            'standard': {
+                '40': [[1500, '137'], [2300, '165'], [2800, '180'], [3500, '205']],
+                '50': [[ 900, '137'], [1400, '165'], [2000, '180'], [2700, '205']]
+            },
+            'round': {
+                '40': [[1500, '137'], [2300, '165'], [2800, '180'], [3500, '205']],
+                '50': [[ 900, '137'], [1400, '165'], [2000, '180'], [2700, '205']]
+            },
+            't_roll': {
+                '40': [[2000, '160'], [2800, '200']],
+                '50': [[1500, '160'], [2700, '200']]
+            },
+            'thermo_comfort': {
+                '40': [[2300, '170'], [2800, '210']],
+                '50': [[1400, '170'], [2700, '210']]
+            },
+            'built_in': {
+                '40': [[2800, 'none']],
+                '50': [[2700, 'none']]
+            }
+        }
+    }"/>
+
     <!-- ── TΦ — Cascade Resolutions (value propagation) ──────────────────── -->
     <!--
         Consumed от sale_design_configurator на всяка onParamChange.
@@ -317,9 +351,10 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                         {'id': 'changed_param', 'name': 'changed_param', 'field': 'changed_param'}
                     ],
                     'outputs': [
-                        {'id': 'target_param',  'name': 'target_param',  'field': 'target_param'},
-                        {'id': 'copy_from',     'name': 'copy_from',     'field': 'copy_from'},
-                        {'id': 'only_if_empty', 'name': 'only_if_empty', 'field': 'only_if_empty'}
+                        {'id': 'target_param',      'name': 'target_param',      'field': 'target_param'},
+                        {'id': 'copy_from',         'name': 'copy_from',         'field': 'copy_from'},
+                        {'id': 'derive_expression', 'name': 'derive_expression', 'field': 'derive_expression'},
+                        {'id': 'only_if_empty',     'name': 'only_if_empty',     'field': 'only_if_empty'}
                     ],
                     'rules': [
                         {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_slat&quot;',          'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'},
@@ -333,7 +368,11 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                         {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_package&quot;',       'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'},
                         {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_rope&quot;',          'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'},
                         {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_shirit&quot;',        'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'},
-                        {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_safety&quot;',        'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'}
+                        {'changed_param': '&quot;main_color&quot;', 'target_param': '&quot;color_safety&quot;',        'copy_from': '&quot;main_color&quot;', 'only_if_empty': 'true'},
+
+                        {'changed_param': '&quot;Height (mm)&quot;',  'target_param': '&quot;box_size&quot;', 'derive_expression': '&quot;lookup(\&quot;box_by_height\&quot;, shutter_model, slat_size, height)&quot;', 'only_if_empty': 'false'},
+                        {'changed_param': '&quot;slat_size&quot;',    'target_param': '&quot;box_size&quot;', 'derive_expression': '&quot;lookup(\&quot;box_by_height\&quot;, shutter_model, slat_size, height)&quot;', 'only_if_empty': 'false'},
+                        {'changed_param': '&quot;shutter_model&quot;','target_param': '&quot;box_size&quot;', 'derive_expression': '&quot;lookup(\&quot;box_by_height\&quot;, shutter_model, slat_size, height)&quot;', 'only_if_empty': 'false'}
                     ]
                 }
                 },
@@ -345,6 +384,7 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
             ]
         }
     "/>
+
 
     <!-- ── TΠ — Param Availability (reactive UI control) ───────────────── -->
     <!--

@@ -2,8 +2,11 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import json
+import logging
 
 from odoo import api, fields, models
+
+_logger = logging.getLogger(__name__)
 
 # Legacy и modern node типове — `ZenWrapper._migrate_node_types` пренаписва
 # legacy → modern на runtime, така че при сканиране трябва да приемем и двата.
@@ -95,9 +98,21 @@ class MrpMatrixTemplate(models.Model):
             "GoRules JDM JSON: reactive value propagation. Когато param X се "
             "промени → derive стойност за param Y. Output schema per rule: "
             "`target_param`, `copy_from` (другият param чиято стойност копираме), "
-            "`derive_value` (explicit стойност), `only_if_empty` (bool — не overwrite-вай "
-            "explicit user choice). Eval-ва се на всяка onParamChange в "
-            "configurator-а. Optional layer."
+            "`derive_value` (explicit стойност), `derive_expression` (safe_eval "
+            "expression срещу param context + lookup() helper), `only_if_empty` "
+            "(bool — не overwrite-вай explicit user choice). Eval-ва се на всяка "
+            "onParamChange в configurator-а. Optional layer."
+        ),
+    )
+    lookup_tables = fields.Json(
+        "Lookup Tables",
+        help=(
+            "Named lookup tables accessible from TΦ `derive_expression` rules "
+            "чрез `lookup(name, key1, key2, ...)` helper. Structure: "
+            "``{table_name: {key1_value: {key2_value: [[threshold, result], ...]}}}``. "
+            "Last key може да е numeric → ordered threshold lookup (first "
+            "entry с threshold >= input). Inner може да е flat dict за direct "
+            "key lookup. Optional — само ако TΦ rules ползват lookup()."
         ),
     )
     availability_table = fields.Json(
@@ -235,7 +250,53 @@ class MrpMatrixTemplate(models.Model):
     # същият (zen-engine). hitPolicy=collect — натрупване на всички matching
     # rules; _normalize_cascade ги сливa per target_param (last wins).
 
-    _CASCADE_KEYS = ("copy_from", "derive_value", "only_if_empty")
+    _CASCADE_KEYS = ("copy_from", "derive_value", "derive_expression", "only_if_empty")
+
+    @staticmethod
+    def _make_lookup(lookup_tables):
+        """Build a `lookup(name, *keys)` helper за safe_eval namespace.
+
+        Semantics:
+        - Navigate ``lookup_tables[name][str(key1)][str(key2)]...`` за всички
+          intermediate keys.
+        - За последния key: ако current е list of [threshold, value] tuples
+          → ordered match (first threshold >= float(last_key)); полезно за
+          height-based box selection.
+        - Ако current е dict → direct lookup по ``str(last_key)``.
+        - Връща None при missing path; callers могат да fallback-нат с
+          ``or default``.
+        """
+        tables = lookup_tables or {}
+
+        def lookup(name, *keys):
+            cur = tables.get(name)
+            if cur is None or not keys:
+                return None
+            for k in keys[:-1]:
+                if not isinstance(cur, dict):
+                    return None
+                cur = cur.get(str(k))
+                if cur is None:
+                    return None
+            last = keys[-1]
+            if isinstance(cur, list):
+                try:
+                    last_num = float(last)
+                except (TypeError, ValueError):
+                    return None
+                for entry in cur:
+                    if isinstance(entry, (list, tuple)) and len(entry) == 2:
+                        try:
+                            if float(entry[0]) >= last_num:
+                                return entry[1]
+                        except (TypeError, ValueError):
+                            continue
+                return None
+            if isinstance(cur, dict):
+                return cur.get(str(last))
+            return None
+
+        return lookup
 
     @classmethod
     def _normalize_cascade(cls, raw_payload):
@@ -280,18 +341,22 @@ class MrpMatrixTemplate(models.Model):
         return out
 
     def _evaluate_cascade(self, changed_param, context):
-        """Evaluate ``cascade_table`` за дадена промяна.
+        """Evaluate ``cascade_table`` за дадена промяна + resolve-ва
+        ``derive_expression`` rules с safe_eval.
 
         :param changed_param: string — името на param-а който се промени
             (както е в DPD's ``string`` field — `shutter_model`, `main_color`).
         :param context: dict от текущите param стойности.
         :returns: dict ``{target_param: {copy_from?, derive_value?,
-            only_if_empty?}}``. Празен dict ако TΦ не е дефиниран.
+            only_if_empty?}}``. ``derive_expression`` от raw output се
+            replace-ва с computed ``derive_value`` тук — клиентът получава
+            already-resolved value. Празен dict ако TΦ не е дефиниран.
         """
         self.ensure_one()
         if not self.cascade_table:
             return {}
         from .zen_engine import ZenWrapper
+        from odoo.tools.safe_eval import safe_eval
         full_context = dict(context or {})
         full_context["changed_param"] = changed_param
         raw = ZenWrapper.evaluate(
@@ -299,7 +364,38 @@ class MrpMatrixTemplate(models.Model):
             full_context,
             env=self.env,
         )
-        return self._normalize_cascade(raw)
+        normalized = self._normalize_cascade(raw)
+
+        # Resolve derive_expression rules с safe_eval. Namespace = full
+        # context (current param values) + helpers (lookup + math basics).
+        expr_rules = [
+            (k, v) for k, v in normalized.items()
+            if isinstance(v, dict) and v.get("derive_expression")
+        ]
+        if not expr_rules:
+            return normalized
+
+        helpers = {
+            "lookup": self._make_lookup(self.lookup_tables),
+            "min": min, "max": max, "abs": abs,
+            "int": int, "float": float, "str": str,
+            "round": round,
+            "len": len,
+        }
+        eval_locals = {**full_context, **helpers}
+        for target, spec in expr_rules:
+            expr = spec.pop("derive_expression")
+            try:
+                value = safe_eval(expr, eval_locals)
+            except Exception as e:
+                _logger.warning(
+                    "TΦ derive_expression failed за target=%s expr=%r: %s",
+                    target, expr, e,
+                )
+                continue
+            if value is not None and "derive_value" not in spec:
+                spec["derive_value"] = value
+        return normalized
 
     def _evaluate_availability(self, context):
         """Evaluate ``availability_table`` за дадения param context.

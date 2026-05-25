@@ -73,12 +73,29 @@
                                 derive стойност за <code>target_param</code>.
                                 Outputs: <code>copy_from</code> (друг param чиято
                                 стойност копираме), <code>derive_value</code>
-                                (explicit стойност), <code>only_if_empty</code>
-                                (bool — не overwrite-вай user choice).
+                                (explicit стойност), <code>derive_expression</code>
+                                (safe_eval с current params + <code>lookup()</code>
+                                helper), <code>only_if_empty</code> (bool — не
+                                overwrite-вай user choice).
                             </div>
                             <field name="cascade_table"
                                    widget="design_matrix"
                                    options="{'table_type': 'tphi'}"
+                                   nolabel="1"/>
+                        </page>
+                        <page string="Lookup Tables">
+                            <div class="alert alert-secondary" role="alert">
+                                Named lookup таблици достъпни от TΦ
+                                <code>derive_expression</code> rules чрез
+                                <code>lookup(name, key1, key2, ...)</code>.
+                                Структура: <code>{table_name: {key1: {key2: [[threshold, result], ...]}}}</code>.
+                                За ordered numeric matching (напр. box-by-height):
+                                inner стойност = list of [threshold, result]
+                                ordered ascending.
+                            </div>
+                            <field name="lookup_tables"
+                                   widget="ace"
+                                   options="{'mode': 'json'}"
                                    nolabel="1"/>
                         </page>
                     </notebook>

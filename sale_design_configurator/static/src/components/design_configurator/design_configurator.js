@@ -340,15 +340,27 @@ export class DesignConfiguratorWidget extends Component {
         this._enforceAvailability();
     }
 
-    /** Build flat context dict — both UUID hash names AND human strings,
-     *  така че TΠ rules могат да match-нат и по двата ключа (DPD shortcut). */
+    /** Build flat context dict — multi-key resolution за rules/expressions:
+     *  - hash UUID name (`f7692…`) — DPD storage key
+     *  - human `string` ключ (`shutter_model`, `Height (mm)`) — DPD label
+     *  - snake_case alias за base dims (`width`/`height`/`thickness`) —
+     *    convention matching teolino_mrp_design_recompute._LABEL_TO_DIM.
+     *    Дава експресии тип `lookup('box_by_height', shutter_model, slat_size, height)`
+     *    без quirky punctuation в идентификатори.
+     */
     _buildAvailabilityContext() {
         const ctx = { ...this.params };
+        // VK convention: основни dimension labels → flat aliases.
+        const dimAliases = {
+            "Width (mm)": "width",
+            "Height (mm)": "height",
+            "Thickness (mm)": "thickness",
+        };
         for (const def of (this.props.paramDefinition || [])) {
-            // Permit rules да референцират param-а по човешкия `string` ключ
-            // (`shutter_model`) дори когато DPD го записва по hash (`f7692…`).
             if (def.string && def.name in this.params) {
                 ctx[def.string] = this.params[def.name];
+                const alias = dimAliases[def.string];
+                if (alias) ctx[alias] = this.params[def.name];
             }
         }
         return ctx;

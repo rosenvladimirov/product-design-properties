@@ -47,6 +47,13 @@ class MrpBom(models.Model):
             "fallback на ``matrix_template_id.cascade_table``."
         ),
     )
+    lookup_tables = fields.Json(
+        "Lookup Tables",
+        help=(
+            "Named lookup tables за TΦ `derive_expression` rules. При празно — "
+            "fallback на ``matrix_template_id.lookup_tables``."
+        ),
+    )
     availability_table = fields.Json(
         "TΠ — Param Availability",
         help=(
@@ -72,6 +79,7 @@ class MrpBom(models.Model):
                 "operation_table": t.operation_table,
                 "availability_table": t.availability_table,
                 "cascade_table": t.cascade_table,
+                "lookup_tables": t.lookup_tables,
             }
         )
 
@@ -97,22 +105,60 @@ class MrpBom(models.Model):
         :param changed_param: string — param name (DPD ``string`` field) който се промени.
         :param context: dict — текущи param стойности (design_params).
         :returns: dict ``{target_param: {copy_from?, derive_value?, only_if_empty?}}``.
+            ``derive_expression`` от raw rules се resolve-ва тук с safe_eval
+            и lookup() helper; клиентът получава already-computed ``derive_value``.
             Празен dict ако TΦ не е дефиниран на BoM-а и template-а.
         """
         bom = self.browse(bom_id).exists()
         if not bom:
             return {}
-        table = bom.cascade_table
-        if not table and bom.matrix_template_id:
-            table = bom.matrix_template_id.cascade_table
-        if not table:
+        # BoM-копието има приоритет, fallback на template-а. lookup_tables идва
+        # от същия owner (BoM ако table-а е override-нат там, иначе template).
+        owner = bom if bom.cascade_table else bom.matrix_template_id
+        if not owner or not owner.cascade_table:
             return {}
+        # Делегираме на template.helper-а ако owner е template (има lookup_tables),
+        # иначе ръчно (BoM може да няма lookup_tables — fallback на template).
         Template = self.env["mrp.matrix.template"]
         from .zen_engine import ZenWrapper
+        from odoo.tools.safe_eval import safe_eval
         full_context = dict(context or {})
         full_context["changed_param"] = changed_param
-        raw = ZenWrapper.evaluate(table, full_context, env=self.env)
-        return Template._normalize_cascade(raw)
+        raw = ZenWrapper.evaluate(owner.cascade_table, full_context, env=self.env)
+        normalized = Template._normalize_cascade(raw)
+
+        expr_rules = [
+            (k, v) for k, v in normalized.items()
+            if isinstance(v, dict) and v.get("derive_expression")
+        ]
+        if not expr_rules:
+            return normalized
+        # lookup_tables: owner-specific (BoM-override) или fallback template.
+        lookup_tables = None
+        if bom.cascade_table and hasattr(bom, "lookup_tables") and bom.lookup_tables:
+            lookup_tables = bom.lookup_tables
+        elif bom.matrix_template_id and bom.matrix_template_id.lookup_tables:
+            lookup_tables = bom.matrix_template_id.lookup_tables
+        helpers = {
+            "lookup": Template._make_lookup(lookup_tables or {}),
+            "min": min, "max": max, "abs": abs,
+            "int": int, "float": float, "str": str,
+            "round": round, "len": len,
+        }
+        eval_locals = {**full_context, **helpers}
+        for target, spec in expr_rules:
+            expr = spec.pop("derive_expression")
+            try:
+                value = safe_eval(expr, eval_locals)
+            except Exception as e:
+                _logger.warning(
+                    "TΦ derive_expression failed за BoM %s target=%s expr=%r: %s",
+                    bom.id, target, expr, e,
+                )
+                continue
+            if value is not None and "derive_value" not in spec:
+                spec["derive_value"] = value
+        return normalized
 
     @api.model
     def _configurator_evaluate_availability(self, bom_id, context):

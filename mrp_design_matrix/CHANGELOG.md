@@ -4,6 +4,47 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.12.0] - 2026-05-25
+
+### Added — TΦ derive_expression + lookup_tables (Phase B)
+
+- **`mrp.matrix.template.lookup_tables`** (Json) + 7-ми notebook tab
+  "Lookup Tables" с ace JSON widget. Named lookup таблици достъпни от
+  TΦ `derive_expression` rules.
+- **`mrp.bom.lookup_tables`** (Json) + fallback на template-а.
+  `action_load_from_template` копира и него.
+- **`_make_lookup(lookup_tables)`** staticmethod — builds a `lookup(name, *keys)`
+  helper за safe_eval namespace. Semantics:
+  - Navigate ``tables[name][str(key1)][str(key2)]...``
+  - Last key + list-of-tuples value → ordered numeric threshold matching
+    (first ``threshold >= float(last_key)`` → returns paired value). Полезно
+    за height-based box selection и подобни ordered lookups.
+  - Last key + dict value → direct ``str(last)`` lookup.
+  - None при missing path.
+- **`_evaluate_cascade` + `_configurator_evaluate_cascade`** разширени:
+  след zen-engine eval, за всеки rule с `derive_expression`:
+  - safe_eval с namespace = full context (current param values) + helpers
+    (`lookup`, `min`, `max`, `abs`, `int`, `float`, `str`, `round`, `len`)
+  - Result populates `derive_value` в response — клиентът получава
+    already-resolved value, не raw expression.
+  - Failed expressions log-ват warning и се skip-ват (не crash-ват).
+
+### Output schema extension
+
+- `derive_expression` (string) — нов output cell. safe_eval expression срещу
+  current param context + helpers. Алтернатива на `copy_from` / `derive_value`.
+  При successful eval → server set-ва `derive_value` в response (transparent
+  за клиента).
+
+### Use case (от teolino_shutters seed)
+
+3 box-by-height rules: когато се промени `Height (mm)`, `slat_size` или
+`shutter_model` → `box_size` се авто-избира чрез
+`lookup("box_by_height", shutter_model, slat_size, height)`. `only_if_empty=false`
+→ винаги override (box е strictly derived от H/slat/model). Заменя
+`BOX_BY_HEIGHT_AND_SLAT` Python/JS dict от teolino_constraints.js
+(marked @deprecated).
+
 ## [18.0.1.11.0] - 2026-05-25
 
 ### Added — TΦ Cascade Resolutions (Phase A от universal engine vision)

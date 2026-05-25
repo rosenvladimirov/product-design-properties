@@ -57,6 +57,14 @@ export const SHUTTER_CONSTRAINTS = {
 // For each (model, slat) → ordered [(H_max, box_code), ...] ascending.
 // Pick smallest box where H_max >= requested H.  If H exceeds last entry,
 // invalid → returns null (Create Lot button must be blocked).
+//
+// @deprecated mrp_design_matrix ≥ 1.12.0 (Phase B) — same data lives в
+// `mrp_design_matrix_teolino_shutters/data/matrix_templates.xml`
+// (lookup_tables.box_by_height) + TΦ derive_expression rule auto-selects
+// box на всяка промяна на shutter_model / slat_size / Height (mm). Upstream
+// `_applyCascade` ще писа в this.params преди тоя dict да се чете.
+// Запазен като fallback за non-TΦ BoM-ове (legacy data). За пълно
+// premium: премахни след валидация на dev-teo-2305.
 export const BOX_BY_HEIGHT_AND_SLAT = {
     standard: {
         40: [[1500, "137"], [2300, "165"], [2800, "180"], [3500, "205"]],

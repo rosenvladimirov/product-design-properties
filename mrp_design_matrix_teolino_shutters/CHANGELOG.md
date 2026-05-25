@@ -4,6 +4,19 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [18.0.1.4.0] - 2026-05-25
+
+### Added
+
+- `lookup_tables` seed: **box_by_height** lookup table (5 models × 2 slat
+  sizes × ordered threshold list). Source: Teolino catalog 2022. Заменя
+  `BOX_BY_HEIGHT_AND_SLAT` JS hardcode в teolino_constraints.js.
+- TΦ extension: 3 нови rules за box-by-height auto-select. Trigger param-и:
+  `Height (mm)`, `slat_size`, `shutter_model` → target `box_size` с
+  `derive_expression="lookup('box_by_height', shutter_model, slat_size, height)"`.
+  `only_if_empty=false` → винаги override (box е strictly derived).
+- TΦ outputs schema разширен: добавен `derive_expression` cell column.
+
 ## [18.0.1.3.0] - 2026-05-25
 
 ### Added
