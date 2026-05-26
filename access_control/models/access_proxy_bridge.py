@@ -55,10 +55,10 @@ class AccessProxyBridge(models.AbstractModel):
     def _on_proxy_event(self, envelope):
         """Entry point от bus_inject.
 
-        envelope shape (per memory project_access_control_event_log):
+        envelope shape (per l10n_bg_erp_net_fp_bus_inject):
         {
-          "event_type": "card.read",
-          "device": "polimex-436900-ctrl38",
+          "v": 1, "type": "card.read", "id": "...", "ts": "...",
+          "source": {"proxy": "erpnet-fp-mec", "device": "polimex-..."},
           "data": {
             "card": "0003201160", "event_n": 7, "ctrl_id": 38,
             "reader": 2, "convertor": 436900, "time": "20:36:53", ...
@@ -66,7 +66,12 @@ class AccessProxyBridge(models.AbstractModel):
         }
         """
         try:
-            event_type = (envelope or {}).get("event_type", "")
+            # Канonical key e `type` (bus_inject), не `event_type`.
+            event_type = ((envelope or {}).get("type")
+                          or (envelope or {}).get("event_type") or "")
+            _logger.info(
+                "access.proxy.bridge received: type=%s data keys=%s",
+                event_type, list((envelope or {}).get("data", {}).keys()))
             if event_type not in ("card.read", "card.accept", "card.denied"):
                 return  # other events (heartbeat/online/...) skipped
             data = (envelope or {}).get("data", {})
