@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_access_perimeter_list" model="ir.ui.view">
+        <field name="name">access.perimeter.list</field>
+        <field name="model">access.perimeter</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="parent_id" optional="show"/>
+                <field name="enforcement"/>
+                <field name="requires_parent_presence" optional="hide"/>
+                <field name="calendar_id" optional="show"/>
+                <field name="tolerance_minutes" optional="hide"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_access_perimeter_form" model="ir.ui.view">
+        <field name="name">access.perimeter.form</field>
+        <field name="model">access.perimeter</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived"
+                            bg_color="bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="parent_id"/>
+                            <field name="requires_parent_presence"
+                                   invisible="not parent_id"/>
+                        </group>
+                        <group>
+                            <field name="enforcement"/>
+                            <field name="active" widget="boolean_toggle"/>
+                            <field name="company_id"
+                                   groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Schedule" name="schedule">
+                            <group>
+                                <field name="calendar_id"/>
+                                <field name="tolerance_minutes"/>
+                            </group>
+                            <div class="text-muted">
+                                ⓘ Празен calendar = 24/7. tolerance_minutes
+                                е мек buffer извън часовете (закъснение ≠
+                                security incident).
+                            </div>
+                        </page>
+                        <page string="ZEN Override" name="zen">
+                            <group>
+                                <field name="zen_table_id"
+                                       options="{'no_create': True}"/>
+                            </group>
+                            <div class="text-muted">
+                                ⓘ Празно = ползва default 'access_default'
+                                table. Override за специфичен периметър.
+                            </div>
+                        </page>
+                        <page string="Children" name="children"
+                              invisible="not child_ids">
+                            <field name="child_ids" nolabel="1">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="enforcement"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_access_perimeter" model="ir.actions.act_window">
+        <field name="name">Perimeters</field>
+        <field name="res_model">access.perimeter</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

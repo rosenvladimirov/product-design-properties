@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_access_subject_list" model="ir.ui.view">
+        <field name="name">access.subject.list</field>
+        <field name="model">access.subject</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="not active">
+                <field name="name"/>
+                <field name="employee_id" optional="show"/>
+                <field name="partner_id" optional="show"/>
+                <field name="credential_count" string="Credentials"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_access_subject_form" model="ir.ui.view">
+        <field name="name">access.subject.form</field>
+        <field name="model">access.subject</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_credentials" type="object"
+                                class="oe_stat_button" icon="fa-id-card-o">
+                            <field name="credential_count" widget="statinfo"
+                                   string="Credentials"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived"
+                            bg_color="bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="partner_id"/>
+                        </group>
+                        <group>
+                            <field name="active" widget="boolean_toggle"/>
+                            <field name="company_id"
+                                   groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Credentials" name="credentials">
+                            <field name="credential_ids" nolabel="1">
+                                <list>
+                                    <field name="credential_kind"/>
+                                    <field name="display_name"/>
+                                    <field name="valid_to"/>
+                                    <field name="active" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_access_subject" model="ir.actions.act_window">
+        <field name="name">Subjects</field>
+        <field name="res_model">access.subject</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
