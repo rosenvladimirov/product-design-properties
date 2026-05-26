@@ -69,3 +69,11 @@ class AccessPassageEvent(models.Model):
                 " (%s)" % r.anomaly_hint if r.anomaly_hint else "",
             )
         ) for r in self]
+
+    def action_open_direction_svg(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_url",
+            "url": f"/access_control/svg/direction/{self.id}",
+            "target": "new",
+        }
