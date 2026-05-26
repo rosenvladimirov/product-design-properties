@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ZEN Decision Table — generic kernel UI -->
+    <record id="view_zen_decision_table_list" model="ir.ui.view">
+        <field name="name">zen.decision.table.list</field>
+        <field name="model">zen.decision.table</field>
+        <field name="arch" type="xml">
+            <list string="ZEN Decision Tables" decoration-muted="not active">
+                <field name="domain"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="version"/>
+                <field name="active" widget="boolean_toggle"/>
+                <field name="company_id" groups="base.group_multi_company"
+                       optional="hide"/>
+                <field name="create_date" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_zen_decision_table_form" model="ir.ui.view">
+        <field name="name">zen.decision.table.form</field>
+        <field name="model">zen.decision.table</field>
+        <field name="arch" type="xml">
+            <form string="ZEN Decision Table">
+                <header>
+                    <button name="action_push_to_proxies" type="object"
+                            string="Push to Proxies" icon="fa-cloud-upload"
+                            invisible="not active"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived"
+                            bg_color="bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="domain"/>
+                            <field name="version" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="active" widget="boolean_toggle"/>
+                            <field name="company_id"
+                                   groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Graph" name="graph">
+                            <field name="graph" widget="ace"
+                                   options="{'mode': 'json'}"/>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" nolabel="1"
+                                   placeholder="Changelog for this version…"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_zen_decision_table_search" model="ir.ui.view">
+        <field name="name">zen.decision.table.search</field>
+        <field name="model">zen.decision.table</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="domain"/>
+                <filter string="Active" name="f_active"
+                        domain="[('active','=',True)]"/>
+                <filter string="Archived" name="f_archived"
+                        domain="[('active','=',False)]"/>
+                <separator/>
+                <filter string="MRP Matrix" name="f_mrp"
+                        domain="[('domain','=','mrp_matrix')]"/>
+                <filter string="Access" name="f_access"
+                        domain="[('domain','=','access')]"/>
+                <group>
+                    <filter string="Domain" name="g_domain"
+                            context="{'group_by': 'domain'}"/>
+                    <filter string="Code" name="g_code"
+                            context="{'group_by': 'code'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_zen_decision_table" model="ir.actions.act_window">
+        <field name="name">Decision Tables</field>
+        <field name="res_model">zen.decision.table</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_zen_decision_table_search"/>
+        <field name="context">{'search_default_f_active': 1}</field>
+    </record>
+
+    <!-- ZEN Decision Log — append-only audit -->
+    <record id="view_zen_decision_log_list" model="ir.ui.view">
+        <field name="name">zen.decision.log.list</field>
+        <field name="model">zen.decision.log</field>
+        <field name="arch" type="xml">
+            <list string="ZEN Decision Log" create="false" edit="false">
+                <field name="create_date"/>
+                <field name="table_domain"/>
+                <field name="table_code"/>
+                <field name="table_version"/>
+                <field name="executed_in"
+                       decoration-info="executed_in == 'controller'"/>
+                <field name="company_id" groups="base.group_multi_company"
+                       optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_zen_decision_log_form" model="ir.ui.view">
+        <field name="name">zen.decision.log.form</field>
+        <field name="model">zen.decision.log</field>
+        <field name="arch" type="xml">
+            <form string="ZEN Decision Log" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="table_id"/>
+                            <field name="table_code"/>
+                            <field name="table_version"/>
+                        </group>
+                        <group>
+                            <field name="executed_in"/>
+                            <field name="create_date"/>
+                            <field name="company_id"
+                                   groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Context In" name="context">
+                            <field name="context_in" widget="ace"
+                                   options="{'mode': 'json'}"
+                                   nolabel="1"/>
+                        </page>
+                        <page string="Result Out" name="result">
+                            <field name="result_out" widget="ace"
+                                   options="{'mode': 'json'}"
+                                   nolabel="1"/>
+                        </page>
+                        <page string="Trace" name="trace"
+                              invisible="not trace">
+                            <field name="trace" widget="ace"
+                                   options="{'mode': 'json'}"
+                                   nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_zen_decision_log_search" model="ir.ui.view">
+        <field name="name">zen.decision.log.search</field>
+        <field name="model">zen.decision.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="table_code"/>
+                <field name="table_id"/>
+                <filter string="Odoo" name="f_odoo"
+                        domain="[('executed_in','=','odoo')]"/>
+                <filter string="Controller (offline)" name="f_ctrl"
+                        domain="[('executed_in','=','controller')]"/>
+                <separator/>
+                <filter string="Today" name="f_today"
+                        domain="[('create_date','&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0)))]"/>
+                <group>
+                    <filter string="Domain" name="g_domain"
+                            context="{'group_by': 'table_domain'}"/>
+                    <filter string="Code" name="g_code"
+                            context="{'group_by': 'table_code'}"/>
+                    <filter string="Executed in" name="g_exec"
+                            context="{'group_by': 'executed_in'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_zen_decision_log" model="ir.actions.act_window">
+        <field name="name">Decision Log</field>
+        <field name="res_model">zen.decision.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_zen_decision_log_search"/>
+    </record>
+
+    <!-- Menu — под Manufacturing/Configuration (за сега; ще се мести
+         когато се промотира в base_zen_decision модул) -->
+    <menuitem id="menu_zen_root"
+              name="ZEN Decisions"
+              parent="mrp.menu_mrp_configuration"
+              sequence="90"/>
+    <menuitem id="menu_zen_decision_table"
+              name="Decision Tables"
+              parent="menu_zen_root"
+              action="action_zen_decision_table"
+              sequence="10"/>
+    <menuitem id="menu_zen_decision_log"
+              name="Decision Log"
+              parent="menu_zen_root"
+              action="action_zen_decision_log"
+              sequence="20"/>
+
+</odoo>
