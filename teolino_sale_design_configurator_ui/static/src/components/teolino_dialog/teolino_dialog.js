@@ -9,19 +9,6 @@
 //   - LIVE BoM preview (debounced RPC → mrp.bom.simulate_for_variant)
 // The template `sale_design_configurator.DesignConfiguratorWidget` is REPLACED
 // by teolino_dialog.xml (loaded after upstream — last definition wins).
-//
-// ⚠ CONFLICT с TΠ Availability (mrp_design_matrix ≥ 1.10.0):
-// teolino_dialog.xml не носи `t-att-class="...o_cfg_disabled..."` нито
-// `t-att-disabled="param.tpiEnabled === false ? 'disabled' : undefined"`
-// → когато тоя модул е installed, TΠ reactive disable от sale_design_configurator
-// не работи в UI. Teolino-специфичните constraints се покриват от
-// `teolinoFiltered(byStr[...])` (виж teolino_constraints.js — hardcoded shutter
-// rules). За generic (не-shutter) дизайн модули, TΠ остава dead UI behavior
-// тук, защото template-ът е full override.
-//
-// TODO: добави tpiEnabled awareness в teolinoFiltered() ИЛИ merge-ни
-// availability.allowed_values с teolino's filter rules (union).
-// До тогава: TΠ е useful само за BoM-ове без custom UI override.
 
 import { patch } from "@web/core/utils/patch";
 import { useService } from "@web/core/utils/hooks";

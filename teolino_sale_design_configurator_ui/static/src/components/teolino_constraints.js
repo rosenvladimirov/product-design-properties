@@ -8,19 +8,6 @@
 // shutter_count, control_type, guide_type.  The patch in
 // teolino_filter_patch.js consumes this map to filter selection lists
 // and auto-snap invalid values when the model changes.
-//
-// @deprecated mrp_design_matrix ≥ 1.10.0 (Phase A→D) — equivalent data
-// e в matrix engine:
-//   - allowed values per model → TΠ availability_table (allowed_values + visible)
-//   - auto-snap on model change → TΠ default_override
-//   - H_HARD_MAX/L_HARD_MAX → T0 constraint_table (validation errors)
-//   - box-by-height → TΦ derive_expression + lookup_tables.box_by_height
-// Виж mrp_design_matrix_teolino_shutters/data/matrix_templates.xml.
-//
-// Engine-driven flow: configurator widget вече вика TΠ/TΦ RPC на onParamChange,
-// matrix data е canonical. Тоя JS dict остава като fallback за non-engine
-// BoM-ове (legacy). Премахни след валидация на dev-teo-2305 че всички
-// matrix paths работят.
 
 export const SHUTTER_CONSTRAINTS = {
     standard: {
@@ -70,14 +57,6 @@ export const SHUTTER_CONSTRAINTS = {
 // For each (model, slat) → ordered [(H_max, box_code), ...] ascending.
 // Pick smallest box where H_max >= requested H.  If H exceeds last entry,
 // invalid → returns null (Create Lot button must be blocked).
-//
-// @deprecated mrp_design_matrix ≥ 1.12.0 (Phase B) — same data lives в
-// `mrp_design_matrix_teolino_shutters/data/matrix_templates.xml`
-// (lookup_tables.box_by_height) + TΦ derive_expression rule auto-selects
-// box на всяка промяна на shutter_model / slat_size / Height (mm). Upstream
-// `_applyCascade` ще писа в this.params преди тоя dict да се чете.
-// Запазен като fallback за non-TΦ BoM-ове (legacy data). За пълно
-// premium: премахни след валидация на dev-teo-2305.
 export const BOX_BY_HEIGHT_AND_SLAT = {
     standard: {
         40: [[1500, "137"], [2300, "165"], [2800, "180"], [3500, "205"]],

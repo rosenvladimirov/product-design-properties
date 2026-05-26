@@ -258,6 +258,27 @@
                                     <td class="text-end"><t t-esc="teolinoFormatNum(ln.unit_cost)"/></td>
                                     <td class="text-end"><t t-esc="teolinoFormatNum(ln.subtotal)"/></td>
                                 </tr>
+                                <t t-if="ln.cuts and ln.cuts.length">
+                                    <tr class="o_teo_preview_cuts_row">
+                                        <td colspan="4">
+                                            <span class="o_teo_aux">Разкрой:</span>
+                                            <t t-foreach="ln.cuts" t-as="c" t-key="c.panel">
+                                                <span class="o_teo_cut_chip">
+                                                    Щ.<t t-esc="c.panel"/>:
+                                                    <t t-if="c.n_pieces and c.piece_length_mm">
+                                                        <strong><t t-esc="c.n_pieces"/></strong> бр × <strong><t t-esc="c.piece_length_mm"/></strong> mm
+                                                    </t>
+                                                    <t t-elif="c.n_pieces">
+                                                        <strong><t t-esc="c.n_pieces"/></strong> бр
+                                                    </t>
+                                                    <t t-else="">
+                                                        <strong><t t-esc="teolinoFormatNum(c.qty_per_panel, 3)"/></strong> <small><t t-esc="ln.uom"/></small>
+                                                    </t>
+                                                </span>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
                             </t>
                         </tbody>
                     </table>

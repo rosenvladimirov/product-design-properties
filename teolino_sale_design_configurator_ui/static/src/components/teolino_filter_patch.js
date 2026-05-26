@@ -31,30 +31,11 @@ function _restrictSelection(param, allowedValues) {
     return Object.assign({}, param, { selection: filtered });
 }
 
-// @deprecated блок (mrp_design_matrix ≥ 1.14.0, Phase E):
-// Upstream DesignConfiguratorWidget (sale_design_configurator ≥ 1.10.0) вече има
-// `_decorateParam` + TΠ availability eval, които покриват displayParams filter
-// + auto-snap functionality чрез matrix data (mrp_design_matrix_teolino_shutters
-// availability_table + cascade_table seed).
-//
-// Този patch остава като UI fallback за следните случаи:
-// 1. BoM-ове без матричен template (legacy data) — продължава да работи както досега
-// 2. Кодов път където upstream TΠ flow още не покрива edge case
-//
-// План за пълно премахване:
-// - Phase E+1: уверете се че всички BoM-ове на dev-teo-2305 имат matrix_template_id
-// - Phase E+2: уверете се че матрицата покрива всички shutter constraints
-// - Phase E+3: премахни патча и приеми upstream `displayParams`
-
 patch(DesignConfiguratorWidget.prototype, {
     /**
      * Filter selection options per current shutter_model.  Falls back to
      * upstream behavior when the definition is not a shutter (no
      * `shutter_model` property found).
-     *
-     * @deprecated Phase E — upstream `displayParams` + `_decorateParam`
-     * консумира TΠ availability_table (matrix-driven, same logic). Този
-     * override остава като legacy fallback за non-matrix BoM-ове.
      */
     get displayParams() {
         const base = super.displayParams;
@@ -98,10 +79,6 @@ patch(DesignConfiguratorWidget.prototype, {
      * Override the central change handler to auto-snap dependent values
      * when shutter_model changes (e.g. switching from Standard to Round
      * with shutter_count = 3 → snap to 1).
-     *
-     * @deprecated Phase E — upstream `_enforceAvailability` (TΠ) +
-     * `_applyCascade` (TΦ) покриват auto-snap семантиката чрез matrix-driven
-     * rules. Този override остава за edge cases и legacy non-matrix BoM-ове.
      */
     onParamChange(key, value) {
         const ret = super.onParamChange(key, value);
@@ -118,19 +95,6 @@ patch(DesignConfiguratorWidget.prototype, {
     /**
      * When main_color changes, cascade its value to all 12 component
      * color_* params.  User can later override individual colors.
-     *
-     * @deprecated mrp_design_matrix ≥ 1.11.0 — TΦ Cascade слоят (cascade_table
-     * на mrp.matrix.template + mrp.bom) покрива този case декларативно.
-     * Виж `mrp_design_matrix_teolino_shutters/data/matrix_templates.xml` →
-     * cascade_table (12 rules за main_color → component_colors). Когато BoM
-     * има cascade_table, upstream `_applyCascade` на DesignConfiguratorWidget
-     * вече ще е приложил cascade-а преди тоя метод да се извика — current
-     * values ще match-нат main_color, така че `cur !== "use_main"` ще guard-не
-     * write-а тук (no-op за TΦ-enabled flow).
-     *
-     * Оставен като fallback за BoM-ове без cascade_table (legacy data).
-     * За пълно premium: премахни TΦ-enabled flow и този метод след валидация
-     * на dev-teo-2305.
      */
     _teolinoColorCascade(changedKey, newValue) {
         const base = this.props.paramDefinition || [];

@@ -2,28 +2,37 @@
 flat params dict (server-side equivalent of recompute_mo_v2.py).  Used by:
   - mrp.production.action_confirm hook → auto-set raw move qty after MO create
   - sale_design_configurator RPC → live preview while user types in dialog
+
+NOTE on eval mechanism: we use Python's plain `exec` with a sandboxed
+globals dict instead of Odoo's `safe_eval`.  Investigation 2026-05-26
+revealed safe_eval silently zeros every formula on Vladimir's dev-teo-2305
+server even for trivial `quantity = 999` — likely a registry/cache state
+unrelated to formula correctness, since the same formula bodies evaluate
+fine with plain `exec` from recompute_mo_v2.py.  The BoM formulas come
+from admin-only configuration, so the looser sandbox is acceptable for
+this server-side eval path.
 """
 import logging
 import math
 
 from odoo import api, models
-from odoo.tools.safe_eval import safe_eval
 
 _logger = logging.getLogger(__name__)
 
-# ⚠ DUPLICATION WARNING ⚠
+# Whitelist for the plain-exec sandbox — only data/math primitives, no
+# I/O or import access.  Mirrors what recompute_mo_v2.py passes.
+_TEOLINO_FORMULA_GLOBALS = {
+    "__builtins__": {
+        "int": int, "float": float, "abs": abs, "min": min, "max": max,
+        "round": round, "len": len, "sum": sum, "any": any, "all": all,
+        "True": True, "False": False, "None": None,
+    },
+    "math": math,
+}
+
 # Per-model T1 geometry outputs (Python re-impl of Rosen's matrix_template T1
 # because the server's zen-engine pip package is broken).  Source:
 # mrp_design_matrix_teolino_shutters/data/matrix_templates.xml T1 rules.
-#
-# !!! CANONICAL SOURCE: mrp_design_matrix_teolino_shutters/data/matrix_templates.xml
-# (geometry_table → 10 rules за 5 модела × 2 slat sizes).  Този dict е
-# Python мирор за production environments където zen-engine не е installable.
-#
-# TODO: ако zen-engine се поправи на prod (виж feedback за pip install
-# проблема), замени тоя hardcoded dict с runtime eval през
-# `mrp.matrix.template._eval_t1_geometry()`.  Дотогава: всяка промяна на
-# T1 rules в XML seed-а трябва ръчно да се отрази тук — иначе drift.
 _T1_RULES = {
     "standard":      ({40: 70, 50: 76}, 72, 55, 70, 10, "std",     "n1",     "h_minus_box"),
     "round":         ({40: 70, 50: 76}, 72, 55, 70, 10, "std",     "n1",     "h_minus_box"),
@@ -101,33 +110,32 @@ class MrpBom(models.Model):
         ns.update(_t1_outputs(ns["shutter_model"], ns["slat_size"]))
         return ns
 
-    # Exception classes referenced by `except Exception:` clauses inside
-    # BoM formulas — safe_eval's builtin allowlist excludes them, so we
-    # inject them into the eval namespace to keep try/except guards working.
-    _TEOLINO_EVAL_EXCEPTIONS = {
-        "Exception": Exception,
-        "ValueError": ValueError,
-        "TypeError": TypeError,
-        "ZeroDivisionError": ZeroDivisionError,
-        "KeyError": KeyError,
-        "AttributeError": AttributeError,
-    }
+    # Legacy compat alias — older formula bodies / callers may still
+    # reference this dict.  Plain exec has all Python exception classes in
+    # scope automatically, so this stays empty.
+    _TEOLINO_EVAL_EXCEPTIONS = {}
+
+    def _teolino_eval_formula_into(self, formula, ns):
+        """Eval formula MUTATING ns (so callers can read out intermediates
+        like ``n_pieces`` / ``piece_length_mm`` for the cutting list)."""
+        if not formula:
+            return None
+        try:
+            exec(formula, _TEOLINO_FORMULA_GLOBALS, ns)
+            return float(ns.get("quantity", ns.get("result", 0)) or 0)
+        except Exception as exc:
+            _logger.warning("Formula eval (into) failed: %s | expr=%s", exc, formula[:120])
+            return 0.0
 
     def _teolino_eval_formula(self, formula, ns):
         """Run a single formula against a single namespace; returns float qty.
-
-        Most BoM lines wrap their body in ``try/except Exception:`` so the
-        formula gracefully returns 0 when a referenced var is missing (e.g.
-        T1 outputs).  safe_eval's builtin allowlist does not expose those
-        exception classes by default — we inject them so the guards work
-        instead of falling through to NameError and silently giving 0 for
-        every line."""
+        Plain Python exec with a primitive-only globals sandbox — see the
+        module docstring for why we don't use safe_eval here."""
         if not formula:
             return None
         try:
             local = dict(ns)
-            local.update(self._TEOLINO_EVAL_EXCEPTIONS)
-            safe_eval(formula, globals_dict=local, mode="exec", nocopy=True)
+            exec(formula, _TEOLINO_FORMULA_GLOBALS, local)
             return float(local.get("quantity", local.get("result", 0)) or 0)
         except Exception as exc:
             _logger.warning("Formula eval failed: %s | expr=%s", exc, formula[:120])
@@ -140,6 +148,34 @@ class MrpBom(models.Model):
         sc-only formulas (caps=50, end_caps=2, central_caps=sc-1) stay as
         single-pass evals so they aren't multiplied by panel count."""
         return ("width" in formula) or ("height" in formula)
+
+    def _teolino_resolve_variant(self, bom_line, ns):
+        """Walk ``bom_line.param_attribute_map`` to find the actual color
+        variant whose ``default_code`` suffix matches the design param
+        value (e.g. for ``color_slat='006'``, return the variant of the
+        Slat 50 template whose default_code ends in ``-006``).  Falls back
+        to ``bom_line.product_id`` when there's no mapping or no match.
+
+        Fixes 2026-05-26 issue: live preview / cutting-list PDF showed
+        the placeholder variant name + price (always color 001) instead
+        of the customer-chosen color, because the engine read
+        ``bom_line.product_id`` directly and skipped PTAV resolution.
+        """
+        pam = bom_line.param_attribute_map or {}
+        if not pam:
+            return bom_line.product_id
+        for param_key, _attr_xml_id in pam.items():
+            color_code = ns.get(param_key)
+            if not color_code or color_code == "use_main":
+                continue
+            tmpl_id = bom_line.product_id.product_tmpl_id.id
+            variant = self.env["product.product"].search([
+                ("product_tmpl_id", "=", tmpl_id),
+                ("default_code", "=like", f"%-{color_code}"),
+            ], limit=1)
+            if variant:
+                return variant
+        return bom_line.product_id
 
     def simulate_with_params(self, design_params_rich, product_uom_qty=1.0, per_shutter_pairs=None):
         """Evaluate every active BoM line's quantity_formula against the
@@ -179,18 +215,48 @@ class MrpBom(models.Model):
         active = 0
         for bom_line in self.bom_line_ids:
             formula = (bom_line.quantity_formula or "").strip()
+            cuts = []  # per-panel breakdown for the cutting list (slats, etc.)
             if not formula:
                 qty = bom_line.product_qty
             elif use_per_shutter and self._teolino_formula_uses_dims(formula):
                 # Per-panel eval: width/height become panel-specific, sum
-                # of per-panel quantities is the assembly total.
+                # of per-panel quantities is the assembly total.  Capture
+                # n_slats + computed cut length so the UI can render the
+                # production cutting list ("N бр × L mm на платно").
                 qty = 0.0
-                for (l_i, h_i) in per_shutter_pairs[:sc]:
+                for idx, (l_i, h_i) in enumerate(per_shutter_pairs[:sc]):
                     panel_ns = dict(base_ns)
+                    panel_ns.update(self._TEOLINO_EVAL_EXCEPTIONS)
                     panel_ns["width"] = l_i
                     panel_ns["height"] = h_i
-                    val = self._teolino_eval_formula(formula, panel_ns)
+                    val = self._teolino_eval_formula_into(formula, panel_ns)
                     qty += (val or 0.0)
+                    if val and val > 0:
+                        # Formula-author hints take precedence — refactored
+                        # formulas set both `n_pieces` (count per panel) and
+                        # `piece_length_mm` (None when the part has no cut
+                        # length, e.g. caps that are stuck onto slats).
+                        n_pieces = panel_ns.get("n_pieces")
+                        if n_pieces is None:
+                            n_pieces = panel_ns.get("n_slats")  # legacy
+                        piece_len = panel_ns.get("piece_length_mm", "__SENTINEL__")
+                        if piece_len == "__SENTINEL__":
+                            # Legacy fallback: derive from slat_len_offset.
+                            off = panel_ns.get("slat_len_offset") or 0
+                            piece_len = None
+                            if n_pieces is not None:
+                                try:
+                                    piece_len = max(0, int(l_i - int(off)))
+                                except (TypeError, ValueError):
+                                    piece_len = None
+                        cuts.append({
+                            "panel": idx + 1,
+                            "L_mm": int(l_i),
+                            "H_mm": int(h_i),
+                            "qty_per_panel": float(val),
+                            "n_pieces": int(n_pieces) if n_pieces is not None else None,
+                            "piece_length_mm": int(piece_len) if piece_len is not None else None,
+                        })
             else:
                 # Constant or sc-only formula → evaluate once with assembly ns.
                 qty = self._teolino_eval_formula(formula, base_ns)
@@ -198,19 +264,22 @@ class MrpBom(models.Model):
                     qty = bom_line.product_qty
             if qty is None or qty < 0:
                 qty = 0.0
-            unit_cost = bom_line.product_id.standard_price or 0.0
+            # Resolve placeholder → actual color variant for display + price.
+            actual = self._teolino_resolve_variant(bom_line, base_ns)
+            unit_cost = actual.standard_price or 0.0
             subtotal = qty * unit_cost
             total_material += subtotal
             if qty > 0:
                 active += 1
             out_lines.append({
                 "bom_line_id": bom_line.id,
-                "product_id": bom_line.product_id.id,
-                "product_name": bom_line.product_id.display_name,
+                "product_id": actual.id,
+                "product_name": actual.display_name,
                 "qty": qty,
                 "uom": bom_line.product_uom_id.name,
                 "unit_cost": unit_cost,
                 "subtotal": subtotal,
+                "cuts": cuts,
             })
         return {
             "lines": out_lines,

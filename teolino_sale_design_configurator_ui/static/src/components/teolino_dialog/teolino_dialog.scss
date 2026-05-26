@@ -164,6 +164,17 @@
     .o_teo_preview_table .text-end {
         text-align: right;
     }
+    .o_teo_preview_cuts_row td {
+        background: #fafafa;
+        padding: 4px 8px 6px;
+        border-top: 0;
+    }
+    .o_teo_cut_chip {
+        display: inline-block;
+        margin-right: 10px;
+        font-size: 11px;
+        color: #18181b;
+    }
     .o_teo_hidden_canvas {
         position: absolute;
         left: -9999px;

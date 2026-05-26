@@ -48,16 +48,9 @@ class MrpProduction(models.Model):
         self.ensure_one()
         if not self.bom_id:
             return
-        lot = self._teolino_get_design_lot()
-        if not lot:
+        sim = self._teolino_simulate_for_report()
+        if not sim:
             return
-        rich = lot.read(["design_params"])[0].get("design_params") or []
-        # Pass per-shutter pairs so the BoM simulate evaluates width/height-
-        # dependent formulas per panel (slat cuts at different L per shutter).
-        per_pairs = []
-        if hasattr(lot, "teolino_get_per_shutter_pairs"):
-            per_pairs = lot.teolino_get_per_shutter_pairs()
-        sim = self.bom_id.simulate_with_params(rich, self.product_qty or 1.0, per_shutter_pairs=per_pairs)
         qty_by_bom_line = {ln["bom_line_id"]: ln["qty"] for ln in sim["lines"]}
         updated = 0
         for move in self.move_raw_ids:
@@ -75,3 +68,92 @@ class MrpProduction(models.Model):
                 "Teolino recompute: updated %d/%d raw moves on %s (material total=%.2f)",
                 updated, len(self.move_raw_ids), self.name, sim["total_material"],
             )
+
+    # ── Cutting-list report data ────────────────────────────────────────
+    # Helper used both by the auto-recompute hook AND by the QWeb PDF
+    # "Cutting List" report.  Returns the simulate breakdown OR False when
+    # the production has no BoM/lot.
+
+    def _teolino_simulate_for_report(self):
+        self.ensure_one()
+        if not self.bom_id:
+            return False
+        lot = self._teolino_get_design_lot()
+        if not lot:
+            return False
+        rich = lot.read(["design_params"])[0].get("design_params") or []
+        per_pairs = []
+        if hasattr(lot, "teolino_get_per_shutter_pairs"):
+            per_pairs = lot.teolino_get_per_shutter_pairs()
+        return self.bom_id.simulate_with_params(
+            rich, self.product_qty or 1.0, per_shutter_pairs=per_pairs,
+        )
+
+    def teolino_report_data(self):
+        """Bundle everything the cutting-list PDF needs into one dict so
+        the QWeb template doesn't need to read scattered fields.
+
+        Returns ::
+
+            {
+                "mo": self,                 # mrp.production browse record
+                "lot": stock.lot or None,
+                "spec": {  # display-ready spec rows
+                    "shutter_model": "Standard",
+                    "box_size": "165",
+                    "slat_size": "40 mm",
+                    "axis_size": "Axis 40",
+                    "control_type": "Cord",
+                    "guide_type": "Standard guide",
+                    "shutter_count": 2,
+                    "main_color": "001 — RAL 9016",
+                },
+                "panels": [             # per-panel L×H if sc>1
+                    {"index": 1, "L_mm": 1200, "H_mm": 2000},
+                    ...
+                ],
+                "lines": [...],         # from simulate_with_params
+                "total_material": float,
+            }
+        """
+        self.ensure_one()
+        lot = self._teolino_get_design_lot()
+        sim = self._teolino_simulate_for_report() or {
+            "lines": [], "total_material": 0.0,
+            "active_count": 0, "total_count": 0, "panels": 1,
+        }
+        spec = {}
+        panels = []
+        if lot:
+            rich = lot.read(["design_params"])[0].get("design_params") or []
+            # Selection labels for human-readable rendering
+            for prop in rich:
+                if not isinstance(prop, dict):
+                    continue
+                name = prop.get("name")
+                value = prop.get("value")
+                if value in (None, False, "", "use_main"):
+                    continue
+                label = prop.get("string") or name
+                if prop.get("type") == "selection":
+                    for code, human in prop.get("selection") or []:
+                        if code == value:
+                            value = human
+                            break
+                spec[label] = value
+            if hasattr(lot, "teolino_get_per_shutter_pairs"):
+                pairs = lot.teolino_get_per_shutter_pairs()
+                for idx, (L, H) in enumerate(pairs):
+                    panels.append({
+                        "index": idx + 1,
+                        "L_mm": int(L),
+                        "H_mm": int(H),
+                    })
+        return {
+            "mo": self,
+            "lot": lot,
+            "spec": spec,
+            "panels": panels,
+            "lines": [l for l in sim["lines"] if l["qty"] > 0],
+            "total_material": sim["total_material"],
+        }

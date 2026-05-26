@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+  <record id="action_report_teolino_mrp_cut_list" model="ir.actions.report">
+    <field name="name">Лист за разкрой</field>
+    <field name="model">mrp.production</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">teolino_mrp_design_recompute.report_teolino_mrp_cut_list</field>
+    <field name="report_file">teolino_mrp_design_recompute.report_teolino_mrp_cut_list</field>
+    <field name="binding_model_id" ref="mrp.model_mrp_production"/>
+    <field name="binding_type">report</field>
+    <field name="print_report_name">'Cut List - %s' % object.name</field>
+  </record>
+
+  <template id="report_teolino_mrp_cut_list">
+    <t t-call="web.html_container">
+      <t t-foreach="docs" t-as="mo">
+        <t t-set="data" t-value="mo.teolino_report_data()"/>
+        <t t-call="web.external_layout">
+          <div class="page o_teo_cut_list">
+
+            <div class="row mb-3">
+              <div class="col-7">
+                <h2>Лист за разкрой</h2>
+                <h4 class="text-muted">
+                  МО: <span t-field="mo.name"/>
+                </h4>
+              </div>
+              <div class="col-5 text-end">
+                <div t-if="mo.origin">
+                  <strong>Поръчка:</strong>
+                  <span t-field="mo.origin"/>
+                </div>
+                <div t-if="mo.date_start">
+                  <strong>Дата:</strong>
+                  <span t-field="mo.date_start" t-options='{"widget": "date"}'/>
+                </div>
+                <div t-if="data.get('lot')">
+                  <strong>Лот:</strong>
+                  <span t-esc="data['lot'].name"/>
+                </div>
+              </div>
+            </div>
+
+            <h4 class="mt-3">Спецификация на щората</h4>
+            <table class="table table-sm table-bordered">
+              <tbody>
+                <t t-foreach="data['spec'].items()" t-as="entry" t-key="entry[0]">
+                  <tr>
+                    <th style="width: 35%; background:#f7f7f9"><span t-esc="entry[0]"/></th>
+                    <td><strong t-esc="entry[1]"/></td>
+                  </tr>
+                </t>
+              </tbody>
+            </table>
+
+            <t t-if="data['panels']">
+              <h4 class="mt-3">Размери на платната</h4>
+              <table class="table table-sm table-bordered" style="max-width: 400px">
+                <thead>
+                  <tr style="background:#f0f0f0">
+                    <th>Платно</th>
+                    <th class="text-end">L (mm)</th>
+                    <th class="text-end">H (mm)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <t t-foreach="data['panels']" t-as="p" t-key="p['index']">
+                    <tr>
+                      <td><strong>Щ.<t t-esc="p['index']"/></strong></td>
+                      <td class="text-end"><span t-esc="p['L_mm']"/></td>
+                      <td class="text-end"><span t-esc="p['H_mm']"/></td>
+                    </tr>
+                  </t>
+                </tbody>
+              </table>
+            </t>
+
+            <h4 class="mt-4">Материали и разкрой</h4>
+            <table class="table table-sm table-bordered o_teo_materials">
+              <thead>
+                <tr style="background:#714B67; color:#fff">
+                  <th>Материал</th>
+                  <th class="text-end">Общо</th>
+                  <th>Платно</th>
+                  <th class="text-end">Брой</th>
+                  <th class="text-end">Дължина</th>
+                </tr>
+              </thead>
+              <tbody>
+                <t t-foreach="data['lines']" t-as="ln" t-key="ln['bom_line_id']">
+                  <t t-set="ncuts" t-value="len(ln.get('cuts') or [])"/>
+                  <t t-if="ncuts">
+                    <t t-foreach="ln['cuts']" t-as="c" t-key="c['panel']">
+                      <tr>
+                        <td t-if="c_index == 0" t-att-rowspan="ncuts">
+                          <strong t-esc="ln['product_name']"/>
+                        </td>
+                        <td t-if="c_index == 0" t-att-rowspan="ncuts" class="text-end">
+                          <strong t-esc="'%.3f' % ln['qty']"/> <small t-esc="ln['uom']"/>
+                        </td>
+                        <td>Щ.<t t-esc="c['panel']"/></td>
+                        <td class="text-end">
+                          <t t-if="c['n_pieces'] is not None">
+                            <strong t-esc="c['n_pieces']"/> бр
+                          </t>
+                          <t t-else="">—</t>
+                        </td>
+                        <td class="text-end">
+                          <t t-if="c['piece_length_mm']">
+                            <strong t-esc="c['piece_length_mm']"/> mm
+                          </t>
+                          <t t-else="">—</t>
+                        </td>
+                      </tr>
+                    </t>
+                  </t>
+                  <t t-else="">
+                    <tr>
+                      <td><span t-esc="ln['product_name']"/></td>
+                      <td class="text-end">
+                        <strong t-esc="'%.3f' % ln['qty']"/> <small t-esc="ln['uom']"/>
+                      </td>
+                      <td colspan="3" class="text-muted text-center">общо за щората</td>
+                    </tr>
+                  </t>
+                </t>
+              </tbody>
+              <tfoot>
+                <tr style="background:#fafafa">
+                  <th colspan="4" class="text-end">Стойност на материалите:</th>
+                  <th class="text-end">
+                    <strong t-esc="'%.2f лв.' % data['total_material']"/>
+                  </th>
+                </tr>
+              </tfoot>
+            </table>
+
+            <div class="mt-4" style="font-size: 11px; color: #71717a">
+              Генериран автоматично от teolino_mrp_design_recompute.
+              Параметрите идват от lot.design_params; формулите се
+              изчисляват per-panel при <code>shutter_count &gt; 1</code>.
+            </div>
+
+          </div>
+        </t>
+      </t>
+    </t>
+  </template>
+
+</odoo>

@@ -1,6 +1,6 @@
 {
     "name": "Teolino Sale Design Configurator UI",
-    "version": "18.0.1.8.4",
+    "version": "18.0.1.9.1",
     "summary": "Per-model filtering, constraints, LIVE BoM preview, and per-component color sub-modal for the shutter design configurator",
     "author": "Teolino",
     "license": "AGPL-3",
