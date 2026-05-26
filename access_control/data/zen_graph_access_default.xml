@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Default ZEN decision graph за access_control.
+
+  A2 — accept/deny решение базирано на context. Минимална starter
+  логика; Rosen може да обогати в UI (Decision Tables).
+
+  Inputs (от access.context.builder):
+  - credential_active (bool)        — A0 guard
+  - direction (str|null)            — derived от Python
+  - anomaly_hint (str|null)         — derived от Python
+  - within_window (bool)            — A1
+  - requires_parent_presence (bool) — A1
+  - parent_present (bool)           — A1
+
+  Outputs:
+  - action: 'accept' | 'deny'
+  - violation_type: str|null
+  - priority: 'low'|'medium'|'high'|'critical'
+-->
+<odoo noupdate="0">
+    <record id="zen_table_access_default" model="zen.decision.table">
+        <field name="name">Access Default Decision</field>
+        <field name="code">access_default</field>
+        <field name="domain">access</field>
+        <field name="version">1</field>
+        <field name="active">True</field>
+        <field name="notes">Starter graph — A0 credential guard + A2
+            accept/deny по anomaly_hint и window. Override per perimeter
+            чрез access.perimeter.zen_table_id.</field>
+        <field name="graph">{
+            "nodes": [
+                {"id": "in", "type": "inputNode", "name": "Input"},
+                {
+                    "id": "a0_credential_guard",
+                    "type": "decisionTableNode",
+                    "name": "A0 Credential Guard",
+                    "content": {
+                        "hitPolicy": "first",
+                        "inputs": [
+                            {"id": "credential_active", "name": "credential_active", "field": "credential_active"}
+                        ],
+                        "outputs": [
+                            {"id": "action", "name": "action", "field": "action"},
+                            {"id": "violation_type", "name": "violation_type", "field": "violation_type"},
+                            {"id": "priority", "name": "priority", "field": "priority"}
+                        ],
+                        "rules": [
+                            {
+                                "_id": "r_guard_invalid",
+                                "credential_active": "== false",
+                                "action": "\"deny\"",
+                                "violation_type": "\"invalid_credential\"",
+                                "priority": "\"high\""
+                            },
+                            {
+                                "_id": "r_guard_pass",
+                                "credential_active": "== true",
+                                "action": "\"accept\"",
+                                "violation_type": "null",
+                                "priority": "\"low\""
+                            }
+                        ]
+                    }
+                },
+                {"id": "out", "type": "outputNode", "name": "Output"}
+            ],
+            "edges": [
+                {"id": "e1", "sourceId": "in", "targetId": "a0_credential_guard"},
+                {"id": "e2", "sourceId": "a0_credential_guard", "targetId": "out"}
+            ]
+        }</field>
+    </record>
+</odoo>

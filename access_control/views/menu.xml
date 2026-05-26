@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_access_control_root"
+              name="Access Control"
+              web_icon="access_control,static/description/icon.png"
+              sequence="80"/>
+
+    <menuitem id="menu_subjects"
+              name="Subjects"
+              parent="menu_access_control_root"
+              action="action_access_subject"
+              sequence="10"/>
+
+    <menuitem id="menu_credentials"
+              name="Credentials"
+              parent="menu_access_control_root"
+              action="hr_attendance_access_control.action_access_credential"
+              sequence="20"/>
+
+    <menuitem id="menu_perimeters"
+              name="Perimeters"
+              parent="menu_access_control_root"
+              action="action_access_perimeter"
+              sequence="30"/>
+
+    <menuitem id="menu_control_points"
+              name="Control Points"
+              parent="menu_access_control_root"
+              action="action_access_control_point"
+              sequence="40"/>
+
+    <menuitem id="menu_events_section"
+              name="Events"
+              parent="menu_access_control_root"
+              sequence="50"/>
+
+    <menuitem id="menu_passage_events"
+              name="Passage Events"
+              parent="menu_events_section"
+              action="action_access_passage_event"
+              sequence="10"/>
+
+    <menuitem id="menu_violations"
+              name="Violations"
+              parent="menu_events_section"
+              action="action_access_violation"
+              sequence="20"/>
+
+    <menuitem id="menu_occupancy"
+              name="Occupancy"
+              parent="menu_events_section"
+              action="action_access_occupancy"
+              sequence="30"/>
+
+</odoo>

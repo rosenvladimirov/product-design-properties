@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_access_control_point_list" model="ir.ui.view">
+        <field name="name">access.control.point.list</field>
+        <field name="model">access.control.point</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="not active">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="perimeter_id"/>
+                <field name="direction_kind"/>
+                <field name="controller_id" optional="show"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_access_control_point_form" model="ir.ui.view">
+        <field name="name">access.control.point.form</field>
+        <field name="model">access.control.point</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived"
+                            bg_color="bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="perimeter_id"/>
+                            <field name="direction_kind"/>
+                        </group>
+                        <group>
+                            <field name="controller_id"
+                                   options="{'no_create': True}"/>
+                            <field name="active" widget="boolean_toggle"/>
+                            <field name="company_id"
+                                   groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Physical Parts" name="parts">
+                            <group>
+                                <group string="Readers">
+                                    <field name="external_reader_id"/>
+                                    <field name="internal_reader_id"/>
+                                </group>
+                                <group string="Actuators">
+                                    <field name="magnet_id"/>
+                                    <field name="door_sensor_id"/>
+                                </group>
+                            </group>
+                            <div class="text-muted">
+                                ⓘ Тези Char полета ще се превърнат в M2O
+                                към access.controller.part в бъдеща
+                                итерация (когато имаме proxy parts модел).
+                            </div>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_access_control_point" model="ir.actions.act_window">
+        <field name="name">Control Points</field>
+        <field name="res_model">access.control.point</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

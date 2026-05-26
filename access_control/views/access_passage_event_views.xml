@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_access_passage_event_list" model="ir.ui.view">
+        <field name="name">access.passage.event.list</field>
+        <field name="model">access.passage.event</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false"
+                  decoration-success="result == 'accept' and not anomaly_hint"
+                  decoration-warning="result == 'violation' or anomaly_hint"
+                  decoration-danger="result == 'deny'">
+                <field name="ts"/>
+                <field name="control_point_id"/>
+                <field name="credential_id" optional="show"/>
+                <field name="subject_id" optional="show"/>
+                <field name="direction"/>
+                <field name="anomaly_hint" optional="show"/>
+                <field name="result"/>
+                <field name="violation_count" optional="hide"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_access_passage_event_form" model="ir.ui.view">
+        <field name="name">access.passage.event.form</field>
+        <field name="model">access.passage.event</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="ts"/>
+                            <field name="control_point_id"/>
+                            <field name="perimeter_id"/>
+                            <field name="credential_id"/>
+                            <field name="subject_id"/>
+                        </group>
+                        <group>
+                            <field name="direction"/>
+                            <field name="anomaly_hint"/>
+                            <field name="result"/>
+                            <field name="zen_log_id"/>
+                            <field name="company_id"
+                                   groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Signal Matrix" name="signal">
+                            <field name="signal_matrix" widget="ace"
+                                   options="{'mode': 'json'}" nolabel="1"/>
+                        </page>
+                        <page string="Context" name="context">
+                            <field name="context_in" widget="ace"
+                                   options="{'mode': 'json'}" nolabel="1"/>
+                        </page>
+                        <page string="Result" name="result">
+                            <field name="result_out" widget="ace"
+                                   options="{'mode': 'json'}" nolabel="1"/>
+                        </page>
+                        <page string="Violations" name="violations"
+                              invisible="violation_count == 0">
+                            <field name="violation_ids" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_access_passage_event" model="ir.actions.act_window">
+        <field name="name">Passage Events</field>
+        <field name="res_model">access.passage.event</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
