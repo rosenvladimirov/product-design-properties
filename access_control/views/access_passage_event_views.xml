@@ -25,6 +25,15 @@
         <field name="arch" type="xml">
             <form create="false" edit="false">
                 <sheet>
+                    <div class="oe_button_box" name="button_box"/>
+                    <div class="oe_title" style="display: flex; align-items: center; gap: 12px;">
+                        <img t-att-src="'/access_control/svg/direction/' + str(id)"
+                             alt="direction"
+                             style="width: 64px; height: 64px;"/>
+                        <h2 style="margin: 0">
+                            <field name="result"/>
+                        </h2>
+                    </div>
                     <group>
                         <group>
                             <field name="ts"/>
@@ -36,7 +45,6 @@
                         <group>
                             <field name="direction"/>
                             <field name="anomaly_hint"/>
-                            <field name="result"/>
                             <field name="zen_log_id"/>
                             <field name="company_id"
                                    groups="base.group_multi_company"/>

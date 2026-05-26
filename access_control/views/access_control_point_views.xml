@@ -35,6 +35,8 @@
                         <group>
                             <field name="controller_id"
                                    options="{'no_create': True}"/>
+                            <field name="site_access_point_id"
+                                   options="{'no_create': True}"/>
                             <field name="active" widget="boolean_toggle"/>
                             <field name="company_id"
                                    groups="base.group_multi_company"/>

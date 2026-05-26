@@ -20,6 +20,7 @@
         "resource",
         "mrp_design_matrix",            # transitional kernel host (ZEN)
         "hr_attendance_access_control", # legacy bridge (cards, controllers)
+        "hr_attendance_access_control_site_map",  # site/floor/devices
     ],
     "data": [
         "security/ir.model.access.csv",
@@ -31,6 +32,7 @@
         "views/access_violation_views.xml",
         "views/access_occupancy_views.xml",
         "views/access_attendance_log_views.xml",
+        "views/access_facility_svg_views.xml",
         "views/menu.xml",
         "data/zen_graph_access_default.xml",
     ],
