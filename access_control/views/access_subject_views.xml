@@ -83,7 +83,8 @@
                             </div>
                             <div t-if="record.inside_count.raw_value &gt; 0"
                                  class="mt-1 small text-success">
-                                <i class="fa fa-map-marker"/>
+                                <i class="fa fa-map-marker" title="location"
+                                   role="img" aria-label="location"/>
                                 <field name="current_location"/>
                             </div>
                             <div t-else="" class="mt-1 small text-muted">
