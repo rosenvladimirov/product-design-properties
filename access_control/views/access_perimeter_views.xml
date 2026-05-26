@@ -65,6 +65,13 @@
                                 table. Override за специфичен периметър.
                             </div>
                         </page>
+                        <page string="Heatmap" name="heatmap">
+                            <div>
+                                <img t-att-src="'/access_control/svg/heatmap/' + str(id) + '?days=30'"
+                                     alt="passage heatmap"
+                                     style="width: 100%; max-width: 720px; height: auto;"/>
+                            </div>
+                        </page>
                         <page string="Children" name="children"
                               invisible="not child_ids">
                             <field name="child_ids" nolabel="1">

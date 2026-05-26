@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add "View Live Site Map" button + embedded SVG preview tab
+         on access.facility form -->
+    <record id="view_access_facility_form_svg" model="ir.ui.view">
+        <field name="name">access.facility.form.svg</field>
+        <field name="model">access.facility</field>
+        <field name="inherit_id"
+               ref="hr_attendance_access_control_site_map.view_access_facility_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <notebook>
+                    <page string="Live Site Map" name="live_site_map">
+                        <div style="margin-bottom: 8px;">
+                            <button name="action_view_site_svg" type="object"
+                                    string="Open in new tab" class="btn-secondary"
+                                    icon="fa-external-link"/>
+                        </div>
+                        <div>
+                            <img t-att-src="'/access_control/svg/site/' + str(id)"
+                                 alt="site map"
+                                 style="width: 100%; max-width: 800px; height: auto; border: 1px solid #ddd;"/>
+                        </div>
+                        <div class="text-muted" style="margin-top: 8px;">
+                            ⓘ SVG генерира се динамично от device placements +
+                            live state на access points (last 30s passage activity).
+                            Reload page за refresh.
+                        </div>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+</odoo>
