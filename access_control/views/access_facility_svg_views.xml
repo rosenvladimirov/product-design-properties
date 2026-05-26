@@ -11,20 +11,14 @@
             <xpath expr="//sheet" position="inside">
                 <notebook>
                     <page string="Live Site Map" name="live_site_map">
-                        <div style="margin-bottom: 8px;">
-                            <button name="action_view_site_svg" type="object"
-                                    string="Open in new tab" class="btn-secondary"
-                                    icon="fa-external-link"/>
-                        </div>
-                        <div>
-                            <img t-att-src="'/access_control/svg/site/' + str(id)"
-                                 alt="site map"
-                                 style="width: 100%; max-width: 800px; height: auto; border: 1px solid #ddd;"/>
-                        </div>
+                        <button name="action_view_site_svg" type="object"
+                                string="Open Live Site Map" class="btn-primary"
+                                icon="fa-map"/>
                         <div class="text-muted" style="margin-top: 8px;">
-                            ⓘ SVG генерира се динамично от device placements +
-                            live state на access points (last 30s passage activity).
-                            Reload page за refresh.
+                            ⓘ SVG site map отваря в нов tab. Показва
+                            device placements + live state на access
+                            points (animation pulse при recent activity
+                            в последните 30s). Reload за refresh.
                         </div>
                     </page>
                 </notebook>

@@ -66,10 +66,12 @@
                             </div>
                         </page>
                         <page string="Heatmap" name="heatmap">
-                            <div>
-                                <img t-att-src="'/access_control/svg/heatmap/' + str(id) + '?days=30'"
-                                     alt="passage heatmap"
-                                     style="width: 100%; max-width: 720px; height: auto;"/>
+                            <button name="action_open_heatmap" type="object"
+                                    string="Open Heatmap (last 30 days)"
+                                    class="btn-primary" icon="fa-area-chart"/>
+                            <div class="text-muted" style="margin-top: 8px;">
+                                ⓘ 24h × 7d passage heatmap отваря се в
+                                нов tab като SVG (динамично-генерирано).
                             </div>
                         </page>
                         <page string="Children" name="children"

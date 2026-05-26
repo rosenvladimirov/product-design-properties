@@ -94,6 +94,15 @@ class AccessPerimeter(models.Model):
             node = node.parent_id
         return chain
 
+    def action_open_heatmap(self):
+        """Open SVG heatmap в нов tab."""
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_url",
+            "url": f"/access_control/svg/heatmap/{self.id}?days=30",
+            "target": "new",
+        }
+
     def _resolve_window(self, ts):
         """Return (start, end) for the active calendar window covering ts.
         None если 24/7 (calendar_id празно)."""
