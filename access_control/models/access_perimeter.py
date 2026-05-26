@@ -32,7 +32,7 @@ class AccessPerimeter(models.Model):
         index=True,
         help="Вложен периметър. Влизане в дъщерен може да изисква "
              "присъствие в родителя (requires_parent_presence).")
-    parent_path = fields.Char(index=True, unaccent=False)
+    parent_path = fields.Char(index=True)
     child_ids = fields.One2many("access.perimeter", "parent_id",
                                  string="Children")
     requires_parent_presence = fields.Boolean(
