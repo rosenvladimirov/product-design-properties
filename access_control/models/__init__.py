@@ -9,4 +9,5 @@ from . import access_violation
 from . import access_occupancy
 from . import access_attendance_log
 from . import access_context_builder
+from . import access_proxy_bridge
 from . import site_map_bridge
