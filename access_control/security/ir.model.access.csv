@@ -12,3 +12,6 @@ access_access_violation_user,access.violation user,model_access_violation,base.g
 access_access_violation_review,access.violation review,model_access_violation,base.group_system,1,1,1,1
 access_access_occupancy_user,access.occupancy user,model_access_occupancy,base.group_user,1,0,0,0
 access_access_occupancy_admin,access.occupancy admin,model_access_occupancy,base.group_system,1,1,1,1
+access_access_attendance_log_user,access.attendance.log user,model_access_attendance_log,base.group_user,1,0,0,0
+access_access_attendance_log_create,access.attendance.log create,model_access_attendance_log,base.group_user,1,0,1,0
+access_access_attendance_log_admin,access.attendance.log admin,model_access_attendance_log,base.group_system,1,1,1,1

@@ -53,4 +53,10 @@
               action="action_access_occupancy"
               sequence="30"/>
 
+    <menuitem id="menu_attendance_log"
+              name="Perimeter Attendance"
+              parent="menu_events_section"
+              action="action_access_attendance_log"
+              sequence="40"/>
+
 </odoo>

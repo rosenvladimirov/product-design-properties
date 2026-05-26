@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_access_attendance_log_list" model="ir.ui.view">
+        <field name="name">access.attendance.log.list</field>
+        <field name="model">access.attendance.log</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false"
+                  decoration-success="state == 'inside'"
+                  decoration-muted="state == 'left'">
+                <field name="entry_ts"/>
+                <field name="subject_id"/>
+                <field name="perimeter_id"/>
+                <field name="employee_id" optional="show"/>
+                <field name="partner_id" optional="hide"/>
+                <field name="timezone" optional="show"/>
+                <field name="entry_local" optional="hide"/>
+                <field name="exit_ts" optional="show"/>
+                <field name="duration_hhmm" string="Duration"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_access_attendance_log_form" model="ir.ui.view">
+        <field name="name">access.attendance.log.form</field>
+        <field name="model">access.attendance.log</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="subject_id"/>
+                            <field name="employee_id"/>
+                            <field name="partner_id"/>
+                            <field name="perimeter_id"/>
+                        </group>
+                        <group>
+                            <field name="state"/>
+                            <field name="timezone"/>
+                            <field name="duration_hhmm"
+                                   string="Duration (HH:MM)"/>
+                            <field name="duration_minutes"
+                                   string="Duration (min)"/>
+                        </group>
+                    </group>
+                    <group string="Times">
+                        <group>
+                            <field name="entry_ts"/>
+                            <field name="entry_local"/>
+                            <field name="entry_event_id"/>
+                        </group>
+                        <group>
+                            <field name="exit_ts"/>
+                            <field name="exit_local"/>
+                            <field name="exit_event_id"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_access_attendance_log_search" model="ir.ui.view">
+        <field name="name">access.attendance.log.search</field>
+        <field name="model">access.attendance.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="subject_id"/>
+                <field name="employee_id"/>
+                <field name="partner_id"/>
+                <field name="perimeter_id"/>
+                <filter string="Inside (still there)" name="f_inside"
+                        domain="[('state','=','inside')]"/>
+                <filter string="Left" name="f_left"
+                        domain="[('state','=','left')]"/>
+                <separator/>
+                <filter string="Today" name="f_today"
+                        domain="[('entry_ts','&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0)))]"/>
+                <filter string="This Week" name="f_week"
+                        domain="[('entry_ts','&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <group>
+                    <filter string="Perimeter" name="g_perimeter"
+                            context="{'group_by': 'perimeter_id'}"/>
+                    <filter string="Employee" name="g_employee"
+                            context="{'group_by': 'employee_id'}"/>
+                    <filter string="Partner" name="g_partner"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter string="Subject" name="g_subject"
+                            context="{'group_by': 'subject_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_access_attendance_log" model="ir.actions.act_window">
+        <field name="name">Perimeter Attendance</field>
+        <field name="res_model">access.attendance.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_access_attendance_log_search"/>
+    </record>
+
+    <!-- Smart button на hr.employee -->
+    <record id="view_hr_employee_form_access_attendance" model="ir.ui.view">
+        <field name="name">hr.employee.form.access.attendance</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_access_attendance" type="object"
+                        class="oe_stat_button" icon="fa-clock-o">
+                    <field name="access_attendance_log_count"
+                           widget="statinfo" string="Perimeter Entries"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Smart button на res.partner -->
+    <record id="view_res_partner_form_access_attendance" model="ir.ui.view">
+        <field name="name">res.partner.form.access.attendance</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_access_attendance" type="object"
+                        class="oe_stat_button" icon="fa-clock-o"
+                        invisible="is_company">
+                    <field name="access_attendance_log_count"
+                           widget="statinfo" string="Perimeter Entries"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>
