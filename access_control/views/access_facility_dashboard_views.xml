@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- access.facility smart buttons + extra dashboard buttons -->
+    <record id="view_access_facility_form_smart_buttons" model="ir.ui.view">
+        <field name="name">access.facility.form.smart.buttons</field>
+        <field name="model">access.facility</field>
+        <field name="inherit_id"
+               ref="hr_attendance_access_control_site_map.view_access_facility_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_view_site_svg" type="object"
+                            string="🗺 Live Map" class="btn-primary"
+                            icon="fa-map"/>
+                    <button name="%(action_access_dashboard_url)d"
+                            type="action" string="📊 Dashboard"
+                            class="btn-secondary"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+</odoo>

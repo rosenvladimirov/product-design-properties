@@ -33,6 +33,7 @@
         "views/access_occupancy_views.xml",
         "views/access_attendance_log_views.xml",
         "views/access_facility_svg_views.xml",
+        "views/access_facility_dashboard_views.xml",
         "views/menu.xml",
         "data/zen_graph_access_default.xml",
     ],
