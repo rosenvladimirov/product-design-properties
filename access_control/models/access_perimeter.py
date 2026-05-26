@@ -94,6 +94,30 @@ class AccessPerimeter(models.Model):
             node = node.parent_id
         return chain
 
+    # Smart button counts
+    occupancy_inside_count = fields.Integer(
+        compute="_compute_perimeter_stats",
+        help="Текущо вътре в перимitter-а.")
+    passage_today_count = fields.Integer(
+        compute="_compute_perimeter_stats",
+        help="Брой passage events за днес.")
+
+    @api.depends_context("uid")
+    def _compute_perimeter_stats(self):
+        Occ = self.env["access.occupancy"].sudo()
+        Event = self.env["access.passage.event"].sudo()
+        from datetime import datetime, time
+        today = datetime.combine(datetime.utcnow().date(), time.min)
+        for rec in self:
+            rec.occupancy_inside_count = Occ.search_count([
+                ("perimeter_id", "=", rec.id),
+                ("state", "=", "inside"),
+            ])
+            rec.passage_today_count = Event.search_count([
+                ("perimeter_id", "=", rec.id),
+                ("ts", ">=", today),
+            ])
+
     def action_open_heatmap(self):
         """Open SVG heatmap в нов tab."""
         self.ensure_one()
@@ -101,6 +125,31 @@ class AccessPerimeter(models.Model):
             "type": "ir.actions.act_url",
             "url": f"/access_control/svg/heatmap/{self.id}?days=30",
             "target": "new",
+        }
+
+    def action_open_perimeter_occupancy(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Inside %s", self.name),
+            "res_model": "access.occupancy",
+            "view_mode": "kanban,list",
+            "domain": [("perimeter_id", "=", self.id), ("state", "=", "inside")],
+        }
+
+    def action_open_perimeter_passages(self):
+        self.ensure_one()
+        from datetime import datetime, time
+        today = datetime.combine(datetime.utcnow().date(), time.min)
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Today's passages — %s", self.name),
+            "res_model": "access.passage.event",
+            "view_mode": "kanban,list,graph,pivot",
+            "domain": [
+                ("perimeter_id", "=", self.id),
+                ("ts", ">=", today),
+            ],
         }
 
     def _resolve_window(self, ts):
