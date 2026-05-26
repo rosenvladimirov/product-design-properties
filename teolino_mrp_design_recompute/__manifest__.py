@@ -1,7 +1,7 @@
 {
     "name": "Teolino MRP Design Recompute",
-    "version": "18.0.1.5.1",
-    "summary": "Live BoM simulation + per-shutter eval + PTAV color resolution + auto-recompute + cutting list PDF",
+    "version": "18.0.1.6.0",
+    "summary": "Live BoM sim + per-shutter eval + PTAV color resolution (simulate AND MO swap) + auto-recompute + cutting list PDF",
     "author": "Teolino",
     "license": "AGPL-3",
     "category": "Manufacturing",

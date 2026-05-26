@@ -51,8 +51,18 @@ class MrpProduction(models.Model):
         sim = self._teolino_simulate_for_report()
         if not sim:
             return
+        # Build the namespace once so we can resolve PTAV color variants per
+        # move.  simulate() already did the same internally, but doesn't
+        # expose ns — cheaper to rebuild than refactor the contract.
+        lot = self._teolino_get_design_lot()
+        rich = (lot and lot.read(["design_params"])[0].get("design_params")) or []
+        base_ns = self.bom_id._teolino_build_namespace(rich, self.product_qty or 1.0)
+        # Index simulate output by bom_line_id for quick qty lookup + a parallel
+        # index by bom_line_id → bom_line record for PTAV resolution.
         qty_by_bom_line = {ln["bom_line_id"]: ln["qty"] for ln in sim["lines"]}
-        updated = 0
+        bom_line_by_id = {bl.id: bl for bl in self.bom_id.bom_line_ids}
+        updated_qty = 0
+        swapped = 0
         for move in self.move_raw_ids:
             bom_line = move.bom_line_id
             if not bom_line:
@@ -60,13 +70,30 @@ class MrpProduction(models.Model):
             qty = qty_by_bom_line.get(bom_line.id)
             if qty is None:
                 continue
+            vals = {}
+            # PTAV color resolution: swap placeholder (color 001) → actual
+            # variant matching the customer's color choice.  Uses the same
+            # _teolino_resolve_variant helper that simulate emits with.
+            real_bom_line = bom_line_by_id.get(bom_line.id, bom_line)
+            actual = self.bom_id._teolino_resolve_variant(real_bom_line, base_ns)
+            if actual and actual.id != move.product_id.id:
+                vals["product_id"] = actual.id
+                # product_uom may differ if the resolved variant uses a
+                # different UoM — keep the move's UoM aligned with the product.
+                if actual.uom_id and actual.uom_id.id != move.product_uom.id:
+                    vals["product_uom"] = actual.uom_id.id
+                swapped += 1
             if abs(qty - move.product_uom_qty) > 0.0001:
-                move.product_uom_qty = qty
-                updated += 1
-        if updated:
+                vals["product_uom_qty"] = qty
+                updated_qty += 1
+            if vals:
+                move.write(vals)
+        if updated_qty or swapped:
             _logger.info(
-                "Teolino recompute: updated %d/%d raw moves on %s (material total=%.2f)",
-                updated, len(self.move_raw_ids), self.name, sim["total_material"],
+                "Teolino recompute on %s: qty updated %d/%d, color swapped %d/%d "
+                "(material total=%.2f)",
+                self.name, updated_qty, len(self.move_raw_ids),
+                swapped, len(self.move_raw_ids), sim["total_material"],
             )
 
     # ── Cutting-list report data ────────────────────────────────────────
