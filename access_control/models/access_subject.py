@@ -34,10 +34,51 @@ class AccessSubject(models.Model):
         "res.company", default=lambda s: s.env.company, index=True)
     notes = fields.Text()
 
+    current_location = fields.Char(
+        compute="_compute_current_location",
+        help="Live occupancy summary — кои perimeters текущо subject-ът е "
+             "вътре. Computed (non-stored) → винаги fresh.")
+    inside_count = fields.Integer(
+        compute="_compute_current_location",
+        help="Брой perimeters в който subject-ът е сега 'inside'.")
+    last_activity = fields.Datetime(
+        compute="_compute_current_location",
+        help="Последно passage event timestamp.")
+
     @api.depends("credential_ids")
     def _compute_credential_count(self):
         for rec in self:
             rec.credential_count = len(rec.credential_ids)
+
+    @api.depends_context("uid")
+    def _compute_current_location(self):
+        Occ = self.env["access.occupancy"].sudo()
+        for rec in self:
+            inside = Occ.search([
+                ("subject_id", "=", rec.id),
+                ("state", "=", "inside"),
+            ])
+            rec.inside_count = len(inside)
+            rec.current_location = (
+                ", ".join(inside.mapped("perimeter_id.code"))
+                if inside else "—")
+            rec.last_activity = max(
+                inside.mapped("last_seen"), default=False)
+
+    def action_open_today_passages(self):
+        self.ensure_one()
+        from datetime import datetime, time
+        today = datetime.combine(datetime.utcnow().date(), time.min)
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Today's Passages"),
+            "res_model": "access.passage.event",
+            "view_mode": "kanban,list,form",
+            "domain": [
+                ("subject_id", "=", self.id),
+                ("ts", ">=", today),
+            ],
+        }
 
     @api.onchange("employee_id")
     def _onchange_employee_id(self):

@@ -71,9 +71,51 @@
             </form>
         </field>
     </record>
+    <!-- Kanban с inline SVG direction icon -->
+    <record id="view_access_passage_event_kanban" model="ir.ui.view">
+        <field name="name">access.passage.event.kanban</field>
+        <field name="model">access.passage.event</field>
+        <field name="arch" type="xml">
+            <kanban default_order="ts desc" create="false"
+                    class="o_kanban_dashboard">
+                <field name="result"/>
+                <field name="anomaly_hint"/>
+                <field name="direction"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click p-2"
+                             t-attf-style="border-left: 4px solid {{record.result.raw_value === 'accept' ? '#27AE60' : record.result.raw_value === 'violation' ? '#F39C12' : '#C0392B'}};">
+                            <div class="d-flex align-items-center gap-2">
+                                <img t-att-src="'/access_control/svg/direction/' + record.id.raw_value"
+                                     style="width: 48px; height: 48px;"
+                                     alt="dir"/>
+                                <div class="flex-grow-1">
+                                    <strong>
+                                        <field name="control_point_id"/>
+                                    </strong>
+                                    <div class="text-muted small">
+                                        <field name="ts"/>
+                                    </div>
+                                    <div t-if="record.anomaly_hint.raw_value"
+                                         class="text-danger small">
+                                        ⚠ <field name="anomaly_hint"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2 small text-muted">
+                                <field name="subject_id"/>
+                                · <field name="result"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
     <record id="action_access_passage_event" model="ir.actions.act_window">
         <field name="name">Passage Events</field>
         <field name="res_model">access.passage.event</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">kanban,list,form</field>
     </record>
 </odoo>
