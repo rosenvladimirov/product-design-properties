@@ -66,8 +66,13 @@ def _soft_fallback_enabled(env) -> bool:
     return str(value).strip().lower() in ("1", "true", "yes", "on")
 
 
-class ZenWrapper:
-    """Stateless GoRules evaluator — creates a decision per call."""
+class ZenRunner:
+    """Stateless GoRules evaluator — creates a decision per call.
+
+    Renamed from ZenWrapper in 18.0.2.0.0 (kernel extraction). The
+    ZenWrapper name remains as an alias for back-compat (виж края на файла).
+    Future split: този клас се мести в нов модул `base_zen_decision`.
+    """
 
     _engine = None
 
@@ -254,3 +259,21 @@ class ZenWrapper:
                     })
                 data["edges"] = edges + to_add
         return data
+
+
+# ── Back-compat alias ───────────────────────────────────────────────
+# Преименувахме ZenWrapper → ZenRunner в 18.0.2.0.0 (kernel extraction).
+# Стара публичност на ZenWrapper се запазва за един релийз цикъл — после
+# се премахва когато всички консуматори ползват `env['zen.decision.table']`.
+class ZenWrapper(ZenRunner):
+    """DEPRECATED: use ZenRunner или
+    env['zen.decision.table'].evaluate(code, context). Този alias ще
+    отпадне в 18.0.3.0.0."""
+
+    @classmethod
+    def evaluate(cls, table_json, context, env=None) -> dict:
+        _logger.warning(
+            "ZenWrapper is deprecated since 18.0.2.0.0 — use ZenRunner "
+            "or env['zen.decision.table'].evaluate(code, context)."
+        )
+        return ZenRunner.evaluate(table_json, context, env=env)

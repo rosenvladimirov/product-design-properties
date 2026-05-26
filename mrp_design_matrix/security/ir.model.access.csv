@@ -3,3 +3,8 @@ access_mrp_matrix_template_user,mrp.matrix.template user,model_mrp_matrix_templa
 access_mrp_matrix_template_manager,mrp.matrix.template manager,model_mrp_matrix_template,mrp.group_mrp_manager,1,1,1,1
 access_design_industry_mrp_user,design.industry mrp user,design_param_base.model_design_industry,mrp.group_mrp_user,1,0,0,0
 access_design_industry_mrp_manager,design.industry mrp manager,design_param_base.model_design_industry,mrp.group_mrp_manager,1,1,1,1
+access_zen_decision_table_user,zen.decision.table user,model_zen_decision_table,base.group_user,1,0,0,0
+access_zen_decision_table_manager,zen.decision.table manager,model_zen_decision_table,base.group_system,1,1,1,1
+access_zen_decision_log_user,zen.decision.log user,model_zen_decision_log,base.group_user,1,0,0,0
+access_zen_decision_log_create,zen.decision.log create,model_zen_decision_log,base.group_user,1,0,1,0
+access_zen_decision_log_admin,zen.decision.log admin,model_zen_decision_log,base.group_system,1,1,1,1
