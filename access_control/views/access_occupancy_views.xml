@@ -37,12 +37,14 @@
                                 </span>
                             </div>
                             <div class="text-muted small mt-1">
-                                <i class="fa fa-sign-in"/>
+                                <i class="fa fa-sign-in" title="entered"
+                                   role="img" aria-label="entered"/>
                                 <field name="entered_at"/>
                             </div>
                             <div class="text-muted small">
-                                <i class="fa fa-clock-o"/> last:
-                                <field name="last_seen"/>
+                                <i class="fa fa-clock-o" title="last seen"
+                                   role="img" aria-label="last seen"/>
+                                last: <field name="last_seen"/>
                             </div>
                         </div>
                     </t>
