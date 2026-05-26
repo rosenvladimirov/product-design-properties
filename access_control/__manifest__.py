@@ -30,6 +30,7 @@
         "views/access_passage_event_views.xml",
         "views/access_violation_views.xml",
         "views/access_occupancy_views.xml",
+        "views/access_attendance_log_views.xml",
         "views/menu.xml",
         "data/zen_graph_access_default.xml",
     ],

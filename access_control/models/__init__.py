@@ -7,4 +7,5 @@ from . import access_control_point
 from . import access_passage_event
 from . import access_violation
 from . import access_occupancy
+from . import access_attendance_log
 from . import access_context_builder

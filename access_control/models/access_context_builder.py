@@ -270,6 +270,18 @@ class AccessDecisionFlow(models.AbstractModel):
                 ts=ts,
             )
 
+        # Per-perimeter attendance log (TZ-aware) — open/close записи
+        if event_result in ("accept", "violation") \
+                and credential and credential.subject_id and perimeter:
+            AttLog = self.env["access.attendance.log"].sudo()
+            direction = context.get("direction")
+            if direction == "in":
+                AttLog.open_entry(credential.subject_id, perimeter,
+                                   event, ts=ts)
+            elif direction == "out":
+                AttLog.close_exit(credential.subject_id, perimeter,
+                                   event, ts=ts)
+
         # Pulse the magnet ако accept
         if event_result == "accept" and control_point.controller_id:
             control_point.action_pulse()
