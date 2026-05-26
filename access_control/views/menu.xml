@@ -80,4 +80,16 @@
               action="action_access_passage_event"
               sequence="30"/>
 
+    <!-- Full-page HTML dashboard (SVG inline) -->
+    <record id="action_access_dashboard_url" model="ir.actions.act_url">
+        <field name="name">Open Dashboard (full-page)</field>
+        <field name="url">/access_control/dashboard</field>
+        <field name="target">new</field>
+    </record>
+    <menuitem id="menu_dashboard_url"
+              name="📊 Open Full Dashboard"
+              parent="menu_dashboards_section"
+              action="action_access_dashboard_url"
+              sequence="5"/>
+
 </odoo>

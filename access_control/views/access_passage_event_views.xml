@@ -116,6 +116,31 @@
     <record id="action_access_passage_event" model="ir.actions.act_window">
         <field name="name">Passage Events</field>
         <field name="res_model">access.passage.event</field>
-        <field name="view_mode">kanban,list,form</field>
+        <field name="view_mode">kanban,list,graph,pivot,form</field>
+    </record>
+
+    <!-- Graph view: passage trend по час -->
+    <record id="view_access_passage_event_graph" model="ir.ui.view">
+        <field name="name">access.passage.event.graph</field>
+        <field name="model">access.passage.event</field>
+        <field name="arch" type="xml">
+            <graph string="Passage Trend" type="bar" sample="1">
+                <field name="ts" interval="hour" type="row"/>
+                <field name="result" type="col"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Pivot view: passages × perimeter × result -->
+    <record id="view_access_passage_event_pivot" model="ir.ui.view">
+        <field name="name">access.passage.event.pivot</field>
+        <field name="model">access.passage.event</field>
+        <field name="arch" type="xml">
+            <pivot string="Passage Analytics" sample="1">
+                <field name="perimeter_id" type="row"/>
+                <field name="ts" interval="day" type="col"/>
+                <field name="result" type="col"/>
+            </pivot>
+        </field>
     </record>
 </odoo>
