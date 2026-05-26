@@ -61,9 +61,58 @@
             </form>
         </field>
     </record>
+    <!-- Subjects kanban — Real-time view с live occupancy badge -->
+    <record id="view_access_subject_kanban" model="ir.ui.view">
+        <field name="name">access.subject.kanban</field>
+        <field name="model">access.subject</field>
+        <field name="arch" type="xml">
+            <kanban default_order="last_activity desc"
+                    class="o_kanban_dashboard">
+                <field name="inside_count"/>
+                <field name="current_location"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click p-2"
+                             t-attf-style="border-left: 5px solid {{record.inside_count.raw_value > 0 ? '#27AE60' : '#BDC3C7'}};">
+                            <div class="d-flex align-items-center gap-2">
+                                <span t-attf-class="badge {{record.inside_count.raw_value > 0 ? 'bg-success' : 'bg-light text-dark'}}">
+                                    <t t-if="record.inside_count.raw_value &gt; 0">●</t>
+                                    <t t-else="">○</t>
+                                </span>
+                                <strong><field name="name"/></strong>
+                            </div>
+                            <div t-if="record.inside_count.raw_value &gt; 0"
+                                 class="mt-1 small text-success">
+                                <i class="fa fa-map-marker"/>
+                                <field name="current_location"/>
+                            </div>
+                            <div t-else="" class="mt-1 small text-muted">
+                                — not on premises
+                            </div>
+                            <div class="text-muted small mt-1">
+                                last: <field name="last_activity"/>
+                            </div>
+                            <div class="text-muted small">
+                                <field name="credential_count"/> credentials
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
     <record id="action_access_subject" model="ir.actions.act_window">
         <field name="name">Subjects</field>
         <field name="res_model">access.subject</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">kanban,list,form</field>
+    </record>
+
+    <!-- Real-time dashboard alias (same model, default filter) -->
+    <record id="action_access_subjects_realtime" model="ir.actions.act_window">
+        <field name="name">Real-time Presence</field>
+        <field name="res_model">access.subject</field>
+        <field name="view_mode">kanban,list</field>
+        <field name="context">{'search_default_active': 1}</field>
     </record>
 </odoo>

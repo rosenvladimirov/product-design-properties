@@ -59,4 +59,25 @@
               action="action_access_attendance_log"
               sequence="40"/>
 
+    <!-- 🎨 Visualizations / Dashboards section -->
+    <menuitem id="menu_dashboards_section"
+              name="Dashboards"
+              parent="menu_access_control_root"
+              sequence="5"/>
+    <menuitem id="menu_realtime_presence"
+              name="Real-time Presence"
+              parent="menu_dashboards_section"
+              action="action_access_subjects_realtime"
+              sequence="10"/>
+    <menuitem id="menu_live_occupancy"
+              name="Live Occupancy"
+              parent="menu_dashboards_section"
+              action="action_access_occupancy"
+              sequence="20"/>
+    <menuitem id="menu_live_events"
+              name="Live Events"
+              parent="menu_dashboards_section"
+              action="action_access_passage_event"
+              sequence="30"/>
+
 </odoo>

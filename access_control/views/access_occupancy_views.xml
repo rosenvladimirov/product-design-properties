@@ -17,9 +17,43 @@
             </list>
         </field>
     </record>
+    <!-- Live Occupancy Board (kanban) -->
+    <record id="view_access_occupancy_kanban" model="ir.ui.view">
+        <field name="name">access.occupancy.kanban</field>
+        <field name="model">access.occupancy</field>
+        <field name="arch" type="xml">
+            <kanban default_order="last_seen desc" create="false"
+                    default_group_by="perimeter_id"
+                    class="o_kanban_dashboard">
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click p-2"
+                             t-attf-style="border-left: 5px solid {{record.state.raw_value === 'inside' ? '#27AE60' : record.state.raw_value === 'outside' ? '#95A5A6' : '#F39C12'}};">
+                            <strong><field name="subject_id"/></strong>
+                            <div class="small mt-1">
+                                <span t-attf-class="badge {{record.state.raw_value === 'inside' ? 'bg-success' : 'bg-secondary'}}">
+                                    <field name="state"/>
+                                </span>
+                            </div>
+                            <div class="text-muted small mt-1">
+                                <i class="fa fa-sign-in"/>
+                                <field name="entered_at"/>
+                            </div>
+                            <div class="text-muted small">
+                                <i class="fa fa-clock-o"/> last:
+                                <field name="last_seen"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
     <record id="action_access_occupancy" model="ir.actions.act_window">
-        <field name="name">Occupancy</field>
+        <field name="name">Live Occupancy</field>
         <field name="res_model">access.occupancy</field>
-        <field name="view_mode">list</field>
+        <field name="view_mode">kanban,list</field>
     </record>
 </odoo>
