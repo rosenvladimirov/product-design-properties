@@ -72,8 +72,14 @@ class AccessProxyBridge(models.AbstractModel):
             _logger.info(
                 "access.proxy.bridge received: type=%s data keys=%s",
                 event_type, list((envelope or {}).get("data", {}).keys()))
-            if event_type not in ("card.read", "card.accept", "card.denied"):
-                return  # other events (heartbeat/online/...) skipped
+            # Inputs от Polimex които интересуват access flow:
+            # - card.read/accept/denied — primary card swipe path
+            # - door.sensor — door open/forced contact change
+            # - button.pressed — exit button (REX) press
+            if event_type not in (
+                    "card.read", "card.accept", "card.denied",
+                    "door.sensor", "button.pressed"):
+                return  # other events (heartbeat/online/controller.*) skipped
             data = (envelope or {}).get("data", {})
             card_num = data.get("card")
             ctrl_id = data.get("ctrl_id") or data.get("id")
