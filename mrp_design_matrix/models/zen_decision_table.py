@@ -49,10 +49,13 @@ class ZenDecisionTable(models.Model):
     active = fields.Boolean(default=True)
     notes = fields.Text(help="Free-text changelog за тази версия.")
 
-    _code_version_company_uniq = models.Constraint(
-        "unique(code, version, company_id)",
-        "Each (code, version) must be unique per company.",
-    )
+    _sql_constraints = [
+        (
+            "code_version_company_uniq",
+            "unique(code, version, company_id)",
+            "Each (code, version) must be unique per company.",
+        ),
+    ]
 
     # ── Lookup helpers ─────────────────────────────────────────────────
     @api.model
