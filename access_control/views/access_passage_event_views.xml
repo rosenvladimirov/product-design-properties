@@ -9,7 +9,11 @@
                   decoration-warning="result == 'violation' or anomaly_hint"
                   decoration-danger="result == 'deny'">
                 <field name="ts"/>
-                <field name="control_point_id"/>
+                <field name="controller_id" string="Hardware"
+                       optional="show"/>
+                <field name="control_point_id" string="Control Point"/>
+                <field name="perimeter_id" string="Perimeter"
+                       optional="show"/>
                 <field name="credential_id" optional="show"/>
                 <field name="subject_id" optional="show"/>
                 <field name="direction"/>

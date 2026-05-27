@@ -32,6 +32,10 @@ class AccessPassageEvent(models.Model):
         related="credential_id.subject_id", store=True, index=True)
     perimeter_id = fields.Many2one(
         related="control_point_id.perimeter_id", store=True, index=True)
+    controller_id = fields.Many2one(
+        "access.controller",
+        related="control_point_id.controller_id", store=True, index=True,
+        help="Virtual ac (hardware wrapper) — от кой контролер идва.")
     ts = fields.Datetime(required=True, default=fields.Datetime.now,
                          index=True)
     direction = fields.Selection(
