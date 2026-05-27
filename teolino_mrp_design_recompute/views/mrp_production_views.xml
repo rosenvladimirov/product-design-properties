@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+  <!--
+    Default the MO form's Components tab to ACTIVE-ONLY raw moves.
+
+    Background: Teolino BoMs use the "O-variant pattern" — every potential
+    component is a BoM line, activation happens via formula (qty=0 for
+    inactive variants).  For a Standard 165 single shutter, BoM 580 yields
+    45 raw moves but only ~13 carry positive qty; the rest are Round/Thermo
+    box variants etc. that never fire.  Production workers had to scroll
+    through 45 rows to spot the dozen actual materials.
+
+    Fix: domain the field to product_uom_qty > 0.  The remaining moves still
+    exist in DB (matrix flow + recompute hook both still see them), they're
+    just hidden from the form by default.  Power users who need the full
+    list can clear the filter in the tree's search bar.
+  -->
+
+  <record id="view_mrp_production_form_teolino_active_moves" model="ir.ui.view">
+    <field name="name">mrp.production.form.teolino.active.moves</field>
+    <field name="model">mrp.production</field>
+    <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='move_raw_ids']" position="attributes">
+        <attribute name="domain">[('product_uom_qty', '>', 0)]</attribute>
+      </xpath>
+    </field>
+  </record>
+
+</odoo>
