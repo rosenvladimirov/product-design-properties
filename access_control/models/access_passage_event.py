@@ -7,7 +7,7 @@
 Свързан със zen.decision.log за пълно audit trail.
 """
 
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 _RESULT = [
