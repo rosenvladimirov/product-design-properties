@@ -92,4 +92,19 @@
               action="action_access_dashboard_url"
               sequence="5"/>
 
+    <!-- Bridge: показваме новите rich event views под legacy
+         hr_attendance_access_control app → Events → Access Control,
+         за да не се скитат потребителите между две Access Control
+         апликации. RFID Events (raw hardware) остава на дъното. -->
+    <menuitem id="menu_legacy_bridge_passage"
+              name="Passage Events"
+              parent="hr_attendance_access_control.menu_access_control_root"
+              action="action_access_passage_event"
+              sequence="1"/>
+    <menuitem id="menu_legacy_bridge_violations"
+              name="Violations"
+              parent="hr_attendance_access_control.menu_access_control_root"
+              action="action_access_violation"
+              sequence="3"/>
+
 </odoo>
