@@ -7,34 +7,32 @@
         <field name="arch" type="xml">
             <form string="Reader Calibration Wizard">
                 <header>
-                    <button name="action_start_route_1" type="object"
-                            string="🚶 Start Route 1" class="btn-primary"
+                    <button name="action_generate_plan" type="object"
+                            string="🧭 Generate Walk Plan" class="btn-secondary"
                             invisible="state != 'draft'"/>
-                    <button name="action_stop_route_1" type="object"
-                            string="⏹ Stop Route 1" class="btn-secondary"
-                            invisible="state != 'route_1'"/>
-                    <button name="action_start_route_2" type="object"
-                            string="🔄 Start Route 2 (reverse)" class="btn-primary"
-                            invisible="state != 'route_1_done'"/>
-                    <button name="action_stop_route_2" type="object"
-                            string="⏹ Stop Route 2" class="btn-secondary"
-                            invisible="state != 'route_2'"/>
+                    <button name="action_start_walk" type="object"
+                            string="🚶 Start Walk" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_stop_walk" type="object"
+                            string="⏹ Stop Walk" class="btn-secondary"
+                            invisible="state != 'walking'"/>
                     <button name="action_apply" type="object"
                             string="✓ Apply Mapping" class="btn-success"
-                            invisible="state != 'route_2_done'"/>
+                            invisible="state != 'walking_done'"/>
                     <button name="action_reset" type="object"
                             string="↺ Reset" class="btn-secondary"
                             invisible="state == 'draft'"/>
                     <field name="state" widget="statusbar"
-                           statusbar_visible="draft,route_1,route_1_done,route_2,route_2_done,applied"/>
+                           statusbar_visible="draft,walking,walking_done,applied"/>
                 </header>
                 <sheet>
                     <div class="alert alert-info" role="alert">
                         <strong>Workflow:</strong>
-                        Избери controllers и picки картата →
-                        Start Route 1 → мини по първи маршрут (CW) → Stop →
-                        Start Route 2 → мини обратно (CCW) → Stop →
-                        Preview mapping → Apply.
+                        Pick controllers + card + starting position →
+                        Generate Walk Plan → edit-нй steps ако трябва →
+                        Start Walk → swipe-вай по plan-а →
+                        Stop Walk → check preview → Apply.
+                        Plan-driven map-ва i-тия swipe към i-тата стъпка.
                     </div>
                     <group>
                         <group>
@@ -43,41 +41,44 @@
                                    readonly="state != 'draft'"
                                    options="{'no_create': True}"/>
                             <field name="card_number"/>
+                            <field name="starting_position"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                        <group>
                             <field name="controller_ids" widget="many2many_tags"
                                    readonly="state != 'draft'"
                                    options="{'no_create': True}"/>
-                        </group>
-                        <group>
-                            <field name="route_1_start"/>
-                            <field name="route_1_end"/>
-                            <field name="route_2_start"/>
-                            <field name="route_2_end"/>
+                            <field name="walk_start"/>
+                            <field name="walk_end"/>
                         </group>
                     </group>
                     <notebook>
-                        <page string="Route 1 events" name="r1">
-                            <field name="route_1_event_ids" nolabel="1" readonly="1">
+                        <page string="🧭 Walk Plan (steps)" name="plan">
+                            <field name="plan_step_ids" nolabel="1"
+                                   readonly="state not in ('draft','walking_done')">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="control_point_id"
+                                           options="{'no_create': True}"/>
+                                    <field name="role"/>
+                                    <field name="matched_event_id" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="📡 Captured events" name="events">
+                            <field name="walk_event_ids" nolabel="1" readonly="1">
                                 <list>
+                                    <field name="sequence"/>
                                     <field name="ts"/>
                                     <field name="controller_id"/>
                                     <field name="ctrl_id"/>
                                     <field name="reader_no"/>
                                     <field name="control_point_id"/>
+                                    <field name="inferred_role"/>
                                 </list>
                             </field>
                         </page>
-                        <page string="Route 2 events" name="r2">
-                            <field name="route_2_event_ids" nolabel="1" readonly="1">
-                                <list>
-                                    <field name="ts"/>
-                                    <field name="controller_id"/>
-                                    <field name="ctrl_id"/>
-                                    <field name="reader_no"/>
-                                    <field name="control_point_id"/>
-                                </list>
-                            </field>
-                        </page>
-                        <page string="Preview Mapping" name="preview"
+                        <page string="🔍 Preview Mapping" name="preview"
                               invisible="not preview_html">
                             <field name="preview_html" nolabel="1" readonly="1"/>
                         </page>
@@ -94,7 +95,6 @@
         <field name="target">new</field>
     </record>
 
-    <!-- Menu под Settings → Access Control секцията на legacy app -->
     <menuitem id="menu_calibration_wizard"
               name="🛠 Reader Calibration"
               parent="hr_attendance_access_control.menu_settings_access_control"
