@@ -23,6 +23,15 @@ class HrEmployee(models.Model):
         for emp in self:
             emp.passage_event_count = counts.get(emp.id, 0)
 
+    def action_view_trail_svg(self):
+        """Отваря Trail SVG endpoint в нов tab за днешния ден."""
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_url",
+            "url": f"/access_control/svg/trail/employee/{self.id}",
+            "target": "new",
+        }
+
     def action_view_passage_events(self):
         """Smart button — отваря Passage Trail на този employee:
            - filter: employee_id = self

@@ -389,3 +389,110 @@ def _device_icon(cx: float, cy: float, kind: str, color: str,
             f'{escape(label[:14])}</text>'
         )
     return shape + txt
+
+
+# ── Daily Trail (passage chain visualization) ──────────────────────
+def trail_chain(events: list, day_label: str = "") -> str:
+    """Hоризонтална chain SVG на passage events за един employee/ден.
+
+    Очаква sorted list (по ts asc) с dicts:
+        {ts: 'HH:MM', cp: 'Control Point Name', dir: 'in'|'out'|None,
+         perimeter: 'Perimeter Name', color: '#hex', anomaly: str|None,
+         slot: 'Time Slot label', slot_color: '#hex'}
+
+    Visual:
+      [09:12]──→──[Front Door]──→──[09:45]──→──[Office]──...
+      Color-coded по perimeter; цвят на time slot strip под node-овете;
+      anomaly hint показва ⚠ icon.
+    """
+    if not events:
+        return _svg_header(400, 80) + (
+            f'<rect width="400" height="80" fill="{_PALETTE["bg"]}"/>'
+            f'<text x="200" y="40" text-anchor="middle" '
+            f'fill="{_PALETTE["neutral"]}">No passages this day</text>'
+            f'</svg>'
+        )
+    node_w = 130
+    gap = 30
+    n = len(events)
+    width = n * node_w + (n - 1) * gap + 40
+    height = 160
+    parts = [_svg_header(width, height)]
+    parts.append(
+        f'<rect width="{width}" height="{height}" '
+        f'fill="{_PALETTE["bg"]}"/>'
+    )
+    if day_label:
+        parts.append(
+            f'<text x="20" y="20" font-size="14" font-weight="bold" '
+            f'fill="{_PALETTE["text"]}">{escape(day_label)}</text>'
+        )
+    y_center = 90
+    for i, e in enumerate(events):
+        cx = 20 + i * (node_w + gap) + node_w / 2
+        # Node card
+        perim_color = e.get("color") or _PALETTE["neutral"]
+        parts.append(
+            f'<rect x="{cx - node_w/2}" y="{y_center - 30}" '
+            f'width="{node_w}" height="60" rx="6" ry="6" '
+            f'fill="white" stroke="{perim_color}" stroke-width="2"/>'
+        )
+        # Time at top
+        parts.append(
+            f'<text x="{cx}" y="{y_center - 12}" font-size="11" '
+            f'font-weight="bold" text-anchor="middle" '
+            f'fill="{_PALETTE["text"]}">{escape(str(e.get("ts","")))}</text>'
+        )
+        # Control point name
+        cp_name = escape(str(e.get("cp", "?"))[:16])
+        parts.append(
+            f'<text x="{cx}" y="{y_center + 4}" font-size="10" '
+            f'text-anchor="middle" '
+            f'fill="{_PALETTE["text"]}">{cp_name}</text>'
+        )
+        # Perimeter
+        peri = escape(str(e.get("perimeter", ""))[:18])
+        parts.append(
+            f'<text x="{cx}" y="{y_center + 18}" font-size="9" '
+            f'text-anchor="middle" fill="{perim_color}">{peri}</text>'
+        )
+        # Direction arrow (between nodes)
+        if i < n - 1:
+            arrow_x = cx + node_w / 2
+            arrow_end = arrow_x + gap
+            next_dir = events[i + 1].get("dir")
+            anomaly = events[i + 1].get("anomaly")
+            ac = _PALETTE["anomaly"] if anomaly else (
+                _PALETTE["in"] if next_dir == "in" else
+                _PALETTE["out"] if next_dir == "out" else
+                _PALETTE["neutral"]
+            )
+            parts.append(
+                f'<line x1="{arrow_x}" y1="{y_center}" '
+                f'x2="{arrow_end - 6}" y2="{y_center}" '
+                f'stroke="{ac}" stroke-width="2"/>'
+                f'<polygon points="{arrow_end},{y_center} '
+                f'{arrow_end - 8},{y_center - 4} '
+                f'{arrow_end - 8},{y_center + 4}" fill="{ac}"/>'
+            )
+            if anomaly:
+                parts.append(
+                    f'<text x="{(arrow_x + arrow_end) / 2}" '
+                    f'y="{y_center - 6}" font-size="10" '
+                    f'text-anchor="middle" fill="{_PALETTE["anomaly"]}">'
+                    f'⚠ {escape(str(anomaly)[:8])}</text>'
+                )
+        # Time slot strip под node-а
+        slot = e.get("slot")
+        if slot:
+            slot_color = e.get("slot_color") or _PALETTE["neutral"]
+            parts.append(
+                f'<rect x="{cx - node_w/2}" y="{y_center + 32}" '
+                f'width="{node_w}" height="14" rx="3" ry="3" '
+                f'fill="{slot_color}" opacity="0.85"/>'
+                f'<text x="{cx}" y="{y_center + 42}" font-size="9" '
+                f'text-anchor="middle" fill="white">'
+                f'{escape(str(slot)[:18])}</text>'
+            )
+    parts.append('</svg>')
+    return ''.join(parts)

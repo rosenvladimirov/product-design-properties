@@ -15,6 +15,12 @@
                     <field name="passage_event_count" widget="statinfo"
                            string="Passages"/>
                 </button>
+                <button name="action_view_trail_svg"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-map-o"
+                        invisible="passage_event_count == 0"
+                        string="Trail SVG"/>
             </div>
         </field>
     </record>

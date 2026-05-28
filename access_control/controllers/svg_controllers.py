@@ -13,7 +13,8 @@ from datetime import datetime, timedelta
 from odoo import http
 from odoo.http import request
 
-from ..svg import direction_arrow, heatmap_24h_7d, site_map_with_devices
+from ..svg import (direction_arrow, heatmap_24h_7d, site_map_with_devices,
+                   trail_chain)
 
 
 _HEADERS_SVG = [
@@ -159,3 +160,45 @@ class AccessControlSvg(http.Controller):
         if recent.direction == "out":
             return "out"
         return "idle"
+
+
+class AccessControlTrailSvg(http.Controller):
+    """Daily trail visualization за employee."""
+
+    @http.route("/access_control/svg/trail/employee/<int:employee_id>",
+                type="http", auth="user", methods=["GET"], csrf=False)
+    def svg_trail_employee(self, employee_id, date=None, **kw):
+        """Renders horizontal chain SVG за passage events на даден
+        employee + дата (YYYY-MM-DD; default = today)."""
+        emp = request.env["hr.employee"].browse(employee_id)
+        try:
+            emp.check_access("read")
+        except Exception:
+            return request.not_found()
+        try:
+            day = (datetime.strptime(date, "%Y-%m-%d").date()
+                   if date else datetime.utcnow().date())
+        except ValueError:
+            day = datetime.utcnow().date()
+        start = datetime.combine(day, datetime.min.time())
+        end = start + timedelta(days=1)
+        events = request.env["access.passage.event"].search([
+            ("employee_id", "=", emp.id),
+            ("ts", ">=", start),
+            ("ts", "<", end),
+        ], order="ts asc")
+        payload = []
+        for e in events:
+            payload.append({
+                "ts": e.ts.strftime("%H:%M") if e.ts else "",
+                "cp": e.control_point_id.name or "?",
+                "dir": e.direction,
+                "perimeter": e.perimeter_id.name or "",
+                "color": "#3498DB",
+                "anomaly": e.anomaly_hint,
+                "slot": e.time_slot_id.name or "",
+                "slot_color": e.time_slot_id.color or "#7F8C8D",
+            })
+        label = f"{emp.name} — {day.isoformat()}"
+        svg = trail_chain(payload, day_label=label)
+        return request.make_response(svg, headers=_HEADERS_SVG)
