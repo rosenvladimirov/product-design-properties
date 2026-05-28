@@ -1282,6 +1282,7 @@ export class DesignConfiguratorWidget extends Component {
         else if (code === "roller_door") this._buildRollerDoor();
         else if (code === "interior_door") this._buildInteriorDoor();
         else if (code === "corrugated") this._buildBox();
+        else if (code === "teolino_shutters") this._buildShutter();
         else this._buildGenericBox();
     }
 
@@ -1379,6 +1380,126 @@ export class DesignConfiguratorWidget extends Component {
                 new THREE.LineBasicMaterial({ color: 0x888888, opacity: 0.4, transparent: true })));
         }
         t.group.position.set(0, -H * 0.4, 0);
+    }
+
+    _buildShutter() {
+        // Roller shutter ("Щора Standard" и др. варианти от mrp_design_matrix_teolino_shutters).
+        // Геометрия от долу нагоре: terminal slat → regular slats stack → brush → box (top).
+        // Параметри се четат от this.params (имената идват от teolino_shutters DPD set).
+        this._clearModel();
+        const THREE = window.THREE; const t = this._three; const p = this.params;
+        const W = (p.width || 1000) / 3000;
+        const H = (p.height || 1500) / 3000;
+        const BH = (parseInt(p.box_size, 10) || 165) / 3000;
+        const SH = (parseInt(p.slat_size, 10) || 40) / 3000;
+        const GW = 0.022, capW = 0.005, boxDepth = BH * 1.1;
+        const toColor = (v, fb) => {
+            if (!v) return fb;
+            try { return new THREE.Color(v).getHex(); } catch (_) { return fb; }
+        };
+        const cBox = toColor(p.color_box || p.main_color, 0xeeeeee);
+        const cSlat = toColor(p.color_slat || p.main_color, 0xdddddd);
+        const cTerminal = toColor(p.color_terminal || p.color_slat || p.main_color, 0xcccccc);
+        const cGuide = toColor(p.color_guide || p.main_color, 0x888888);
+        const cEndcap = toColor(p.color_endcap, 0x444444);
+        const cBrush = toColor(p.color_brush, 0x333333);
+        const cRope = toColor(p.color_rope, 0x555555);
+        const cShirit = toColor(p.color_shirit, 0x999999);
+        const cMotor = 0x224488;
+        const cSafety = toColor(p.color_safety, 0xff8800);
+
+        // Box (top)
+        const boxY = H / 2 - BH / 2;
+        const box = this._makeMesh(new THREE.BoxGeometry(W + GW * 2, BH, boxDepth), cBox);
+        box.position.set(0, boxY, 0);
+        t.group.add(box);
+        t.group.add(new THREE.LineSegments(
+            new THREE.EdgesGeometry(box.geometry),
+            new THREE.LineBasicMaterial({ color: 0x000000, opacity: 0.15, transparent: true })));
+
+        // Box endcaps (left/right)
+        const capL = this._makeMesh(new THREE.BoxGeometry(capW, BH, boxDepth + 0.002), cEndcap);
+        capL.position.set(-(W / 2 + GW + capW / 2), boxY, 0);
+        t.group.add(capL);
+        const capR = capL.clone(); capR.position.x = W / 2 + GW + capW / 2;
+        t.group.add(capR);
+
+        // Side guides (rails)
+        const slatStartY = boxY - BH / 2;
+        const guideH = slatStartY - (-H / 2);
+        const guideY = (-H / 2 + slatStartY) / 2;
+        const guideL = this._makeMesh(new THREE.BoxGeometry(GW, guideH, 0.025), cGuide);
+        guideL.position.set(-(W / 2 + GW / 2), guideY, 0);
+        t.group.add(guideL);
+        const guideR = guideL.clone(); guideR.position.x = W / 2 + GW / 2;
+        t.group.add(guideR);
+
+        // Brush at bottom of box (place where slats exit)
+        const brush = this._makeMesh(new THREE.BoxGeometry(W, 0.004, 0.018), cBrush);
+        brush.position.set(0, slatStartY - 0.002, 0);
+        t.group.add(brush);
+
+        // Terminal (bottom slat — debelijo от обикновените)
+        const terminalH = SH * 1.2;
+        const termY = -H / 2 + terminalH / 2;
+        const term = this._makeMesh(new THREE.BoxGeometry(W, terminalH, 0.018), cTerminal);
+        term.position.set(0, termY, 0);
+        t.group.add(term);
+
+        // Regular slats stacked between terminal-top и brush-bottom
+        const slatsAreaTop = slatStartY - 0.004;
+        const slatsAreaBot = termY + terminalH / 2;
+        const nSlats = Math.max(0, Math.floor((slatsAreaTop - slatsAreaBot) / SH));
+        for (let i = 0; i < nSlats; i++) {
+            const y = slatsAreaBot + i * SH + SH / 2;
+            const s = this._makeMesh(new THREE.BoxGeometry(W, SH * 0.92, 0.014), cSlat);
+            s.position.set(0, y, 0);
+            t.group.add(s);
+        }
+
+        // Control element (motor inside box / rope или shirit hanging)
+        if (p.control_type === "motor") {
+            const motor = this._makeMesh(
+                new THREE.CylinderGeometry(BH * 0.35, BH * 0.35, W * 0.15, 12),
+                cMotor);
+            motor.rotation.z = Math.PI / 2;
+            motor.position.set(W / 2 - W * 0.1, boxY, 0);
+            t.group.add(motor);
+            // safety badge (cylinder disc) — visual hint за motor_safety O-variant
+            const safety = this._makeMesh(
+                new THREE.CylinderGeometry(BH * 0.12, BH * 0.12, 0.005, 16),
+                cSafety);
+            safety.rotation.x = Math.PI / 2;
+            safety.position.set(W / 2 - W * 0.1, boxY, boxDepth / 2 + 0.003);
+            t.group.add(safety);
+        } else if (p.control_type === "rope") {
+            const rope = this._makeMesh(
+                new THREE.BoxGeometry(0.006, H * 0.4, 0.006), cRope);
+            rope.position.set(W / 2 + GW + 0.012, 0, 0.015);
+            t.group.add(rope);
+        } else if (p.control_type === "shirit") {
+            const shirit = this._makeMesh(
+                new THREE.BoxGeometry(0.012, H * 0.4, 0.002), cShirit);
+            shirit.position.set(W / 2 + GW + 0.014, 0, 0.015);
+            t.group.add(shirit);
+        }
+
+        // Multi-shutter separators (central endcaps между съседни щори)
+        const sc = parseInt(p.shutter_count, 10) || 1;
+        if (sc > 1) {
+            const cCentral = toColor(p.color_central_endcap, 0x666666);
+            const stepW = W / sc;
+            for (let i = 1; i < sc; i++) {
+                const x = -W / 2 + i * stepW;
+                const sep = this._makeMesh(
+                    new THREE.BoxGeometry(0.004, H * 0.95, 0.022),
+                    cCentral);
+                sep.position.set(x, 0, 0);
+                t.group.add(sep);
+            }
+        }
+
+        t.group.position.set(0, -H * 0.05, 0);
     }
 
     _buildBox() {
