@@ -38,7 +38,8 @@ class AccessContextBuilder(models.AbstractModel):
     def build_context(self, control_point, credential, signal_matrix, ts=None):
         """Main entry point. Returns dict готов за ZEN evaluate."""
         ts = ts or fields.Datetime.now()
-        prev_event = self._last_event_for_point(control_point, ts)
+        prev_event = self._last_event_for_point(
+            control_point, ts, credential=credential)
         direction, anomaly_hint = self._derive_direction(
             signal_matrix, prev_event, credential)
         perimeter = control_point.perimeter_id
@@ -87,16 +88,28 @@ class AccessContextBuilder(models.AbstractModel):
 
     # ── Stateful preprocessing (Python only — JDM не може) ──────────
     @api.model
-    def _last_event_for_point(self, control_point, ts):
-        """Search the most recent passage event for this point within
-        the prev-event window. Used by direction derivation."""
+    def _last_event_for_point(self, control_point, ts, credential=None):
+        """Search the most recent passage event на ниво PERIMETER
+        (всички control points в zone-та) за дадения credential. Multi-
+        door perimeter (напр. 2 врати на офис): влизане през Door A,
+        излизане през Door B → същата зона; prev_event трябва да се
+        намери дори да е на различна врата.
+
+        Fallback на same control_point ако perimeter не е set."""
         cutoff = ts - timedelta(seconds=_PREV_EVENT_WINDOW_SEC)
         Event = self.env["access.passage.event"].sudo()
-        return Event.search([
-            ("control_point_id", "=", control_point.id),
+        domain = [
             ("ts", ">=", cutoff),
             ("ts", "<", ts),
-        ], order="ts desc", limit=1)
+        ]
+        if control_point.perimeter_id:
+            domain.append(
+                ("perimeter_id", "=", control_point.perimeter_id.id))
+        else:
+            domain.append(("control_point_id", "=", control_point.id))
+        if credential:
+            domain.append(("credential_id", "=", credential.id))
+        return Event.search(domain, order="ts desc", limit=1)
 
     @api.model
     def _derive_direction(self, signal_matrix, prev_event, credential):
