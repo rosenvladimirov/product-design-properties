@@ -2,7 +2,7 @@
 <templates xml:space="preserve">
 
 <t t-name="sale_design_configurator.DesignConfiguratorDialog">
-    <Dialog title="'Design Configurator'" size="'lg'" footer="false">
+    <Dialog title="'Design Configurator'" size="'xl'" footer="false" contentClass="'o_design_configurator_modal'">
         <t t-if="state.loading">
             <div class="text-center py-5">
                 <i class="fa fa-spinner fa-spin fa-2x text-muted"/>
