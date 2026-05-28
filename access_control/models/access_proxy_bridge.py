@@ -103,12 +103,28 @@ class AccessProxyBridge(models.AbstractModel):
                     ctrl_id)
                 return
 
-            # 2. Resolve control point
+            # 2. Resolve control point — match по reader_no към
+            # external_reader_id (entry) или internal_reader_id (exit)
+            # за да диференцираме между doors на multi-door controllers
+            # (iCON130 = 2 doors × 2 readers, iCON180 = 4 doors).
             CP = self.env["access.control.point"].sudo()
-            control_point = CP.search([
-                ("controller_id", "=", controller.id),
-                ("active", "=", True),
-            ], limit=1)
+            reader_str = str(reader_no) if reader_no else False
+            control_point = False
+            if reader_str:
+                control_point = CP.search([
+                    ("controller_id", "=", controller.id),
+                    ("active", "=", True),
+                    "|",
+                    ("external_reader_id", "=", reader_str),
+                    ("internal_reader_id", "=", reader_str),
+                ], limit=1)
+            if not control_point:
+                # Fallback на първия cp (когато reader_id-та не са
+                # configured — single-door controllers).
+                control_point = CP.search([
+                    ("controller_id", "=", controller.id),
+                    ("active", "=", True),
+                ], limit=1)
             if not control_point:
                 _logger.warning(
                     "access_proxy_bridge: controller %s няма linked "
