@@ -32,10 +32,15 @@ class AccessControllerCalibration(models.TransientModel):
         "access.controller", required=True,
         domain=[("active", "=", True)],
         help="Controllers които ще калибрираш в тази обиколка.")
+    card_id = fields.Many2one(
+        "hr.rfid.card", string="Calibration Card",
+        domain=[("active", "=", True)], required=True,
+        help="Картата с която ще свайпваш по маршрута. Pick-нй "
+             "съществуваща card master запис — wizard филтрира "
+             "hr.rfid.event-те по нейния card_number.")
     card_number = fields.Char(
-        required=True,
-        help="Картата с която ще свайпваш по маршрута. Wizard "
-             "филтрира hr.rfid.event-те по този card_id.")
+        related="card_id.card_number", readonly=True, store=False,
+        help="Auto-derived от Calibration Card.")
 
     route_1_start = fields.Datetime(readonly=True)
     route_1_end = fields.Datetime(readonly=True)
