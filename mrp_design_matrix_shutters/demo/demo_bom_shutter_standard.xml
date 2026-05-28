@@ -172,20 +172,20 @@
          за definition-а → това е известна repo-wide demo крехкост (виж
          README „Known limitations"), НЕ специфична за този модул. -->
     <field name="design_param_definition_id"
-           ref="mrp_design_matrix_teolino_shutters.teolino_shutters"/>
+           ref="mrp_design_matrix_shutters.shutters"/>
     <field name="matrix_template_id"
-           ref="matrix_template_teolino_shutters"/>
+           ref="matrix_template_shutters"/>
     <field name="constraint_table" eval="
-        ref('matrix_template_teolino_shutters').constraint_table
+        ref('matrix_template_shutters').constraint_table
     "/>
     <field name="geometry_table" eval="
-        ref('matrix_template_teolino_shutters').geometry_table
+        ref('matrix_template_shutters').geometry_table
     "/>
     <field name="material_table" eval="
-        ref('matrix_template_teolino_shutters').material_table
+        ref('matrix_template_shutters').material_table
     "/>
     <field name="operation_table" eval="
-        ref('matrix_template_teolino_shutters').operation_table
+        ref('matrix_template_shutters').operation_table
     "/>
   </record>
 

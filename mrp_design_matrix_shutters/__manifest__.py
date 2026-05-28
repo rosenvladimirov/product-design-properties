@@ -20,6 +20,6 @@
         "data/matrix_templates.xml",
     ],
     "demo": [
-        "demo/demo_bom_teolino_standard.xml",
+        "demo/demo_bom_shutter_standard.xml",
     ],
 }

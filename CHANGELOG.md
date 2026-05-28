@@ -40,7 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Known issues (документирани, без resolve)
 
 - **T1 rules duplication**: `teolino_mrp_design_recompute._T1_RULES` (Python
-  dict) дублира `mrp_design_matrix_teolino_shutters/data/matrix_templates.xml`
+  dict) дублира `mrp_design_matrix_shutters/data/matrix_templates.xml`
   geometry_table. Single source-of-truth би било XML seed-ът, но prod-ът
   на teolinobisness.com има zen-engine pip package, който не работи (TBD
   causes). Дотогава Python hardcode е runtime fallback. **Drift риск**:

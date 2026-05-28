@@ -43,12 +43,12 @@
     <field name="name">Shutter Assembly</field>
     <field name="code">TEOASM</field>
   </record>
-  <record id="wc_teo_motor" model="mrp.workcenter">
+  <record id="wc_motor" model="mrp.workcenter">
     <field name="name">Motor Installation &amp; Programming</field>
     <field name="code">TEOMOT</field>
   </record>
 
-  <record id="matrix_template_teolino_shutters" model="mrp.matrix.template">
+  <record id="matrix_template_shutters" model="mrp.matrix.template">
     <field name="name">Roller Shutters — 5 models</field>
     <field name="industry">doors</field>
     <field name="description">T0: global L/H limits, per-model box family, Built-In no-box, feather-guide only Thermo, per-model shutter_count, H&gt;2800 warning.
@@ -161,7 +161,7 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
         стойността за двата ламела за да има точен ред).
         BoM формулите ползват тези изходи (slat_len_offset, terminal_offset,
         axis_off_40, axis_off_60, box_form_offset, slat_count_mode,
-        caps_mode, guide_mode) — виж demo_bom_teolino_standard.xml.
+        caps_mode, guide_mode) — виж demo_bom_shutter_standard.xml.
     -->
     <field name="geometry_table" eval="
         {
@@ -586,10 +586,10 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                     ],
                     'rules': [
                         {'control_type': '&quot;motor&quot;', 'shutter_model': '!= &quot;thermo_comfort&quot;',
-                         'workcenter_ref': '&quot;mrp_design_matrix_teolino_shutters.wc_teo_motor&quot;',
+                         'workcenter_ref': '&quot;mrp_design_matrix_shutters.wc_motor&quot;',
                          'name': '&quot;Motor Install &amp; Programming&quot;', 'duration_formula': '&quot;45&quot;'},
                         {'control_type': '&quot;motor&quot;', 'shutter_model': '&quot;thermo_comfort&quot;',
-                         'workcenter_ref': '&quot;mrp_design_matrix_teolino_shutters.wc_teo_motor&quot;',
+                         'workcenter_ref': '&quot;mrp_design_matrix_shutters.wc_motor&quot;',
                          'name': '&quot;Safety Motor Install, Programming &amp; Test&quot;', 'duration_formula': '&quot;60&quot;'}
                     ]
                 }

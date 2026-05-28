@@ -15,7 +15,7 @@
     с 17 заключени проби през 5-те модела).
 -->
 <records>
-    <properties code="teolino_shutters" name="Roller Shutter (5 models)"
+    <properties code="shutters" name="Roller Shutter (5 models)"
                 industry="doors" parent="base_dimensions">
 
         <!-- Кой от 5-те модела се произвежда. Драйвър за T0/T1. -->

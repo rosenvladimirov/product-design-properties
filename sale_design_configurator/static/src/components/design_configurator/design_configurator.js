@@ -577,7 +577,7 @@ export class DesignConfiguratorWidget extends Component {
     _hasLegacyShape() {
         const code = this.props.definitionCode;
         return ["bags", "security_door", "roller_door", "interior_door",
-                "corrugated", "teolino_shutters"].includes(code);
+                "corrugated", "shutters"].includes(code);
     }
 
     /**
@@ -1304,7 +1304,7 @@ export class DesignConfiguratorWidget extends Component {
         else if (code === "roller_door") this._buildRollerDoor();
         else if (code === "interior_door") this._buildInteriorDoor();
         else if (code === "corrugated") this._buildBox();
-        else if (code === "teolino_shutters") this._buildShutter();
+        else if (code === "shutters") this._buildShutter();
         else this._buildGenericBox();
     }
 
@@ -1405,9 +1405,9 @@ export class DesignConfiguratorWidget extends Component {
     }
 
     _buildShutter() {
-        // Roller shutter ("Щора Standard" и др. варианти от mrp_design_matrix_teolino_shutters).
+        // Roller shutter ("Щора Standard" и др. варианти от mrp_design_matrix_shutters).
         // Геометрия от долу нагоре: terminal slat → regular slats stack → brush → box (top).
-        // Параметри се четат от this.params (имената идват от teolino_shutters DPD set).
+        // Параметри се четат от this.params (имената идват от shutters DPD set).
         this._clearModel();
         const THREE = window.THREE; const t = this._three; const p = this.params;
         const W = (p.width || 1000) / 3000;
