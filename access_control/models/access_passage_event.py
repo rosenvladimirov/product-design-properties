@@ -30,6 +30,10 @@ class AccessPassageEvent(models.Model):
         "access.credential", index=True, ondelete="set null")
     subject_id = fields.Many2one(
         related="credential_id.subject_id", store=True, index=True)
+    employee_id = fields.Many2one(
+        "hr.employee",
+        related="subject_id.employee_id", store=True, index=True,
+        help="Employee derived от subject (за HR групиране в kanban/list).")
     perimeter_id = fields.Many2one(
         related="control_point_id.perimeter_id", store=True, index=True)
     controller_id = fields.Many2one(

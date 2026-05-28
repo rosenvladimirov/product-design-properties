@@ -16,6 +16,7 @@
                        optional="show"/>
                 <field name="credential_id" optional="show"/>
                 <field name="subject_id" optional="show"/>
+                <field name="employee_id" optional="show"/>
                 <field name="direction"/>
                 <field name="anomaly_hint" optional="show"/>
                 <field name="result"/>
@@ -44,6 +45,7 @@
                             <field name="perimeter_id"/>
                             <field name="credential_id"/>
                             <field name="subject_id"/>
+                            <field name="employee_id"/>
                         </group>
                         <group>
                             <field name="direction"/>
@@ -107,7 +109,10 @@
                                 </div>
                             </div>
                             <div class="mt-2 small text-muted">
-                                <field name="subject_id"/>
+                                <field name="employee_id"/>
+                                <span t-if="!record.employee_id.raw_value">
+                                    <field name="subject_id"/>
+                                </span>
                                 · <field name="result"/>
                             </div>
                         </div>
@@ -117,10 +122,72 @@
         </field>
     </record>
 
+    <!-- Search view — filters + groupby за HR review + анализ -->
+    <record id="view_access_passage_event_search" model="ir.ui.view">
+        <field name="name">access.passage.event.search</field>
+        <field name="model">access.passage.event</field>
+        <field name="arch" type="xml">
+            <search string="Passage Events">
+                <field name="subject_id"/>
+                <field name="employee_id"/>
+                <field name="perimeter_id"/>
+                <field name="control_point_id"/>
+                <field name="controller_id"/>
+                <field name="credential_id"/>
+                <field name="anomaly_hint"/>
+                <separator/>
+                <filter string="Accepted" name="filter_accept"
+                        domain="[('result','=','accept')]"/>
+                <filter string="Denied" name="filter_deny"
+                        domain="[('result','=','deny')]"/>
+                <filter string="Violations" name="filter_violation"
+                        domain="[('result','=','violation')]"/>
+                <separator/>
+                <filter string="Anomalies only" name="filter_anomaly"
+                        domain="[('anomaly_hint','!=',False)]"/>
+                <filter string="In" name="filter_in"
+                        domain="[('direction','=','in')]"/>
+                <filter string="Out" name="filter_out"
+                        domain="[('direction','=','out')]"/>
+                <separator/>
+                <filter string="Today" name="filter_today"
+                        domain="[('ts','&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0)))]"/>
+                <filter string="Yesterday" name="filter_yesterday"
+                        domain="[('ts','&gt;=', datetime.datetime.combine(context_today() - relativedelta(days=1), datetime.time(0,0,0))),
+                                 ('ts','&lt;',  datetime.datetime.combine(context_today(), datetime.time(0,0,0)))]"/>
+                <filter string="Last 7 days" name="filter_week"
+                        domain="[('ts','&gt;=', datetime.datetime.now() - relativedelta(days=7))]"/>
+                <group>
+                    <filter string="Employee" name="group_employee"
+                            context="{'group_by': 'employee_id'}"/>
+                    <filter string="Subject" name="group_subject"
+                            context="{'group_by': 'subject_id'}"/>
+                    <filter string="Perimeter" name="group_perimeter"
+                            context="{'group_by': 'perimeter_id'}"/>
+                    <filter string="Control Point" name="group_point"
+                            context="{'group_by': 'control_point_id'}"/>
+                    <filter string="Direction" name="group_direction"
+                            context="{'group_by': 'direction'}"/>
+                    <filter string="Result" name="group_result"
+                            context="{'group_by': 'result'}"/>
+                    <filter string="Anomaly" name="group_anomaly"
+                            context="{'group_by': 'anomaly_hint'}"/>
+                    <filter string="Hour" name="group_ts_hour"
+                            context="{'group_by': 'ts:hour'}"/>
+                    <filter string="Day" name="group_ts_day"
+                            context="{'group_by': 'ts:day'}"/>
+                    <filter string="Week" name="group_ts_week"
+                            context="{'group_by': 'ts:week'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
     <record id="action_access_passage_event" model="ir.actions.act_window">
         <field name="name">Passage Events</field>
         <field name="res_model">access.passage.event</field>
         <field name="view_mode">kanban,list,graph,pivot,form</field>
+        <field name="search_view_id" ref="view_access_passage_event_search"/>
     </record>
 
     <!-- Graph view: passage trend по час -->

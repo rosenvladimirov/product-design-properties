@@ -48,9 +48,52 @@
             </form>
         </field>
     </record>
+    <record id="view_access_violation_kanban" model="ir.ui.view">
+        <field name="name">access.violation.kanban</field>
+        <field name="model">access.violation</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="hr_review_state"
+                    default_order="ts desc"
+                    quick_create="false"
+                    class="o_kanban_small_column o_kanban_dashboard">
+                <field name="priority"/>
+                <field name="violation_type"/>
+                <field name="hr_review_state"/>
+                <field name="push_sent"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click p-2"
+                             t-attf-style="border-left: 4px solid {{record.priority.raw_value === 'critical' ? '#C0392B' : record.priority.raw_value === 'high' ? '#E67E22' : record.priority.raw_value === 'medium' ? '#F1C40F' : '#95A5A6'}};">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="flex-grow-1">
+                                    <strong>
+                                        <field name="violation_type"/>
+                                    </strong>
+                                    <div class="text-muted small">
+                                        <field name="ts"/>
+                                    </div>
+                                    <div class="small">
+                                        <field name="event_id"/>
+                                    </div>
+                                </div>
+                                <span t-attf-class="badge {{record.priority.raw_value === 'critical' ? 'text-bg-danger' : record.priority.raw_value === 'high' ? 'text-bg-warning' : record.priority.raw_value === 'medium' ? 'text-bg-info' : 'text-bg-secondary'}}">
+                                    <field name="priority"/>
+                                </span>
+                            </div>
+                            <div t-if="record.push_sent.raw_value"
+                                 class="mt-1 small text-success">
+                                ✓ Pushed
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
     <record id="action_access_violation" model="ir.actions.act_window">
         <field name="name">Violations</field>
         <field name="res_model">access.violation</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">kanban,list,form</field>
     </record>
 </odoo>
