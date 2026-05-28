@@ -181,14 +181,25 @@ class AccessProxyBridge(models.AbstractModel):
         except (TypeError, ValueError):
             reader_no = 0
 
-        # Default: odd → external, even → internal (iCON130 layout)
-        # Fallback: use control_point.external_reader_id ако е numeric.
-        if str(control_point.external_reader_id or "").endswith(str(reader_no)) \
-                or reader_no in (1, 3):
-            sm["external_reader"] = signal
-        elif str(control_point.internal_reader_id or "").endswith(str(reader_no)) \
-                or reader_no in (2, 4):
-            sm["internal_reader"] = signal
+        # Priority: ако cp.external_reader_id/internal_reader_id са set,
+        # тяхният config е source-of-truth (wiring varies per install).
+        # Fallback на heuristic (odd=external) само когато cp няма
+        # explicit mapping.
+        ext_id = (control_point.external_reader_id or "").strip()
+        int_id = (control_point.internal_reader_id or "").strip()
+        reader_str = str(reader_no)
+        if ext_id or int_id:
+            # Explicit cp config — use it strictly, no heuristic fallback
+            if ext_id and ext_id == reader_str:
+                sm["external_reader"] = signal
+            elif int_id and int_id == reader_str:
+                sm["internal_reader"] = signal
+        else:
+            # No cp config → heuristic fallback (1,3=external; 2,4=internal)
+            if reader_no in (1, 3):
+                sm["external_reader"] = signal
+            elif reader_no in (2, 4):
+                sm["internal_reader"] = signal
 
         if not is_denied:
             sm["magnet"] = "open"
