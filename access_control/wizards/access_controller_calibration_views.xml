@@ -10,6 +10,10 @@
                     <button name="action_generate_plan" type="object"
                             string="🧭 Generate Walk Plan" class="btn-secondary"
                             invisible="state != 'draft'"/>
+                    <button name="action_reverse_plan" type="object"
+                            string="🔄 Reverse Plan Order" class="btn-secondary"
+                            invisible="state != 'draft' or not plan_step_ids"
+                            help="Обърни реда на cp-тата — полезно за втора обиколка в обратна посока"/>
                     <button name="action_start_walk" type="object"
                             string="🚶 Start Walk" class="btn-primary"
                             invisible="state != 'draft'"/>
