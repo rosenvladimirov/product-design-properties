@@ -57,7 +57,10 @@ class SaleOrderLine(models.Model):
                 continue
 
             params = line._build_param_namespace()
-            result = bom._evaluate_cost_with_params(params)
+            result = bom._evaluate_cost_with_params(
+                params,
+                order_partner=line.order_id.partner_id or None,
+            )
             mat_markup = (tmpl.effective_material_markup_percent or 0.0) / 100.0
             lab_markup = (tmpl.effective_labor_markup_percent or 0.0) / 100.0
 
@@ -98,15 +101,25 @@ class SaleOrderLine(models.Model):
     def _render_breakdown_html(self, result, mat_markup, lab_markup):
         rows = []
         for ln in result["lines"]:
+            # Visual indent за recursed lines (phantom/semi-finished walk).
+            depth = len(ln.get("path") or [])
+            indent = "&nbsp;&nbsp;" * (depth * 2) if depth else ""
+            # Source badge: vendor / standard / child_bom
+            src = ln.get("price_source", "standard")
+            badge = {"vendor": "🏷", "standard": "📦", "child_bom": "🔗"}.get(src, "")
+            seller = ln.get("seller_name", "")
+            seller_html = f"<small class='text-muted'> · {seller}</small>" if seller else ""
             rows.append(
-                f"<tr><td>{ln['product_name']}</td>"
+                f"<tr><td>{indent}{badge} {ln['product_name']}{seller_html}</td>"
                 f"<td class='text-end'>{ln['qty']:.4f}</td>"
                 f"<td class='text-end'>{ln['unit_cost']:.4f}</td>"
                 f"<td class='text-end'>{ln['subtotal']:.2f}</td></tr>"
             )
         for op in result["operations"]:
+            depth = len(op.get("path") or [])
+            indent = "&nbsp;&nbsp;" * (depth * 2) if depth else ""
             rows.append(
-                f"<tr><td><i>{op['name']}</i></td>"
+                f"<tr><td>{indent}<i>{op['name']}</i></td>"
                 f"<td class='text-end'>{op['minutes']:.1f} min</td>"
                 f"<td class='text-end'>{op['rate_per_hour']:.2f}/h</td>"
                 f"<td class='text-end'>{op['subtotal']:.2f}</td></tr>"
