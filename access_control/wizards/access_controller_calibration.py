@@ -126,6 +126,20 @@ class AccessControllerCalibration(models.TransientModel):
                     state = "outside" if state == "inside" else "inside"
         return self._reload_form()
 
+    def action_reverse_plan(self):
+        """Обърни реда на cp-тата в plan-а. Полезно когато си направил
+        форвард walk (e.g. Door A entry → Door B exit) и сега искаш
+        втора обиколка в обратна посока (Door B entry → Door A exit)
+        за да попълниш missing reader_id-та."""
+        self.ensure_one()
+        steps = self.plan_step_ids.sorted("sequence")
+        if not steps:
+            raise UserError(_("Generate Walk Plan first."))
+        n = len(steps)
+        for i, step in enumerate(steps):
+            step.sequence = (n - i) * 10
+        return self._reload_form()
+
     def action_start_walk(self):
         self.ensure_one()
         self.walk_start = fields.Datetime.now()
