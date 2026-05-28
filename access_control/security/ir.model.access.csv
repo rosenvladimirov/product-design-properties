@@ -19,3 +19,4 @@ access_access_time_slot_user,access.time.slot user,model_access_time_slot,base.g
 access_access_time_slot_admin,access.time.slot admin,model_access_time_slot,base.group_system,1,1,1,1
 access_calibration_admin,access.controller.calibration admin,model_access_controller_calibration,base.group_system,1,1,1,1
 access_calibration_event_admin,access.controller.calibration.event admin,model_access_controller_calibration_event,base.group_system,1,1,1,1
+access_calibration_step_admin,access.controller.calibration.step admin,model_access_controller_calibration_step,base.group_system,1,1,1,1
