@@ -57,16 +57,16 @@
                     </group>
                     <notebook>
                         <page string="Signal Matrix" name="signal">
-                            <field name="signal_matrix" widget="ace"
-                                   options="{'mode': 'json'}" nolabel="1"/>
+                            <field name="signal_matrix" widget="json"
+                                   nolabel="1"/>
                         </page>
                         <page string="Context" name="context">
-                            <field name="context_in" widget="ace"
-                                   options="{'mode': 'json'}" nolabel="1"/>
+                            <field name="context_in" widget="json"
+                                   nolabel="1"/>
                         </page>
                         <page string="Result" name="result">
-                            <field name="result_out" widget="ace"
-                                   options="{'mode': 'json'}" nolabel="1"/>
+                            <field name="result_out" widget="json"
+                                   nolabel="1"/>
                         </page>
                         <page string="Violations" name="violations"
                               invisible="violation_count == 0">
