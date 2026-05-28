@@ -17,7 +17,8 @@
     "depends": ["mrp_design_matrix"],
     "data": [
         "data/install_design_params.xml",
-        "data/matrix_templates.xml",
+        "data/workcenters.xml",
+        "data/matrix_template_db_export.xml",
     ],
     "demo": [
         "demo/demo_bom_shutter_standard.xml",

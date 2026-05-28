@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Workcenters за shutter manufacturing flow. Споделят се между всичките
+    5 модела (Standard/Round/T-Roll/Built-In/Thermo Comfort). Reference-ват
+    се от matrix_template_shutters T3 (operation_table) и от BoM operations.
+-->
+<odoo noupdate="1">
+
+  <record id="wc_teo_cutting" model="mrp.workcenter">
+    <field name="name">Slat &amp; Profile Cutting</field>
+    <field name="code">TEOCUT</field>
+  </record>
+
+  <record id="wc_teo_assembly" model="mrp.workcenter">
+    <field name="name">Shutter Assembly</field>
+    <field name="code">TEOASM</field>
+  </record>
+
+  <record id="wc_motor" model="mrp.workcenter">
+    <field name="name">Motor Installation &amp; Programming</field>
+    <field name="code">TEOMOT</field>
+  </record>
+
+</odoo>
