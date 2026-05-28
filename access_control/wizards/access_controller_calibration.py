@@ -127,17 +127,68 @@ class AccessControllerCalibration(models.TransientModel):
         return self._reload_form()
 
     def action_reverse_plan(self):
-        """Обърни реда на cp-тата в plan-а. Полезно когато си направил
-        форвард walk (e.g. Door A entry → Door B exit) и сега искаш
-        втора обиколка в обратна посока (Door B entry → Door A exit)
-        за да попълниш missing reader_id-та."""
+        """Smart reverse: обръща ред на cp-та И re-derive-ва role-те
+        според starting_position. Полезно за втора обиколка в обратна
+        посока (за multi-door perimeter — попълва missing reader_ids).
+
+        Forward (start=outside): [A entry, B exit]
+        Reverse:                 [B entry, A exit]
+        """
         self.ensure_one()
         steps = self.plan_step_ids.sorted("sequence")
         if not steps:
             raise UserError(_("Generate Walk Plan first."))
-        n = len(steps)
-        for i, step in enumerate(steps):
-            step.sequence = (n - i) * 10
+        # Collect unique cp order, reversed
+        seen = []
+        for step in steps:
+            cp_id = step.control_point_id.id
+            if cp_id not in seen:
+                seen.append(cp_id)
+        reversed_cps = list(reversed(seen))
+        # Wipe + recreate с alternating roles от starting_position
+        self.plan_step_ids.unlink()
+        Step = self.env["access.controller.calibration.step"].sudo()
+        CP = self.env["access.control.point"].sudo()
+        seq = 10
+        state = self.starting_position
+        # Group reversed cp list по perimeter за same single-vs-multi
+        # door обработване като в action_generate_plan
+        by_perim = {}
+        cp_perim_order = []
+        for cp_id in reversed_cps:
+            cp = CP.browse(cp_id)
+            key = cp.perimeter_id.id or 0
+            if key not in by_perim:
+                by_perim[key] = []
+                cp_perim_order.append(key)
+            by_perim[key].append(cp)
+        for key in cp_perim_order:
+            group = by_perim[key]
+            if len(group) == 1:
+                cp = group[0]
+                Step.create({
+                    "wizard_id": self.id, "sequence": seq,
+                    "control_point_id": cp.id,
+                    "role": "exit" if state == "inside" else "entry",
+                })
+                seq += 10
+                state = "outside" if state == "inside" else "inside"
+                Step.create({
+                    "wizard_id": self.id, "sequence": seq,
+                    "control_point_id": cp.id,
+                    "role": "exit" if state == "inside" else "entry",
+                })
+                seq += 10
+                state = "outside" if state == "inside" else "inside"
+            else:
+                for cp in group:
+                    Step.create({
+                        "wizard_id": self.id, "sequence": seq,
+                        "control_point_id": cp.id,
+                        "role": "exit" if state == "inside" else "entry",
+                    })
+                    seq += 10
+                    state = "outside" if state == "inside" else "inside"
         return self._reload_form()
 
     def action_start_walk(self):
