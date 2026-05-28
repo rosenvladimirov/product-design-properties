@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_access_time_slot_list" model="ir.ui.view">
+        <field name="name">access.time.slot.list</field>
+        <field name="model">access.time.slot</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="slot_type"/>
+                <field name="hour_from" widget="float_time"/>
+                <field name="hour_to" widget="float_time"/>
+                <field name="weekday_mon" widget="boolean_toggle"/>
+                <field name="weekday_tue" widget="boolean_toggle"/>
+                <field name="weekday_wed" widget="boolean_toggle"/>
+                <field name="weekday_thu" widget="boolean_toggle"/>
+                <field name="weekday_fri" widget="boolean_toggle"/>
+                <field name="weekday_sat" widget="boolean_toggle"/>
+                <field name="weekday_sun" widget="boolean_toggle"/>
+                <field name="color" optional="hide"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_access_time_slot_form" model="ir.ui.view">
+        <field name="name">access.time.slot.form</field>
+        <field name="model">access.time.slot</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived"
+                            bg_color="bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Office hours"/></h1>
+                    </div>
+                    <group>
+                        <group string="Window">
+                            <field name="slot_type"/>
+                            <field name="hour_from" widget="float_time"/>
+                            <field name="hour_to" widget="float_time"
+                                   help="&gt; 24 = wrap полунощ (напр. 30 = 06:00 следващ ден)"/>
+                            <field name="tz"/>
+                            <field name="color" widget="color"/>
+                        </group>
+                        <group string="Validity">
+                            <field name="sequence"/>
+                            <field name="active" widget="boolean_toggle"/>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="company_id"
+                                   groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group string="Weekdays">
+                        <group>
+                            <field name="weekday_mon"/>
+                            <field name="weekday_tue"/>
+                            <field name="weekday_wed"/>
+                            <field name="weekday_thu"/>
+                        </group>
+                        <group>
+                            <field name="weekday_fri"/>
+                            <field name="weekday_sat"/>
+                            <field name="weekday_sun"/>
+                        </group>
+                    </group>
+                    <group string="Scope (празно = site-wide)">
+                        <field name="controller_ids" widget="many2many_tags"/>
+                        <field name="perimeter_ids" widget="many2many_tags"/>
+                    </group>
+                    <field name="notes"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_access_time_slot_kanban" model="ir.ui.view">
+        <field name="name">access.time.slot.kanban</field>
+        <field name="model">access.time.slot</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="slot_type" sample="1">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="slot_type"/>
+                <field name="hour_from"/>
+                <field name="hour_to"/>
+                <field name="color"/>
+                <field name="active"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>
+                                    <i class="fa fa-clock me-1 text-primary"/>
+                                    <field name="name"/>
+                                </strong>
+                                <div class="text-muted small">
+                                    <field name="hour_from" widget="float_time"/>
+                                    →
+                                    <field name="hour_to" widget="float_time"/>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge text-bg-info">
+                                    <field name="slot_type"/>
+                                </span>
+                                <div t-if="!record.active.raw_value" class="mt-1">
+                                    <span class="badge text-bg-danger">off</span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="action_access_time_slot" model="ir.actions.act_window">
+        <field name="name">Time Slots</field>
+        <field name="res_model">access.time.slot</field>
+        <field name="view_mode">kanban,list,form</field>
+    </record>
+
+    <!-- Menu under Settings → Access Control. Parent живее в legacy
+         hr_attendance_access_control module. -->
+    <menuitem id="menu_settings_time_slots"
+              name="Time Slots"
+              parent="hr_attendance_access_control.menu_settings_access_control"
+              action="action_access_time_slot"
+              sequence="30"/>
+
+</odoo>

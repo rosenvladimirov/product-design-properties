@@ -42,6 +42,12 @@ class AccessPassageEvent(models.Model):
         help="Virtual ac (hardware wrapper) — от кой контролер идва.")
     ts = fields.Datetime(required=True, default=fields.Datetime.now,
                          index=True)
+    time_slot_id = fields.Many2one(
+        "access.time.slot",
+        compute="_compute_time_slot", store=True, index=True,
+        help="Site/door time slot active при момента на event-а "
+             "(първи match по sequence — night shift, entry window, etc.). "
+             "За employee work hours виж resource.calendar (отделно).")
     direction = fields.Selection(
         [("in", "In"), ("out", "Out")],
         help="Derived от _derive_direction Python helper. None ако "
@@ -66,6 +72,21 @@ class AccessPassageEvent(models.Model):
     def _compute_violation_count(self):
         for rec in self:
             rec.violation_count = len(rec.violation_ids)
+
+    @api.depends("ts", "controller_id", "perimeter_id")
+    def _compute_time_slot(self):
+        TimeSlot = self.env["access.time.slot"].sudo()
+        for rec in self:
+            if not rec.ts:
+                rec.time_slot_id = False
+                continue
+            slots = TimeSlot.find_matching(
+                rec.ts,
+                controller=rec.controller_id or None,
+                perimeter=rec.perimeter_id or None,
+            )
+            # Първи match по sequence (slots са sorted в search)
+            rec.time_slot_id = slots[:1].id or False
 
     def name_get(self):
         return [(

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- Default seed: 4 site-wide time slots. Не дублират
+         resource.calendar (employee work hours); тук са door/site
+         политики. Operator може да edit-не / archive-ва. -->
+
+    <record id="time_slot_work_hours" model="access.time.slot">
+        <field name="name">Work Hours 09:00–18:00</field>
+        <field name="slot_type">work_hours</field>
+        <field name="hour_from">9.0</field>
+        <field name="hour_to">18.0</field>
+        <field name="weekday_mon" eval="True"/>
+        <field name="weekday_tue" eval="True"/>
+        <field name="weekday_wed" eval="True"/>
+        <field name="weekday_thu" eval="True"/>
+        <field name="weekday_fri" eval="True"/>
+        <field name="weekday_sat" eval="False"/>
+        <field name="weekday_sun" eval="False"/>
+        <field name="color">#27AE60</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="time_slot_lunch" model="access.time.slot">
+        <field name="name">Lunch Break 12:00–13:00</field>
+        <field name="slot_type">lunch</field>
+        <field name="hour_from">12.0</field>
+        <field name="hour_to">13.0</field>
+        <field name="weekday_mon" eval="True"/>
+        <field name="weekday_tue" eval="True"/>
+        <field name="weekday_wed" eval="True"/>
+        <field name="weekday_thu" eval="True"/>
+        <field name="weekday_fri" eval="True"/>
+        <field name="weekday_sat" eval="False"/>
+        <field name="weekday_sun" eval="False"/>
+        <field name="color">#F39C12</field>
+        <field name="sequence">5</field>
+    </record>
+
+    <record id="time_slot_night_shift" model="access.time.slot">
+        <field name="name">Night Shift 22:00–06:00</field>
+        <field name="slot_type">night_shift</field>
+        <field name="hour_from">22.0</field>
+        <field name="hour_to">30.0</field>
+        <field name="weekday_mon" eval="True"/>
+        <field name="weekday_tue" eval="True"/>
+        <field name="weekday_wed" eval="True"/>
+        <field name="weekday_thu" eval="True"/>
+        <field name="weekday_fri" eval="True"/>
+        <field name="weekday_sat" eval="True"/>
+        <field name="weekday_sun" eval="True"/>
+        <field name="color">#8E44AD</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="time_slot_entry_window" model="access.time.slot">
+        <field name="name">Entry Window 07:00–10:00</field>
+        <field name="slot_type">entry_window</field>
+        <field name="hour_from">7.0</field>
+        <field name="hour_to">10.0</field>
+        <field name="weekday_mon" eval="True"/>
+        <field name="weekday_tue" eval="True"/>
+        <field name="weekday_wed" eval="True"/>
+        <field name="weekday_thu" eval="True"/>
+        <field name="weekday_fri" eval="True"/>
+        <field name="weekday_sat" eval="False"/>
+        <field name="weekday_sun" eval="False"/>
+        <field name="color">#3498DB</field>
+        <field name="sequence">15</field>
+    </record>
+
+    <record id="time_slot_exit_window" model="access.time.slot">
+        <field name="name">Exit Window 17:00–20:00</field>
+        <field name="slot_type">exit_window</field>
+        <field name="hour_from">17.0</field>
+        <field name="hour_to">20.0</field>
+        <field name="weekday_mon" eval="True"/>
+        <field name="weekday_tue" eval="True"/>
+        <field name="weekday_wed" eval="True"/>
+        <field name="weekday_thu" eval="True"/>
+        <field name="weekday_fri" eval="True"/>
+        <field name="weekday_sat" eval="False"/>
+        <field name="weekday_sun" eval="False"/>
+        <field name="color">#E74C3C</field>
+        <field name="sequence">16</field>
+    </record>
+
+</odoo>
