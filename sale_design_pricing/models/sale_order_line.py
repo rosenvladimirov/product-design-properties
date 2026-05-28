@@ -139,72 +139,7 @@ class SaleOrderLine(models.Model):
     def _compute_price_unit(self):
         return super()._compute_price_unit()
 
-    # ── Auto-regenerate line.name after every design lot save ─────────────
-    # User-facing description on the SO line must reflect the LATEST lot
-    # params so customer-facing docs (quote/invoice) are correct.  Without
-    # this hook, line.name stays frozen at whatever was set when the line
-    # was first created (usually just the product name).
-
-    def set_design_lot(self, lot_id):
-        res = super().set_design_lot(lot_id)
-        try:
-            self._teolino_refresh_design_description()
-        except Exception:
-            # Never break lot save because of description rendering
-            import logging
-            logging.getLogger(__name__).exception(
-                "Failed to refresh design description on line %s", self.id,
-            )
-        return res
-
-    def _teolino_refresh_design_description(self):
-        """Rebuild line.name from product display name + bullet list of
-        current lot design_params.  Skips use_main sentinels and color_X
-        rows that match main_color.  When teolino_per_shutter_dims is set
-        (sc>1), replaces the single Width/Height rows with a per-panel
-        line: '• Размери: Щ.1 1000×2000, Щ.2 800×2500'."""
-        for line in self:
-            if not line.design_lot_id or not line.product_id:
-                continue
-            lot = line.design_lot_id
-            rich = lot.read(["design_params"])[0].get("design_params") or []
-            # First pass: index by name + grab main_color resolved value
-            main_color_val = None
-            for prop in rich:
-                if isinstance(prop, dict) and prop.get("name") == "main_color":
-                    main_color_val = prop.get("value")
-                    break
-            # Per-shutter pairs (replaces flat Width/Height when present)
-            per_pairs = []
-            if hasattr(lot, "teolino_get_per_shutter_pairs"):
-                per_pairs = lot.teolino_get_per_shutter_pairs()
-            skip_flat_dims = bool(per_pairs)
-            parts = [line.product_id.display_name]
-            if skip_flat_dims:
-                pretty = ", ".join(
-                    f"Щ.{i+1} {int(L)}×{int(H)}" for i, (L, H) in enumerate(per_pairs)
-                )
-                parts.append(f"• Размери: {pretty}")
-            for prop in rich:
-                if not isinstance(prop, dict):
-                    continue
-                value = prop.get("value")
-                if value in (None, False, "", "use_main"):
-                    continue
-                name = prop.get("name") or ""
-                label = prop.get("string") or name
-                if not label:
-                    continue
-                # Skip per-component color rows that match main_color —
-                # they're redundant noise on the quote/invoice.
-                if name.startswith("color_") and main_color_val and value == main_color_val:
-                    continue
-                # Skip flat Width/Height when we already rendered per-shutter dims.
-                if skip_flat_dims and label in ("Width (mm)", "Height (mm)", "Thickness (mm)"):
-                    continue
-                # Selection: prefer human label over raw value
-                if prop.get("type") == "selection":
-                    sel = dict(prop.get("selection") or [])
-                    value = sel.get(value, value)
-                parts.append(f"• {label}: {value}")
-            line.name = "\n".join(parts)
+    # Customer-specific UX hooks (line.name auto-refresh от design params,
+    # per-shutter dims pretty print и т.н.) се override-ват в clientski
+    # модули — виж teolino_mrp_design_recompute/models/sale_order_line.py
+    # за Teolino-specific implementation.

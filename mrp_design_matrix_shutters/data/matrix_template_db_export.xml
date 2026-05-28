@@ -3,7 +3,6 @@
      Source of truth за shutter параметричната матрица — пълни 8 DMN таблици. -->
 <odoo>
   <data>
-
     <record id="matrix_template_shutters" model="mrp.matrix.template">
       <field name="name">Roller Shutters — 5 models</field>
       <field name="industry_id" ref="design_param_base.industry_doors"/>
@@ -11,7 +10,6 @@
 T1: per-model slat/terminal/axis/box offsets + slat-count mode + caps mode + guide mode (keyed on shutter_model + slat_size).
 T2: O-variant kits — rope / shirit / motor (standard) / motor_safety (Thermo with safety profile) / feather guide.
 T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
-
       <field name="constraint_table" eval="            {
                 "nodes": [
                     {
@@ -386,7 +384,6 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                     }
                 ]
             }"/>
-
       <field name="geometry_table" eval="            {
                 "nodes": [
                     {
@@ -565,7 +562,6 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                     }
                 ]
             }"/>
-
       <field name="material_table" eval="            {
                 "nodes": [
                     {
@@ -639,7 +635,6 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                     }
                 ]
             }"/>
-
       <field name="operation_table" eval="            {
                 "nodes": [
                     {
@@ -652,14 +647,14 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                                     "name": "\"Motor Install &amp; Programming\"",
                                     "control_type": "\"motor\"",
                                     "shutter_model": "!= \"thermo_comfort\"",
-                                    "workcenter_ref": "\"mrp_design_matrix_teolino_shutters.wc_teo_motor\"",
+                                    "workcenter_ref": "\"mrp_design_matrix_shutters.wc_motor\"",
                                     "duration_formula": "\"45\""
                                 },
                                 {
                                     "name": "\"Safety Motor Install, Programming &amp; Test\"",
                                     "control_type": "\"motor\"",
                                     "shutter_model": "\"thermo_comfort\"",
-                                    "workcenter_ref": "\"mrp_design_matrix_teolino_shutters.wc_teo_motor\"",
+                                    "workcenter_ref": "\"mrp_design_matrix_shutters.wc_motor\"",
                                     "duration_formula": "\"60\""
                                 }
                             ],
@@ -692,17 +687,11 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                     }
                 ]
             }"/>
-
       <field name="availability_table" eval="            null"/>
-
       <field name="cascade_table" eval="            null"/>
-
       <field name="layout_table" eval="            null"/>
-
       <field name="multiplicity_table" eval="            null"/>
-
       <field name="lookup_tables" eval="            null"/>
     </record>
-
   </data>
 </odoo>

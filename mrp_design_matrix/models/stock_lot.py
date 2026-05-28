@@ -19,9 +19,9 @@ class StockLot(models.Model):
     # + per-instance params = [width, height]" → тук съхраняваме N entries
     # под формата [{width: L1, height: H1, ...}, ...]. Generic structure —
     # workable за всеки multi-instance design (multi-shutter, multi-door,
-    # multi-shelf). Заменя `teolino_per_shutter_dims` Char (deprecated в
-    # sale_design_pricing 1.2.x; виж stock_lot.teolino_get_per_shutter_pairs
-    # помощник за backward-compat read).
+    # multi-shelf). Customer-specific legacy helpers (например
+    # `teolino_get_per_shutter_pairs` от teolino_mrp_design_recompute) се
+    # ползват като fallback ако modul-ът присъства (виж hasattr check долу).
 
     multi_instance_data = fields.Json(
         "Multi-Instance Data",
@@ -45,9 +45,9 @@ class StockLot(models.Model):
             прави lookup в реда: param_key, lowercase, snake_case fallback.
 
         Backward compat: ако multi_instance_data е празно AND lot има
-        `teolino_get_per_shutter_pairs` method (от sale_design_pricing) AND
-        per_instance_params покрива ['width', 'height'] (или
-        equivalent) → fallback на legacy parser.
+        `teolino_get_per_shutter_pairs` method (от teolino_mrp_design_recompute,
+        ако е installed) AND per_instance_params покрива ['width', 'height']
+        (или equivalent) → fallback на legacy parser.
         """
         self.ensure_one()
         data = self.multi_instance_data
