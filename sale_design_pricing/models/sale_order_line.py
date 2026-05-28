@@ -99,6 +99,11 @@ class SaleOrderLine(models.Model):
         return ns
 
     def _render_breakdown_html(self, result, mat_markup, lab_markup):
+        # T0 messages (constraints from matrix template) — show as banner.
+        t0_html = ""
+        for msg in (result.get("t0_messages") or []):
+            css = "alert-danger" if msg.get("level") == "error" else "alert-warning"
+            t0_html += f"<div class='alert {css} p-1 mb-1'>{msg.get('message','')}</div>"
         rows = []
         for ln in result["lines"]:
             # Visual indent за recursed lines (phantom/semi-finished walk).
@@ -129,6 +134,7 @@ class SaleOrderLine(models.Model):
         labor_total = result["labor_cost"] * (1.0 + lab_markup)
         total = material_total + labor_total
         return Markup(
+            f"{t0_html}"
             "<table class='table table-sm'>"
             "<thead><tr><th>Item</th><th class='text-end'>Qty</th>"
             "<th class='text-end'>Unit</th><th class='text-end'>Subtotal</th></tr></thead>"
