@@ -23,6 +23,15 @@
     min-height: 480px;
 }
 
+/* Когато няма съдържание за viewport-а (no 3D / no SVG / no legacy shape /
+   no matrix tables) — скриваме right column и параметрите заемат full width. */
+.o_design_configurator.o_no_viewport {
+    grid-template-columns: 1fr;
+}
+.o_design_configurator.o_no_viewport .o_cfg_viewport {
+    display: none;
+}
+
 .o_cfg_panel {
     border-right: 1px solid var(--color-border-primary, #dee2e6);
     display: flex;

@@ -2,7 +2,7 @@
 <templates xml:space="preserve">
 
 <t t-name="sale_design_configurator.DesignConfiguratorWidget">
-    <div class="o_design_configurator">
+    <div t-att-class="'o_design_configurator' + (hasViewport ? '' : ' o_no_viewport')">
 
         <!-- Left panel: parameters -->
         <div class="o_cfg_panel">

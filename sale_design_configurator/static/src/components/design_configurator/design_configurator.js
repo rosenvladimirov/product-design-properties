@@ -549,24 +549,46 @@ export class DesignConfiguratorWidget extends Component {
      * Show RuleMatrixPreview instead of 3D canvas when:
      * - No 3D models (GLB) — neither on main product nor in BoM components
      * - No SVG profiles
+     * - No legacy shape builder (_buildBag, _buildShutter, etc.)
      * - At least one matrix table exists
      */
     get showRulePreview() {
-        const mainAssets = this.props.mainProductAssets || {};
-        const hasMain3D = (mainAssets.models_3d || []).length > 0;
-        const hasBom3D = (this.props.bomAssets || []).some(
-            comp => (comp.assets?.models_3d || []).length > 0
-        );
-        const has3D = hasMain3D || hasBom3D;
-        const hasSVG = (this.props.profiles || []).length > 0
-            && this.props.profiles[0]?.svg_content;
+        if (this._hasViewportAssets() || this._hasLegacyShape()) return false;
         const hasMatrix = !!(
             this.props.constraintTable ||
             this.props.geometryTable ||
             this.props.materialTable ||
             this.props.operationTable
         );
-        return !has3D && !hasSVG && hasMatrix;
+        return hasMatrix;
+    }
+
+    _hasViewportAssets() {
+        const mainAssets = this.props.mainProductAssets || {};
+        const hasMain3D = (mainAssets.models_3d || []).length > 0;
+        const hasBom3D = (this.props.bomAssets || []).some(
+            comp => (comp.assets?.models_3d || []).length > 0
+        );
+        const hasSVG = (this.props.profiles || []).length > 0
+            && this.props.profiles[0]?.svg_content;
+        return hasMain3D || hasBom3D || hasSVG;
+    }
+
+    _hasLegacyShape() {
+        const code = this.props.definitionCode;
+        return ["bags", "security_door", "roller_door", "interior_door",
+                "corrugated", "teolino_shutters"].includes(code);
+    }
+
+    /**
+     * Cтиснат grid layout — скрива right column когато viewport panel-ът
+     * няма какво да показва (no 3D, no SVG, no legacy shape, no matrix
+     * tables). Параметрите тогава заемат пълната широчина.
+     */
+    get hasViewport() {
+        return this._hasViewportAssets()
+            || this._hasLegacyShape()
+            || this.showRulePreview;
     }
 
     // ── User interaction ────────────────────────────────────────────────
