@@ -19,10 +19,13 @@ from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
 
-# Window in seconds: за разпознаване на consecutive events (tailgating,
-# exit_without_entry). Намалявa чрез property/system parameter ако нужно.
+# Window in seconds:
+#   _TAILGATE_WINDOW_SEC — двойно swipе в твърде кратко време = tailgating
+#   _PREV_EVENT_WINDOW_SEC — search window за prev event на perimeter
+#       (за exit_without_entry derivation). Трябва ≥ workday за да
+#       allow check-in сутрин → check-out вечерта. 12h по подразбиране.
 _TAILGATE_WINDOW_SEC = 3
-_PREV_EVENT_WINDOW_SEC = 10
+_PREV_EVENT_WINDOW_SEC = 43200  # 12 hours
 _HELD_THRESHOLD_SEC = 30
 
 
