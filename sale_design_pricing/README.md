@@ -182,9 +182,19 @@ description rendering, BoM line condition):
 
 ---
 
-## Граници (известни ограничения)
+## Implemented (v18.0.1.3+)
 
-1. **Един BoM, текущи lines** — `_evaluate_cost_with_params` не разглежда matrix template T2/T3 conditional materials/operations. Само текущите bom_line_ids/operation_ids. За пълен matrix-driven cost: customer override (виж `teolino_mrp_design_recompute.mrp_bom.simulate_with_params`).
-2. **`standard_price` за продукта** — реалния cost. Не support purchase price list или supplier-aware costing. За кост базиран на supplier prices — extend `_evaluate_cost_with_params`.
-3. **`time_cycle` фиксиран** — operation time не е параметричен. Conditional times са в TM T3 operation_table, но не в текущия simple engine.
-4. **Loss factor** — фиксиран на ниво BoM line. Conditional waste по design params: TM rule rewriting.
+1. ✅ **Vendor pricing** — `_select_seller(quantity, uom_id, date, partner_id)` с min_qty rules + UoM/currency conversion. Fallback на standard_price.
+2. ✅ **Recursive BoM walk** — phantom (explode) + semi-finished (recurse със same params). Max depth 10, cycle guard.
+3. ✅ **Matrix Template (T0-T3) integration** когато `bom.matrix_template_id` is set:
+   - T0 → audit messages (showing като alert banners в HTML breakdown)
+   - T1 → enrich params namespace с derived context vars
+   - T2 → coefficient lookup (per `matrix_coeff_rule`) + ad-hoc product rows (XMLID/PTAV/direct id)
+   - T3 → conditional workorders (заменя self.operation_ids)
+4. ✅ **Per-customer pricing** — SO `order_id.partner_id` → `_select_seller` за customer-specific supplierinfo.
+
+## Граници (оставащи)
+
+1. **`time_cycle` от T3** — duration се чете директно. Ако TM rule връща formula expression (не number), не се evaluate-ва. Бъдещо: support `safe_eval` за T3 duration string.
+2. **Loss factor** — фиксиран на ниво BoM line. Conditional waste по design params (TM rule-driven loss) не се прилага.
+3. **TΩ Multiplicity** — multi-instance loop (например per-shutter eval) не е integrate-нат в pricing engine. Тoзи job-а е override-нат от `teolino_mrp_design_recompute.mrp_bom.simulate_with_params` за Teolino.
