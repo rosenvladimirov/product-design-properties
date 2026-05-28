@@ -69,12 +69,17 @@ class AccessControllerCalibration(models.TransientModel):
     # ── Actions ───────────────────────────────────────────────────────
 
     def action_generate_plan(self):
-        """Auto-populate plan_step_ids: за всеки cp на избраните controllers,
-        генерирай 2 steps (entry + exit) според starting_position.
+        """Auto-populate plan_step_ids — group_by_perimeter:
 
-        Default order: ако start=inside → first step е 'exit', after е 'entry'
-        (за same cp ако single-door, или alternating ако multi-door).
-        Operator може да reorder/edit / delete steps."""
+        Per perimeter:
+        - 1-cp (single-door): 2 steps на същия cp — exit+entry или
+          entry+exit според starting_position (роlята flip-ва между двата).
+        - 2+ cp (multi-door): 1 step per cp — alternating роли. На
+          starting=outside първият cp е entry, следващият exit, etc.
+          Логика: всеки swipe пресича perimeter boundary → state flip.
+
+        Cross-perimeter sequences (когато избраните controllers са на
+        различни perimeters) gets flat list — user reorder ако трябва."""
         self.ensure_one()
         if not self.controller_ids:
             raise UserError(_("Pick controllers first."))
@@ -84,29 +89,41 @@ class AccessControllerCalibration(models.TransientModel):
         cps = CP.search([
             ("controller_id", "in", self.controller_ids.ids),
             ("active", "=", True),
-        ], order="controller_id, name")
+        ], order="perimeter_id, controller_id, name")
+        # Group by perimeter
+        by_perimeter = {}
+        for cp in cps:
+            by_perimeter.setdefault(cp.perimeter_id.id or 0, []).append(cp)
         seq = 10
         state = self.starting_position
-        for cp in cps:
-            # First role зависи от текущо state
-            role = "exit" if state == "inside" else "entry"
-            Step.create({
-                "wizard_id": self.id,
-                "sequence": seq,
-                "control_point_id": cp.id,
-                "role": role,
-            })
-            seq += 10
-            # Flip state — следващ step (return) става opposite role на същия cp
-            state = "outside" if state == "inside" else "inside"
-            Step.create({
-                "wizard_id": self.id,
-                "sequence": seq,
-                "control_point_id": cp.id,
-                "role": "exit" if state == "inside" else "entry",
-            })
-            seq += 10
-            state = "outside" if state == "inside" else "inside"
+        for perim_id, perim_cps in by_perimeter.items():
+            if len(perim_cps) == 1:
+                # Single-door perimeter: 2 steps на same cp
+                cp = perim_cps[0]
+                first_role = "exit" if state == "inside" else "entry"
+                Step.create({
+                    "wizard_id": self.id, "sequence": seq,
+                    "control_point_id": cp.id, "role": first_role,
+                })
+                seq += 10
+                state = "outside" if state == "inside" else "inside"
+                Step.create({
+                    "wizard_id": self.id, "sequence": seq,
+                    "control_point_id": cp.id,
+                    "role": "exit" if state == "inside" else "entry",
+                })
+                seq += 10
+                state = "outside" if state == "inside" else "inside"
+            else:
+                # Multi-door perimeter: 1 step per cp, alternating
+                for cp in perim_cps:
+                    role = "exit" if state == "inside" else "entry"
+                    Step.create({
+                        "wizard_id": self.id, "sequence": seq,
+                        "control_point_id": cp.id, "role": role,
+                    })
+                    seq += 10
+                    state = "outside" if state == "inside" else "inside"
         return self._reload_form()
 
     def action_start_walk(self):
