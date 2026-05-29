@@ -51,6 +51,12 @@ class AccessCredential(models.Model):
         "hr.employee", string="Holder",
         related="subject_id.employee_id", readonly=False, store=True,
         help="Employee holder (when holder_kind = employee).")
+    department_id = fields.Many2one(
+        "hr.department",
+        related="holder_employee_id.department_id",
+        store=True, readonly=True,
+        help="Department of the employee holder (auto-derived). Used to "
+             "auto-populate perimeter_ids from department defaults.")
 
     @api.depends("subject_id", "subject_id.employee_id",
                  "subject_id.partner_id", "holder_partner_id")
@@ -63,6 +69,19 @@ class AccessCredential(models.Model):
                 rec.holder_kind = "visitor"
             else:
                 rec.holder_kind = False
+
+    @api.onchange("holder_employee_id")
+    def _onchange_employee_load_dept_perimeters(self):
+        """When employee picked → append department's default perimeters
+        to perimeter_ids (append-only — existing perimeters kept)."""
+        if not self.holder_employee_id:
+            return
+        dept_perimeters = self.holder_employee_id.department_id.perimeter_ids
+        if not dept_perimeters:
+            return
+        union = set(self.perimeter_ids.ids) | set(dept_perimeters.ids)
+        if union != set(self.perimeter_ids.ids):
+            self.perimeter_ids = [(6, 0, list(union))]
 
     @api.onchange("perimeter_ids")
     def _onchange_perimeter_populate_controllers(self):
@@ -90,6 +109,7 @@ class AccessCredential(models.Model):
     def create(self, vals_list):
         records = super().create(vals_list)
         records._auto_link_subject()
+        records._sync_perimeters_from_department()
         records._sync_controllers_from_perimeters()
         return records
 
@@ -97,9 +117,25 @@ class AccessCredential(models.Model):
         res = super().write(vals)
         if "holder_partner_id" in vals and "subject_id" not in vals:
             self._auto_link_subject()
+        if "holder_employee_id" in vals or "subject_id" in vals:
+            self._sync_perimeters_from_department()
         if "perimeter_ids" in vals:
             self._sync_controllers_from_perimeters()
         return res
+
+    def _sync_perimeters_from_department(self):
+        """Append-only: add department's default perimeters to credential.
+        Backend version (write hook); UI is handled by onchange."""
+        for rec in self:
+            if not rec.holder_employee_id \
+                    or not rec.holder_employee_id.department_id:
+                continue
+            dept_perims = rec.holder_employee_id.department_id.perimeter_ids
+            if not dept_perims:
+                continue
+            union = set(rec.perimeter_ids.ids) | set(dept_perims.ids)
+            if union != set(rec.perimeter_ids.ids):
+                rec.perimeter_ids = [(6, 0, list(union))]
 
     def _sync_controllers_from_perimeters(self):
         """Backend version на _onchange_perimeter_populate_controllers —
