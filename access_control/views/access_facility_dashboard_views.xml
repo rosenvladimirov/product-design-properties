@@ -7,15 +7,13 @@
         <field name="inherit_id"
                ref="hr_attendance_access_control_site_map.view_access_facility_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//sheet" position="before">
-                <header>
-                    <button name="action_view_site_svg" type="object"
-                            string="🗺 Live Map" class="btn-primary"
-                            icon="fa-map"/>
-                    <button name="%(action_access_dashboard_url)d"
-                            type="action" string="📊 Dashboard"
-                            class="btn-secondary"/>
-                </header>
+            <xpath expr="//header" position="inside">
+                <button name="action_view_site_svg" type="object"
+                        string="Live Map" class="btn-primary"
+                        icon="fa-map"/>
+                <button name="%(action_access_dashboard_url)d"
+                        type="action" string="Dashboard"
+                        class="btn-secondary"/>
             </xpath>
         </field>
     </record>
