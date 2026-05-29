@@ -39,18 +39,10 @@
                     </group>
                     <notebook>
                         <page string="Parameter Definitions" name="param_definitions">
-                            <field
-                                name="design_params_definition"
-                                widget="ace"
-                                options="{'mode': 'json'}"
-                            />
+                            <field name="design_params_definition" />
                         </page>
                         <page string="Validation Rules" name="validation_rules">
-                            <field
-                                name="validation_rules"
-                                widget="ace"
-                                options="{'mode': 'json'}"
-                            />
+                            <field name="validation_rules" widget="json" />
                         </page>
                         <page string="SVG Profiles" name="svg_profiles">
                             <field name="profile_ids">
@@ -74,7 +66,7 @@
                                     </group>
                                     <notebook>
                                         <page string="SVG Content" name="svg_content">
-                                            <field name="svg_content" widget="ace" options="{'mode': 'xml'}" />
+                                            <field name="svg_content" widget="text" />
                                         </page>
                                         <page string="Profile Definition" name="profile_definition">
                                             <field name="profile_definition" widget="json" />
