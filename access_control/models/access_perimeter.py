@@ -24,39 +24,39 @@ class AccessPerimeter(models.Model):
     name = fields.Char(required=True, translate=True)
     code = fields.Char(
         required=True, index=True,
-        help="Уникален код за програмен достъп (e.g. 'office_main', "
+        help="Unique code for programmatic access (e.g. 'office_main', "
              "'warehouse_dock_3'). Уникален в рамките на company.")
     sequence = fields.Integer(default=10)
     parent_id = fields.Many2one(
         "access.perimeter", string="Parent", ondelete="restrict",
         index=True,
-        help="Вложен периметър. Влизане в дъщерен може да изисква "
+        help="Nested perimeter. Entry to a child may require "
              "присъствие в родителя (requires_parent_presence).")
     parent_path = fields.Char(index=True)
     child_ids = fields.One2many("access.perimeter", "parent_id",
                                  string="Children")
     requires_parent_presence = fields.Boolean(
         default=False,
-        help="Ако ON: за да влезе субект тук, трябва да е настоящ в "
+        help="If ON: to enter, a subject must currently be present in "
              "parent perimeter (occupancy.state='inside'). "
              "ZEN A1 контекст: 'requires_parent_presence' + 'parent_present'.")
     enforcement = fields.Selection(
         [("soft", "Soft (advisory)"), ("strict", "Strict (block on violation)")],
         default="soft", required=True,
-        help="Soft = нарушение се логва + push, но не блокира; "
+        help="Soft = violation is logged + push, but not blocked; "
              "Strict = denied + violation запис. Виж спека: fail-safe "
              "изход — никога не заключвай човек вътре.")
     calendar_id = fields.Many2one(
         "resource.calendar", string="Schedule",
-        help="Темпорален прозорец. Празно = 24/7. Стандартен Odoo "
+        help="Temporal window. Empty = 24/7. Standard Odoo "
              "resource.calendar — позволява тих час/работни смени.")
     tolerance_minutes = fields.Integer(
         default=15, required=True,
-        help="Мек tolerance window извън calendar (минути). 0 = строго.")
+        help="Soft tolerance window outside the calendar (minutes). 0 = strict.")
     zen_table_id = fields.Many2one(
         "zen.decision.table", string="ZEN Decision Table",
         domain="[('domain', '=', 'access')]",
-        help="Override на default access decision graph за тoзи периметър. "
+        help="Override of the default access decision graph for this perimeter. "
              "Празно = използва default 'access_default' table.")
     company_id = fields.Many2one(
         "res.company", default=lambda s: s.env.company, index=True,
@@ -97,10 +97,10 @@ class AccessPerimeter(models.Model):
     # Smart button counts
     occupancy_inside_count = fields.Integer(
         compute="_compute_perimeter_stats",
-        help="Текущо вътре в перимitter-а.")
+        help="Currently inside the perimeter.")
     passage_today_count = fields.Integer(
         compute="_compute_perimeter_stats",
-        help="Брой passage events за днес.")
+        help="Passage events count for today.")
 
     @api.depends_context("uid")
     def _compute_perimeter_stats(self):

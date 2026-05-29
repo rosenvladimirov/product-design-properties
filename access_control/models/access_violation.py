@@ -42,12 +42,12 @@ class AccessViolation(models.Model):
     priority = fields.Selection(_PRIORITY, default="medium", required=True,
                                  index=True)
     push_sent = fields.Boolean(default=False,
-        help="Дали push notification е изпратен на охраната.")
+        help="Whether push notification was sent to security.")
     hr_review_state = fields.Selection(
         _HR_REVIEW, default="none", required=True, index=True)
     hr_attendance_id = fields.Many2one(
         "hr.attendance", ondelete="set null",
-        help="Linked attendance entry ако violation е изисквала ръчно "
+        help="Linked attendance entry when the violation required manual "
              "създаване (HR review marker).")
     notes = fields.Text()
     company_id = fields.Many2one(

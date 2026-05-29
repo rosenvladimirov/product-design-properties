@@ -49,7 +49,7 @@ class AccessAttendanceLog(models.Model):
     exit_ts = fields.Datetime(index=True)
     duration_minutes = fields.Float(
         compute="_compute_duration", store=True, digits=(10, 2),
-        help="Минути между entry_ts и exit_ts. NULL ако exit_ts е празен "
+        help="Minutes between entry_ts and exit_ts. NULL when exit_ts is empty "
              "(субектът още е вътре).")
     duration_hhmm = fields.Char(compute="_compute_duration")
     state = fields.Selection(
@@ -57,7 +57,7 @@ class AccessAttendanceLog(models.Model):
         compute="_compute_state", store=True, index=True)
     timezone = fields.Char(
         string="Timezone",
-        help="Resolved IANA TZ name (Europe/Sofia и т.н.) — snapshot "
+        help="Resolved IANA TZ name (Europe/Sofia etc.) — snapshot "
              "at entry time. Used за local-time reporting.")
     entry_local = fields.Char(
         compute="_compute_local_times", store=False,
@@ -178,7 +178,7 @@ class HrEmployee(models.Model):
         compute="_compute_access_attendance_log_count")
     access_attendance_total_minutes = fields.Float(
         compute="_compute_access_attendance_log_count",
-        help="Общо минути присъствие във всички perimeters (closed records).")
+        help="Total minutes present across all perimeters (closed records).")
 
     def _compute_access_attendance_log_count(self):
         Log = self.env["access.attendance.log"].sudo()

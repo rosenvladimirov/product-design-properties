@@ -33,37 +33,37 @@ class AccessPassageEvent(models.Model):
     employee_id = fields.Many2one(
         "hr.employee",
         related="subject_id.employee_id", store=True, index=True,
-        help="Employee derived от subject (за HR групиране в kanban/list).")
+        help="Employee derived from subject (for HR grouping in kanban/list).")
     perimeter_id = fields.Many2one(
         related="control_point_id.perimeter_id", store=True, index=True)
     controller_id = fields.Many2one(
         "access.controller",
         related="control_point_id.controller_id", store=True, index=True,
-        help="Virtual ac (hardware wrapper) — от кой контролер идва.")
+        help="Virtual ac (hardware wrapper) — which controller it came from.")
     ts = fields.Datetime(required=True, default=fields.Datetime.now,
                          index=True)
     time_slot_id = fields.Many2one(
         "access.time.slot",
         compute="_compute_time_slot", store=True, index=True,
-        help="Site/door time slot active при момента на event-а "
-             "(първи match по sequence — night shift, entry window, etc.). "
-             "За employee work hours виж resource.calendar (отделно).")
+        help="Site/door time slot active at event time "
+             "(first match by sequence — night shift, entry window, etc.). "
+             "For employee work hours see resource.calendar separately.")
     direction = fields.Selection(
         [("in", "In"), ("out", "Out")],
-        help="Derived от _derive_direction Python helper. None ако "
-             "anomaly не позволява derive (forced/held/exit_without_entry).")
+        help="Derived from _derive_direction Python helper. None when "
+             "anomaly prevents derivation (forced/held/exit_without_entry).")
     anomaly_hint = fields.Char(
-        help="Pattern detected от Python helper: forced / held / "
+        help="Pattern detected by Python helper: forced / held / "
              "tailgating / exit_without_entry / denied_but_opened.")
     result = fields.Selection(_RESULT, required=True, index=True)
     signal_matrix = fields.Json(
         help="Raw signal matrix: {external_reader, internal_reader, "
              "magnet, door}. Pinned for forensic replay.")
-    context_in = fields.Json(help="Context подадено на ZEN evaluate.")
-    result_out = fields.Json(help="Резултат от ZEN.")
+    context_in = fields.Json(help="Context passed to ZEN evaluate.")
+    result_out = fields.Json(help="Result from ZEN.")
     zen_log_id = fields.Many2one(
         "zen.decision.log", ondelete="set null",
-        help="Pointer към ZEN audit log row (full trace + table version).")
+        help="Pointer to ZEN audit log row (full trace + table version).")
     company_id = fields.Many2one(
         related="control_point_id.company_id", store=True, index=True)
     violation_ids = fields.One2many("access.violation", "event_id")

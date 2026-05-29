@@ -31,19 +31,19 @@ class AccessControlPoint(models.Model):
     name = fields.Char(required=True, translate=True)
     code = fields.Char(
         required=True, index=True,
-        help="Уникален код (e.g. 'office_main_front_door').")
+        help="Unique code (e.g. 'office_main_front_door').")
     perimeter_id = fields.Many2one(
         "access.perimeter", required=True, ondelete="restrict", index=True)
     direction_kind = fields.Selection(
         _DIRECTION_KIND, default="bidirectional", required=True,
-        help="Дали тoзи point поддържа само влизане, само излизане, или "
+        help="Whether this point supports entry only, exit only, or "
              "и двете (turnstile с external/internal reader).")
     # Soft m2o към hr_aac.access.controller — без hard depend в depends
     # списъка би било проблем (вече depend-ваме на hr_aac, OK).
     controller_id = fields.Many2one(
         "access.controller", string="HTTP Controller (proxy wrapper)",
         ondelete="set null",
-        help="Network endpoint в proxy за да push-нем команди към "
+        help="Network endpoint in proxy to push commands to "
              "магнита. Празно = manual/observational point (read-only).")
     # Parts — конкретните физически компоненти.
     # ⚠️ В Phase 2 (initial) тези са Char placeholder-и за reader/magnet/
@@ -52,7 +52,7 @@ class AccessControlPoint(models.Model):
     # access.proxy.device — TBD според бъдеща итерация).
     external_reader_id = fields.Char(
         string="External Reader ID",
-        help="Proxy reader id (entry-side button). Празно = няма физически "
+        help="Proxy reader id (entry-side button). Empty = no physical "
              "external reader (only-exit точка).")
     internal_reader_id = fields.Char(
         string="Internal Reader ID",

@@ -13,7 +13,7 @@
                     <button name="action_reverse_plan" type="object"
                             string="🔄 Reverse Plan Order" class="btn-secondary"
                             invisible="state != 'draft' or not plan_step_ids"
-                            help="Обърни реда на cp-тата — полезно за втора обиколка в обратна посока"/>
+                            help="Reverse the cp order — useful for a second walk in the opposite direction"/>
                     <button name="action_start_walk" type="object"
                             string="🚶 Start Walk" class="btn-primary"
                             invisible="state != 'draft'"/>
@@ -33,17 +33,18 @@
                     <div class="alert alert-info" role="alert">
                         <strong>Workflow:</strong>
                         Pick controllers + card + <b>Starting Position</b>
-                        (КЪДЕ СИ СЕГА: вътре или вън от perimeter-а!) →
-                        Generate Walk Plan →
-                        edit-нй steps ако трябва → Start Walk → swipe-вай
-                        по plan-а → Stop Walk → check preview → Apply.
-                        Plan-driven map-ва i-тия swipe към i-тата стъпка.
+                        (WHERE YOU ARE NOW: inside or outside the
+                        perimeter!) → Generate Walk Plan →
+                        edit steps if needed → Start Walk → swipe along
+                        the plan → Stop Walk → check preview → Apply.
+                        Plan-driven mapping pairs the i-th swipe with the
+                        i-th step.
                     </div>
                     <div class="alert alert-warning" role="alert"
                          invisible="starting_position">
-                        ⚠️ Избери <b>Starting Position</b> преди Generate
-                        Walk Plan — wizard-ът ползва това за derive на
-                        първата роля (entry/exit).
+                        Select <b>Starting Position</b> before Generate
+                        Walk Plan — the wizard uses it to derive the
+                        first role (entry/exit).
                     </div>
                     <group>
                         <group>

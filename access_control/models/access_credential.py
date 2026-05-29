@@ -38,9 +38,31 @@ class AccessCredential(models.Model):
         "access.perimeter", relation="access_credential_perimeter_rel",
         column1="credential_id", column2="perimeter_id",
         string="Allowed Perimeters",
-        help="Perimeters that accept this credential. Controllers са вече "
-             "на base модела (controller_ids). Perimeters работят на по-"
-             "висок логически слой — групиране на множество controllers.")
+        help="Perimeters that accept this credential. Controllers live "
+             "on the base model (controller_ids). Perimeters work on a "
+             "higher logical layer — grouping multiple controllers.")
+    holder_kind = fields.Selection([
+        ("employee", "Employee"),
+        ("visitor", "Visitor"),
+    ], compute="_compute_holder_kind", store=True, readonly=True,
+        help="Auto-derived from the linked subject: 'employee' if the "
+             "subject has employee_id, otherwise 'visitor'.")
+    holder_employee_id = fields.Many2one(
+        "hr.employee", string="Holder",
+        related="subject_id.employee_id", readonly=False, store=True,
+        help="Employee holder (when holder_kind = employee).")
+
+    @api.depends("subject_id", "subject_id.employee_id",
+                 "subject_id.partner_id", "holder_partner_id")
+    def _compute_holder_kind(self):
+        for rec in self:
+            emp = rec.subject_id.employee_id
+            if emp:
+                rec.holder_kind = "employee"
+            elif rec.holder_partner_id or rec.subject_id.partner_id:
+                rec.holder_kind = "visitor"
+            else:
+                rec.holder_kind = False
 
     @api.onchange("perimeter_ids")
     def _onchange_perimeter_populate_controllers(self):
