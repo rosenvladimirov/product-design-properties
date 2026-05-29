@@ -7,7 +7,7 @@ from odoo import _, models
 from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
 
-from .zen_engine import ZenWrapper
+from odoo.addons.base_zen_decision.models.zen_engine import ZenWrapper
 
 _logger = logging.getLogger(__name__)
 

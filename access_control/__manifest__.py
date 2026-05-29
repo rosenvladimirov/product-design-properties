@@ -6,7 +6,7 @@
         "Polymorphic physical access control: subjects, perimeters, "
         "control points, ZEN-driven decision flow with offline sync."
     ),
-    "version": "19.0.1.12.0",
+    "version": "19.0.1.12.1",
     "category": "Security",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "BL Consulting, Odoo Community Association (OCA)",
@@ -18,7 +18,7 @@
         "base",
         "hr",
         "resource",
-        "mrp_design_matrix",            # transitional kernel host (ZEN)
+        "base_zen_decision",            # ZEN decision-table kernel
         "hr_attendance_access_control", # legacy bridge (cards, controllers)
         "hr_attendance_access_control_site_map",  # site/floor/devices
     ],

@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_zen_decision_table_user,zen.decision.table user,model_zen_decision_table,base.group_user,1,0,0,0
+access_zen_decision_table_manager,zen.decision.table manager,model_zen_decision_table,base.group_system,1,1,1,1
+access_zen_decision_log_user,zen.decision.log user,model_zen_decision_log,base.group_user,1,0,0,0
+access_zen_decision_log_create,zen.decision.log create,model_zen_decision_log,base.group_user,1,0,1,0
+access_zen_decision_log_admin,zen.decision.log admin,model_zen_decision_log,base.group_system,1,1,1,1
