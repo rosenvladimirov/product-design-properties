@@ -197,6 +197,21 @@ class AccessCredential(models.Model):
                     # local write needs the proxy access id to address the
                     # controller — skip + flag rather than queue a no-op.
                     continue
+                if hw_op == "add":
+                    # Recompute rights/ts from perimeters+schedule, then
+                    # write the onboard TS slot (D3) BEFORE the card so the
+                    # ts_code it references already exists in the controller.
+                    link._recompute_hw_params()
+                    slot = controller._ensure_time_schedule(
+                        cred.schedule_id)
+                    Command.create({
+                        "proxy_id": controller.proxy_id.id,
+                        "kind": "polimex.ts.sync",
+                        "payload_json": json.dumps(slot._ts_payload()),
+                        "state": "queued",
+                    })
+                    slot.last_sync = fields.Datetime.now()
+                    queued += 1
                 for card in cards:
                     payload = {
                         "access_id": access_id,

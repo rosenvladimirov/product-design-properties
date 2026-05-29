@@ -16,7 +16,10 @@ Mapping:
 
 import logging
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+
+from .access_controller_time_schedule import (
+    _TS_ALWAYS, _TS_MAX, _TS_MIN_ALLOC)
 
 _logger = logging.getLogger(__name__)
 
@@ -40,6 +43,40 @@ class AccessControllerPolimex(models.Model):
         string="Last Event",
         help="Timestamp of the last passage event through this controller. "
              "Updated by the proxy bridge.")
+
+    time_schedule_ids = fields.One2many(
+        "access.controller.time.schedule", "controller_id",
+        string="Onboard Time Schedules",
+        help="Polimex TS slots written into this controller (D3). Local "
+             "cards reference these so windows are enforced offline.")
+
+    def _ensure_time_schedule(self, schedule):
+        """Return the onboard TS slot for `schedule` on this controller,
+        allocating the next free ts_number if missing. `schedule` empty →
+        the reserved 'always' slot (ts 1). Idempotent."""
+        self.ensure_one()
+        TS = self.env["access.controller.time.schedule"].sudo()
+        if not schedule:
+            slot = self.time_schedule_ids.filtered(
+                lambda t: not t.schedule_id)
+            if slot:
+                return slot[0]
+            return TS.create({"controller_id": self.id,
+                              "ts_number": _TS_ALWAYS, "schedule_id": False})
+        slot = self.time_schedule_ids.filtered(
+            lambda t: t.schedule_id == schedule)
+        if slot:
+            return slot[0]
+        used = set(self.time_schedule_ids.mapped("ts_number"))
+        nxt = next((n for n in range(_TS_MIN_ALLOC, _TS_MAX + 1)
+                    if n not in used), None)
+        if nxt is None:
+            from odoo.exceptions import UserError
+            raise UserError(_(
+                "Controller %s has no free Polimex TS slot (max %s).",
+                self.display_name, _TS_MAX))
+        return TS.create({"controller_id": self.id, "ts_number": nxt,
+                          "schedule_id": schedule.id})
 
 
 class AccessProxyBridge(models.AbstractModel):

@@ -19,6 +19,8 @@ access_access_time_slot_user,access.time.slot user,model_access_time_slot,base.g
 access_access_time_slot_admin,access.time.slot admin,model_access_time_slot,base.group_system,1,1,1,1
 access_access_credential_controller_user,access.credential.controller user,model_access_credential_controller,base.group_user,1,0,0,0
 access_access_credential_controller_admin,access.credential.controller admin,model_access_credential_controller,base.group_system,1,1,1,1
+access_access_controller_time_schedule_user,access.controller.time.schedule user,model_access_controller_time_schedule,base.group_user,1,0,0,0
+access_access_controller_time_schedule_admin,access.controller.time.schedule admin,model_access_controller_time_schedule,base.group_system,1,1,1,1
 access_calibration_admin,access.controller.calibration admin,model_access_controller_calibration,base.group_system,1,1,1,1
 access_calibration_event_admin,access.controller.calibration.event admin,model_access_controller_calibration_event,base.group_system,1,1,1,1
 access_calibration_step_admin,access.controller.calibration.step admin,model_access_controller_calibration_step,base.group_system,1,1,1,1

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Onboard Time Schedules tab on the controller form. -->
+    <record id="view_access_controller_form_inherit_ts" model="ir.ui.view">
+        <field name="name">access.controller.form.inherit.ts</field>
+        <field name="model">access.controller</field>
+        <field name="inherit_id"
+               ref="hr_attendance_access_control.view_access_controller_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Time Schedules" name="time_schedules">
+                    <field name="time_schedule_ids" nolabel="1">
+                        <list editable="bottom">
+                            <field name="ts_number"/>
+                            <field name="schedule_id"
+                                   options="{'no_create': True}"/>
+                            <field name="display_name"/>
+                            <field name="last_sync" readonly="1"/>
+                        </list>
+                    </field>
+                    <div class="text-muted mt-2">
+                        Polimex onboard TS slots (D3). Slot 1 is reserved
+                        for <em>always</em> (24/7); specific schedules
+                        allocate from slot 2. Local cards reference these so
+                        windows hold offline. Written automatically on
+                        <em>Push to Hardware</em>.
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
