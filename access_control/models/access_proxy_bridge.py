@@ -207,25 +207,47 @@ class AccessProxyBridge(models.AbstractModel):
         return sm
 
     def _parse_ts(self, data):
-        """Polimex event има date 'MM.DD.YY' + time 'HH:MM:SS' OR ISO ts."""
+        """Polimex event има date 'MM.DD.YY' + time 'HH:MM:SS' OR ISO ts.
+
+        КРИТИЧНО: Odoo Datetime fields винаги storage в UTC. Полимекс
+        controllers shлат timestamps в LOCAL TIME (Europe/Sofia) без
+        tz info. Ако ги парснем като naive → Odoo ги пише като UTC →
+        passage events ще са с +3h drift.
+
+        Strategy:
+        - tz-aware ISO → astimezone UTC → strip tzinfo
+        - naive ISO или Polimex date/time → assume Sofia local, convert
+          към UTC чрез company.partner.tz (fallback Europe/Sofia)
+        """
         from datetime import datetime
+        import pytz
+        company_tz = (self.env.company.partner_id.tz
+                      or "Europe/Sofia")
+        local_tz = pytz.timezone(company_tz)
+
+        def to_utc_naive(dt):
+            if dt.tzinfo is None:
+                # Assume local
+                dt = local_tz.localize(dt)
+            return dt.astimezone(pytz.utc).replace(tzinfo=None)
+
         ts = data.get("ts") or data.get("event_ts")
         if ts:
             try:
-                return datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+                dt = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+                return to_utc_naive(dt)
             except (TypeError, ValueError):
                 pass
-        # Polimex format: time + date
         d = data.get("date")
         t = data.get("time")
         if d and t:
             try:
-                # 'MM.DD.YY HH:MM:SS' — convert MM/DD/YY/etc.
                 mm, dd, yy = d.split(".")
                 yy_full = 2000 + int(yy) if int(yy) < 100 else int(yy)
-                return datetime.strptime(
+                dt = datetime.strptime(
                     f"{yy_full:04d}-{int(mm):02d}-{int(dd):02d} {t}",
                     "%Y-%m-%d %H:%M:%S")
+                return to_utc_naive(dt)
             except (TypeError, ValueError):
                 pass
         return fields.Datetime.now()
