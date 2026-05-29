@@ -6,7 +6,7 @@
         "Polymorphic physical access control: subjects, perimeters, "
         "control points, ZEN-driven decision flow with offline sync."
     ),
-    "version": "18.0.1.9.1",
+    "version": "18.0.1.10.0",
     "category": "Security",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "BL Consulting, Odoo Community Association (OCA)",
@@ -35,6 +35,7 @@
         "views/access_time_slot_views.xml",
         "views/hr_employee_views.xml",
         "views/hr_department_views.xml",
+        "views/hr_rfid_card_views.xml",
         "views/access_facility_svg_views.xml",
         "views/access_facility_dashboard_views.xml",
         "views/menu.xml",

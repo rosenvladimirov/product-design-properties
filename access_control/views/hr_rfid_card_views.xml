@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_hr_rfid_card_form_credential_button" model="ir.ui.view">
+        <field name="name">hr.rfid.card.form.credential.button</field>
+        <field name="model">hr.rfid.card</field>
+        <field name="inherit_id"
+               ref="hr_attendance_access_control.view_hr_rfid_card_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_open_or_create_credential"
+                            type="object"
+                            string="Open / Create Access Credential"
+                            class="btn-primary"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
