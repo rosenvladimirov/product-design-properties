@@ -42,17 +42,61 @@ class AccessCredential(models.Model):
              "на base модела (controller_ids). Perimeters работят на по-"
              "висок логически слой — групиране на множество controllers.")
 
+    @api.onchange("perimeter_ids")
+    def _onchange_perimeter_populate_controllers(self):
+        """Когато selected perimeters се променят → auto-зареди
+        controllers (access.controller) от cp.controller_id на всички
+        active control_points в избраните perimeters.
+
+        Append-only — НЕ премахва existing controllers (user-ът може
+        да добави extra controllers ръчно)."""
+        if not self.perimeter_ids:
+            return
+        CP = self.env["access.control.point"].sudo()
+        cps = CP.search([
+            ("perimeter_id", "in", self.perimeter_ids.ids),
+            ("active", "=", True),
+            ("controller_id", "!=", False),
+        ])
+        new_ctrl_ids = set(cps.mapped("controller_id.id"))
+        existing_ids = set(self.controller_ids.ids)
+        union = new_ctrl_ids | existing_ids
+        if union != existing_ids:
+            self.controller_ids = [(6, 0, list(union))]
+
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
         records._auto_link_subject()
+        records._sync_controllers_from_perimeters()
         return records
 
     def write(self, vals):
         res = super().write(vals)
         if "holder_partner_id" in vals and "subject_id" not in vals:
             self._auto_link_subject()
+        if "perimeter_ids" in vals:
+            self._sync_controllers_from_perimeters()
         return res
+
+    def _sync_controllers_from_perimeters(self):
+        """Backend version на _onchange_perimeter_populate_controllers —
+        викан при create/write на perimeter_ids (когато промяната идва
+        от backend код, не от UI onchange)."""
+        CP = self.env["access.control.point"].sudo()
+        for rec in self:
+            if not rec.perimeter_ids:
+                continue
+            cps = CP.search([
+                ("perimeter_id", "in", rec.perimeter_ids.ids),
+                ("active", "=", True),
+                ("controller_id", "!=", False),
+            ])
+            new_ctrl_ids = set(cps.mapped("controller_id.id"))
+            existing_ids = set(rec.controller_ids.ids)
+            union = new_ctrl_ids | existing_ids
+            if union != existing_ids:
+                rec.controller_ids = [(6, 0, list(union))]
 
     def _auto_link_subject(self):
         """Auto-create/link access.subject when holder_partner_id is set
