@@ -73,19 +73,23 @@ class AccessPassageEvent(models.Model):
         for rec in self:
             rec.violation_count = len(rec.violation_ids)
 
-    @api.depends("ts", "controller_id", "perimeter_id")
+    @api.depends("ts", "controller_id", "perimeter_id",
+                 "credential_id", "credential_id.schedule_id")
     def _compute_time_slot(self):
         TimeSlot = self.env["access.time.slot"].sudo()
         for rec in self:
             if not rec.ts:
                 rec.time_slot_id = False
                 continue
+            schedule = rec.credential_id.schedule_id \
+                if rec.credential_id else False
             slots = TimeSlot.find_matching(
                 rec.ts,
                 controller=rec.controller_id or None,
                 perimeter=rec.perimeter_id or None,
+                schedule=schedule or None,
             )
-            # Първи match по sequence (slots са sorted в search)
+            # First match by sequence (slots are sorted in search)
             rec.time_slot_id = slots[:1].id or False
 
     def name_get(self):

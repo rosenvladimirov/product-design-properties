@@ -51,6 +51,11 @@ class AccessTimeSlot(models.Model):
     weekday_sat = fields.Boolean(string='Sat', default=False)
     weekday_sun = fields.Boolean(string='Sun', default=False)
 
+    schedule_id = fields.Many2one(
+        'resource.calendar', string='Schedule',
+        help='Working time schedule this slot applies to. When set, the '
+             'slot is only considered for credentials whose schedule '
+             'matches. Empty = applies to all schedules.')
     controller_ids = fields.Many2many('access.controller',
         string='Controllers',
         help='Empty = all controllers (site-wide).')
@@ -125,8 +130,13 @@ class AccessTimeSlot(models.Model):
         return False
 
     @api.model
-    def find_matching(self, dt_utc, controller=None, perimeter=None):
-        """Връща match-ващите slot-ове за timestamp + scope."""
+    def find_matching(self, dt_utc, controller=None, perimeter=None,
+                      schedule=None):
+        """Returns matching slots for timestamp + scope + schedule.
+
+        When `schedule` is provided (resource.calendar of the credential),
+        slots with schedule_id set are kept only if they match. Slots
+        without schedule_id always apply (general policy)."""
         slots = self.search([('active', '=', True)])
         result_ids = []
         for slot in slots:
@@ -135,6 +145,9 @@ class AccessTimeSlot(models.Model):
                 continue
             if perimeter and slot.perimeter_ids \
                     and perimeter not in slot.perimeter_ids:
+                continue
+            if slot.schedule_id and schedule \
+                    and slot.schedule_id != schedule:
                 continue
             if slot._matches(dt_utc):
                 result_ids.append(slot.id)

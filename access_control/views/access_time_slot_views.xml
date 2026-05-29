@@ -48,6 +48,8 @@
                         <group string="Validity">
                             <field name="sequence"/>
                             <field name="active" widget="boolean_toggle"/>
+                            <field name="schedule_id"
+                                   options="{'no_create': True}"/>
                             <field name="date_start"/>
                             <field name="date_end"/>
                             <field name="company_id"

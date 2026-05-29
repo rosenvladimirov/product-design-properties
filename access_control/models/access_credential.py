@@ -57,6 +57,25 @@ class AccessCredential(models.Model):
         store=True, readonly=True,
         help="Department of the employee holder (auto-derived). Used to "
              "auto-populate perimeter_ids from department defaults.")
+    schedule_id = fields.Many2one(
+        "resource.calendar", string="Schedule",
+        compute="_compute_schedule_id", store=True, readonly=False,
+        help="Working time schedule for this credential. Auto-populated "
+             "from employee.resource_calendar_id; editable for visitors. "
+             "The decision flow matches schedule against access.time.slot "
+             "entries with the same schedule_id (slots without schedule "
+             "apply to everyone).")
+
+    @api.depends("holder_employee_id",
+                 "holder_employee_id.resource_calendar_id")
+    def _compute_schedule_id(self):
+        for rec in self:
+            if rec.holder_employee_id \
+                    and rec.holder_employee_id.resource_calendar_id:
+                rec.schedule_id = \
+                    rec.holder_employee_id.resource_calendar_id
+            elif not rec.schedule_id:
+                rec.schedule_id = False
 
     @api.depends("subject_id", "subject_id.employee_id",
                  "subject_id.partner_id", "holder_partner_id")
