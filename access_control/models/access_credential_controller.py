@@ -81,6 +81,50 @@ class AccessCredentialController(models.Model):
          "controller."),
     ]
 
+    # Polimex reader numbering convention: external (entry) = reader 1,
+    # internal (exit) = reader 2. rights bit N → 1 << (N-1).
+    def _recompute_hw_params(self):
+        """Derive rights_data/rights_mask + ts_code from the credential's
+        perimeters → this controller's control points → readers, and the
+        credential schedule → the controller's onboard TS slot.
+
+        - A control point on this controller within a granted perimeter
+          contributes reader 1 (if it has an external reader) and/or
+          reader 2 (internal reader).
+        - ts_code places the controller's TS slot for the credential's
+          schedule on each granted reader position (0 = no access).
+        """
+        CP = self.env["access.control.point"].sudo()
+        for rec in self:
+            cred = rec.credential_id
+            cps = CP.search([
+                ("controller_id", "=", rec.controller_id.id),
+                ("active", "=", True),
+                ("perimeter_id", "in", cred.perimeter_ids.ids),
+            ]) if cred.perimeter_ids else CP.browse()
+            readers = set()
+            for cp in cps:
+                if cp.external_reader_id:
+                    readers.add(1)
+                if cp.internal_reader_id:
+                    readers.add(2)
+            if not readers:
+                # No mapped control point → fall back to reader 1 so a
+                # manually-granted controller still programs something.
+                readers = {1}
+            rights = 0
+            for n in readers:
+                rights |= 1 << (n - 1)
+            # Allocate / fetch the onboard TS slot for the schedule.
+            slot = rec.controller_id._ensure_time_schedule(cred.schedule_id)
+            ts_bytes = []
+            for reader_no in range(1, 5):
+                ts_bytes.append("%02X" % (slot.ts_number
+                                          if reader_no in readers else 0))
+            rec.rights_data = rights
+            rec.rights_mask = rights
+            rec.ts_code = "".join(ts_bytes)
+
     def _hw_op(self):
         """Resolve the proxy `hw_op` for this row: skip (cloud — no local
         write), remove (revoked / inactive credential), or add."""
