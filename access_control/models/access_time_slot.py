@@ -56,6 +56,61 @@ class AccessTimeSlot(models.Model):
         help='Working time schedule this slot applies to. When set, the '
              'slot is only considered for credentials whose schedule '
              'matches. Empty = applies to all schedules.')
+    schedule_first_hour = fields.Float(
+        string='Schedule Day Start',
+        compute='_compute_schedule_summary',
+        help='Earliest hour_from across all non-lunch attendance lines '
+             'on the linked schedule. Compare against hour_from to verify.')
+    schedule_last_hour = fields.Float(
+        string='Schedule Day End',
+        compute='_compute_schedule_summary',
+        help='Latest hour_to across all non-lunch attendance lines on '
+             'the linked schedule. Compare against hour_to to verify.')
+    schedule_summary = fields.Char(
+        string='Schedule Summary',
+        compute='_compute_schedule_summary',
+        help='Human-readable summary: "Mon-Fri 09:00-18:00 (lunch 12:00-13:00)".')
+
+    @api.depends('schedule_id', 'schedule_id.attendance_ids')
+    def _compute_schedule_summary(self):
+        for rec in self:
+            cal = rec.schedule_id
+            if not cal or not cal.attendance_ids:
+                rec.schedule_first_hour = 0.0
+                rec.schedule_last_hour = 0.0
+                rec.schedule_summary = False
+                continue
+            non_lunch = cal.attendance_ids.filtered(
+                lambda a: a.day_period != 'lunch')
+            lunch = cal.attendance_ids.filtered(
+                lambda a: a.day_period == 'lunch')
+            if non_lunch:
+                rec.schedule_first_hour = min(non_lunch.mapped('hour_from'))
+                rec.schedule_last_hour = max(non_lunch.mapped('hour_to'))
+            else:
+                rec.schedule_first_hour = min(
+                    cal.attendance_ids.mapped('hour_from'))
+                rec.schedule_last_hour = max(
+                    cal.attendance_ids.mapped('hour_to'))
+            # Day range
+            days_used = sorted(set(int(a.dayofweek)
+                                    for a in cal.attendance_ids))
+            day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            if days_used and days_used == list(range(days_used[0],
+                                                      days_used[-1] + 1)):
+                day_str = f"{day_names[days_used[0]]}-{day_names[days_used[-1]]}"
+            else:
+                day_str = ",".join(day_names[d] for d in days_used)
+            # Hours
+            def _h(f):
+                return f"{int(f):02d}:{int((f - int(f)) * 60):02d}"
+            main = f"{_h(rec.schedule_first_hour)}-{_h(rec.schedule_last_hour)}"
+            extra = ""
+            if lunch:
+                lf = min(lunch.mapped('hour_from'))
+                lt = max(lunch.mapped('hour_to'))
+                extra = f" (lunch {_h(lf)}-{_h(lt)})"
+            rec.schedule_summary = f"{day_str} {main}{extra}"
     controller_ids = fields.Many2many('access.controller',
         string='Controllers',
         help='Empty = all controllers (site-wide).')
