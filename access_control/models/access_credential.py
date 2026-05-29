@@ -56,20 +56,36 @@ class AccessCredential(models.Model):
 
     def _auto_link_subject(self):
         """Auto-create/link access.subject when holder_partner_id is set
-        but subject_id is empty. Idempotent."""
+        but subject_id is empty. Idempotent.
+
+        Ако partner-ът е work_contact на hr.employee → subject.employee_id
+        също се попълва (за да се появи в Passage Events Employee колоната
+        и да работи bridge към hr.attendance)."""
         Subject = self.env["access.subject"].sudo()
+        Employee = self.env["hr.employee"].sudo()
         for rec in self:
             if rec.subject_id or not rec.holder_partner_id:
                 continue
+            partner = rec.holder_partner_id
             existing = Subject.search([
-                ("partner_id", "=", rec.holder_partner_id.id),
+                ("partner_id", "=", partner.id),
                 ("company_id", "=", rec.company_id.id or False),
             ], limit=1)
+            # Намери hr.employee който има тoзи partner като work_contact
+            emp = Employee.search([
+                ("work_contact_id", "=", partner.id),
+            ], limit=1)
             if existing:
+                # Backfill employee_id ако липсва
+                if emp and not existing.employee_id:
+                    existing.employee_id = emp.id
                 rec.subject_id = existing
             else:
-                rec.subject_id = Subject.create({
-                    "name": rec.holder_partner_id.display_name,
-                    "partner_id": rec.holder_partner_id.id,
+                vals = {
+                    "name": partner.display_name,
+                    "partner_id": partner.id,
                     "company_id": rec.company_id.id or False,
-                })
+                }
+                if emp:
+                    vals["employee_id"] = emp.id
+                rec.subject_id = Subject.create(vals)
