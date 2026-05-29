@@ -41,7 +41,7 @@
                             <field name="slot_type"/>
                             <field name="hour_from" widget="float_time"/>
                             <field name="hour_to" widget="float_time"
-                                   help="&gt; 24 = wrap полунощ (напр. 30 = 06:00 следващ ден)"/>
+                                   help="&gt; 24 = wraps past midnight (e.g. 30 = 06:00 next day)"/>
                             <field name="tz"/>
                             <field name="color" widget="color"/>
                         </group>
@@ -67,7 +67,7 @@
                             <field name="weekday_sun"/>
                         </group>
                     </group>
-                    <group string="Scope (празно = site-wide)">
+                    <group string="Scope (empty = site-wide)">
                         <field name="controller_ids" widget="many2many_tags"/>
                         <field name="perimeter_ids" widget="many2many_tags"/>
                     </group>

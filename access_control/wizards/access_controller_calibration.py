@@ -37,20 +37,21 @@ class AccessControllerCalibration(models.TransientModel):
     controller_ids = fields.Many2many(
         "access.controller", required=True,
         domain=[("active", "=", True)],
-        help="Controllers които ще калибрираш в тази обиколка.")
+        help="Controllers to calibrate in this walk.")
     card_id = fields.Many2one(
         "hr.rfid.card", string="Calibration Card",
         domain=[("active", "=", True)], required=True,
-        help="Картата с която ще свайпваш. Pick-нй съществуваща card "
-             "master запис — wizard филтрира hr.rfid.event-те по нея.")
+        help="The card you will swipe along the walk. Pick an existing "
+             "card master record — the wizard filters hr.rfid.event by "
+             "its card number.")
     card_number = fields.Char(
         related="card_id.card_number", readonly=True, store=False)
     starting_position = fields.Selection([
-        ("inside", "🏠 Inside (вътре в perimeter-а)"),
-        ("outside", "🚪 Outside (вън от perimeter-а)"),
+        ("inside", "Inside (inside the perimeter)"),
+        ("outside", "Outside (outside the perimeter)"),
     ], required=True, default="inside",
-        help="Къде си преди да започнеш обиколя. При single door: "
-             "inside=първият swipe ще е exit; outside=първият ще е entry.")
+        help="Where you are before starting the walk. For a single door: "
+             "inside=first swipe is exit; outside=first swipe is entry.")
 
     walk_start = fields.Datetime(readonly=True)
     walk_end = fields.Datetime(readonly=True)
@@ -58,8 +59,8 @@ class AccessControllerCalibration(models.TransientModel):
     plan_step_ids = fields.One2many(
         "access.controller.calibration.step", "wizard_id",
         string="Walk Plan",
-        help="Pre-declared последователност: коя врата с каква роля. "
-             "Bутон 'Generate Plan' auto-populate-ва от controllers.")
+        help="Pre-declared sequence: which door with which role. "
+             "The 'Generate Plan' button auto-populates from controllers.")
     walk_event_ids = fields.One2many(
         "access.controller.calibration.event", "wizard_id",
         readonly=True)
@@ -395,17 +396,17 @@ class AccessControllerCalibrationStep(models.TransientModel):
     sequence = fields.Integer(default=10)
     control_point_id = fields.Many2one(
         "access.control.point", required=True,
-        help="Коя врата ще се мине на тая стъпка.")
+        help="Which door will be passed on this step.")
     role = fields.Selection([
-        ("entry", "🚪→ Entry (от outside към inside)"),
-        ("exit", "→🚪 Exit (от inside към outside)"),
+        ("entry", "Entry (outside → inside)"),
+        ("exit", "Exit (inside → outside)"),
     ], required=True, default="entry",
-        help="Каква е стъпката — entry (external reader) или "
+        help="The step type — entry (external reader) or "
              "exit (internal reader).")
     matched_event_id = fields.Many2one(
         "access.controller.calibration.event",
         readonly=True,
-        help="Captured event match-нат с този step (по sequence).")
+        help="Captured event matched with this step (by sequence).")
 
 
 class AccessControllerCalibrationEvent(models.TransientModel):

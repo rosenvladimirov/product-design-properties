@@ -27,18 +27,19 @@ class AccessControllerPolimex(models.Model):
 
     polimex_bus_id = fields.Integer(
         string="Polimex Bus ID",
-        help="RS-485 bus address на физическия Polimex controller "
-             "(ctrl_id в push event-ите). Използва се за routing на "
-             "incoming events към правилния access.control.point.")
+        help="RS-485 bus address of the physical Polimex controller "
+             "(ctrl_id in push events). Used to route incoming events "
+             "to the correct access.control.point.")
     polimex_convertor = fields.Integer(
         string="Polimex Web Module Serial",
-        help="Serial на Polimex Web Module (convertor field в heartbeat). "
-             "Различава physical Web Modules ако имaме >1 на bus.")
+        help="Serial of the Polimex Web Module (convertor field in "
+             "heartbeat). Distinguishes physical Web Modules when there "
+             "are >1 on a bus.")
 
     last_event_ts = fields.Datetime(
         string="Last Event",
-        help="Timestamp на последния passage event през този controller. "
-             "Updates се от proxy bridge.")
+        help="Timestamp of the last passage event through this controller. "
+             "Updated by the proxy bridge.")
 
 
 class AccessProxyBridge(models.AbstractModel):

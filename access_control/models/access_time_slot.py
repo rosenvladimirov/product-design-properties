@@ -37,11 +37,11 @@ class AccessTimeSlot(models.Model):
     ], required=True, default='custom', index=True)
 
     hour_from = fields.Float(string='Start (hour)', required=True, default=9.0,
-        help='9.5 = 09:30. Локално време на slot tz.')
+        help='9.5 = 09:30. Local time of slot tz.')
     hour_to = fields.Float(string='End (hour)', required=True, default=18.0,
-        help='> 24 = wrap полунощ. Напр. 30 = 06:00 следващ ден.')
+        help='> 24 = wraps past midnight. E.g. 30 = 06:00 next day.')
     tz = fields.Selection('_tz_get', string='Timezone',
-        help='Празно = company.tz')
+        help='Empty = company.tz')
 
     weekday_mon = fields.Boolean(string='Mon', default=True)
     weekday_tue = fields.Boolean(string='Tue', default=True)
@@ -53,16 +53,16 @@ class AccessTimeSlot(models.Model):
 
     controller_ids = fields.Many2many('access.controller',
         string='Controllers',
-        help='Празно = всички контролери (site-wide).')
+        help='Empty = all controllers (site-wide).')
     perimeter_ids = fields.Many2many('access.perimeter',
         string='Perimeters',
-        help='Празно = всички периметри.')
+        help='Empty = all perimeters.')
 
-    date_start = fields.Date(help='Опционално начало на валидност.')
-    date_end = fields.Date(help='Опционално край на валидност.')
+    date_start = fields.Date(help='Optional validity start date.')
+    date_end = fields.Date(help='Optional validity end date.')
 
     color = fields.Char(default='#3498DB',
-        help='HEX за UI badge + SVG trail rendering.')
+        help='HEX color for UI badge + SVG trail rendering.')
     notes = fields.Text()
 
     company_id = fields.Many2one('res.company',

@@ -20,12 +20,12 @@ class AccessSubject(models.Model):
     name = fields.Char(required=True)
     partner_id = fields.Many2one(
         "res.partner", string="Partner",
-        help="External / visitor identity. Mutually exclusive с employee_id "
+        help="External / visitor identity. Mutually exclusive with employee_id "
              "за чисти Subject-и; може да коexist-ват ако HR contact-ът "
              "съвпада с visitor partner-а.")
     employee_id = fields.Many2one(
         "hr.employee", string="Employee",
-        help="Internal identity. Auto-populates partner_id от work_contact_id.")
+        help="Internal identity. Auto-populates partner_id from work_contact_id.")
     credential_ids = fields.One2many(
         "access.credential", "subject_id", string="Credentials")
     credential_count = fields.Integer(compute="_compute_credential_count")
@@ -36,14 +36,14 @@ class AccessSubject(models.Model):
 
     current_location = fields.Char(
         compute="_compute_current_location",
-        help="Live occupancy summary — кои perimeters текущо subject-ът е "
+        help="Live occupancy summary — which perimeters the subject is currently "
              "вътре. Computed (non-stored) → винаги fresh.")
     inside_count = fields.Integer(
         compute="_compute_current_location",
-        help="Брой perimeters в който subject-ът е сега 'inside'.")
+        help="Count of perimeters where the subject is currently inside.")
     last_activity = fields.Datetime(
         compute="_compute_current_location",
-        help="Последно passage event timestamp.")
+        help="Last passage event timestamp.")
 
     @api.depends("credential_ids")
     def _compute_credential_count(self):
