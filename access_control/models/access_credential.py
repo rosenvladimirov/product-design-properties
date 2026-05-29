@@ -66,6 +66,13 @@ class AccessCredential(models.Model):
              "entries with the same schedule_id (slots without schedule "
              "apply to everyone).")
 
+    credential_controller_ids = fields.One2many(
+        "access.credential.controller", "credential_id",
+        string="Hardware Sync",
+        help="Per-controller hardware-sync ledger: cloud vs local storage "
+             "+ D1 rights/schedule + last sync status. Auto-materialised "
+             "from the granted controllers (controller_ids).")
+
     @api.depends("holder_employee_id",
                  "holder_employee_id.resource_calendar_id")
     def _compute_schedule_id(self):
@@ -142,34 +149,65 @@ class AccessCredential(models.Model):
             self._sync_controllers_from_perimeters()
         return res
 
+    def _ensure_credential_controllers(self):
+        """Materialise an access.credential.controller ledger row for each
+        granted controller (controller_ids) that doesn't have one yet.
+        Lazy backfill — no data migration; default storage = local."""
+        Link = self.env["access.credential.controller"].sudo()
+        for cred in self:
+            have = set(cred.credential_controller_ids.mapped(
+                "controller_id.id"))
+            missing = [cid for cid in cred.controller_ids.ids
+                       if cid not in have]
+            if missing:
+                Link.create([
+                    {"credential_id": cred.id, "controller_id": cid}
+                    for cid in missing])
+
     def action_push_to_hardware(self):
         """Queue proxy commands to sync this credential to controllers.
 
-        For each (linked hr.rfid.card × credential.controller_ids), one
-        \`erpnet.fp.proxy.command\` row with kind='polimex.card.sync' is
-        created on the controller's proxy. Proxy daemon picks it up and
-        translates to Polimex SDK F0/F1 opcodes.
+        Works off the per-controller ledger (credential_controller_ids):
+        - `cloud` rows → hw_op='skip' (server-validated only, no D1)
+        - `local`/`both` rows → hw_op='add' (D1 write into controller),
+          or 'remove' when the credential is archived.
+        One `erpnet.fp.proxy.command` (kind='polimex.card.sync') per
+        (linked hr.rfid.card × ledger row); the proxy translates to the
+        Polimex D1 frame via POST /access/{access_id}/card.
         """
         import json
         Command = self.env["erpnet.fp.proxy.command"].sudo()
         Card = self.env["hr.rfid.card"].sudo()
+        self._ensure_credential_controllers()
         queued = 0
+        synced_rows = self.env["access.credential.controller"].sudo()
         for cred in self:
-            if not cred.active:
-                continue
             cards = Card.search([("credential_id", "=", cred.id)])
             if not cards:
                 continue
             granted_perims = cred.perimeter_ids.ids
-            for card in cards:
-                for controller in cred.controller_ids:
-                    if not controller.proxy_id \
-                            or not getattr(controller, "polimex_bus_id",
-                                           False):
-                        continue
+            for link in cred.credential_controller_ids:
+                controller = link.controller_id
+                if not controller.proxy_id \
+                        or not getattr(controller, "polimex_bus_id", False):
+                    continue
+                hw_op = link._hw_op()
+                access_id = controller.proxy_access_id
+                if hw_op != "skip" and not access_id:
+                    # local write needs the proxy access id to address the
+                    # controller — skip + flag rather than queue a no-op.
+                    continue
+                for card in cards:
                     payload = {
+                        "access_id": access_id,
                         "card_number": card.card_number,
+                        "hw_op": hw_op,
+                        "rights_data": link.rights_data,
+                        "rights_mask": link.rights_mask,
+                        "ts_code": link.ts_code or "01000000",
+                        "pin_code": link.pin_code or "0000",
                         "controller_bus_id": controller.polimex_bus_id,
+                        "hw_storage": link.hw_storage,
                         "active": cred.active,
                         "credential_id": cred.id,
                         "card_id": card.id,
@@ -188,6 +226,13 @@ class AccessCredential(models.Model):
                         "state": "queued",
                     })
                     queued += 1
+                synced_rows |= link
+        if synced_rows:
+            synced_rows.write({
+                "sync_state": "pending",
+                "last_sync": fields.Datetime.now(),
+                "sync_error": False,
+            })
         return {
             "type": "ir.actions.client",
             "tag": "display_notification",
@@ -236,6 +281,9 @@ class AccessCredential(models.Model):
             union = new_ctrl_ids | existing_ids
             if union != existing_ids:
                 rec.controller_ids = [(6, 0, list(union))]
+        # Keep the hardware-sync ledger in step with the granted set so
+        # the Hardware Sync tab is populated before the first push.
+        self._ensure_credential_controllers()
 
     def _auto_link_subject(self):
         """Auto-create/link access.subject when holder_partner_id is set
