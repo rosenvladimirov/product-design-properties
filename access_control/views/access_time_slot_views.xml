@@ -50,6 +50,14 @@
                             <field name="active" widget="boolean_toggle"/>
                             <field name="schedule_id"
                                    options="{'no_create': True}"/>
+                            <field name="schedule_first_hour"
+                                   widget="float_time"
+                                   invisible="not schedule_id"/>
+                            <field name="schedule_last_hour"
+                                   widget="float_time"
+                                   invisible="not schedule_id"/>
+                            <field name="schedule_summary"
+                                   invisible="not schedule_id"/>
                             <field name="date_start"/>
                             <field name="date_end"/>
                             <field name="company_id"
