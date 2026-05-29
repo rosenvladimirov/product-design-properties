@@ -5,6 +5,3 @@ from . import mrp_bom
 from . import mrp_bom_line
 from . import mrp_production
 from . import stock_lot
-from . import zen_engine
-from . import zen_decision_table
-from . import zen_decision_log

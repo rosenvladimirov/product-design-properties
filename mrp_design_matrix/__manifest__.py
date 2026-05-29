@@ -6,7 +6,7 @@
         "Parametric BoM driven by lot-level design parameters "
         "and a DMN rule matrix. Universal for make-to-order industries."
     ),
-    "version": "18.0.2.0.0",
+    "version": "18.0.2.1.0",
     "category": "Manufacturing",
     "website": "https://github.com/OCA/manufacture",
     "author": "BL Consulting, Odoo Community Association (OCA)",
@@ -22,13 +22,10 @@
         "stock_lot_properties",
         "mrp_bom_line_formula_quantity",
         "stock_move_forced_lot_multi",
+        "base_zen_decision",
     ],
-    "external_dependencies": {
-        "python": ["zen-engine"],
-    },
     "data": [
         "security/ir.model.access.csv",
-        "views/zen_decision_views.xml",
         "views/mrp_matrix_template_views.xml",
         "views/mrp_bom_views.xml",
     ],

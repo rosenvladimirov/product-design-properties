@@ -379,7 +379,7 @@ class MrpMatrixTemplate(models.Model):
         self.ensure_one()
         if not self.cascade_table:
             return {}
-        from .zen_engine import ZenWrapper
+        from odoo.addons.base_zen_decision.models.zen_engine import ZenWrapper
         from odoo.tools.safe_eval import safe_eval
         full_context = dict(context or {})
         full_context["changed_param"] = changed_param
@@ -506,7 +506,7 @@ class MrpMatrixTemplate(models.Model):
         self.ensure_one()
         if not self.layout_table:
             return {}
-        from .zen_engine import ZenWrapper
+        from odoo.addons.base_zen_decision.models.zen_engine import ZenWrapper
         raw = ZenWrapper.evaluate(
             self.layout_table,
             context or {},
@@ -524,7 +524,7 @@ class MrpMatrixTemplate(models.Model):
         self.ensure_one()
         if not self.multiplicity_table:
             return {}
-        from .zen_engine import ZenWrapper
+        from odoo.addons.base_zen_decision.models.zen_engine import ZenWrapper
         raw = ZenWrapper.evaluate(
             self.multiplicity_table,
             context or {},
@@ -544,7 +544,7 @@ class MrpMatrixTemplate(models.Model):
         self.ensure_one()
         if not self.availability_table:
             return {}
-        from .zen_engine import ZenWrapper
+        from odoo.addons.base_zen_decision.models.zen_engine import ZenWrapper
         raw = ZenWrapper.evaluate(
             self.availability_table,
             context or {},

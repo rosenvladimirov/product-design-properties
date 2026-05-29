@@ -131,7 +131,7 @@ class MrpBom(models.Model):
         if not table:
             return {}
         Template = self.env["mrp.matrix.template"]
-        from .zen_engine import ZenWrapper
+        from odoo.addons.base_zen_decision.models.zen_engine import ZenWrapper
         raw = ZenWrapper.evaluate(table, context or {}, env=self.env)
         return Template._normalize_layout(raw)
 
@@ -153,7 +153,7 @@ class MrpBom(models.Model):
         if not table:
             return {}
         Template = self.env["mrp.matrix.template"]
-        from .zen_engine import ZenWrapper
+        from odoo.addons.base_zen_decision.models.zen_engine import ZenWrapper
         raw = ZenWrapper.evaluate(table, context or {}, env=self.env)
         return Template._normalize_multiplicity(raw)
 
@@ -180,7 +180,7 @@ class MrpBom(models.Model):
         # Делегираме на template.helper-а ако owner е template (има lookup_tables),
         # иначе ръчно (BoM може да няма lookup_tables — fallback на template).
         Template = self.env["mrp.matrix.template"]
-        from .zen_engine import ZenWrapper
+        from odoo.addons.base_zen_decision.models.zen_engine import ZenWrapper
         from odoo.tools.safe_eval import safe_eval
         full_context = dict(context or {})
         full_context["changed_param"] = changed_param
@@ -242,7 +242,7 @@ class MrpBom(models.Model):
             return {}
         Template = self.env["mrp.matrix.template"]
         # Reuse the normalisation pipeline regardless of owner.
-        from .zen_engine import ZenWrapper
+        from odoo.addons.base_zen_decision.models.zen_engine import ZenWrapper
         raw = ZenWrapper.evaluate(table, context or {}, env=self.env)
         return Template._normalize_availability(raw)
 
