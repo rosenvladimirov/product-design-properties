@@ -142,6 +142,68 @@ class AccessCredential(models.Model):
             self._sync_controllers_from_perimeters()
         return res
 
+    def action_push_to_hardware(self):
+        """Queue proxy commands to sync this credential to controllers.
+
+        For each (linked hr.rfid.card × credential.controller_ids), one
+        \`erpnet.fp.proxy.command\` row with kind='polimex.card.sync' is
+        created on the controller's proxy. Proxy daemon picks it up and
+        translates to Polimex SDK F0/F1 opcodes.
+        """
+        import json
+        Command = self.env["erpnet.fp.proxy.command"].sudo()
+        Card = self.env["hr.rfid.card"].sudo()
+        queued = 0
+        for cred in self:
+            if not cred.active:
+                continue
+            cards = Card.search([("credential_id", "=", cred.id)])
+            if not cards:
+                continue
+            granted_perims = cred.perimeter_ids.ids
+            for card in cards:
+                for controller in cred.controller_ids:
+                    if not controller.proxy_id \
+                            or not getattr(controller, "polimex_bus_id",
+                                           False):
+                        continue
+                    payload = {
+                        "card_number": card.card_number,
+                        "controller_bus_id": controller.polimex_bus_id,
+                        "active": cred.active,
+                        "credential_id": cred.id,
+                        "card_id": card.id,
+                        "valid_from": cred.valid_from.isoformat()
+                            if cred.valid_from else None,
+                        "valid_to": cred.valid_to.isoformat()
+                            if cred.valid_to else None,
+                        "perimeter_ids": granted_perims,
+                        "schedule_id": cred.schedule_id.id
+                            if cred.schedule_id else None,
+                    }
+                    Command.create({
+                        "proxy_id": controller.proxy_id.id,
+                        "kind": "polimex.card.sync",
+                        "payload_json": json.dumps(payload),
+                        "state": "queued",
+                    })
+                    queued += 1
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "type": "success" if queued else "warning",
+                "title": _("Push to Hardware"),
+                "message": _(
+                    "Queued %s command(s) for proxy delivery.",
+                    queued) if queued else _(
+                    "No commands generated — check that the credential "
+                    "is active, has linked cards, and selected "
+                    "controllers have a proxy bus id."),
+                "sticky": False,
+            },
+        }
+
     def _sync_perimeters_from_department(self):
         """Append-only: add department's default perimeters to credential.
         Backend version (write hook); UI is handled by onchange."""
