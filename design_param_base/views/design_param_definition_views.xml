@@ -66,7 +66,7 @@
                                     </group>
                                     <notebook>
                                         <page string="SVG Content" name="svg_content">
-                                            <field name="svg_content" widget="ace" options="{'mode': 'xml'}" />
+                                            <field name="svg_content" widget="text" />
                                         </page>
                                         <page string="Profile Definition" name="profile_definition">
                                             <field name="profile_definition" widget="json" />
