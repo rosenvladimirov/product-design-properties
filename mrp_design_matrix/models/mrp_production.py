@@ -82,7 +82,7 @@ class MrpProduction(models.Model):
         if bom.operation_table:
             t3 = ZenWrapper.evaluate(bom.operation_table, full_ctx)
             for op in t3 if isinstance(t3, list) else t3.get("result", []):
-                self._create_matrix_workorder(op)
+                self._create_matrix_workorder(op, full_ctx)
 
         # 8. Semi-finished: child lots / mto_stop
         self._handle_semifinished_lots(full_ctx)
@@ -412,8 +412,15 @@ class MrpProduction(models.Model):
             vals["bom_line_id"] = bom_line.id
         self.env["stock.move"].create(vals)
 
-    def _create_matrix_workorder(self, op: dict):
-        """Create a workorder from a T3 output row."""
+    def _create_matrix_workorder(self, op: dict, ctx=None):
+        """Create a workorder from a T3 output row.
+
+        ``duration_formula`` is the expected duration in minutes — either a
+        number already evaluated by the zen engine, or an expression to
+        evaluate against the matrix context ``ctx``.  The first matrix
+        workorder also collects the still-unassigned raw moves so the
+        materials are consumed at that operation.
+        """
         workcenter_ref = op.get("workcenter_ref")
         if not workcenter_ref:
             return
@@ -422,12 +429,53 @@ class MrpProduction(models.Model):
         except ValueError:
             _logger.warning("Unknown workcenter ref: %s", workcenter_ref)
             return
-        self.env["mrp.workorder"].create(
+        duration = self._eval_matrix_duration(
+            op.get("duration_formula", op.get("duration", 0)), ctx
+        )
+        workorder = self.env["mrp.workorder"].create(
             {
                 "name": op.get("name", workcenter.name),
                 "production_id": self.id,
                 "workcenter_id": workcenter.id,
                 "product_uom_id": self.product_uom_id.id,
                 "qty_production": self.product_qty,
+                "duration_expected": duration,
             }
         )
+        # Consume the raw materials at this operation (first WO collects them).
+        move_model = self.env["stock.move"]
+        if "workorder_id" in move_model._fields:
+            moves = self.move_raw_ids.filtered(lambda m: not m.workorder_id)
+            if moves:
+                try:
+                    moves.write({"workorder_id": workorder.id})
+                except Exception as exc:  # noqa: BLE001
+                    _logger.debug("Raw moves → workorder link skipped: %s", exc)
+
+    @staticmethod
+    def _eval_matrix_duration(raw, ctx):
+        """Resolve a T3 duration (minutes): number, numeric string, or a
+        plain-Python expression evaluated against the matrix context.
+
+        Plain ``exec`` (not safe_eval) — the formula is internal matrix data,
+        and safe_eval rejects/zeroes such expressions on some builds."""
+        if isinstance(raw, (int, float)):
+            return float(raw)
+        expr = str(raw or "").strip()
+        if len(expr) >= 2 and expr[0] == '"' and expr[-1] == '"':
+            expr = expr[1:-1].strip()
+        try:
+            return float(expr)
+        except ValueError:
+            pass
+        try:
+            scope = {"__builtins__": {
+                "int": int, "float": float, "min": min, "max": max,
+                "round": round, "abs": abs,
+            }}
+            local = dict(ctx or {})
+            exec(compile("__dur__ = " + expr, "<t3_duration>", "exec"), scope, local)
+            return float(local.get("__dur__", 0.0) or 0.0)
+        except Exception as exc:  # noqa: BLE001
+            _logger.warning("T3 duration eval failed (%s): %s", expr, exc)
+            return 0.0
