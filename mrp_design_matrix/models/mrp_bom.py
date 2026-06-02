@@ -99,6 +99,236 @@ class MrpBom(models.Model):
             }
         )
 
+    # ── Live BoM simulation (cost + cutting-list preview) ───────────────
+    # Generic eval engine used by sale_design_configurator's live preview
+    # panel and by downstream auto-recompute hooks on mrp.production.
+    # Distinct from the matrix flow (`_generate_design_matrix_moves`):
+    # this evaluates each line's `quantity_formula` directly with a flat
+    # design-params namespace, returning a breakdown ready for UI rendering
+    # without producing any stock.move records.
+
+    # Whitelisted globals for the eval sandbox — data/math primitives only,
+    # no I/O or import access.  BoM formulas come from admin-only config so
+    # we don't need safe_eval's stricter AST allowlist here (and safe_eval
+    # has shown intermittent failures on multi-statement try/except bodies
+    # across Odoo builds; plain exec with a primitive globals dict is the
+    # tested baseline shared with downstream recompute scripts).
+    _DESIGN_FORMULA_GLOBALS = {
+        "__builtins__": {
+            "int": int, "float": float, "abs": abs, "min": min, "max": max,
+            "round": round, "len": len, "sum": sum, "any": any, "all": all,
+            "True": True, "False": False, "None": None,
+        },
+    }
+
+    def _design_eval_namespace(self, design_params_rich, product_uom_qty=1.0):
+        """Build the namespace passed to each BoM line's quantity_formula.
+
+        Default behaviour: flatten ``design_params_rich`` (the rich
+        properties list as returned by ``stock.lot.read(['design_params'])``)
+        into a dict keyed by BOTH the property ``name`` (UUID hash) and its
+        human ``string`` label, plus ``product_uom_qty`` and dimension
+        shortcuts (``Width (mm)`` → ``width`` etc.).
+
+        Downstream modules can override to add industry-specific derived
+        variables (e.g. T1 geometry outputs that would otherwise come from
+        the matrix flow's zen evaluation — useful for live preview where
+        we don't want to incur the matrix overhead per keystroke).
+        """
+        self.ensure_one()
+        ns = {"product_uom_qty": product_uom_qty}
+        label_to_dim = {
+            "Width (mm)": "width",
+            "Height (mm)": "height",
+            "Thickness (mm)": "thickness",
+        }
+        for prop in (design_params_rich or []):
+            if not isinstance(prop, dict):
+                continue
+            value = prop.get("value")
+            if value is None:
+                continue
+            name = prop.get("name")
+            label = prop.get("string") or ""
+            if name:
+                ns[name] = value
+            if label:
+                ns[label] = value
+                dim_key = label_to_dim.get(label)
+                if dim_key:
+                    ns[dim_key] = value
+        return ns
+
+    def _design_eval_formula(self, formula, ns):
+        """Execute a BoM line's quantity_formula in the sandbox.  Returns
+        ``(qty: float, locals_after: dict)`` so callers can read out
+        intermediate variables the formula set (``n_pieces``,
+        ``piece_length_mm``, …) for cutting-list breakdown."""
+        if not formula:
+            return None, {}
+        local = dict(ns)
+        try:
+            exec(formula, self._DESIGN_FORMULA_GLOBALS, local)
+            qty = float(local.get("quantity", local.get("result", 0)) or 0)
+            return qty, local
+        except Exception as exc:
+            _logger.warning(
+                "Design formula eval failed on bom %s: %s | expr=%s",
+                self.id, exc, (formula or "")[:120],
+            )
+            return 0.0, local
+
+    @staticmethod
+    def _design_formula_uses_dims(formula):
+        """Heuristic: does the formula reference panel-specific dimensions?
+        Lines that don't use width/height (constants like end-cap counts,
+        package count, central-console formulas) eval ONCE; lines that do
+        eval per panel and sum (slat, terminal, guide, brush, axis)."""
+        return ("width" in (formula or "")) or ("height" in (formula or ""))
+
+    def simulate_with_params(self, design_params_rich, product_uom_qty=1.0,
+                             per_subassembly_pairs=None):
+        """Evaluate every active BoM line's quantity_formula against the
+        given design parameters and return a UI-ready breakdown.
+
+        :param design_params_rich: rich properties list (as returned by
+            ``stock.lot.read(['design_params'])``)
+        :param product_uom_qty: production qty multiplier (default 1)
+        :param per_subassembly_pairs: optional list of ``(width_mm, height_mm)``
+            tuples — one per repeated subassembly when a single BoM produces
+            N independent panels sharing one assembly (e.g. two-shutter
+            roller blinds in one box).  Triggers per-panel evaluation for
+            formulas that reference ``width`` / ``height`` and sums the
+            per-line quantities; non-dim formulas eval once.
+        :returns:
+            ``{lines: [...], total_material: float, active_count: int,
+               total_count: int, panels: int}``
+
+            Each line carries::
+
+                {
+                    "bom_line_id": int,
+                    "product_id": int,
+                    "product_name": str,
+                    "qty": float,                 # total qty for assembly
+                    "uom": str,
+                    "unit_cost": float,
+                    "subtotal": float,
+                    "cuts": [                     # per-panel breakdown when
+                        {                          # per_subassembly_pairs given
+                            "panel": int,         # 1-indexed
+                            "L_mm": int,
+                            "H_mm": int,
+                            "qty_per_panel": float,
+                            "n_pieces": int|None, # explicit from formula
+                            "piece_length_mm": int|None,
+                        },
+                        ...
+                    ],
+                }
+        """
+        self.ensure_one()
+        base_ns = self._design_eval_namespace(design_params_rich, product_uom_qty)
+        try:
+            sc = int(base_ns.get("shutter_count") or base_ns.get("subassembly_count") or 1)
+        except (TypeError, ValueError):
+            sc = 1
+        pairs = list(per_subassembly_pairs or [])
+        use_per_subassembly = bool(pairs) and sc > 1 and len(pairs) >= sc
+
+        out_lines = []
+        total_material = 0.0
+        active = 0
+        for bom_line in self.bom_line_ids:
+            formula = (bom_line.quantity_formula or "").strip()
+            cuts = []
+            if not formula:
+                qty = bom_line.product_qty
+            elif use_per_subassembly and self._design_formula_uses_dims(formula):
+                qty = 0.0
+                for idx, (l_i, h_i) in enumerate(pairs[:sc]):
+                    panel_ns = dict(base_ns)
+                    panel_ns["width"] = l_i
+                    panel_ns["height"] = h_i
+                    val, panel_locals = self._design_eval_formula(formula, panel_ns)
+                    qty += (val or 0.0)
+                    if val and val > 0:
+                        n_pieces = panel_locals.get("n_pieces")
+                        piece_len = panel_locals.get("piece_length_mm")
+                        cuts.append({
+                            "panel": idx + 1,
+                            "L_mm": int(l_i),
+                            "H_mm": int(h_i),
+                            "qty_per_panel": float(val),
+                            "n_pieces": int(n_pieces) if n_pieces is not None else None,
+                            "piece_length_mm": int(piece_len) if piece_len is not None else None,
+                        })
+            else:
+                qty, _ = self._design_eval_formula(formula, base_ns)
+                if qty is None:
+                    qty = bom_line.product_qty
+            if qty is None or qty < 0:
+                qty = 0.0
+            unit_cost = bom_line.product_id.standard_price or 0.0
+            subtotal = qty * unit_cost
+            total_material += subtotal
+            if qty > 0:
+                active += 1
+            out_lines.append({
+                "bom_line_id": bom_line.id,
+                "product_id": bom_line.product_id.id,
+                "product_name": bom_line.product_id.display_name,
+                "qty": qty,
+                "uom": bom_line.product_uom_id.name,
+                "unit_cost": unit_cost,
+                "subtotal": subtotal,
+                "cuts": cuts,
+            })
+        return {
+            "lines": out_lines,
+            "total_material": total_material,
+            "active_count": active,
+            "total_count": len(out_lines),
+            "panels": (sc if use_per_subassembly else 1),
+        }
+
+    @api.model
+    def simulate_for_product(self, product_tmpl_id, design_params_rich,
+                             product_uom_qty=1.0, per_subassembly_pairs=None):
+        """``simulate_with_params`` convenience wrapper that looks up the
+        active BoM by ``product_tmpl_id``."""
+        bom = self.search(
+            [("product_tmpl_id", "=", product_tmpl_id), ("active", "=", True)],
+            limit=1,
+        )
+        if not bom:
+            return {
+                "lines": [], "total_material": 0.0, "active_count": 0,
+                "total_count": 0, "panels": 1,
+                "error": "No active BoM for product_tmpl_id %s" % product_tmpl_id,
+            }
+        return bom.simulate_with_params(
+            design_params_rich, product_uom_qty, per_subassembly_pairs,
+        )
+
+    @api.model
+    def simulate_for_variant(self, product_id, design_params_rich,
+                             product_uom_qty=1.0, per_subassembly_pairs=None):
+        """``simulate_with_params`` variant-id wrapper for the OWL
+        configurator dialog (which carries product.product id, not
+        product.template id)."""
+        product = self.env["product.product"].browse(product_id).exists()
+        if not product:
+            return {
+                "lines": [], "total_material": 0.0, "active_count": 0,
+                "total_count": 0, "panels": 1,
+                "error": "Product variant %s not found" % product_id,
+            }
+        return self.simulate_for_product(
+            product.product_tmpl_id.id, design_params_rich,
+            product_uom_qty, per_subassembly_pairs,
+        )
+
     # ── T2 wiring sanity check ──────────────────────────────────────────
     # T2 material_table emit-ва `bom_line_coeff_key` стойности (rope-o,
     # motor-o, …), които mrp.bom.line.matrix_coeff_rule трябва да декларира
