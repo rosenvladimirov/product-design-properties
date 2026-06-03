@@ -644,6 +644,13 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                         "content": {
                             "rules": [
                                 {
+                                    "name": "\"Сглобяване на щора\"",
+                                    "control_type": "",
+                                    "shutter_model": "",
+                                    "workcenter_ref": "\"mrp_design_matrix_shutters.wc_teo_assembly\"",
+                                    "duration_formula": "\"20 * (width / 1000.0) * (height / 1000.0)\""
+                                },
+                                {
                                     "name": "\"Motor Install &amp; Programming\"",
                                     "control_type": "\"motor\"",
                                     "shutter_model": "!= \"thermo_comfort\"",
