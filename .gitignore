@@ -86,3 +86,7 @@ docs/_build/
 
 # OCA rules
 !static/lib/
+*.bak
+*.git-version.bak
+*.git-version.bak/
+*.pyc

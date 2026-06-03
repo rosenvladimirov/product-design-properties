@@ -57,10 +57,7 @@ class SaleOrderLine(models.Model):
                 continue
 
             params = line._build_param_namespace()
-            result = bom._evaluate_cost_with_params(
-                params,
-                order_partner=line.order_id.partner_id or None,
-            )
+            result = bom._evaluate_cost_with_params(params)
             mat_markup = (tmpl.effective_material_markup_percent or 0.0) / 100.0
             lab_markup = (tmpl.effective_labor_markup_percent or 0.0) / 100.0
 
@@ -99,32 +96,17 @@ class SaleOrderLine(models.Model):
         return ns
 
     def _render_breakdown_html(self, result, mat_markup, lab_markup):
-        # T0 messages (constraints from matrix template) — show as banner.
-        t0_html = ""
-        for msg in (result.get("t0_messages") or []):
-            css = "alert-danger" if msg.get("level") == "error" else "alert-warning"
-            t0_html += f"<div class='alert {css} p-1 mb-1'>{msg.get('message','')}</div>"
         rows = []
         for ln in result["lines"]:
-            # Visual indent за recursed lines (phantom/semi-finished walk).
-            depth = len(ln.get("path") or [])
-            indent = "&nbsp;&nbsp;" * (depth * 2) if depth else ""
-            # Source badge: vendor / standard / child_bom
-            src = ln.get("price_source", "standard")
-            badge = {"vendor": "🏷", "standard": "📦", "child_bom": "🔗"}.get(src, "")
-            seller = ln.get("seller_name", "")
-            seller_html = f"<small class='text-muted'> · {seller}</small>" if seller else ""
             rows.append(
-                f"<tr><td>{indent}{badge} {ln['product_name']}{seller_html}</td>"
+                f"<tr><td>{ln['product_name']}</td>"
                 f"<td class='text-end'>{ln['qty']:.4f}</td>"
                 f"<td class='text-end'>{ln['unit_cost']:.4f}</td>"
                 f"<td class='text-end'>{ln['subtotal']:.2f}</td></tr>"
             )
         for op in result["operations"]:
-            depth = len(op.get("path") or [])
-            indent = "&nbsp;&nbsp;" * (depth * 2) if depth else ""
             rows.append(
-                f"<tr><td>{indent}<i>{op['name']}</i></td>"
+                f"<tr><td><i>{op['name']}</i></td>"
                 f"<td class='text-end'>{op['minutes']:.1f} min</td>"
                 f"<td class='text-end'>{op['rate_per_hour']:.2f}/h</td>"
                 f"<td class='text-end'>{op['subtotal']:.2f}</td></tr>"
@@ -134,7 +116,6 @@ class SaleOrderLine(models.Model):
         labor_total = result["labor_cost"] * (1.0 + lab_markup)
         total = material_total + labor_total
         return Markup(
-            f"{t0_html}"
             "<table class='table table-sm'>"
             "<thead><tr><th>Item</th><th class='text-end'>Qty</th>"
             "<th class='text-end'>Unit</th><th class='text-end'>Subtotal</th></tr></thead>"
@@ -158,7 +139,72 @@ class SaleOrderLine(models.Model):
     def _compute_price_unit(self):
         return super()._compute_price_unit()
 
-    # Customer-specific UX hooks (line.name auto-refresh от design params,
-    # per-shutter dims pretty print и т.н.) се override-ват в clientski
-    # модули — виж teolino_mrp_design_recompute/models/sale_order_line.py
-    # за Teolino-specific implementation.
+    # ── Auto-regenerate line.name after every design lot save ─────────────
+    # User-facing description on the SO line must reflect the LATEST lot
+    # params so customer-facing docs (quote/invoice) are correct.  Without
+    # this hook, line.name stays frozen at whatever was set when the line
+    # was first created (usually just the product name).
+
+    def set_design_lot(self, lot_id):
+        res = super().set_design_lot(lot_id)
+        try:
+            self._teolino_refresh_design_description()
+        except Exception:
+            # Never break lot save because of description rendering
+            import logging
+            logging.getLogger(__name__).exception(
+                "Failed to refresh design description on line %s", self.id,
+            )
+        return res
+
+    def _teolino_refresh_design_description(self):
+        """Rebuild line.name from product display name + bullet list of
+        current lot design_params.  Skips use_main sentinels and color_X
+        rows that match main_color.  When teolino_per_shutter_dims is set
+        (sc>1), replaces the single Width/Height rows with a per-panel
+        line: '• Размери: Щ.1 1000×2000, Щ.2 800×2500'."""
+        for line in self:
+            if not line.design_lot_id or not line.product_id:
+                continue
+            lot = line.design_lot_id
+            rich = lot.read(["design_params"])[0].get("design_params") or []
+            # First pass: index by name + grab main_color resolved value
+            main_color_val = None
+            for prop in rich:
+                if isinstance(prop, dict) and prop.get("name") == "main_color":
+                    main_color_val = prop.get("value")
+                    break
+            # Per-shutter pairs (replaces flat Width/Height when present)
+            per_pairs = []
+            if hasattr(lot, "teolino_get_per_shutter_pairs"):
+                per_pairs = lot.teolino_get_per_shutter_pairs()
+            skip_flat_dims = bool(per_pairs)
+            parts = [line.product_id.display_name]
+            if skip_flat_dims:
+                pretty = ", ".join(
+                    f"Щ.{i+1} {int(L)}×{int(H)}" for i, (L, H) in enumerate(per_pairs)
+                )
+                parts.append(f"• Размери: {pretty}")
+            for prop in rich:
+                if not isinstance(prop, dict):
+                    continue
+                value = prop.get("value")
+                if value in (None, False, "", "use_main"):
+                    continue
+                name = prop.get("name") or ""
+                label = prop.get("string") or name
+                if not label:
+                    continue
+                # Skip per-component color rows that match main_color —
+                # they're redundant noise on the quote/invoice.
+                if name.startswith("color_") and main_color_val and value == main_color_val:
+                    continue
+                # Skip flat Width/Height when we already rendered per-shutter dims.
+                if skip_flat_dims and label in ("Width (mm)", "Height (mm)", "Thickness (mm)"):
+                    continue
+                # Selection: prefer human label over raw value
+                if prop.get("type") == "selection":
+                    sel = dict(prop.get("selection") or [])
+                    value = sel.get(value, value)
+                parts.append(f"• {label}: {value}")
+            line.name = "\n".join(parts)
