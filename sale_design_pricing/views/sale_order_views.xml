@@ -6,12 +6,12 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='order_line']/list/field[@name='price_unit']" position="after">
-                <field name="list_price_total" optional="hide" readonly="1" string="List Price"/>
-                <field name="cost_material" optional="hide" readonly="1"/>
-                <field name="cost_labor" optional="hide" readonly="1"/>
+                <field name="list_price_total" optional="hide" readonly="1" string="List Price" groups="base.group_system"/>
+                <field name="cost_material" optional="hide" readonly="1" groups="base.group_system"/>
+                <field name="cost_labor" optional="hide" readonly="1" groups="base.group_system"/>
             </xpath>
             <xpath expr="//field[@name='order_line']/form//notebook" position="inside">
-                <page string="Cost Breakdown" name="cost_breakdown" invisible="not design_lot_id">
+                <page string="Калкулация (admin)" name="cost_breakdown" invisible="not design_lot_id" groups="base.group_system">
                     <group>
                         <field name="cost_material" readonly="1"/>
                         <field name="list_price_material" readonly="1"/>
