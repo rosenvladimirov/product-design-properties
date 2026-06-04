@@ -223,7 +223,7 @@ class MrpBom(models.Model):
         # ── Operations (TM-driven OR local) ───────────────────────────────
         if t3_operations is not None:
             for op_dict in t3_operations:
-                wc, minutes = self._resolve_t3_operation(op_dict)
+                wc, minutes = self._resolve_t3_operation(op_dict, full_ctx)
                 if not wc:
                     continue
                 rate = wc.costs_hour or 0.0
@@ -371,13 +371,14 @@ class MrpBom(models.Model):
             uom = product.uom_id
         return (product, qty, uom)
 
-    def _resolve_t3_operation(self, op_dict):
+    def _resolve_t3_operation(self, op_dict, ctx=None):
         """Resolve T3 operation dict към (workcenter, minutes).
 
         Supported keys:
         - ``workcenter_ref`` (XMLID) → env.ref()
         - ``workcenter_id`` (int) → direct
-        Duration: ``duration`` или ``minutes`` (default 0).
+        Duration: ``duration``/``minutes`` (number) или ``duration_formula``
+        (израз, оценен срещу ``ctx`` — напр. ``20 * width/1000 * height/1000``).
         """
         wc = False
         if op_dict.get("workcenter_ref"):
@@ -393,7 +394,34 @@ class MrpBom(models.Model):
             if not wc.exists():
                 wc = False
         minutes = float(op_dict.get("duration") or op_dict.get("minutes") or 0.0)
+        if not minutes and op_dict.get("duration_formula") is not None:
+            minutes = self._eval_t3_duration(op_dict["duration_formula"], ctx or {})
         return (wc, minutes)
+
+    @staticmethod
+    def _eval_t3_duration(raw, ctx):
+        """T3 duration (minutes): number, numeric string, or a plain-Python
+        expression evaluated against ``ctx``.  Plain ``exec`` (not safe_eval —
+        safe_eval zeroes such expressions on some builds)."""
+        if isinstance(raw, (int, float)):
+            return float(raw)
+        expr = str(raw or "").strip()
+        if len(expr) >= 2 and expr[0] == '"' and expr[-1] == '"':
+            expr = expr[1:-1].strip()
+        try:
+            return float(expr)
+        except ValueError:
+            pass
+        try:
+            scope = {"__builtins__": {
+                "int": int, "float": float, "min": min, "max": max,
+                "round": round, "abs": abs,
+            }}
+            local = dict(ctx or {})
+            exec(compile("__dur__ = " + expr, "<t3_dur>", "exec"), scope, local)
+            return float(local.get("__dur__", 0.0) or 0.0)
+        except Exception:  # noqa: BLE001
+            return 0.0
 
     def _find_child_bom(self, product, company):
         """Резолва child BoM за продукт (за recursion детекция)."""
