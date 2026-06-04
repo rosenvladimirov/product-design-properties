@@ -648,7 +648,7 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                                     "control_type": "",
                                     "shutter_model": "",
                                     "workcenter_ref": "\"mrp_design_matrix_shutters.wc_teo_assembly\"",
-                                    "duration_formula": "\"20 * (width / 1000.0) * (height / 1000.0)\""
+                                    "duration_formula": "\"20 * (width / 1000.0) * (height / 1000.0) * int(shutter_count or 1)\""
                                 },
                                 {
                                     "name": "\"Motor Install &amp; Programming\"",
