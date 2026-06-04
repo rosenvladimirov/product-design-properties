@@ -1,6 +1,6 @@
 {
     "name": "Sale Design Pricing — cost+ markup для design products",
-    "version": "18.0.1.2.3",
+    "version": "18.0.1.2.4",
     "summary": "Cost-plus pricing for parametric design products (separate material/labor markups)",
     "author": "Teolino",
     "license": "AGPL-3",

@@ -226,7 +226,8 @@ class MrpBom(models.Model):
                 wc, minutes = self._resolve_t3_operation(op_dict, full_ctx)
                 if not wc:
                     continue
-                rate = wc.costs_hour or 0.0
+                # Часова ставка = работен център + работник (employee).
+                rate = (wc.costs_hour or 0.0) + (wc.employee_costs_hour or 0.0)
                 subtotal = (minutes / 60.0) * rate
                 labor_cost += subtotal
                 breakdown_ops.append({
@@ -243,7 +244,7 @@ class MrpBom(models.Model):
                 if not workcenter:
                     continue
                 minutes = op.time_cycle or 0.0
-                rate = workcenter.costs_hour or 0.0
+                rate = (workcenter.costs_hour or 0.0) + (workcenter.employee_costs_hour or 0.0)
                 subtotal = (minutes / 60.0) * rate
                 labor_cost += subtotal
                 breakdown_ops.append({
