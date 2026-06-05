@@ -103,11 +103,22 @@ class MrpBom(models.Model):
         """
         from odoo.addons.base_zen_decision.models.zen_engine import ZenWrapper
 
+        # Таблиците живеят на matrix template-а; конкретният BoM обикновено ги
+        # има празни (matrix_template_id сочи към reusable engine-а, а самите
+        # decision tables НЕ се копират по BoM-а). Fallback към template-а,
+        # иначе T1 не се пуска → slat_len_offset/slat_count_mode липсват в
+        # namespace-а → всяка dimension-формула пада на 0 → цена 0.
+        tmpl = self.matrix_template_id
+        constraint_table = self.constraint_table or (tmpl.constraint_table if tmpl else False)
+        geometry_table = self.geometry_table or (tmpl.geometry_table if tmpl else False)
+        material_table = self.material_table or (tmpl.material_table if tmpl else False)
+        operation_table = self.operation_table or (tmpl.operation_table if tmpl else False)
+
         t0_messages = []
         # T0 constraints — за audit (warnings/errors), не break-ваме pricing
-        if self.constraint_table:
+        if constraint_table:
             try:
-                t0 = ZenWrapper.evaluate(self.constraint_table, ctx)
+                t0 = ZenWrapper.evaluate(constraint_table, ctx)
                 rows = t0 if isinstance(t0, list) else (t0 or {}).get("result", [])
                 for r in rows:
                     msg = r.get("message")
@@ -119,9 +130,9 @@ class MrpBom(models.Model):
 
         # T1 geometry — derived context vars (slat_count_mode, etc.)
         full_ctx = dict(ctx)
-        if self.geometry_table:
+        if geometry_table:
             try:
-                t1 = ZenWrapper.evaluate(self.geometry_table, ctx)
+                t1 = ZenWrapper.evaluate(geometry_table, ctx)
                 rows = t1 if isinstance(t1, list) else (t1 or {}).get("result", [])
                 # T1 hitPolicy=first → typically a single row dict
                 if isinstance(rows, dict):
@@ -134,9 +145,9 @@ class MrpBom(models.Model):
         # T2 materials — coefficient lookup + ad-hoc rows
         t2_coeff_by_key = {}
         t2_adhoc_rows = []
-        if self.material_table:
+        if material_table:
             try:
-                t2 = ZenWrapper.evaluate(self.material_table, full_ctx)
+                t2 = ZenWrapper.evaluate(material_table, full_ctx)
                 rows = t2 if isinstance(t2, list) else (t2 or {}).get("result", [])
                 for r in rows:
                     key = r.get("bom_line_coeff_key")
@@ -149,9 +160,9 @@ class MrpBom(models.Model):
 
         # T3 operations — conditional workorders
         t3_operations = None
-        if self.operation_table:
+        if operation_table:
             try:
-                t3 = ZenWrapper.evaluate(self.operation_table, full_ctx)
+                t3 = ZenWrapper.evaluate(operation_table, full_ctx)
                 t3_operations = t3 if isinstance(t3, list) else (t3 or {}).get("result", [])
             except Exception as e:
                 _logger.warning("T3 eval failed on bom %s: %s", self.display_name, e)
