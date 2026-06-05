@@ -115,7 +115,7 @@ class MrpBom(models.Model):
         :returns: tuple (t0_messages, full_ctx, t2_coeff_by_key,
                   t2_adhoc_rows, t3_operations_or_None).
         """
-        from odoo.addons.mrp_design_matrix.models.zen_engine import ZenWrapper
+        from odoo.addons.base_zen_decision.models.zen_engine import ZenWrapper
 
         t0_messages = []
         # T0 constraints — за audit (warnings/errors), не break-ваме pricing
