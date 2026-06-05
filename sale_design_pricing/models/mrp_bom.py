@@ -25,9 +25,10 @@ class MrpBom(models.Model):
         # без matrix template), а формулите по редовете не виждат T1 изходите
         # (slat_len_offset, …) и количествата падат на 0.
         full_ctx = dict(params or {})
+        t0_messages = []
         t3_operations = None
         if self.matrix_template_id:
-            _t0m, full_ctx, _t2c, _t2a, t3_operations = self._tm_evaluate(full_ctx)
+            t0_messages, full_ctx, _t2c, _t2a, t3_operations = self._tm_evaluate(full_ctx)
         breakdown_lines = []
         material_cost = 0.0
         for bom_line in self.bom_line_ids:
@@ -46,23 +47,8 @@ class MrpBom(models.Model):
 
         breakdown_ops = []
         labor_cost = 0.0
-        for op in self.operation_ids:
-            workcenter = op.workcenter_id
-            if not workcenter:
-                continue
-            minutes = op.time_cycle or 0.0
-            rate = workcenter.costs_hour or 0.0
-            subtotal = (minutes / 60.0) * rate
-            labor_cost += subtotal
-            breakdown_ops.append({
-                "workcenter_id": workcenter.id,
-                "name": op.name,
-                "minutes": minutes,
-                "rate_per_hour": rate,
-                "subtotal": subtotal,
-            })
 
-        # ── Operations (TM-driven OR local) ───────────────────────────────
+        # ── Operations (TM-driven OR local) — единичен проход (без дубъл) ──
         if t3_operations is not None:
             for op_dict in t3_operations:
                 wc, minutes = self._resolve_t3_operation(op_dict, full_ctx)
