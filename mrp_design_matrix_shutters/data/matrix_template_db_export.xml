@@ -10,7 +10,7 @@
 T1: per-model slat/terminal/axis/box offsets + slat-count mode + caps mode + guide mode (keyed on shutter_model + slat_size).
 T2: O-variant kits — rope / shirit / motor (standard) / motor_safety (Thermo with safety profile) / feather guide.
 T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
-      <field name="constraint_table" eval="            {
+      <field name="constraint_table" eval='            {
                 "nodes": [
                     {
                         "id": "t0-teo",
@@ -747,8 +747,8 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                         }
                     }
                 ]
-            }"/>
-      <field name="geometry_table" eval="            {
+            }'/>
+      <field name="geometry_table" eval='            {
                 "nodes": [
                     {
                         "id": "t1-teo",
@@ -925,8 +925,8 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                         }
                     }
                 ]
-            }"/>
-      <field name="material_table" eval="            {
+            }'/>
+      <field name="material_table" eval='            {
                 "nodes": [
                     {
                         "id": "t2-teo",
@@ -998,8 +998,8 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                         }
                     }
                 ]
-            }"/>
-      <field name="operation_table" eval="            {
+            }'/>
+      <field name="operation_table" eval='            {
                 "nodes": [
                     {
                         "id": "t3-teo",
@@ -1057,12 +1057,12 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                         }
                     }
                 ]
-            }"/>
-      <field name="availability_table" eval="            null"/>
-      <field name="cascade_table" eval="            null"/>
-      <field name="layout_table" eval="            null"/>
-      <field name="multiplicity_table" eval="            null"/>
-      <field name="lookup_tables" eval="            null"/>
+            }'/>
+      <field name="availability_table" eval='            null'/>
+      <field name="cascade_table" eval='            null'/>
+      <field name="layout_table" eval='            null'/>
+      <field name="multiplicity_table" eval='            null'/>
+      <field name="lookup_tables" eval='            null'/>
     </record>
   </data>
 </odoo>
