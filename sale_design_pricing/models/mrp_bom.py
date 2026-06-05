@@ -20,10 +20,18 @@ class MrpBom(models.Model):
         with template-level design properties).
         """
         self.ensure_one()
+        # Matrix activation (T0/T1/T2/T3) — defines full_ctx + t3_operations.
+        # Без този блок `t3_operations` по-долу е недефиниран (NameError при BoM
+        # без matrix template), а формулите по редовете не виждат T1 изходите
+        # (slat_len_offset, …) и количествата падат на 0.
+        full_ctx = dict(params or {})
+        t3_operations = None
+        if self.matrix_template_id:
+            _t0m, full_ctx, _t2c, _t2a, t3_operations = self._tm_evaluate(full_ctx)
         breakdown_lines = []
         material_cost = 0.0
         for bom_line in self.bom_line_ids:
-            qty = bom_line._evaluate_quantity(params)
+            qty = bom_line._evaluate_quantity(full_ctx)
             qty_with_loss = qty * (1.0 + (bom_line.loss or 0.0) / 100.0)
             unit_cost = bom_line.product_id.standard_price
             subtotal = qty_with_loss * unit_cost
