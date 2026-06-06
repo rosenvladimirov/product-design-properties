@@ -102,21 +102,40 @@ export class DesignConfiguratorDialog extends Component {
                 // и за reactive availability eval в configurator-а.
                 this.state.bomId = boms[0].id;
                 try {
+                    const TABLES = ["constraint_table", "geometry_table",
+                        "material_table", "operation_table", "availability_table",
+                        "cascade_table", "multiplicity_table", "layout_table"];
                     const [bomData] = await this.orm.read(
                         "mrp.bom", [boms[0].id],
-                        ["constraint_table", "geometry_table", "material_table",
-                         "operation_table", "availability_table", "cascade_table",
-                         "multiplicity_table", "layout_table"]
+                        ["matrix_template_id", ...TABLES]
                     );
                     if (bomData) {
-                        this.state.constraintTable = bomData.constraint_table || false;
-                        this.state.geometryTable = bomData.geometry_table || false;
-                        this.state.materialTable = bomData.material_table || false;
-                        this.state.operationTable = bomData.operation_table || false;
-                        this.state.availabilityTable = bomData.availability_table || false;
-                        this.state.cascadeTable = bomData.cascade_table || false;
-                        this.state.multiplicityTable = bomData.multiplicity_table || false;
-                        this.state.layoutTable = bomData.layout_table || false;
+                        // BoM-копието има приоритет; fallback на
+                        // matrix_template_id (server _tm_evaluate + TΠ eval +
+                        // pricing fallback-ват по същия начин). Реалните BoM-ове
+                        // държат decision tables-ите само на template-а — без
+                        // тоя fallback дизайнерът не вижда TΠ/T0/… за тях.
+                        let tpl = {};
+                        if (bomData.matrix_template_id && TABLES.some(f => !bomData[f])) {
+                            try {
+                                const [tplData] = await this.orm.read(
+                                    "mrp.matrix.template",
+                                    [bomData.matrix_template_id[0]], TABLES
+                                );
+                                tpl = tplData || {};
+                            } catch (e) {
+                                console.warn("Could not load template matrix tables:", e.message);
+                            }
+                        }
+                        const pick = (f) => bomData[f] || tpl[f] || false;
+                        this.state.constraintTable = pick("constraint_table");
+                        this.state.geometryTable = pick("geometry_table");
+                        this.state.materialTable = pick("material_table");
+                        this.state.operationTable = pick("operation_table");
+                        this.state.availabilityTable = pick("availability_table");
+                        this.state.cascadeTable = pick("cascade_table");
+                        this.state.multiplicityTable = pick("multiplicity_table");
+                        this.state.layoutTable = pick("layout_table");
                     }
                 } catch (e) {
                     console.warn("Could not load BoM matrix tables:", e.message);

@@ -5,7 +5,7 @@
     "summary": (
         "SO line design configurator with 3D preview " "for parametric manufacturing"
     ),
-    "version": "18.0.1.11.0",
+    "version": "18.0.1.12.0",
     "category": "Sales",
     "website": "https://github.com/OCA/manufacture",
     "author": "Rosen Vladimirov, BL Consulting, Odoo Community Association (OCA)",
