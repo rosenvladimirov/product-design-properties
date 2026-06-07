@@ -209,7 +209,7 @@
                                            t-att-value="state.newColName"
                                            t-on-input="onNewColNameInput"
                                            t-on-keydown="confirmAddCol"
-                                           t-ref="addColInput"/>
+                                           t-custom-ref="addColInput"/>
                                     <button class="btn btn-sm btn-primary"
                                             t-on-click="confirmAddCol">
                                         <i class="fa fa-check"/>
@@ -236,7 +236,7 @@
                                            t-att-value="state.newColName"
                                            t-on-input="onNewColNameInput"
                                            t-on-keydown="confirmAddCol"
-                                           t-ref="addColInput"/>
+                                           t-custom-ref="addColInput"/>
                                     <button class="btn btn-sm btn-success"
                                             t-on-click="confirmAddCol">
                                         <i class="fa fa-check"/>
