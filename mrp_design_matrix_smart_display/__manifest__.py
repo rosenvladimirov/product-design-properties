@@ -6,7 +6,7 @@
         "Design parameter definitions and matrix templates "
         "for smart home display panel manufacturers."
     ),
-    "version": "19.0.1.0.0",
+    "version": "20.0.1.0.0",
     "category": "Manufacturing",
     "website": "https://github.com/OCA/manufacture",
     "author": "Rosen Vladimirov, BL Consulting, Odoo Community Association (OCA)",

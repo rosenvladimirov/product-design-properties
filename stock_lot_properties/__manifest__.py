@@ -6,7 +6,7 @@
         "Adds dynamic design parameters (Properties) "
         "to stock.lot linked to a definition model"
     ),
-    "version": "19.0.1.0.0",
+    "version": "20.0.1.0.0",
     "category": "Inventory",
     "website": "https://github.com/OCA/manufacture",
     "author": "Rosen Vladimirov, BL Consulting, Odoo Community Association (OCA)",

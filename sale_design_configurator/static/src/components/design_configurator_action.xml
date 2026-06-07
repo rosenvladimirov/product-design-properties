@@ -2,7 +2,7 @@
 <templates xml:space="preserve">
 
 <t t-name="sale_design_configurator.DesignConfiguratorAction">
-    <div class="d-none" t-ref="root"/>
+    <div class="d-none" t-custom-ref="root"/>
 </t>
 
 </templates>

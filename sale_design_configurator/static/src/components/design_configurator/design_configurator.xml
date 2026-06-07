@@ -223,7 +223,7 @@
         <!-- Right panel: 3D viewport (when 3D/SVG assets exist) -->
         <t t-else="">
             <div class="o_cfg_viewport">
-                <canvas t-ref="canvas"/>
+                <canvas t-custom-ref="canvas"/>
                 <div class="o_cfg_viewport_controls">
                     <button class="o_cfg_ctrl_btn" t-on-click="toggleAutoRotate"
                             t-att-title="ui.autoRotate ? 'Pause rotation' : 'Resume rotation'">
@@ -236,7 +236,7 @@
                 <div class="o_cfg_rotate_hint" t-if="ui.autoRotate">Drag to rotate</div>
 
                 <!-- Accessory overlay panel (bottom sheet) -->
-                <div t-ref="overlay" class="o_cfg_overlay"
+                <div t-custom-ref="overlay" class="o_cfg_overlay"
                      t-att-style="'height:' + ui.overlayHeight + 'px'">
                     <div class="o_cfg_overlay_handle" t-on-mousedown="onOverlayHandleDrag">
                         <div class="o_cfg_overlay_grip"/>

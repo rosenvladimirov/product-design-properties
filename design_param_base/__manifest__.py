@@ -6,7 +6,7 @@
         "Shared design parameter definitions "
         "with SVG profiles for parametric manufacturing"
     ),
-    "version": "19.0.1.1.1",
+    "version": "20.0.1.1.1",
     "category": "Manufacturing",
     "website": "https://github.com/OCA/manufacture",
     "author": "Rosen Vladimirov, BL Consulting, Odoo Community Association (OCA)",
