@@ -10,17 +10,19 @@
                 <field name="cost_material" optional="hide" readonly="1" groups="base.group_system"/>
                 <field name="cost_labor" optional="hide" readonly="1" groups="base.group_system"/>
             </xpath>
-            <xpath expr="//field[@name='order_line']/form//notebook" position="inside">
-                <page string="Калкулация (admin)" name="cost_breakdown" invisible="not design_lot_id" groups="base.group_system">
-                    <group>
-                        <field name="cost_material" readonly="1"/>
-                        <field name="list_price_material" readonly="1"/>
-                        <field name="cost_labor" readonly="1"/>
-                        <field name="list_price_labor" readonly="1"/>
-                        <field name="list_price_total" readonly="1"/>
-                    </group>
-                    <field name="cost_breakdown_html" readonly="1" nolabel="1"/>
-                </page>
+            <!-- order_line inline формата в Odoo 18 (nightly 20260608) НЯМА
+                 <notebook> → таргетираме самата <form> и слагаме разбивката
+                 в group (без page). -->
+            <xpath expr="//field[@name='order_line']/form" position="inside">
+                <group string="Калкулация (admin)" name="cost_breakdown"
+                       invisible="not design_lot_id" groups="base.group_system">
+                    <field name="cost_material" readonly="1"/>
+                    <field name="list_price_material" readonly="1"/>
+                    <field name="cost_labor" readonly="1"/>
+                    <field name="list_price_labor" readonly="1"/>
+                    <field name="list_price_total" readonly="1"/>
+                    <field name="cost_breakdown_html" readonly="1" nolabel="1" colspan="2"/>
+                </group>
             </xpath>
         </field>
     </record>
