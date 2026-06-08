@@ -1,6 +1,6 @@
 {
     "name": "Sale Design Pricing — cost+ markup для design products",
-    "version": "18.0.1.3.1",
+    "version": "18.0.1.3.2",
     "summary": "Cost-plus pricing for parametric design products (separate material/labor markups)",
     "author": "Rosen Vladimirov",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
