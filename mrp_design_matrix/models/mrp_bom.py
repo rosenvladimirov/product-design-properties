@@ -451,6 +451,18 @@ class MrpBom(models.Model):
         return normalized
 
     @api.model
+    def configurator_evaluate_availability(self, bom_id, context):
+        """Public RPC entry за TΠ availability (дизайнерът го вика по orm.call).
+
+        ``_configurator_evaluate_availability`` е private (долна черта) → Odoo
+        блокира private методи в call_kw (``Private methods ... cannot be
+        called remotely``), затова orm.call-ът от конфигуратора тихо падаше в
+        catch и TΠ enforcement-ът никога не се пускаше. Тоя тънък публичен
+        wrapper е стабилната входна точка.
+        """
+        return self._configurator_evaluate_availability(bom_id, context)
+
+    @api.model
     def _configurator_evaluate_availability(self, bom_id, context):
         """Return TΠ availability state за дадения BoM и текущ param context.
 

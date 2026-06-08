@@ -411,7 +411,9 @@ export class DesignConfiguratorWidget extends Component {
         try {
             result = await this.orm.call(
                 "mrp.bom",
-                "_configurator_evaluate_availability",
+                // Public wrapper — private методи (с долна черта) не се викат
+                // по RPC (Odoo блокира в call_kw).
+                "configurator_evaluate_availability",
                 [this.props.bomId, ctx],
             );
         } catch (e) {
