@@ -33,7 +33,9 @@ class MrpBom(models.Model):
         material_cost = 0.0
         for bom_line in self.bom_line_ids:
             qty = bom_line._evaluate_quantity(full_ctx)
-            qty_with_loss = qty * (1.0 + (bom_line.loss or 0.0) / 100.0)
+            # loss (фира) е ratio (0.05 = 5%), уеднаквено с mrp_bom_line_losses
+            # MO консумацията; без /100 — иначе 5% става 0.05%.
+            qty_with_loss = qty * (1.0 + (bom_line.loss or 0.0))
             unit_cost = bom_line.product_id.standard_price
             subtotal = qty_with_loss * unit_cost
             material_cost += subtotal
