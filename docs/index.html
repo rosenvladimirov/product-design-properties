@@ -123,6 +123,173 @@ footer{max-width:1180px;margin:0 auto;padding:30px 26px 60px;color:var(--faint);
 </tbody>
 </table>
 <hr>
+<h2 id="available-addons">Available addons</h2>
+<p>This is a multi-module suite (OCA-style). Install the core engine plus the
+industry vertical(s) you need.</p>
+<h3 id="core-engine-kernel">Core engine &amp; kernel</h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Version</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mrp_design_matrix</code></td>
+<td>18.0.2.3.0</td>
+<td>Parametric BoM driven by lot-level design parameters and a DMN rule matrix</td>
+</tr>
+<tr>
+<td><code>base_zen_decision</code></td>
+<td>18.0.1.0.0</td>
+<td>ZEN/GoRules decision-table kernel — evaluate + trace + version + sync</td>
+</tr>
+<tr>
+<td><code>design_param_base</code></td>
+<td>18.0.1.1.1</td>
+<td>Shared design-parameter definitions with SVG profiles</td>
+</tr>
+<tr>
+<td><code>stock_lot_properties</code></td>
+<td>18.0.1.0.0</td>
+<td>Dynamic design parameters (Properties) on <code>stock.lot</code></td>
+</tr>
+<tr>
+<td><code>product_design_assets</code></td>
+<td>18.0.1.1.0</td>
+<td>Link design visual assets (GLB / SVG / PNG) from product attachments</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bom-formula-engine">BoM formula engine</h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Version</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mrp_bom_line_formula_template</code></td>
+<td>18.0.1.3.0</td>
+<td>Reusable templates for BoM line quantity formulas</td>
+</tr>
+<tr>
+<td><code>mrp_bom_line_formula_wizard</code></td>
+<td>18.0.1.1.0</td>
+<td>Edit BoM line formulas in a dedicated wizard</td>
+</tr>
+<tr>
+<td><code>mrp_bom_line_formula_claude</code></td>
+<td>18.0.1.0.0</td>
+<td>Generate BoM formulas with Claude AI via MCP</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sales-pricing">Sales &amp; pricing</h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Version</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sale_design_configurator</code></td>
+<td>18.0.1.13.0</td>
+<td>SO-line design configurator with 3D preview</td>
+</tr>
+<tr>
+<td><code>sale_design_pricing</code></td>
+<td>18.0.1.3.2</td>
+<td>Cost-plus pricing — separate material / labor markups</td>
+</tr>
+</tbody>
+</table>
+<h3 id="industry-verticals-design-matrices">Industry verticals (design matrices)</h3>
+<p>Each vertical is a self-contained story: it ships only the parameter
+definitions + matrix templates for that product family, on top of the core
+engine. Pick the one that matches your shop floor.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Version</th>
+<th>Vertical</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mrp_design_matrix_shutters</code></td>
+<td>18.0.1.7.2</td>
+<td>Roller shutters — 5-model range (motor sized by area × slat weight)</td>
+</tr>
+<tr>
+<td><code>mrp_design_matrix_roller_door</code></td>
+<td>18.0.1.5.0</td>
+<td>Roller shutter doors</td>
+</tr>
+<tr>
+<td><code>mrp_design_matrix_roller_garage_door</code></td>
+<td>18.0.1.0.0</td>
+<td>Roller garage doors</td>
+</tr>
+<tr>
+<td><code>mrp_design_matrix_security_door</code></td>
+<td>18.0.1.0.0</td>
+<td>Security doors — RC class forces component minimums</td>
+</tr>
+<tr>
+<td><code>mrp_design_matrix_interior_door</code></td>
+<td>18.0.1.0.0</td>
+<td>Interior doors — double-leaf geometry</td>
+</tr>
+<tr>
+<td><code>mrp_design_matrix_corrugated</code></td>
+<td>18.0.1.1.0</td>
+<td>Corrugated / cardboard boxes — multi-layer grammage</td>
+</tr>
+<tr>
+<td><code>mrp_design_matrix_smart_display</code></td>
+<td>18.0.1.0.0</td>
+<td>Smart-home displays</td>
+</tr>
+<tr>
+<td><code>mrp_design_matrix_bags</code></td>
+<td>18.0.1.0.0</td>
+<td>Garbage bags — resin by geometry</td>
+</tr>
+<tr>
+<td><code>mrp_design_matrix_canned_peppers</code></td>
+<td>18.0.1.0.0</td>
+<td>Canned roasted peppers</td>
+</tr>
+</tbody>
+</table>
+<h3 id="access-control-shares-the-zen-kernel">Access control (shares the ZEN kernel)</h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Version</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>access_control</code></td>
+<td>18.0.1.12.1</td>
+<td>Polymorphic physical access control — subjects, perimeters, points</td>
+</tr>
+</tbody>
+</table>
+<hr>
 <h2 id="target-industries">Target Industries</h2>
 <table>
 <thead>

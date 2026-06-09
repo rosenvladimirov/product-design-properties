@@ -29,6 +29,62 @@ The result: engineering departments maintain thousands of product variants (one 
 
 ---
 
+## Available addons
+
+This is a multi-module suite (OCA-style). Install the core engine plus the
+industry vertical(s) you need.
+
+### Core engine & kernel
+
+| Module | Version | Summary |
+|---|---|---|
+| `mrp_design_matrix` | 18.0.2.3.0 | Parametric BoM driven by lot-level design parameters and a DMN rule matrix |
+| `base_zen_decision` | 18.0.1.0.0 | ZEN/GoRules decision-table kernel — evaluate + trace + version + sync |
+| `design_param_base` | 18.0.1.1.1 | Shared design-parameter definitions with SVG profiles |
+| `stock_lot_properties` | 18.0.1.0.0 | Dynamic design parameters (Properties) on `stock.lot` |
+| `product_design_assets` | 18.0.1.1.0 | Link design visual assets (GLB / SVG / PNG) from product attachments |
+
+### BoM formula engine
+
+| Module | Version | Summary |
+|---|---|---|
+| `mrp_bom_line_formula_template` | 18.0.1.3.0 | Reusable templates for BoM line quantity formulas |
+| `mrp_bom_line_formula_wizard` | 18.0.1.1.0 | Edit BoM line formulas in a dedicated wizard |
+| `mrp_bom_line_formula_claude` | 18.0.1.0.0 | Generate BoM formulas with Claude AI via MCP |
+
+### Sales & pricing
+
+| Module | Version | Summary |
+|---|---|---|
+| `sale_design_configurator` | 18.0.1.13.0 | SO-line design configurator with 3D preview |
+| `sale_design_pricing` | 18.0.1.3.2 | Cost-plus pricing — separate material / labor markups |
+
+### Industry verticals (design matrices)
+
+Each vertical is a self-contained story: it ships only the parameter
+definitions + matrix templates for that product family, on top of the core
+engine. Pick the one that matches your shop floor.
+
+| Module | Version | Vertical |
+|---|---|---|
+| `mrp_design_matrix_shutters` | 18.0.1.7.2 | Roller shutters — 5-model range (motor sized by area × slat weight) |
+| `mrp_design_matrix_roller_door` | 18.0.1.5.0 | Roller shutter doors |
+| `mrp_design_matrix_roller_garage_door` | 18.0.1.0.0 | Roller garage doors |
+| `mrp_design_matrix_security_door` | 18.0.1.0.0 | Security doors — RC class forces component minimums |
+| `mrp_design_matrix_interior_door` | 18.0.1.0.0 | Interior doors — double-leaf geometry |
+| `mrp_design_matrix_corrugated` | 18.0.1.1.0 | Corrugated / cardboard boxes — multi-layer grammage |
+| `mrp_design_matrix_smart_display` | 18.0.1.0.0 | Smart-home displays |
+| `mrp_design_matrix_bags` | 18.0.1.0.0 | Garbage bags — resin by geometry |
+| `mrp_design_matrix_canned_peppers` | 18.0.1.0.0 | Canned roasted peppers |
+
+### Access control (shares the ZEN kernel)
+
+| Module | Version | Summary |
+|---|---|---|
+| `access_control` | 18.0.1.12.1 | Polymorphic physical access control — subjects, perimeters, points |
+
+---
+
 ## Target Industries
 
 | Industry | Key Challenge | Example |
