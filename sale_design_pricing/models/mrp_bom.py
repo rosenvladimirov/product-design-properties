@@ -106,7 +106,8 @@ class MrpBom(models.Model):
             if t2_coeff_by_key and getattr(bom_line, "matrix_coeff_rule", False):
                 coeff = float(t2_coeff_by_key.get(bom_line.matrix_coeff_rule, 0.0))
             qty *= coeff
-            qty_with_loss = qty * (1.0 + (bom_line.loss or 0.0) / 100.0)
+            # loss е ratio (0.05 = 5%), уеднаквено с mrp_bom_line_losses
+            qty_with_loss = qty * (1.0 + (bom_line.loss or 0.0))
             product = bom_line.product_id
             if not product or qty_with_loss <= 0:
                 continue
