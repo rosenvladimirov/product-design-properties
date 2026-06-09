@@ -6,6 +6,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [18.0.2.0.0] - 2026-06-09
+
+Major release — kernel extraction, cost-plus pricing engine, six new industry
+verticals and the roller-shutter range. Summarises ~99 commits since 1.10.0.
+
+### Added
+- **base_zen_decision** — standalone ZEN/GoRules decision-table kernel
+  (evaluate + trace + version + sync), extracted from `mrp_design_matrix` and
+  now shared with access control.
+- **sale_design_pricing** — cost-plus pricing engine: separate material/labor
+  markups, vendor pricing, recursive phantom/semi-finished BoM cost walk,
+  admin-only price breakdown, Matrix-Template integration.
+- New industry verticals: `security_door`, `interior_door`, `smart_display`,
+  `roller_garage_door`, `bags`, `canned_peppers`.
+- Roller-shutter range (`mrp_design_matrix_shutters`) — 5-model range with T3
+  assembly operations, box-capacity (H_MAX) constraints, Thermo-Comfort RAL
+  colour restrictions.
+- TΦ cascade engine (`derive_expression`, box-by-height lookup) + TΩ/TΛ widget
+  API; `mrp.bom.simulate_with_params` live-eval helper.
+- 3 modules adopted from Vladimir Kanchev's design pipeline.
+
+### Changed
+- `mrp_design_matrix` → 18.0.2.x: Phase 1 kernel extraction; shutters data
+  split into work centers + DB-sourced matrix.
+- T3 operation `duration_formula` applied to work orders + linked raw moves.
+- `sale_design_configurator` — full-viewport 3D dialog.
+
+### Removed
+- `teolino_*` customer-specific modules moved to the dedicated `teolino` repo.
+
+### Fixed
+- Pricing/matrix/shutters hardening: labor rate = work-center + employee cost,
+  T3 duration accounts for `shutter_count`, BoM decision-table fallback from
+  matrix template, ZenWrapper import path, XML eval-attr quoting, public RPC
+  entry for TΠ availability, and more.
+
 ## [18.0.1.10.0] - 2026-05-24
 
 ### Added — 3 нови модула от Teolino design pipeline (Vladimir Kanchev)
