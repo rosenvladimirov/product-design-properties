@@ -16,7 +16,10 @@ class StockLot(models.Model):
         Returns a unique lot name from sequence, or falls back to a
         product-based name.
         """
-        name = self.env["ir.sequence"].next_by_code("stock.lot.serial")
+        # sudo: порталните (share) юзъри нямат достъп до ir.sequence —
+        # без sudo конфигураторът в дилърския портал гърми при запазване с
+        # AccessError ('not allowed to access Sequence').
+        name = self.env["ir.sequence"].sudo().next_by_code("stock.lot.serial")
         if not name:
             product = self.env["product.product"].browse(product_id)
             name = (
