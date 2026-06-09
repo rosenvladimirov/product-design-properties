@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>product-design-properties — Odoo 18.0</title>
+<meta name="description" content="Design-driven manufacturing for Odoo 18 with lot-level parameters."/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 5 3'><rect width='5' height='3' fill='%23ffffff'/><rect width='5' height='1' y='1' fill='%2300966E'/><rect width='5' height='1' y='2' fill='%23D62612'/></svg>"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#fff;--bg2:#F5F8FD;--card:#fff;--ink:#2B3A55;--soft:#5C6E8E;--faint:#90A0BD;
+ --blue:#5E86CE;--blue-deep:#3F62A8;--blue-soft:#DCE7F8;--blue-wash:#EEF4FC;--rule:#D6E2F1;--rule2:#E6EEF9;
+ --sh:0 20px 56px rgba(108,148,214,.20);--sh-s:0 10px 30px rgba(108,148,214,.14);
+ --disp:'Spectral',Georgia,serif;--ui:'Golos Text',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:15.5px;line-height:1.65;
+ background-image:radial-gradient(1000px 440px at 84% -12%,rgba(108,148,214,.06),transparent 62%),
+  linear-gradient(rgba(94,134,206,.016) 1px,transparent 1px),linear-gradient(90deg,rgba(94,134,206,.016) 1px,transparent 1px);
+ background-size:auto,56px 56px,56px 56px}
+a{color:var(--blue-deep);text-decoration:none}.mono{font-family:var(--mono)}
+header{position:sticky;top:0;z-index:9;background:rgba(238,244,252,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--rule)}
+.bar{display:flex;align-items:center;gap:18px;max-width:1180px;margin:0 auto;padding:14px 26px}
+.brand{font-family:var(--mono);font-weight:700}.brand b{color:var(--blue-deep)}
+.bar .sp{margin-left:auto}
+.gh{font-family:var(--mono);font-size:12px;border:1px solid var(--rule);background:var(--card);padding:8px 14px;border-radius:10px}
+.gh:hover{border-color:var(--blue)}
+.hero{max-width:1180px;margin:0 auto;padding:40px 26px 18px}
+.kick{font-family:var(--mono);font-size:11.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--blue-deep);display:flex;align-items:center;gap:11px;margin-bottom:12px}
+.kick::before{content:"";width:32px;height:2px;background:var(--blue)}
+.hero h1{font-family:var(--disp);font-weight:700;font-size:clamp(1.8rem,3.4vw,2.7rem);line-height:1.08;letter-spacing:-.012em}
+.hero .tag{color:var(--soft);font-size:clamp(1rem,1.2vw,1.12rem);max-width:70ch;margin-top:12px}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.cs{background:var(--card);border:1px solid var(--rule);padding:10px 16px;box-shadow:var(--sh-s);border-radius:2px}
+.cs b{font-family:var(--disp);font-weight:700;font-size:1.25rem;color:var(--blue-deep);display:block;line-height:1.05}
+.cs span{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.wrap{max-width:1180px;margin:34px auto 0;padding:0 26px 80px}
+.sec-lbl{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin:38px 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.mc{background:var(--card);border:1px solid var(--rule);border-radius:2px;padding:16px 18px;box-shadow:var(--sh-s);transition:.16s}
+.mc:hover{border-color:var(--blue);box-shadow:var(--sh)}
+.mc-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.mc-slug{font-size:12px;color:var(--blue-deep);font-weight:700}
+.mc-v{margin-left:auto;font-size:10.5px;color:var(--faint)}
+.mc strong{display:block;font-size:14.5px;margin-bottom:4px}
+.mc p{color:var(--soft);font-size:13px;line-height:1.5}
+.reader{background:var(--card);border:1px solid var(--rule);border-radius:14px;box-shadow:var(--sh);margin-top:18px;padding:34px 44px 56px}
+.doc{font-size:15.5px;line-height:1.72}
+.doc h1,.doc h2,.doc h3,.doc h4{font-family:var(--disp);font-weight:700;line-height:1.2;margin:1.6em 0 .55em;letter-spacing:-.01em}
+.doc h1{font-size:1.9rem;margin-top:.1em}
+.doc h2{font-size:1.45rem;padding-bottom:.26em;border-bottom:1px solid var(--rule2)}
+.doc h3{font-size:1.18rem;color:var(--blue-deep)}
+.doc p{margin:.8em 0}.doc ul,.doc ol{margin:.7em 0 .9em 1.4em}.doc li{margin:.3em 0}
+.doc a{border-bottom:1px solid var(--blue-soft)}
+.doc code{font-family:var(--mono);font-size:.86em;background:var(--blue-wash);padding:.14em .42em;border-radius:6px;color:var(--blue-deep)}
+.doc pre{background:#F4F8FD;border:1px solid var(--rule);border-radius:12px;padding:18px 20px;overflow:auto}
+.doc pre code{background:none;padding:0;color:var(--ink)}
+.doc table{border-collapse:collapse;margin:1em 0;font-size:14px;width:100%}
+.doc th,.doc td{border:1px solid var(--rule);padding:8px 12px;text-align:left}
+.doc th{background:var(--blue-wash);color:var(--blue-deep)}
+.doc img{max-width:100%;border-radius:8px}
+footer{max-width:1180px;margin:0 auto;padding:30px 26px 60px;color:var(--faint);font-family:var(--mono);font-size:12px}
+@media(max-width:640px){.reader{padding:24px 22px}}
+</style>
+</head>
+<body>
+<header><div class="bar">
+ <span class="brand"><b>product-design-properties</b></span>
+ <span class="sp"></span>
+ <a class="gh" href="https://github.com/rosenvladimirov/product-design-properties">GitHub ↗</a>
+</div></header>
+
+<section class="hero">
+ <div class="kick">Odoo 18.0 · MIT</div>
+ <h1>product-design-properties</h1>
+ <p class="tag">Design-driven manufacturing for Odoo 18 with lot-level parameters.</p>
+ <div class="chips"><div class="cs"><b>20</b><span>modules</span></div><div class="cs"><b>18.0</b><span>Odoo</span></div><div class="cs"><b>MIT</b><span>license</span></div></div>
+</section>
+
+<div class="wrap">
+ <div class="sec-lbl">20 modules</div>
+ <div class="grid"><div class="mc"><div class="mc-h"><span class="mc-slug mono">access_control</span><span class="mc-v mono">18.0.1.12.1</span></div><strong>Access Control (ZEN-driven)</strong><p>Polymorphic physical access control: subjects, perimeters, control points, ZEN-driven decision flow with offline sync.</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">base_zen_decision</span><span class="mc-v mono">18.0.1.0.0</span></div><strong>Base ZEN Decision</strong><p>ZEN/GoRules decision-table kernel: evaluate + trace + version + sync. Domain-agnostic host for mrp_design_matrix, access_control.</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">design_param_base</span><span class="mc-v mono">18.0.1.1.1</span></div><strong>Design Parameter Base</strong><p>Shared design parameter definitions with SVG profiles for parametric manufacturing</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">mrp_bom_line_formula_claude</span><span class="mc-v mono">18.0.1.0.0</span></div><strong>MRP BoM Line Formula Claude Assistant</strong><p>Generate BoM line quantity formulas with Claude AI via MCP terminal</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">mrp_bom_line_formula_template</span><span class="mc-v mono">18.0.1.3.0</span></div><strong>MRP BoM Line Formula Templates</strong><p>Manage reusable templates for BoM line quantity formulas</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">mrp_bom_line_formula_wizard</span><span class="mc-v mono">18.0.1.1.0</span></div><strong>MRP BoM Line Formula Wizard</strong><p>Edit BoM line quantity formulas in a dedicated wizard with syntax help</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">mrp_design_matrix</span><span class="mc-v mono">18.0.2.2.0</span></div><strong>MRP Design Matrix</strong><p>Parametric BoM driven by lot-level design parameters and a DMN rule matrix. Universal for make-to-order industries.</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">mrp_design_matrix_bags</span><span class="mc-v mono">18.0.1.0.0</span></div><strong>MRP Design Matrix — Bags</strong><p>Design parameter definitions and matrix templates for garbage bag manufacturers.</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">mrp_design_matrix_canned_peppers</span><span class="mc-v mono">18.0.1.0.0</span></div><strong>MRP Design Matrix — Canned Roasted Peppers</strong><p>Design parameter definitions and matrix templates for canned roasted pepper manufacturers.</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">mrp_design_matrix_corrugated</span><span class="mc-v mono">18.0.1.1.0</span></div><strong>MRP Design Matrix — Corrugated / Cartons</strong><p>Design parameter definitions and matrix templates for Corrugated / Cartons manufacturers.</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">mrp_design_matrix_interior_door</span><span class="mc-v mono">18.0.1.0.0</span></div><strong>MRP Design Matrix — Interior Doors</strong><p>Design parameter definitions and matrix templates for Interior Doors manufacturers.</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">mrp_design_matrix_roller_door</span><span class="mc-v mono">18.0.1.5.0</span></div><strong>MRP Design Matrix — Roller Shutters</strong><p>Design parameter definitions and matrix templates for roller shutter manufacturers (Teolino).</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">mrp_design_matrix_roller_garage_door</span><span class="mc-v mono">18.0.1.0.0</span></div><strong>MRP Design Matrix — Roller Garage Doors</strong><p>Design parameter definitions and matrix templates for roller garage door manufacturers.</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">mrp_design_matrix_security_door</span><span class="mc-v mono">18.0.1.0.0</span></div><strong>MRP Design Matrix — Security Doors</strong><p>Design parameter definitions and matrix templates for security door manufacturers. Includes RC class logic.</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">mrp_design_matrix_shutters</span><span class="mc-v mono">18.0.1.6.1</span></div><strong>MRP Design Matrix — Roller Shutters (5 models)</strong><p>Full parametric design matrix for a 5-model roller-shutter range: Standard, Round, T-Roll, Built-In and Thermo Comfort.</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">mrp_design_matrix_smart_display</span><span class="mc-v mono">18.0.1.0.0</span></div><strong>MRP Design Matrix — Smart Home Display</strong><p>Design parameter definitions and matrix templates for smart home display panel manufacturers.</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">product_design_assets</span><span class="mc-v mono">18.0.1.1.0</span></div><strong>Product Design Assets</strong><p>Link design visual assets (GLB, SVG, PNG) from product attachments for 3D configurators</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">sale_design_configurator</span><span class="mc-v mono">18.0.1.11.0</span></div><strong>Sale Design Configurator</strong><p>SO line design configurator with 3D preview for parametric manufacturing</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">sale_design_pricing</span><span class="mc-v mono">18.0.1.2.8</span></div><strong>Sale Design Pricing — cost+ markup для design products</strong><p>Cost-plus pricing for parametric design products (separate material/labor markups)</p></div><div class="mc"><div class="mc-h"><span class="mc-slug mono">stock_lot_properties</span><span class="mc-v mono">18.0.1.0.0</span></div><strong>Stock Lot Properties</strong><p>Adds dynamic design parameters (Properties) to stock.lot linked to a definition model</p></div></div>
+ <div class="sec-lbl">Documentation</div>
+ <div class="reader"><div class="doc"><p><strong>Design-driven manufacturing for Odoo 18 with lot-level parameters.</strong></p>
+<p><a href="https://www.gnu.org/licenses/agpl-3.0"><img alt="License: AGPL-3" src="https://img.shields.io/badge/licence-AGPL--3-blue.svg"></a>
+<a href="https://www.odoo.com"><img alt="Odoo 18" src="https://img.shields.io/badge/Odoo-18-blueviolet.svg"></a></p>
+<hr>
+<h2 id="the-problem">The Problem</h2>
+<p>Manufacturing companies working on make-to-order basis face a fundamental limitation in Odoo: the standard system manages products as categories, but cannot describe the <strong>specific physical item</strong> that needs to be produced right now, for this particular customer, with these exact parameters.</p>
+<p>The result: engineering departments maintain thousands of product variants (one per parameter combination), or rely on paper-based specifications outside the system. In both cases, planning, traceability, and costing are incomplete.</p>
+<h2 id="the-solution">The Solution</h2>
+<p><strong>MRP Design Matrix</strong> introduces a new conceptual layer: the <strong>production lot carries the design specification</strong> of the item. The BoM is parametric -- materials and quantities are computed automatically from the lot's parameters. A rule system (matrix) governs the transformation.</p>
+<h3 id="key-concepts">Key Concepts</h3>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Lot = Design carrier</strong></td>
+<td><code>stock.lot</code> with Properties describes the specific production run. Variant = category. Lot = physical realization.</td>
+</tr>
+<tr>
+<td><strong>BoM = Planning view</strong></td>
+<td>Contains all possible materials, including O-variants (conditional items with <code>coeff=0.0</code>).</td>
+</tr>
+<tr>
+<td><strong>MO = Execution view</strong></td>
+<td>Only active materials appear. O-variants are activated by the matrix (<code>coeff &gt; 0.0</code>).</td>
+</tr>
+<tr>
+<td><strong>Design Matrix (T0-T3)</strong></td>
+<td>Four rule tables transform design parameters into concrete materials and operations.</td>
+</tr>
+<tr>
+<td><strong>Properties, not custom fields</strong></td>
+<td>All design parameters live in Odoo Properties. Definitions are data, not code.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="target-industries">Target Industries</h2>
+<table>
+<thead>
+<tr>
+<th>Industry</th>
+<th>Key Challenge</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Garbage bags</td>
+<td>Resin consumption depends on geometry</td>
+<td>Width x length x thickness x density</td>
+</tr>
+<tr>
+<td>Corrugated boxes</td>
+<td>Board grade, liner combo, trim optimization</td>
+<td>Multi-layer grammage calculation</td>
+</tr>
+<tr>
+<td>Roller shutters</td>
+<td>Motor selected by door weight, not user choice</td>
+<td><code>motor_class = f(area x slat_weight)</code></td>
+</tr>
+<tr>
+<td>Security doors</td>
+<td>RC class forces minimums on all components</td>
+<td><code>sheet_thickness = max(user, RC_min)</code></td>
+</tr>
+<tr>
+<td>Interior doors</td>
+<td>Double-leaf has different geometry</td>
+<td><code>effective_area = w x h x 2</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="module-stack">Module Stack</h2>
+<pre><code>                                    ┌──────────────────────────────────┐
+                                    │   mrp_design_matrix_bags         │
+                                    │   mrp_design_matrix_corrugated   │
+                                    │   mrp_design_matrix_roller_door  │  Industry
+                                    │   mrp_design_matrix_security_door│  Submodules
+                                    │   mrp_design_matrix_interior_door│
+                                    └──────────────┬───────────────────┘
+                                                   │ depends
+                                    ┌──────────────▼───────────────────┐
+                                    │      mrp_design_matrix           │  Core Engine
+                                    │  (models, views, GoRules, UI)    │
+                                    └──────────────┬───────────────────┘
+                                                   │ depends
+                          ┌────────────────────────┼────────────────────────┐
+                          │                        │                        │
+           ┌──────────────▼──────┐  ┌──────────────▼──────┐  ┌──────────────▼────────────┐
+           │ mrp_bom_formula_    │  │ stock_move_forced_  │  │ stock_move_forced_        │
+           │ lot_dimension       │  │ lot_multi           │  │ lot_multi_dim             │
+           │ (bridge ~50 lines)  │  │ (PR candidate OCA)  │  │ (width/height/thickness)  │
+           └──────────────┬──────┘  └─────────────────────┘  └───────────────────────────┘
+                          │ depends
+           ┌──────────────▼──────────────────┐
+           │ mrp_bom_line_formula_quantity   │  OCA/manufacture (exists)
+           └─────────────────────────────────┘
+</code></pre>
+<hr>
+<h2 id="design-matrix-the-four-tables">Design Matrix -- The Four Tables</h2>
+<h3 id="t0-constraints">T0 -- Constraints</h3>
+<p>Executes <strong>before</strong> anything else. Blocks invalid designs or warns about risky ones.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Effect</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ERROR</code></td>
+<td><code>UserError</code>, stops MO creation</td>
+<td>Perforation + insulation (roller)</td>
+</tr>
+<tr>
+<td><code>WARNING</code></td>
+<td><code>message_post</code>, continues</td>
+<td>Width &gt; 4000mm + manual drive (roller)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="t1-geometry-forced-values">T1 -- Geometry + Forced Values</h3>
+<p>Computes intermediate variables and enriches the context for T2/T3.</p>
+<table>
+<thead>
+<tr>
+<th>Effect Type</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>context_modify</code></td>
+<td>Computes new value</td>
+<td><code>effective_length = height x 2 + 50</code></td>
+</tr>
+<tr>
+<td><code>context_force</code></td>
+<td>Overrides user input with minimum</td>
+<td><code>sheet_thickness = max(user, RC_min)</code></td>
+</tr>
+<tr>
+<td><code>context_derive</code></td>
+<td>Computes from physics</td>
+<td><code>motor_class = f(area x slat_weight)</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="t2-materials">T2 -- Materials</h3>
+<p>Three output types (non-exclusive):</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Mechanism</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>O-variant activation</strong></td>
+<td><code>{"bom_line_coeff_key": "ink-O", "coefficient": 1.15}</code></td>
+<td>Activate/deactivate BoM line</td>
+</tr>
+<tr>
+<td><strong>Direct ref</strong></td>
+<td><code>{"product_ref": "module.product_xmlid", ...}</code></td>
+<td>Fixed materials without variants</td>
+</tr>
+<tr>
+<td><strong>PTAV resolution</strong></td>
+<td><code>{"product_tmpl_ref": "...", "param_attribute_map": {...}}</code></td>
+<td>Design param -&gt; attribute -&gt; variant</td>
+</tr>
+</tbody>
+</table>
+<h3 id="t3-operations">T3 -- Operations</h3>
+<p>Conditionally adds workorders to the MO.</p>
+<pre><code class="language-json">{&quot;workcenter_ref&quot;: &quot;module.wc_assembly&quot;, &quot;duration_formula&quot;: &quot;width * 0.5&quot;, &quot;sequence&quot;: 10}
+</code></pre>
+<hr>
+<h2 id="design-parameters-odoo-properties">Design Parameters -- Odoo Properties</h2>
+<p>All industry-specific parameters live in <code>fields.Properties</code>, following the pattern from <a href="https://github.com/OCA/product-attribute">product_electrical_properties</a>. Only <code>width</code>, <code>height</code>, and <code>thickness</code> remain as real fields.</p>
+<h3 id="definition-xml">Definition (XML)</h3>
+<pre><code class="language-xml">&lt;records&gt;
+    &lt;properties code=&quot;bags&quot; name=&quot;Bags - Standard&quot;&gt;
+        &lt;items name=&quot;bag_type&quot;&gt;
+            &lt;item name=&quot;type&quot;&gt;selection&lt;/item&gt;
+            &lt;item name=&quot;selection&quot;&gt;[[&quot;sleeve&quot;,&quot;Sleeve&quot;],[&quot;sheet&quot;,&quot;Sheet&quot;]]&lt;/item&gt;
+            &lt;item name=&quot;default&quot;&gt;sleeve&lt;/item&gt;
+        &lt;/items&gt;
+        &lt;items name=&quot;has_tie&quot;&gt;
+            &lt;item name=&quot;type&quot;&gt;boolean&lt;/item&gt;
+            &lt;item name=&quot;default&quot;&gt;false&lt;/item&gt;
+        &lt;/items&gt;
+    &lt;/properties&gt;
+&lt;/records&gt;
+</code></pre>
+<h3 id="reading-python">Reading (Python)</h3>
+<pre><code class="language-python">design_context = {
+    &quot;width&quot;: lot.width, &quot;height&quot;: lot.height, &quot;thickness&quot;: lot.thickness,
+    &quot;qty&quot;: production.product_qty,
+    **{k: v for k, v in (lot.design_params or {}).items()},
+}
+# -&gt; {&quot;width&quot;: 600, &quot;bag_type&quot;: &quot;sleeve&quot;, &quot;has_tie&quot;: True, ...}
+</code></pre>
+<hr>
+<h2 id="ptav-resolution">PTAV Resolution</h2>
+<p>Design parameters map to product attributes, enabling automatic variant selection:</p>
+<pre><code>design_params.color = &quot;FF0000&quot;
+    | param_attribute_map: {&quot;color&quot;: &quot;module.attr_color&quot;}
+    v
+attribute: Color / value: &quot;FF0000&quot;
+    | _get_variant_for_combination(ptav)
+    v
+product.product: Ink + Color/FF0000
+</code></pre>
+<p>Values in <code>design_params</code> must match <code>product.attribute.value.name</code> exactly.</p>
+<hr>
+<h2 id="semi-finished-products-recursive-chain">Semi-Finished Products -- Recursive Chain</h2>
+<p>Each semi-finished product gets its own lot with parameters extracted from the parent lot:</p>
+<pre><code>End product lot_1: {bag_type, has_tie, width, color, thickness}
+    MO Level 1
+        |
+        +-- Film (semi-finished)
+        |       lot_2: {bag_type, width, color, thickness}
+        |       &lt;- extracted via param_extraction_map
+        |       MO Level 2
+        |            |
+        |            +-- Resin  mto_stop=True -&gt; PO
+        |
+        +-- Tie  mto_stop=True -&gt; PO or stock
+                lot_3: {tie_length: height + 50}
+                &lt;- transformation via safe_eval
+</code></pre>
+<table>
+<thead>
+<tr>
+<th><code>mto_stop</code></th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>False</code></td>
+<td>Creates new MO + child lot, recursion continues</td>
+</tr>
+<tr>
+<td><code>True</code></td>
+<td>Searches stock for matching lot -&gt; if none -&gt; PO with parameters</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="matrix-templates-workflow">Matrix Templates -- Workflow</h2>
+<pre><code>1. Select design_param_definition_id on BoM  -&gt;  lot shows correct Properties
+2. Select matrix_template_id  -&gt;  press [Load from Template]
+3. Edit the 4 JSON tables with ace_editor    -&gt;  changes are per-BoM
+4. Template is NEVER edited directly
+</code></pre>
+<p>Templates are shipped by industry submodules. The customer copies and customizes.</p>
+<hr>
+<h2 id="data-models">Data Models</h2>
+<h3 id="mrpdesignparamdefinition"><code>mrp.design.param.definition</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>code</code></td>
+<td><code>Char</code></td>
+<td>Unique code: <code>'bags'</code>, <code>'roller_door'</code></td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>Char</code></td>
+<td>Human-readable name</td>
+</tr>
+<tr>
+<td><code>industry</code></td>
+<td><code>Char</code></td>
+<td>Grouping/filtering</td>
+</tr>
+<tr>
+<td><code>parent_id</code></td>
+<td><code>Many2one -&gt; self</code></td>
+<td>Inheritance</td>
+</tr>
+<tr>
+<td><code>design_params_definition</code></td>
+<td><code>PropertiesDefinition</code></td>
+<td>Parameter schema</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mrpmatrixtemplate"><code>mrp.matrix.template</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>Char</code></td>
+<td>Template name</td>
+</tr>
+<tr>
+<td><code>industry</code></td>
+<td><code>Char</code></td>
+<td>For filtering</td>
+</tr>
+<tr>
+<td><code>constraint_table</code></td>
+<td><code>Json</code></td>
+<td>T0 rules (GoRules format)</td>
+</tr>
+<tr>
+<td><code>geometry_table</code></td>
+<td><code>Json</code></td>
+<td>T1 rules</td>
+</tr>
+<tr>
+<td><code>material_table</code></td>
+<td><code>Json</code></td>
+<td>T2 rules</td>
+</tr>
+<tr>
+<td><code>operation_table</code></td>
+<td><code>Json</code></td>
+<td>T3 rules</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mrpbom-extended"><code>mrp.bom</code> (extended)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>design_param_definition_id</code></td>
+<td><code>Many2one</code></td>
+<td>Parameter set for this BoM</td>
+</tr>
+<tr>
+<td><code>matrix_template_id</code></td>
+<td><code>Many2one</code></td>
+<td>Template reference (read-only)</td>
+</tr>
+<tr>
+<td><code>constraint_table</code></td>
+<td><code>Json</code></td>
+<td>T0 -- editable copy</td>
+</tr>
+<tr>
+<td><code>geometry_table</code></td>
+<td><code>Json</code></td>
+<td>T1 -- editable copy</td>
+</tr>
+<tr>
+<td><code>material_table</code></td>
+<td><code>Json</code></td>
+<td>T2 -- editable copy</td>
+</tr>
+<tr>
+<td><code>operation_table</code></td>
+<td><code>Json</code></td>
+<td>T3 -- editable copy</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mrpbomline-extended"><code>mrp.bom.line</code> (extended)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>matrix_coeff_rule</code></td>
+<td><code>Char</code></td>
+<td>Reference to T2 row for coefficient</td>
+</tr>
+<tr>
+<td><code>coeff_default</code></td>
+<td><code>Float</code></td>
+<td><code>0.0</code> = O-variant, <code>1.0</code> = real</td>
+</tr>
+<tr>
+<td><code>product_tmpl_id</code></td>
+<td><code>Many2one</code></td>
+<td>For PTAV resolution</td>
+</tr>
+<tr>
+<td><code>param_attribute_map</code></td>
+<td><code>Json</code></td>
+<td><code>{design_key: attr_external_id}</code></td>
+</tr>
+<tr>
+<td><code>param_extraction_map</code></td>
+<td><code>Json</code></td>
+<td><code>{child_key: source_or_formula}</code></td>
+</tr>
+<tr>
+<td><code>child_definition_id</code></td>
+<td><code>Many2one</code></td>
+<td>Child lot parameter set</td>
+</tr>
+<tr>
+<td><code>mto_stop</code></td>
+<td><code>Boolean</code></td>
+<td>Stops MTO chain at this level</td>
+</tr>
+</tbody>
+</table>
+<h3 id="stocklot-extended"><code>stock.lot</code> (extended)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>width / height / thickness</code></td>
+<td><code>Float</code></td>
+<td>Real fields (from <code>_dim</code> module)</td>
+</tr>
+<tr>
+<td><code>design_param_definition_id</code></td>
+<td><code>Many2one</code></td>
+<td>Parameter set</td>
+</tr>
+<tr>
+<td><code>design_params</code></td>
+<td><code>Properties</code></td>
+<td>All industry parameters</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="repository-structure">Repository Structure</h2>
+<pre><code>mrp_design_matrix/
+    models/
+        mrp_design_param_definition.py
+        mrp_matrix_template.py
+        mrp_bom.py
+        mrp_bom_line.py
+        mrp_production.py
+        stock_lot.py
+    views/
+        mrp_bom_views.xml
+        mrp_matrix_template_views.xml
+        mrp_design_param_definition_views.xml
+    data/
+        base_param_definitions.xml
+
+mrp_design_matrix_{industry}/
+    data/
+        design_param_definitions.xml
+        install_design_params.xml
+        matrix_templates/*.json
+    demo/
+        demo_bom_{industry}.xml
+</code></pre>
+<hr>
+<h2 id="technical-requirements">Technical Requirements</h2>
+<ul>
+<li><strong>Odoo:</strong> 18.0 (Community and Enterprise)</li>
+<li><strong>License:</strong> AGPL-3</li>
+<li><strong>Dependencies:</strong> OCA/Odoo CE modules only</li>
+<li><strong>Rule engine:</strong> <code>zen-engine</code> (Rust + Python bindings, &lt;1ms latency, embeddable)</li>
+<li><strong>Pre-commit:</strong> <code>ruff</code>, <code>black</code>, OCA checks</li>
+<li><strong>Tests:</strong> Required for every module</li>
+</ul>
+<hr>
+<h2 id="project-plan">Project Plan</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Duration</th>
+<th>Key Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phase 0 -- Foundation</td>
+<td>2 weeks</td>
+<td><code>forced_lot</code> PRs in OCA</td>
+</tr>
+<tr>
+<td>Phase 1 -- Bridge</td>
+<td>1 week</td>
+<td>Formula module sees Properties</td>
+</tr>
+<tr>
+<td>Phase 2 -- Core models</td>
+<td>2 weeks</td>
+<td>All models + UI</td>
+</tr>
+<tr>
+<td>Phase 3 -- Core logic</td>
+<td>2 weeks</td>
+<td>Full MO algorithm end-to-end</td>
+</tr>
+<tr>
+<td>Phase 4 -- Industry submodules</td>
+<td>3 weeks</td>
+<td>5 industry packages</td>
+</tr>
+<tr>
+<td>Phase 5 -- OCA submission</td>
+<td>1 week</td>
+<td>PR submitted</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="risks">Risks</h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Probability</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OCA review requires significant changes</td>
+<td>Medium</td>
+<td>Early precheck with OCA maintainer</td>
+</tr>
+<tr>
+<td>GoRules doesn't cover all T0 cases</td>
+<td>Low</td>
+<td>cDMN as fallback for constraints</td>
+</tr>
+<tr>
+<td>PTAV matching requires exact name match</td>
+<td>High</td>
+<td>Validation on <code>design_params</code> save</td>
+</tr>
+<tr>
+<td>Industry templates are incomplete</td>
+<td>Medium</td>
+<td>Demo data + documentation for extension</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="credits">Credits</h2>
+<p><strong>Author:</strong> Rosen Vladimirov \&lt;vladimirov.rosen@gmail.com&gt; | BL Consulting | Odoo Silver Partner</p>
+<p><strong>Inspired by:</strong> <a href="https://github.com/OCA/product-attribute">product_electrical_properties</a> (Properties pattern)</p>
+<h2 id="license">License</h2>
+<p>This project is licensed under <a href="LICENSE">AGPL-3.0</a>.</p></div></div>
+</div>
+<footer>Generated from README + manifests · <a href="https://github.com/rosenvladimirov/product-design-properties">product-design-properties</a></footer>
+</body>
+</html>
