@@ -471,6 +471,11 @@ class MrpBom(models.Model):
         :returns: dict ``{param_name: {visible?, enabled?, allowed_values?,
             default_override?}}``. Празен dict ако TΠ не е дефиниран.
         """
+        # sudo: дилърите в портала (share юзъри) нямат read достъп до mrp.bom
+        # през record rule-ите → без sudo TΠ enforcement-ът гърми с AccessError
+        # и ограниченията тихо не се прилагат.  Това е read-only оценка на
+        # availability таблицата (същия sudo подход като simulate_with_params).
+        self = self.sudo()
         bom = self.browse(bom_id).exists()
         if not bom:
             return {}
