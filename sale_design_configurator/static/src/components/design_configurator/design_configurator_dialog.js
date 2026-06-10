@@ -50,6 +50,7 @@ export class DesignConfiguratorDialog extends Component {
             layoutTable: false,
             bomId: false,
             bomLines: [],
+            hasAvailability: false,
         });
         this._loadDefinition();
     }
@@ -92,6 +93,25 @@ export class DesignConfiguratorDialog extends Component {
                 ["id"],
                 { limit: 1 }
             );
+            if (!boms.length) {
+                // Портален (share) юзър: record rules крият mrp.bom → search-ът
+                // връща празно.  НЕ зареждаме клиентския BoM стек (таблици /
+                // RuleMatrixPreview / TΦ cascade — пълният стек циклеше
+                // дизайнера в портала); взимаме само лекия sudo meta, колкото
+                // за real-time TΠ availability.
+                try {
+                    const meta = await this.orm.call(
+                        "mrp.bom", "configurator_get_bom_meta",
+                        [this.props.productId],
+                    );
+                    if (meta && meta.bom_id) {
+                        this.state.bomId = meta.bom_id;
+                        this.state.hasAvailability = !!meta.has_availability;
+                    }
+                } catch (e) {
+                    console.warn("BoM meta lookup failed:", e.message);
+                }
+            }
             if (boms.length) {
                 const bomAssets = await this.orm.call(
                     "mrp.bom", "get_bom_design_assets", [boms[0].id]

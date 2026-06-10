@@ -43,6 +43,7 @@ export class DesignConfiguratorWidget extends Component {
         layoutTable: { type: [Object, { value: false }], optional: true },
         bomId: { type: [Number, { value: false }], optional: true },
         bomLines: { type: Array, optional: true },
+        hasAvailability: { type: Boolean, optional: true },
         existingLotId: { type: [Number, Boolean], optional: true },
         onLotCreated: { type: Function },
         onClose: { type: Function },
@@ -392,9 +393,13 @@ export class DesignConfiguratorWidget extends Component {
 
     // ── TΠ availability — reactive UI control ───────────────────────────
 
-    /** Schedule a debounced TΠ evaluate. `delay=0` за initial sync пас. */
+    /** Schedule a debounced TΠ evaluate. `delay=0` за initial sync пас.
+     *  hasAvailability — портален режим: клиентът няма достъп да прочете
+     *  таблицата (record rules), но server-side meta потвърждава, че TΠ
+     *  съществува (BoM или template fallback); RPC-то долу е sudo. */
     _scheduleAvailabilityEval(delay = 150) {
-        if (!this.props.bomId || !this.props.availabilityTable) return;
+        if (!this.props.bomId) return;
+        if (!this.props.availabilityTable && !this.props.hasAvailability) return;
         if (this._availabilityTimer) {
             clearTimeout(this._availabilityTimer);
         }
@@ -420,6 +425,15 @@ export class DesignConfiguratorWidget extends Component {
             console.warn("TΠ availability eval failed:", e.message);
             return;
         }
+        // Fixed-point guard: ако резултатът е идентичен с последно приложения,
+        // НЕ пипай state и НЕ enforce-вай пак — убива всяка потенциална
+        // re-render/re-eval верига на втората итерация (анти-цикъл).
+        const resultJson = JSON.stringify(result || {});
+        if (resultJson === this._lastAvailabilityJson) {
+            this._enforceChain = 0; // конвергенция — auto веригата приключи
+            return;
+        }
+        this._lastAvailabilityJson = resultJson;
         this.ui.availability = result || {};
         this._enforceAvailability();
     }
@@ -477,6 +491,18 @@ export class DesignConfiguratorWidget extends Component {
         if (changed) {
             this._validate();
             this._updateDescription();
+            // Снапът промени контекста → още ЕДИН re-eval, за да не остане
+            // stale availability (напр. снапната ос сменя allowed кутиите).
+            // Анти-цикъл: fixed-point guard-ът горе спира идентични резултати,
+            // а броячът ограничава data ping-pong до 3 auto итерации.
+            this._enforceChain = (this._enforceChain || 0) + 1;
+            if (this._enforceChain <= 3) {
+                this._scheduleAvailabilityEval();
+            } else {
+                console.warn("TΠ enforce: ping-pong rules — спирам auto re-eval");
+            }
+        } else {
+            this._enforceChain = 0;
         }
     }
 

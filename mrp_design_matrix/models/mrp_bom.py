@@ -463,9 +463,35 @@ class MrpBom(models.Model):
         return self._configurator_evaluate_availability(bom_id, context)
 
     @api.model
+    def configurator_get_bom_meta(self, product_id):
+        """Лек sudo lookup за конфигуратора: {bom_id, has_availability}.
+
+        Порталните (share) юзъри нямат read на mrp.bom → клиентският search в
+        dialog-а връща празно и целият клиентски BoM стек (таблици/RuleMatrix/
+        TΦ cascade) остава изключен — което е желаното (минимална реактивна
+        повърхност; пълният стек циклеше дизайнера).  Този метод дава САМО
+        каквото трябва за real-time TΠ: bom_id за availability RPC-то + има ли
+        изобщо availability таблица (BoM или template fallback).
+        """
+        bom = self.sudo().search(
+            [
+                ("product_tmpl_id.product_variant_ids", "in", [product_id]),
+                ("active", "=", True),
+            ],
+            limit=1,
+        )
+        if not bom:
+            return {"bom_id": False, "has_availability": False}
+        has_av = bool(
+            bom.availability_table
+            or (bom.matrix_template_id and bom.matrix_template_id.availability_table)
+        )
+        return {"bom_id": bom.id, "has_availability": has_av}
+
+    @api.model
     def configurator_validate_availability(self, product_id, context):
-        """Confirm-time TΠ валидация (вместо real-time enforcement, който
-        зацикля при default_override → re-eval).  Връща списък нарушения
+        """Confirm-time TΠ валидация (защитна мрежа в допълнение на real-time
+        TΠ).  Връща списък нарушения
         ``[{param, message}]`` (празен = ОК) с насоки за корекция.
 
         Lookup по продукт + sudo → не иска BoM достъп от портален клиент и не
