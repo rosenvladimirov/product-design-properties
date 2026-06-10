@@ -463,6 +463,66 @@ class MrpBom(models.Model):
         return self._configurator_evaluate_availability(bom_id, context)
 
     @api.model
+    def configurator_validate_availability(self, product_id, context):
+        """Confirm-time TΠ валидация (вместо real-time enforcement, който
+        зацикля при default_override → re-eval).  Връща списък нарушения
+        ``[{param, message}]`` (празен = ОК) с насоки за корекция.
+
+        Lookup по продукт + sudo → не иска BoM достъп от портален клиент и не
+        зависи от напълнена BoM availability_table (fallback към template-а).
+        """
+        self_sudo = self.sudo()
+        bom = self_sudo.search(
+            [
+                ("product_tmpl_id.product_variant_ids", "in", [product_id]),
+                ("active", "=", True),
+            ],
+            limit=1,
+        )
+        if not bom:
+            return []
+        av = self_sudo._configurator_evaluate_availability(bom.id, context or {})
+        violations = []
+        color_done = False
+        for param, state in (av or {}).items():
+            if not isinstance(state, dict):
+                continue
+            allowed = state.get("allowed_values")
+            if not isinstance(allowed, list):
+                continue
+            cur = (context or {}).get(param)
+            if cur is None or cur in allowed:
+                continue
+            is_color = param == "main_color" or param.startswith("color_")
+            if is_color:
+                if color_done:
+                    continue
+                color_done = True
+                msg = (
+                    "Избран цвят не е валиден за този модел щора "
+                    "(напр. Thermo Comfort е само RAL — без дървесна текстура)."
+                )
+            elif param == "box_size":
+                msg = (
+                    "Кутията не е валидна за тази височина/ос/ламел. "
+                    "Минете на кутия %s (препоръчана: %s)."
+                    % ("/".join(str(a) for a in allowed),
+                       state.get("default_override") or allowed[0])
+                )
+            elif param == "axis_size":
+                msg = (
+                    "Тази ос не е валидна с избраното управление — "
+                    "позволена ос: %s." % "/".join(str(a) for a in allowed)
+                )
+            else:
+                msg = (
+                    "%s: невалидна стойност. Позволени: %s."
+                    % (param, "/".join(str(a) for a in allowed))
+                )
+            violations.append({"param": param, "message": msg})
+        return violations
+
+    @api.model
     def _configurator_evaluate_availability(self, bom_id, context):
         """Return TΠ availability state за дадения BoM и текущ param context.
 
