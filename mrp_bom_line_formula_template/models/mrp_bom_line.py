@@ -24,7 +24,7 @@ class MRPBomLine(models.Model):
         for line in self:
             line.quantity_formula = line.formula_template_id.quantity_formula or False
 
-    # ── Extended formula evaluation ──────────────────────────────────────
+    # ── Formula evaluation (собствено ядро, без външни зависимости) ──────
 
     def _quantity_formula_values(
         self,
@@ -35,16 +35,25 @@ class MRPBomLine(models.Model):
         operation_id=False,
         design_context=None,
     ):
-        """Extend formula context with env and optional design context."""
-        values = super()._quantity_formula_values(
-            product,
-            product_uom,
-            product_uom_qty,
-            production,
-            operation_id=operation_id,
-        )
-        # Allow formulas to use env.ref(), env['model'].search(), etc.
-        values["env"] = self.env
+        """Build the evaluation context for a BoM line quantity formula."""
+        self.ensure_one()
+        # operation_id идва като int (от core _get_moves_raw_values) или recordset
+        operation = operation_id or False
+        if operation and not hasattr(operation, "_name"):
+            operation = self.env["mrp.routing.workcenter"].browse(operation)
+        values = {
+            "bom_line": self,
+            "operation": operation,
+            "product": product,
+            "product_uom": product_uom,
+            "product_uom_qty": product_uom_qty,
+            "production": production,
+            # начална стойност = стандартното expl. количество;
+            # формулата я презаписва (legacy синтаксис `quantity = ...`)
+            "quantity": product_uom_qty,
+            # Allow formulas to use env.ref(), env['model'].search(), etc.
+            "env": self.env,
+        }
         # Inject design matrix context (width, height, T1 outputs, etc.)
         if design_context:
             values["design_context"] = design_context
