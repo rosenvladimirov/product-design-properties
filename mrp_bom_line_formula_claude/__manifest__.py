@@ -1,10 +1,10 @@
-# Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
+# Copyright 2024-2026 Rosen Vladimirov
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "MRP BoM Line Formula Claude Assistant",
     "summary": "Generate BoM line quantity formulas with Claude AI via MCP terminal",
     "version": "18.0.1.0.0",
-    "author": "Rosen Vladimirov, Odoo Community Association (OCA)",
+    "author": "Rosen Vladimirov",
     "maintainers": ["rosen-vladimirov"],
     "category": "Manufacturing",
     "depends": [

@@ -1,4 +1,4 @@
-# Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
+# Copyright 2024-2026 Rosen Vladimirov
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 """Map the legacy free-text ``industry`` Char to the new ``industry_id``.
 

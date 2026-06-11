@@ -1,4 +1,4 @@
-# Copyright 2026 BL Consulting
+# Copyright 2024-2026 Rosen Vladimirov
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Base ZEN Decision",
@@ -9,7 +9,7 @@
     "version": "18.0.1.0.0",
     "category": "Technical",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
-    "author": "BL Consulting, Odoo Community Association (OCA)",
+    "author": "Rosen Vladimirov",
     "maintainers": ["rosen-vladimirov"],
     "license": "AGPL-3",
     "application": False,
