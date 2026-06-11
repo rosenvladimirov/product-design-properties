@@ -1,1 +1,2 @@
-# Tests temporarily disabled — see git log for reason
+from . import test_formula_eval
+from . import test_move_generation

@@ -3,8 +3,8 @@
 {
     "name": "MRP BoM Line Formula Claude Assistant",
     "summary": "Generate BoM line quantity formulas with Claude AI via MCP terminal",
-    "version": "20.0.1.0.0",
-    "author": "Rosen Vladimirov, BL Consulting, Odoo Community Association (OCA)",
+    "version": "1.0.0",
+    "author": "Rosen Vladimirov, Odoo Community Association (OCA)",
     "maintainers": ["rosen-vladimirov"],
     "category": "Manufacturing",
     "depends": [

@@ -214,12 +214,12 @@ class MrpProduction(models.Model):
         if isinstance(formula_result, dict):
             qty_base = formula_result.get("quantity", 0) or 0.0
             move_product = formula_result.get("product") or line.product_id
-            move_uom = formula_result.get("uom") or line.product_uom_id
+            move_uom = formula_result.get("uom") or line.uom_id
             add_products = formula_result.get("add_products") or []
         else:
             qty_base = formula_result
             move_product = line.product_id
-            move_uom = line.product_uom_id
+            move_uom = line.uom_id
         # PTAV resolution for O-variant BoM lines with param_attribute_map
         if line.param_attribute_map and line.product_tmpl_id:
             resolved = self._resolve_variant_by_ptav(
@@ -374,7 +374,7 @@ class MrpProduction(models.Model):
         if hasattr(line, "_eval_quantity_formula") and line.quantity_formula:
             result = line._eval_quantity_formula(
                 line.product_id,
-                line.product_uom_id,
+                line.uom_id,
                 self.product_qty,
                 self,
                 design_context=ctx,

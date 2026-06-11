@@ -1,4 +1,4 @@
-#  Copyright 2024 Simone Rubino - Aion Tech
+#  Copyright 2024-2026 Rosen Vladimirov
 #  License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo import api, fields, models
@@ -19,20 +19,21 @@ class MrpBomLineFormulaTemplate(models.Model):
     )
     quantity_formula = fields.Text(
         required=True,
-        help="Formula evaluated when generating a production order line.\n\n"
-        "Available input variables:\n"
-        "- bom_line: the current BoM line\n"
-        "- operation: workcenter for current BoM line\n"
-        "- product: product of current BoM line\n"
-        "- product_uom: UoM of the product\n"
-        "- product_uom_qty: quantity of the production order\n"
-        "- production: the production order being created\n"
-        "- env: Odoo environment (for env.ref(), searches, etc.)\n"
-        "- design context keys (width, height, etc.) when available\n\n"
-        "Output variables (assign in formula):\n"
-        "- result (or quantity): computed quantity (required)\n"
-        "- product: override the BoM line product (optional)\n"
-        "- uom: override the UoM (optional)\n\n"
+        help="Python code executed while a manufacturing order builds its "
+        "component moves. Write the computed amount into 'result' "
+        "('quantity' is also accepted for backward compatibility).\n\n"
+        "The code runs with this context:\n"
+        "  bom_line - the mrp.bom.line being exploded\n"
+        "  operation - the linked work-center operation, or False\n"
+        "  product / product_uom - component product and its unit\n"
+        "  product_uom_qty - quantity ordered on the MO\n"
+        "  production - the mrp.production record\n"
+        "  env - Odoo environment (env.ref(), searches, ...)\n"
+        "  design parameters (width, height, ...) as flat variables, "
+        "when a design context is attached\n\n"
+        "Optional overrides the code may set:\n"
+        "  product - replacement component (recordset)\n"
+        "  uom - replacement unit of measure (recordset)\n\n"
         "Example:\n"
         "  result = width * height / 1000000\n"
         "  product = env.ref('my_module.special_product')\n"
