@@ -97,11 +97,12 @@ class MRPBomLine(models.Model):
             operation_id=operation_id,
             design_context=design_context,
         )
+        # Odoo 19: safe_eval(expr, context, mode=...) — context се
+        # мутира in-place (няма вече globals_dict/nocopy)
         safe_eval(
             formula,
-            globals_dict=values,
+            values,
             mode="exec",
-            nocopy=True,
         )
 
         # Read result: support both 'result' and 'quantity' variable names
