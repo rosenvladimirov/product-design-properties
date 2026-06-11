@@ -1,4 +1,4 @@
-# Copyright 2026 BL Consulting
+# Copyright 2024-2026 Rosen Vladimirov
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 """base_zen_decision pre-init: adopt zen.* metadata from mrp_design_matrix.
 

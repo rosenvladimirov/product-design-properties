@@ -1,4 +1,4 @@
-# Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
+# Copyright 2024-2026 Rosen Vladimirov
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "MRP Design Matrix — Canned Roasted Peppers",
@@ -8,8 +8,8 @@
     ),
     "version": "20.0.1.0.0",
     "category": "Manufacturing",
-    "website": "https://github.com/OCA/manufacture",
-    "author": "Rosen Vladimirov, BL Consulting, Odoo Community Association (OCA)",
+    "website": "https://github.com/rosenvladimirov/product-design-properties",
+    "author": "Rosen Vladimirov",
     "maintainers": ["rosen-vladimirov"],
     "license": "AGPL-3",
     "application": False,
