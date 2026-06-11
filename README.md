@@ -66,7 +66,7 @@ The result: engineering departments maintain thousands of product variants (one 
            └──────────────┬──────┘  └─────────────────────┘  └───────────────────────────┘
                           │ depends
            ┌──────────────▼──────────────────┐
-           │ mrp_bom_line_formula_quantity   │  OCA/manufacture (exists)
+           │ mrp_bom_line_formula_template   │  own formula engine (this repo)
            └─────────────────────────────────┘
 ```
 

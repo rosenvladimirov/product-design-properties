@@ -80,7 +80,6 @@ Authors
 -------
 
 * Rosen Vladimirov
-* BL Consulting
 
 Maintainers
 -----------

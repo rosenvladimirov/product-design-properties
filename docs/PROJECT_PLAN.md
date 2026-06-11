@@ -223,7 +223,7 @@ Tasks to bring the whole stack to a deployable production state.
 ## Dependencies (updated)
 
 **External (OCA):**
-- `mrp_bom_line_formula_quantity` — already in OCA
+- ~~`mrp_bom_line_formula_quantity`~~ — replaced by own core in `mrp_bom_line_formula_template`
 - `stock_move_forced_lot_multi` — PR needed (Phase 0)
 - `stock_move_forced_lot_multi_dim` — PR needed (Phase 0)
 

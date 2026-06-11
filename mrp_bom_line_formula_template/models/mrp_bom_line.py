@@ -1,5 +1,4 @@
-#  Copyright 2024 Simone Rubino - Aion Tech
-#  Copyright 2026 Rosen Vladimirov - BL Consulting
+#  Copyright 2024-2026 Rosen Vladimirov
 #  License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo import api, fields, models
