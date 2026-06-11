@@ -10,7 +10,7 @@ The system is implemented as a stack of Odoo modules with a clear dependency hie
 
 | Module | Type | Description |
 |---|---|---|
-| `mrp_bom_line_formula_quantity` | OCA (existing) | Formula-based quantity on BoM line. |
+| `mrp_bom_line_formula_template` | Own | Formula-based quantity on BoM line (own evaluation core; replaced former OCA dependency). |
 | `stock_move_forced_lot_multi` | Own (PR candidate) | Forced lot assignment on raw material moves. Propagation to PO. |
 | `stock_move_forced_lot_multi_dim` | Submodule | `width/height/thickness` on `stock.lot`. |
 | `mrp_bom_formula_lot_dimension` | **NEW — bridge** | Injects lot dims + Properties into the formula context. ~50 lines. |

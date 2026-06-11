@@ -150,7 +150,7 @@ design_param_base, stock_lot_properties, product_design_assets   ← foundation
 ## Свързани зависимости (extern)
 
 - **`stock_move_forced_lot_multi`** (OCA fork; `~/Проекти/odoo/odoo-18.0/manufacture/`) — изисква се от `mrp_design_matrix` за parent-child orderpoint per lot
-- **`mrp_bom_line_formula_quantity`** (OCA fork) — изисква се за formula evaluation на BoM lines
+- ~~`mrp_bom_line_formula_quantity`~~ — вече НЕ се изисква; formula evaluation е собствено ядро в `mrp_bom_line_formula_template`
 - **`zen-engine`** (PyPI ≥0.50) — runtime decision evaluator за `zen.decision.table`
 
 ---

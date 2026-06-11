@@ -122,7 +122,7 @@ engine. Pick the one that matches your shop floor.
            └──────────────┬──────┘  └─────────────────────┘  └───────────────────────────┘
                           │ depends
            ┌──────────────▼──────────────────┐
-           │ mrp_bom_line_formula_quantity   │  OCA/manufacture (exists)
+           │ mrp_bom_line_formula_template   │  own formula engine (this repo)
            └─────────────────────────────────┘
 ```
 
