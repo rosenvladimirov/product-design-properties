@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov <vladimirov.rosen@gmail.com>
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Формула колони в списъка с компоненти на BoM формата -->
+    <record id="mrp_bom_form_view_formula" model="ir.ui.view">
+        <field name="name">mrp.bom.form.formula.template</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='bom_line_ids']/list/field[@name='product_qty']"
+                   position="after">
+                <field name="formula_template_id"
+                       optional="hide"
+                       options="{'no_quick_create': True}"/>
+                <field name="quantity_formula" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Формула секция във form изгледа на BoM линия -->
+    <record id="mrp_bom_line_view_form_formula" model="ir.ui.view">
+        <field name="name">mrp.bom.line.view.form.formula.template</field>
+        <field name="model">mrp.bom.line</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_line_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group" position="after">
+                <group string="Quantity Formula" name="quantity_formula">
+                    <field name="formula_template_id"
+                           options="{'no_quick_create': True}"/>
+                    <field name="quantity_formula"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
