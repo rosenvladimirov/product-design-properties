@@ -66,7 +66,7 @@ class TestFormulaEval(TransactionCase):
         """Run _eval_quantity_formula with unit context."""
         return line._eval_quantity_formula(
             product=line.product_id,
-            product_uom=line.product_uom_id,
+            product_uom=line.uom_id,
             product_uom_qty=1.0,
             production=self.env["mrp.production"],
             design_context=design_context,
