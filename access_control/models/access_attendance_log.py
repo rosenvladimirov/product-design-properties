@@ -1,4 +1,4 @@
-# Copyright 2026 BL Consulting
+# Copyright 2024-2026 Rosen Vladimirov
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 """access.attendance.log — per-perimeter presence log с timezone.
