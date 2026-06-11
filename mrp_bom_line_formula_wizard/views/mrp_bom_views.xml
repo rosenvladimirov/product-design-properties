@@ -7,7 +7,7 @@
     <record id="mrp_bom_form_view_formula_wizard" model="ir.ui.view">
         <field name="name">mrp.bom.form.formula.wizard</field>
         <field name="model">mrp.bom</field>
-        <field name="inherit_id" ref="mrp_bom_line_formula_quantity.mrp_bom_form_view"/>
+        <field name="inherit_id" ref="mrp_bom_line_formula_template.mrp_bom_form_view_formula"/>
         <field name="arch" type="xml">
             <!-- Hide the inline text field -->
             <xpath expr="//field[@name='bom_line_ids']/list/field[@name='quantity_formula']"
@@ -31,7 +31,7 @@
     <record id="mrp_bom_line_form_formula_wizard" model="ir.ui.view">
         <field name="name">mrp.bom.line.form.formula.wizard</field>
         <field name="model">mrp.bom.line</field>
-        <field name="inherit_id" ref="mrp_bom_line_formula_quantity.mrp_bom_line_view_form"/>
+        <field name="inherit_id" ref="mrp_bom_line_formula_template.mrp_bom_line_view_form_formula"/>
         <field name="arch" type="xml">
             <!-- Hide inline text, show button instead -->
             <field name="quantity_formula" position="attributes">
