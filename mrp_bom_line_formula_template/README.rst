@@ -26,7 +26,8 @@ MRP BoM Line Formula Templates
 
 |badge1| |badge2| |badge3|
 
-Extends ``mrp_bom_line_formula_quantity`` (OCA) with:
+Standalone formula engine for BoM line quantities (evaluation core included,
+no third-party dependency), featuring:
 
 - **Reusable formula templates** — store named formulas in
   ``mrp.bom.line.formula.template`` and reference them from any BoM line
@@ -144,7 +145,6 @@ Authors
 -------
 
 * Rosen Vladimirov
-* BL Consulting
 
 Maintainers
 -----------

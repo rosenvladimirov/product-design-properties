@@ -1,7 +1,11 @@
-#  Copyright 2026 Rosen Vladimirov - BL Consulting
+#  Copyright 2026 Rosen Vladimirov
 #  License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import logging
+
 from odoo import models
+
+_logger = logging.getLogger(__name__)
 
 
 class MRPProduction(models.Model):
@@ -15,12 +19,13 @@ class MRPProduction(models.Model):
         operation_id=False,
         bom_line=False,
     ):
-        """Handle extended formula results (dict with product/uom overrides).
+        """Evaluate the BoM line quantity formula when building raw moves.
 
-        The parent OCA module calls ``_eval_quantity_formula()`` and assigns
-        the result directly to ``product_uom_qty``.  When our extended
-        formula returns a dict ``{quantity, product, uom}``, this override
-        unpacks it and applies product/uom overrides to the move values.
+        За линия с непразна формула: вика ``_eval_quantity_formula`` и
+        прилага резултата върху move стойностите. Float резултат сменя
+        само количеството; dict резултат може да override-не и
+        product/uom. При грешка или невалиден резултат остава
+        стандартното количество от експлозията (+ warning в лога).
         """
         values = super()._get_move_raw_values(
             product,
@@ -29,16 +34,55 @@ class MRPProduction(models.Model):
             operation_id=operation_id,
             bom_line=bom_line,
         )
-        # The OCA super may have set product_uom_qty to a dict if our
-        # extended _eval_quantity_formula returned one.
-        qty_val = values.get("product_uom_qty")
-        if isinstance(qty_val, dict):
-            formula_result = qty_val
-            values["product_uom_qty"] = formula_result.get("quantity", 0)
-            if formula_result.get("product"):
-                p = formula_result["product"]
-                values["product_id"] = p.id
-                values["name"] = p.display_name
-            if formula_result.get("uom"):
-                values["product_uom"] = formula_result["uom"].id
+        if not bom_line or not getattr(bom_line, "quantity_formula", False):
+            return values
+
+        try:
+            result = bom_line._eval_quantity_formula(
+                product,
+                product_uom,
+                product_uom_qty,
+                self,
+                operation_id=operation_id,
+            )
+        except Exception:
+            _logger.warning(
+                "Quantity formula of BoM line %s (product %s) failed; "
+                "falling back to the standard exploded quantity.",
+                bom_line.id,
+                product.display_name,
+                exc_info=True,
+            )
+            return values
+
+        if result is None:
+            return values
+
+        if isinstance(result, dict):
+            try:
+                values["product_uom_qty"] = float(result.get("quantity") or 0.0)
+            except (TypeError, ValueError):
+                _logger.warning(
+                    "Quantity formula of BoM line %s returned a non-numeric "
+                    "quantity (%r); falling back to the standard quantity.",
+                    bom_line.id,
+                    result.get("quantity"),
+                )
+                return values
+            if result.get("product"):
+                # v19: stock.move вече няма поле 'name'
+                values["product_id"] = result["product"].id
+            if result.get("uom"):
+                values["product_uom"] = result["uom"].id
+            return values
+
+        try:
+            values["product_uom_qty"] = float(result)
+        except (TypeError, ValueError):
+            _logger.warning(
+                "Quantity formula of BoM line %s returned a non-numeric "
+                "result (%r); falling back to the standard quantity.",
+                bom_line.id,
+                result,
+            )
         return values

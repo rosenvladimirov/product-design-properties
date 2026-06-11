@@ -38,7 +38,7 @@ sale_design_configurator/       ← SO ред → конфигуратор → �
 ### Dependency chain (отдолу нагоре)
 
 ```
-mrp_bom_line_formula_quantity        OCA/manufacture — НЕ модифицирай
+mrp_bom_line_formula_template        собствен formula engine (в това repo)
 stock_move_forced_lot_multi          OCA/stock-logistics-workflow — НЕ модифицирай
     └── stock_move_forced_lot_multi_dim   (width/height/thickness на stock.lot)
 design_param_base
@@ -94,7 +94,7 @@ result = ZenWrapper.evaluate(bom.constraint_table, design_context)
 
 ### Забрани (специфични за тази repo)
 
-- **Не пипай** `stock_move_forced_lot_multi` и `mrp_bom_line_formula_quantity` — external OCA.
+- **Не пипай** `stock_move_forced_lot_multi` — external OCA. (`mrp_bom_line_formula_quantity` вече НЕ е зависимост — собствено ядро в `mrp_bom_line_formula_template`.)
 - **Не пиши** migration scripts — Росен ги прави ръчно.
 - **Не променяй** `ir.model.access.csv` записи за модели, които не си добавил в тази сесия.
 - **Не добавяй** `depends` в субмодули (`mrp_design_matrix_bags` и др.) извън `mrp_design_matrix` и Odoo base.

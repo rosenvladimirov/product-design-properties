@@ -3,12 +3,11 @@
 {
     "name": "MRP BoM Line Formula Wizard",
     "summary": "Edit BoM line quantity formulas in a dedicated wizard with syntax help",
-    "version": "19.0.1.0.0",
-    "author": "Rosen Vladimirov, BL Consulting, Odoo Community Association (OCA)",
+    "version": "19.0.2.0.0",
+    "author": "Rosen Vladimirov, Odoo Community Association (OCA)",
     "maintainers": ["rosen-vladimirov"],
     "category": "Manufacturing",
     "depends": [
-        "mrp_bom_line_formula_quantity",
         "mrp_bom_line_formula_template",
     ],
     "website": "https://github.com/OCA/manufacture",

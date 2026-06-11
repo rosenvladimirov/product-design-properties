@@ -1,4 +1,5 @@
-Extends `mrp_bom_line_formula_quantity` (OCA) with:
+Standalone formula engine for BoM line quantities (own evaluation core,
+no third-party dependency), featuring:
 
 - **Reusable formula templates** — store named formulas in
   `mrp.bom.line.formula.template` and reference them from any BoM line
