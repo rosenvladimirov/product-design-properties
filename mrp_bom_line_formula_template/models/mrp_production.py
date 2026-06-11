@@ -70,9 +70,8 @@ class MRPProduction(models.Model):
                 )
                 return values
             if result.get("product"):
-                override = result["product"]
-                values["product_id"] = override.id
-                values["name"] = override.display_name
+                # v19: stock.move вече няма поле 'name'
+                values["product_id"] = result["product"].id
             if result.get("uom"):
                 values["product_uom"] = result["uom"].id
             return values
