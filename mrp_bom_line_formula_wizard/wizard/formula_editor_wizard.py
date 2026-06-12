@@ -33,6 +33,7 @@ Output variables (assign in formula):
   result           - computed quantity (or 'quantity')
   product          - override product (optional)
   uom              - override UoM (optional)
+  skip             - True drops this BoM line from the MO (optional)
 
 Examples:
   result = product_uom_qty * 1.05
