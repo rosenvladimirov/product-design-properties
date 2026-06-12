@@ -72,6 +72,8 @@ class MrpProduction(models.Model):
                 if workorder.duration_expected != result["duration"]:
                     workorder.duration_expected = result["duration"]
 
+                self._apply_formula_employees(workorder, result)
+
                 if not has_wo_field:
                     continue
                 if result.get("materials"):
@@ -86,6 +88,25 @@ class MrpProduction(models.Model):
                     production.move_raw_ids.filtered(
                         lambda m: not m.workorder_id
                     ).write({"workorder_id": workorder.id})
+
+    def _apply_formula_employees(self, workorder, result):
+        """Назначава операторите от формулата върху workorder-а.
+
+        Полетата за оператори идват с EE mrp_workorder — пробваме
+        кандидатите по ред; на CE изходът се игнорира тихо (debug лог).
+        """
+        employee_ids = result.get("employees")
+        if not employee_ids:
+            return
+        for field in ("employee_assigned_ids", "employee_ids"):
+            if field in workorder._fields:
+                workorder.write({field: [(6, 0, list(employee_ids))]})
+                return
+        _logger.debug(
+            "Operation formula set employees, but %s has no operator "
+            "field (CE without mrp_workorder) — ignored.",
+            workorder._name,
+        )
 
     @staticmethod
     def _formula_materials_to_ids(materials):
