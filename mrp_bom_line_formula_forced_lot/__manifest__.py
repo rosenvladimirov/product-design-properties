@@ -9,23 +9,20 @@
 # Unless you hold a valid commercial license, your use of this file is governed
 # by the AGPL-3.0-or-later.
 {
-    "name": "MRP BoM Line Formula Templates",
-    "summary": "Manage reusable templates for BoM line quantity formulas",
-    "version": "19.0.2.2.0",
+    "name": "MRP BoM Formula — Forced Lot Consumption",
+    "summary": "BoM line formulas drive which forced lots (and how much per lot) a raw move consumes",
+    "version": "19.0.1.0.0",
     "author": "Rosen Vladimirov",
     "maintainers": ["rosen-vladimirov"],
     "category": "Manufacturing",
     "depends": [
-        "mrp",
+        "mrp_bom_line_formula_template",
+        "stock_move_forced_lot_multi",
     ],
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "license": "AGPL-3",
-    "data": [
-        "security/ir.model.access.csv",
-        "security/formula_template_rules.xml",
-        "views/mrp_bom_line_formula_template_views.xml",
-        "views/mrp_bom_views.xml",
-    ],
+    "data": [],
     "installable": True,
     "application": False,
+    "auto_install": False,
 }

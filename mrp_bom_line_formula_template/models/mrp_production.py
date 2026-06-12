@@ -87,7 +87,9 @@ class MRPProduction(models.Model):
                 values["product_id"] = result["product"].id
             if result.get("uom"):
                 values["product_uom"] = result["uom"].id
-            return values
+            return self._apply_formula_extras_to_move_values(
+                values, result, bom_line
+            )
 
         try:
             values["product_uom_qty"] = float(result)
@@ -98,6 +100,11 @@ class MRPProduction(models.Model):
                 bom_line.id,
                 result,
             )
+        return values
+
+    def _apply_formula_extras_to_move_values(self, values, result, bom_line):
+        """Extension hook: разширенията прилагат своите изходи от
+        формулния резултат върху move стойностите. Базата не прави нищо."""
         return values
 
     def _get_moves_raw_values(self):
