@@ -28,9 +28,12 @@ class MrpRoutingWorkcenter(models.Model):
         "  skip - True drops this operation's work order from the MO\n"
         "  collect_materials - True assigns all still-unassigned raw moves "
         "to this work order\n"
-        "  materials - list of products whose raw moves are consumed here\n\n"
+        "  materials - list of products whose raw moves are consumed here\n"
+        "  employee / employees - operator(s) to assign to the work order "
+        "(needs the Enterprise work-order operator fields)\n\n"
         "Context: operation, workcenter, production, workorder, product, "
-        "product_qty, duration (standard value), env, and the design "
+        "product_qty, duration (standard value), env, employee_model "
+        "(hr.employee), employees (available operators), and the design "
         "parameters (width, height, ...) when a design lot is attached.",
     )
     operation_formula = fields.Text(
@@ -66,6 +69,19 @@ class MrpRoutingWorkcenter(models.Model):
             "duration": default_duration,
             "env": self.env,
         }
+        # Employee инжекция: модел + наличните оператори. Полетата за
+        # оператори са EE (mrp_workorder) — пазим с проверки, на CE
+        # formula-та пак има employee_model за search/ref.
+        if "hr.employee" in self.env:
+            values["employee_model"] = self.env["hr.employee"]
+            employees = self.env["hr.employee"]
+            workcenter = self.workcenter_id
+            if workcenter and "employee_ids" in workcenter._fields:
+                employees = workcenter.employee_ids
+            elif workorder and "employee_assigned_ids" in workorder._fields:
+                employees = workorder.employee_assigned_ids
+            values["employees"] = employees
+
         # T3 интеграция: design контекстът на произвеждания лот (когато
         # mrp_design_matrix е инсталиран) влиза като плоски променливи
         # v18: lot_producing_id (M2o); v19+: lot_producing_ids (M2m)
@@ -104,6 +120,9 @@ class MrpRoutingWorkcenter(models.Model):
         values = self._operation_formula_values(
             production, workorder=workorder, default_duration=default_duration
         )
+        orig_employee_ids = set(
+            values["employees"].ids
+        ) if "employees" in values else None
         safe_eval(
             formula,
             globals_dict=values,
@@ -131,4 +150,20 @@ class MrpRoutingWorkcenter(models.Model):
             result["collect_materials"] = True
         if values.get("materials"):
             result["materials"] = values["materials"]
+        # Оператори: формулата сетва employee (един) или employees (списък);
+        # отчитаме като output само ако се различава от входната стойност
+        out_employees = values.get("employee") or values.get("employees")
+        if out_employees is not None and orig_employee_ids is not None:
+            out_ids = set()
+            for item in (
+                out_employees
+                if isinstance(out_employees, (list, tuple))
+                else [out_employees]
+            ):
+                if hasattr(item, "ids"):
+                    out_ids.update(item.ids)
+                elif isinstance(item, int):
+                    out_ids.add(item)
+            if values.get("employee") is not None or out_ids != orig_employee_ids:
+                result["employees"] = sorted(out_ids)
         return result
