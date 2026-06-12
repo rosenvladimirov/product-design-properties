@@ -103,6 +103,43 @@ class TestFormulaMoveGeneration(TransactionCase):
         )
         self.assertAlmostEqual(move.product_uom_qty, 3.0)
 
+    def test_skip_true_drops_move(self):
+        """skip = True → редът от BoM-а изобщо не се появява в MO-то."""
+        self._set_formula("skip = True")
+        mo = self._make_mo(qty=2.0)
+        move = mo.move_raw_ids.filtered(
+            lambda m: m.product_id == self.component
+        )
+        self.assertFalse(move, "skip=True must drop the raw move entirely")
+
+    def test_skip_false_keeps_move(self):
+        """skip = False → нормално формулно количество."""
+        self._set_formula("skip = False\nresult = product_uom_qty * 2")
+        mo = self._make_mo(qty=3.0)
+        move = mo.move_raw_ids.filtered(
+            lambda m: m.product_id == self.component
+        )
+        self.assertEqual(len(move), 1)
+        self.assertAlmostEqual(move.product_uom_qty, 6.0)
+
+    def test_skip_conditional(self):
+        """Условен skip по променлива от контекста."""
+        self._set_formula(
+            "skip = product_uom_qty < 5\n"
+            "result = product_uom_qty"
+        )
+        mo_small = self._make_mo(qty=2.0)
+        self.assertFalse(
+            mo_small.move_raw_ids.filtered(
+                lambda m: m.product_id == self.component
+            )
+        )
+        mo_big = self._make_mo(qty=8.0)
+        move = mo_big.move_raw_ids.filtered(
+            lambda m: m.product_id == self.component
+        )
+        self.assertAlmostEqual(move.product_uom_qty, 8.0)
+
     def test_product_override_in_move(self):
         """Формула с product override сменя продукта на move-а."""
         self.env["ir.model.data"].create(
