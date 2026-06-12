@@ -1021,6 +1021,7 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                             "rules": [
                                 {
                                     "name": "\"Сглобяване на щора\"",
+                                    "install": "",
                                     "control_type": "",
                                     "shutter_model": "",
                                     "workcenter_ref": "\"mrp_design_matrix_shutters.wc_teo_assembly\"",
@@ -1028,6 +1029,7 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                                 },
                                 {
                                     "name": "\"Motor Install &amp; Programming\"",
+                                    "install": "",
                                     "control_type": "\"motor\"",
                                     "shutter_model": "!= \"thermo_comfort\"",
                                     "workcenter_ref": "\"mrp_design_matrix_shutters.wc_motor\"",
@@ -1037,8 +1039,17 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                                     "name": "\"Safety Motor Install, Programming &amp; Test\"",
                                     "control_type": "\"motor\"",
                                     "shutter_model": "\"thermo_comfort\"",
+                                    "install": "",
                                     "workcenter_ref": "\"mrp_design_matrix_shutters.wc_motor\"",
                                     "duration_formula": "\"60\""
+                                },
+                                {
+                                    "name": "\"Монтаж\"",
+                                    "control_type": "",
+                                    "shutter_model": "",
+                                    "install": "true",
+                                    "workcenter_ref": "\"mrp_design_matrix_shutters.wc_teo_install\"",
+                                    "duration_formula": "\"30 * (width / 1000.0) * (height / 1000.0) * int(shutter_count or 1)\""
                                 }
                             ],
                             "inputs": [
@@ -1049,6 +1060,10 @@ T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
                                 {
                                     "id": "shutter_model",
                                     "name": "shutter_model"
+                                },
+                                {
+                                    "id": "install",
+                                    "name": "install"
                                 }
                             ],
                             "outputs": [

@@ -33,4 +33,12 @@
     <field name="code">TEOMOT</field>
   </record>
 
+  <!-- Монтаж на обект (T3 ред install == true).  Часовата ставка
+       (costs_hour + employee_costs_hour) дава цената на монтажа;
+       времето на m2 живее в T3 duration_formula. -->
+  <record id="wc_teo_install" model="mrp.workcenter">
+    <field name="name">Монтаж щора</field>
+    <field name="code">TEOINST</field>
+  </record>
+
 </odoo>
