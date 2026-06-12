@@ -14,6 +14,11 @@ Design Parameter Base
 
 |badge1| |badge2| |badge3|
 
+.. note::
+   Dual-licensed: available under AGPL-3.0-or-later (default) or under a
+   commercial license from Rosen Vladimirov — see ``LICENSE-COMMERCIAL.md``
+   at the repository root (contact: vladimirov.rosen@gmail.com).
+
 Фундаментен слой за design-driven производство. Дефинира преизползваеми
 набори от design параметри (през Odoo Properties), които описват кои
 параметри са налични за дадено продуктово семейство — размери, избор на

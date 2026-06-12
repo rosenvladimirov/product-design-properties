@@ -26,6 +26,11 @@ MRP Design Matrix — Corrugated / Cartons
 
 |badge1| |badge2| |badge3|
 
+.. note::
+   Dual-licensed: available under AGPL-3.0-or-later (default) or under a
+   commercial license from Rosen Vladimirov — see ``LICENSE-COMMERCIAL.md``
+   at the repository root (contact: vladimirov.rosen@gmail.com).
+
 Industry sub-module for corrugated cardboard / carton manufacturers.
 Defines a parameter set covering board type, grammage, flute
 configuration and box dimensions, plus matrix templates that compute raw

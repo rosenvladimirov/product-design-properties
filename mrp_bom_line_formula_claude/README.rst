@@ -26,6 +26,11 @@ MRP BoM Line Formula Claude Assistant
 
 |badge1| |badge2| |badge3|
 
+.. note::
+   Dual-licensed: available under AGPL-3.0-or-later (default) or under a
+   commercial license from Rosen Vladimirov — see ``LICENSE-COMMERCIAL.md``
+   at the repository root (contact: vladimirov.rosen@gmail.com).
+
 AI-assisted formula generation for BoM line quantity formulas. Adds an
 *Ask Claude* button to the formula editor wizard that opens the Claude
 Code terminal in an embedded iframe, following the concept of
