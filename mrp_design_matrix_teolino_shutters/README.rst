@@ -2,6 +2,11 @@
 MRP Design Matrix — Параметрични ролетни щори (5 модела)
 ========================================================
 
+.. note::
+   Dual-licensed: available under AGPL-3.0-or-later (default) or under a
+   commercial license from Rosen Vladimirov — see ``LICENSE-COMMERCIAL.md``
+   at the repository root (contact: vladimirov.rosen@gmail.com).
+
 Параметрична design матрица за ролетни щори с 5 модела
 (Standard / Round / T-Roll / Built-In / Thermo Comfort).
 Подобен на ``mrp_design_matrix_roller_door`` (който носи един опростен

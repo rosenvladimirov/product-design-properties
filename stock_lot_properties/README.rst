@@ -26,6 +26,11 @@ Stock Lot Properties
 
 |badge1| |badge2| |badge3|
 
+.. note::
+   Dual-licensed: available under AGPL-3.0-or-later (default) or under a
+   commercial license from Rosen Vladimirov — see ``LICENSE-COMMERCIAL.md``
+   at the repository root (contact: vladimirov.rosen@gmail.com).
+
 Adds a ``design_params`` Properties field on ``stock.lot`` driven by a
 ``design_param_definition_id`` link. This lets you store per-lot design
 values (the actual dimensions, material choices, etc. for a specific

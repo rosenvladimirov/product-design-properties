@@ -26,6 +26,11 @@ Sale Design Configurator
 
 |badge1| |badge2| |badge3|
 
+.. note::
+   Dual-licensed: available under AGPL-3.0-or-later (default) or under a
+   commercial license from Rosen Vladimirov — see ``LICENSE-COMMERCIAL.md``
+   at the repository root (contact: vladimirov.rosen@gmail.com).
+
 Embeds a live design configurator on Sale Order lines for products
 linked to a ``design.param.definition``. When a salesperson picks a
 configurable product, a modal opens with:
