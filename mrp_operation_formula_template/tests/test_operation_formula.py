@@ -149,6 +149,29 @@ class TestOperationFormula(TransactionCase):
         )
         self.assertEqual(move.workorder_id, wo)
 
+    def test_employee_model_in_context(self):
+        """employee_model и employees са в контекста (при наличен HR);
+        изходът employees не чупи нищо на CE (без операторски полета)."""
+        if "hr.employee" not in self.env:
+            self.skipTest("hr is not installed")
+        worker = self.env["hr.employee"].create({"name": "Op Worker"})
+        self._set_formula(
+            "result = 25\n"
+            "employees = employee_model.search("
+            "[('name', '=', 'Op Worker')], limit=1)"
+        )
+        mo = self._make_mo(qty=1.0)
+        wo = mo.workorder_ids.filtered(
+            lambda w: w.operation_id == self.operation
+        )
+        self.assertEqual(len(wo), 1)
+        self.assertAlmostEqual(wo.duration_expected, 25.0)
+        # На EE (операторски полета) назначението реално се прилага
+        for field in ("employee_assigned_ids", "employee_ids"):
+            if field in wo._fields:
+                self.assertIn(worker, wo[field])
+                break
+
     def test_invalid_duration_keeps_standard(self):
         """Нечислов резултат → warning + стандартната продължителност."""
         self._set_formula("result = 'oops'")
