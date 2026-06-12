@@ -26,6 +26,11 @@ MRP BoM Line Formula Wizard
 
 |badge1| |badge2| |badge3|
 
+.. note::
+   Dual-licensed: available under AGPL-3.0-or-later (default) or under a
+   commercial license from Rosen Vladimirov — see ``LICENSE-COMMERCIAL.md``
+   at the repository root (contact: vladimirov.rosen@gmail.com).
+
 Provides a modal wizard for editing BoM line quantity formulas with:
 
 - **Code widget** — syntax-highlighted Python editor

@@ -14,6 +14,11 @@ MRP Design Matrix
 
 |badge1| |badge2| |badge3|
 
+.. note::
+   Dual-licensed: available under AGPL-3.0-or-later (default) or under a
+   commercial license from Rosen Vladimirov — see ``LICENSE-COMMERCIAL.md``
+   at the repository root (contact: vladimirov.rosen@gmail.com).
+
 Ядро на design-driven производството. Превръща параметричен BoM в
 конкретна производствена поръчка (MO) чрез оценка на четири GoRules DMN
 таблици (T0/T1/T2/T3) спрямо плосък design контекст, събран от

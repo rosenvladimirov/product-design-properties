@@ -2,6 +2,11 @@
 MRP Design Matrix — Solid Doors
 ==============================
 
+.. note::
+   Dual-licensed: available under AGPL-3.0-or-later (default) or under a
+   commercial license from Rosen Vladimirov — see ``LICENSE-COMMERCIAL.md``
+   at the repository root (contact: vladimirov.rosen@gmail.com).
+
 Design parameter definitions and matrix template for the SolidDoor
 (portalsolid.com / MySolidDoor) product range.
 
