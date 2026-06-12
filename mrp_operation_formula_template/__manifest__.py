@@ -11,7 +11,7 @@
 {
     "name": "MRP Operation Formula Templates",
     "summary": "Formula-driven work order duration, skip and material assignment per BoM operation",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "author": "Rosen Vladimirov",
     "maintainers": ["rosen-vladimirov"],
     "category": "Manufacturing",

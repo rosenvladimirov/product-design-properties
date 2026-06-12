@@ -33,6 +33,7 @@
 | `skip = True` | workorder-ът се маха изцяло от MO-то (суровините му се освобождават) |
 | `collect_materials = True` | всички още незакачени raw move-ове се консумират в този workorder |
 | `materials = [продукти]` | move-овете само на тези продукти се консумират тук |
+| `employee` / `employees` | назначава оператор(и) на workorder-а (EE полета за оператори) |
 
 `duration` влиза **инициализирана със стандартната стойност** (изчислената от
 Odoo по time_cycle и т.н.) — затова работят релативни корекции:
@@ -53,6 +54,8 @@ result = duration * 1.2          # +20% върху стандарта
 | `product_qty` | количеството на MO-то |
 | `duration` | стандартната продължителност (начална стойност) |
 | `env` | Odoo environment — `env.ref(...)`, search-ове |
+| `employee_model` | моделът `hr.employee` (когато HR е инсталиран) — search/ref на служители |
+| `employees` | наличните оператори на работния център (EE) |
 | `width`, `height`, … | design параметрите на произвеждания лот, когато `mrp_design_matrix` е инсталиран (T3 интеграция) + целият `design_context` dict |
 
 ## Примери
@@ -79,6 +82,12 @@ materials = [env.ref('my_module.product_glue'),
 ```python
 result = duration
 collect_materials = True
+```
+
+**Назначаване на оператор по умение/име** (EE полета):
+```python
+result = duration
+employees = employee_model.search([('name', 'ilike', 'заварчик')], limit=2)
 ```
 
 ## Поведение при грешка
