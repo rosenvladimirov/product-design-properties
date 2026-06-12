@@ -134,7 +134,10 @@ class MRPBomLine(models.Model):
         # Detect extra products (formula wrote: add_products = [...])
         extra_products = values.get("add_products")
 
-        if product_changed or uom_changed or extra_products:
+        # Extension hook: разширенията събират свои изходи от values
+        extra_outputs = self._quantity_formula_extra_outputs(values)
+
+        if product_changed or uom_changed or extra_products or extra_outputs:
             result = {
                 "quantity": qty,
                 "product": ret_product if product_changed else None,
@@ -142,5 +145,14 @@ class MRPBomLine(models.Model):
             }
             if extra_products:
                 result["add_products"] = extra_products
+            if extra_outputs:
+                result.update(extra_outputs)
             return result
         return qty
+
+    def _quantity_formula_extra_outputs(self, values):
+        """Extension hook: чете допълнителни изходни променливи от eval
+        контекста и ги връща като dict, който влиза в резултата на
+        ``_eval_quantity_formula``. Базата няма такива."""
+        self.ensure_one()
+        return {}
