@@ -11,7 +11,7 @@
 {
     "name": "MRP BoM Line Formula Templates",
     "summary": "Manage reusable templates for BoM line quantity formulas",
-    "version": "19.0.2.0.0",
+    "version": "19.0.2.1.0",
     "author": "Rosen Vladimirov",
     "maintainers": ["rosen-vladimirov"],
     "category": "Manufacturing",
