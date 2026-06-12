@@ -26,6 +26,11 @@ MRP Design Matrix — Canned Roasted Peppers
 
 |badge1| |badge2| |badge3|
 
+.. note::
+   Dual-licensed: available under AGPL-3.0-or-later (default) or under a
+   commercial license from Rosen Vladimirov — see ``LICENSE-COMMERCIAL.md``
+   at the repository root (contact: vladimirov.rosen@gmail.com).
+
 Industry sub-module for canned roasted pepper manufacturers. Covers a
 food-processing use case where the matrix drives brine composition,
 sterilization time per container size, and labelling runs.

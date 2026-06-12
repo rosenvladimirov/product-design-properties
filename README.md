@@ -390,4 +390,4 @@ mrp_design_matrix_{industry}/
 
 ## License
 
-This project is licensed under [AGPL-3.0](LICENSE).
+This project is **dual-licensed**: [AGPL-3.0](LICENSE) by default, or a commercial license — see [LICENSE-COMMERCIAL.md](LICENSE-COMMERCIAL.md) and [DUAL_LICENSING.md](DUAL_LICENSING.md) (contact: vladimirov.rosen@gmail.com).

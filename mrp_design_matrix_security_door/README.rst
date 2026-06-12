@@ -26,6 +26,11 @@ MRP Design Matrix — Security Doors
 
 |badge1| |badge2| |badge3|
 
+.. note::
+   Dual-licensed: available under AGPL-3.0-or-later (default) or under a
+   commercial license from Rosen Vladimirov — see ``LICENSE-COMMERCIAL.md``
+   at the repository root (contact: vladimirov.rosen@gmail.com).
+
 Industry sub-module for security door manufacturers. Parameter set
 covers RC class (RC1–RC4), sheet thickness, glass panel option, lock
 configuration, and dimensions.
