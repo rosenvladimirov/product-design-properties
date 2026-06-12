@@ -41,6 +41,7 @@ Variable                          Effect
 ``skip = True``                   drop this operation's work order from the MO entirely
 ``collect_materials = True``      consume all still-unassigned raw moves here
 ``materials = [products]``        consume the raw moves of those products here
+``employee`` / ``employees``      assign operator(s) to the work order (EE fields)
 ================================  =====================================================
 
 ``duration`` enters the context **initialized with the standard value**
@@ -52,7 +53,9 @@ Evaluation context
 ==================
 
 ``operation``, ``workcenter``, ``production``, ``workorder``,
-``product``, ``product_qty``, ``duration``, ``env``, plus the design
+``product``, ``product_qty``, ``duration``, ``env``,
+``employee_model`` (``hr.employee``, when HR is installed),
+``employees`` (the work center's available operators), plus the design
 parameters (``width``, ``height``, ...) of the producing lot when
 ``mrp_design_matrix`` is installed (T3 integration), and the full
 ``design_context`` dict.
@@ -79,6 +82,11 @@ First operation collects all raw materials (matrix-T3 style)::
 
     result = duration
     collect_materials = True
+
+Assign an operator by skill/name (Enterprise operator fields)::
+
+    result = duration
+    employees = employee_model.search([('name', 'ilike', 'welder')], limit=2)
 
 Error behaviour
 ===============
