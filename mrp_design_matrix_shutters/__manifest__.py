@@ -14,7 +14,7 @@
         "Full parametric design matrix for a 5-model roller-shutter "
         "range: Standard, Round, T-Roll, Built-In and Thermo Comfort."
     ),
-    "version": "18.0.1.7.3",
+    "version": "18.0.1.7.4",
     "category": "Manufacturing",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "Rosen Vladimirov",
