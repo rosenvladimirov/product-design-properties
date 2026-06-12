@@ -111,6 +111,11 @@ class MRPBomLine(models.Model):
             nocopy=True,
         )
 
+        # Формулата може да каже "пропусни този ред изцяло" (skip = True):
+        # компонентът не се появява в MO-то (за условни компоненти)
+        if values.get("skip"):
+            return {"skip": True, "quantity": 0.0}
+
         # Read result: support both 'result' and 'quantity' variable names
         qty = values.get("result", values.get("quantity", 0))
 

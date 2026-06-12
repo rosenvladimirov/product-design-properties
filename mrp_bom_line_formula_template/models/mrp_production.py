@@ -66,6 +66,12 @@ class MRPProduction(models.Model):
             return values
 
         if isinstance(result, dict):
+            if result.get("skip"):
+                # формулата каза "махни реда": маркер за _get_moves_raw_values;
+                # stock.move.create също го чисти (за чужди пътища)
+                values["formula_skip"] = True
+                values["product_uom_qty"] = 0.0
+                return values
             try:
                 values["product_uom_qty"] = float(result.get("quantity") or 0.0)
             except (TypeError, ValueError):
@@ -94,3 +100,17 @@ class MRPProduction(models.Model):
                 result,
             )
         return values
+
+    def _get_moves_raw_values(self):
+        """Филтрира редовете, които формулата е маркирала със skip=True.
+
+        Единичният ``_get_move_raw_values`` няма как да каже "пропусни ме",
+        затова слага маркер ``formula_skip``; тук (стандартната експлозия)
+        маркираните стойности отпадат изцяло — компонентът не се появява
+        в MO-то.
+        """
+        return [
+            vals
+            for vals in super()._get_moves_raw_values()
+            if not vals.pop("formula_skip", False)
+        ]

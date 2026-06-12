@@ -39,6 +39,7 @@ class MrpBomLineFormulaTemplate(models.Model):
         "  design parameters (width, height, ...) as flat variables, "
         "when a design context is attached\n\n"
         "Optional overrides the code may set:\n"
+        "  skip - set True to drop this BoM line from the MO entirely\n"
         "  product - replacement component (recordset)\n"
         "  uom - replacement unit of measure (recordset)\n\n"
         "Example:\n"
