@@ -10,13 +10,21 @@
 # by the AGPL-3.0-or-later.
 import logging
 
-from odoo import models
+from odoo import fields, models
 
 _logger = logging.getLogger(__name__)
 
 
 class StockMove(models.Model):
     _inherit = "stock.move"
+
+    # деклараме полето и тук: 18-ката на stock_move_forced_lot_multi го
+    # има, 19-ката не — нашият per-lot mapping живее в него
+    forced_lot_extra_data = fields.Json(
+        string="Extra Data",
+        help="Arbitrary JSON data attached to this move for propagation "
+        "purposes.",
+    )
 
     def _action_assign(self, force_qty=False):
         """Налага per-lot количествата от формулата.
