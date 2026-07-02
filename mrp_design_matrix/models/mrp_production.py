@@ -428,27 +428,63 @@ class MrpProduction(models.Model):
         workorder also collects the still-unassigned raw moves so the
         materials are consumed at that operation.
         """
-        workcenter_ref = op.get("workcenter_ref")
-        if not workcenter_ref:
-            return
-        try:
-            workcenter = self.env.ref(workcenter_ref)
-        except ValueError:
-            _logger.warning("Unknown workcenter ref: %s", workcenter_ref)
-            return
+        # Толерантен reader за ДВЕТЕ T3 схеми (lockstep порт от 19.0):
+        # - нова: ``workcenter_code`` → search по code (ZEN връща string literal
+        #   с кавички → strip). САМО собствената фирма или споделен център —
+        #   check_company на workcenter_id иначе събаря MO confirm.
+        # - legacy: ``workcenter_ref`` (xmlid) → env.ref.
+        workcenter = None
+        code = op.get("workcenter_code")
+        if isinstance(code, str):
+            code = code.strip().strip('"').strip("'").strip()
+        if code:
+            WC = self.env["mrp.workcenter"].sudo()
+            workcenter = WC.search(
+                [("code", "=", code), ("company_id", "=", self.company_id.id)],
+                limit=1,
+            ) or WC.search(
+                [("code", "=", code), ("company_id", "=", False)], limit=1
+            )
+            if not workcenter and WC.search([("code", "=", code)], limit=1):
+                _logger.info(
+                    "T3 op %r: workcenter exists only in another company — "
+                    "skipped for MO %s (company %s).",
+                    code, self.name, self.company_id.id)
+                return
+        if not workcenter:
+            workcenter_ref = op.get("workcenter_ref")
+            if not workcenter_ref:
+                _logger.warning(
+                    "T3 op row has no resolvable workcenter (code=%r, ref=%r) "
+                    "— skipped.", op.get("workcenter_code"),
+                    op.get("workcenter_ref"))
+                return
+            try:
+                workcenter = self.env.ref(workcenter_ref)
+            except ValueError:
+                _logger.warning("Unknown workcenter ref: %s", workcenter_ref)
+                return
         duration = self._eval_matrix_duration(
-            op.get("duration_formula", op.get("duration", 0)), ctx
+            op.get("duration_formula",
+                   op.get("duration_min", op.get("duration",
+                                                 op.get("minutes", 0)))), ctx
         )
-        workorder = self.env["mrp.workorder"].create(
-            {
-                "name": op.get("name", workcenter.name),
-                "production_id": self.id,
-                "workcenter_id": workcenter.id,
-                "product_uom_id": self.product_uom_id.id,
-                "qty_production": self.product_qty,
-                "duration_expected": duration,
-            }
-        )
+        try:
+            workorder = self.env["mrp.workorder"].create(
+                {
+                    "name": op.get("name", workcenter.name),
+                    "production_id": self.id,
+                    "workcenter_id": workcenter.id,
+                    "product_uom_id": self.product_uom_id.id,
+                    "qty_production": self.product_qty,
+                    "duration_expected": duration,
+                }
+            )
+        except Exception as exc:  # noqa: BLE001 — T3 ред не бива да чупи confirm
+            _logger.warning(
+                "T3 workorder create failed for %s (wc=%s): %s — skipped.",
+                self.name, workcenter.display_name, exc)
+            return
         # Consume the raw materials at this operation (first WO collects them).
         move_model = self.env["stock.move"]
         if "workorder_id" in move_model._fields:

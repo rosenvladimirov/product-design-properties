@@ -19,7 +19,7 @@ Generic kernel модел — без mrp-домейн знание. При бъ�
 в `base_zen_decision`.
 """
 
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class ZenDecisionLog(models.Model):
@@ -57,14 +57,15 @@ class ZenDecisionLog(models.Model):
     # (ir.model.access.csv: create=1, write=0, unlink=0 за group_user;
     # admin може unlink за GDPR purge).
 
-    def name_get(self):
+    @api.depends("table_code", "table_version", "executed_in", "create_date")
+    def _compute_display_name(self):
         # Compact: "#42 mrp_t0_constraints@v3 [odoo] 2026-05-26 14:33"
-        return [(
-            r.id,
-            "#%d %s@v%d [%s] %s" % (
-                r.id, r.table_code or "?", r.table_version,
-                r.executed_in,
+        # (беше name_get() — премахнат в Odoo 17 → мъртъв код; display_name
+        # падаше до суровото id. Lockstep порт от 19.0.)
+        for r in self:
+            r.display_name = "#%d %s@v%d [%s] %s" % (
+                r.id, r.table_code or "?", r.table_version or 0,
+                r.executed_in or "?",
                 (r.create_date.strftime("%Y-%m-%d %H:%M")
                  if r.create_date else "—"),
             )
-        ) for r in self]

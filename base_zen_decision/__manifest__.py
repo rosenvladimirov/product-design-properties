@@ -14,7 +14,7 @@
         "ZEN/GoRules decision-table kernel: evaluate + trace + version + "
         "sync. Domain-agnostic host for mrp_design_matrix, access_control."
     ),
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.0.1",
     "category": "Technical",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "Rosen Vladimirov",
