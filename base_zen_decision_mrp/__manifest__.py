@@ -9,32 +9,29 @@
 # Unless you hold a valid commercial license, your use of this file is governed
 # by the AGPL-3.0-or-later.
 {
-    "name": "Base ZEN Decision",
+    "name": "Base ZEN Decision — MRP menu glue",
     "summary": (
-        "ZEN/GoRules decision-table kernel: evaluate + trace + version + "
-        "sync. Domain-agnostic host for mrp_design_matrix, access_control."
+        "Glue: surfaces the ZEN Decisions menu under Manufacturing / "
+        "Configuration. Keeps the base_zen_decision kernel domain-agnostic "
+        "(no mrp dependency) while giving MRP users UI access to the "
+        "decision tables and audit log."
     ),
-    "version": "19.0.1.1.0",
-    "category": "Technical",
+    "version": "19.0.1.0.0",
+    "category": "Manufacturing",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "Rosen Vladimirov",
     "maintainers": ["rosen-vladimirov"],
     "license": "AGPL-3",
     "application": False,
     "installable": True,
+    # Автоматично се инсталира, когато и base_zen_decision, и mrp са налични —
+    # така менюто се появява без ръчна намеса, а kernel-ът остава base-only.
+    "auto_install": True,
     "depends": [
-        "base",
+        "base_zen_decision",
+        "mrp",
     ],
-    "external_dependencies": {
-        "python": ["zen"],
-    },
     "data": [
-        "security/ir.model.access.csv",
-        "views/zen_decision_views.xml",
+        "views/zen_menu_mrp_views.xml",
     ],
-    # Adopt the zen.* models/views/ACL previously owned by
-    # mrp_design_matrix (Decision #4 Step 2 — kernel extraction). The
-    # pre_init_hook reassigns their ir_model_data so the move does not
-    # drop the existing tables/records.
-    "pre_init_hook": "pre_init_hook",
 }

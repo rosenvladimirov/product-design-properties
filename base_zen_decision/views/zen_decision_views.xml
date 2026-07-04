@@ -203,21 +203,10 @@
         <field name="search_view_id" ref="view_zen_decision_log_search"/>
     </record>
 
-    <!-- Menu — под Manufacturing/Configuration (за сега; ще се мести
-         когато се промотира в base_zen_decision модул) -->
-    <menuitem id="menu_zen_root"
-              name="ZEN Decisions"
-              parent="mrp.menu_mrp_configuration"
-              sequence="90"/>
-    <menuitem id="menu_zen_decision_table"
-              name="Decision Tables"
-              parent="menu_zen_root"
-              action="action_zen_decision_table"
-              sequence="10"/>
-    <menuitem id="menu_zen_decision_log"
-              name="Decision Log"
-              parent="menu_zen_root"
-              action="action_zen_decision_log"
-              sequence="20"/>
+    <!-- Меню: НЯМА тук. Kernel-ът е domain-agnostic и НЕ зависи от mrp.
+         Менютата (root под mrp.menu_mrp_configuration + Decision Tables/Log)
+         живеят в glue модула `base_zen_decision_mrp` (depends: base_zen_decision, mrp;
+         auto_install). Actions action_zen_decision_table/log остават тук и се
+         реферират оттам. Виж bug fix: base_zen_decision без mrp гърми при fresh-install. -->
 
 </odoo>
