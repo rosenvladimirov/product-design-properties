@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2024-2026 Rosen Vladimirov — AGPL-3.0-or-later / commercial (dual). -->
+<odoo>
+
+    <!-- Меню за ZEN Decisions под Manufacturing / Configuration.
+         Отделено от base_zen_decision (който е domain-agnostic и НЕ зависи от
+         mrp). Actions се реферират от base_zen_decision. -->
+    <menuitem id="menu_zen_root"
+              name="ZEN Decisions"
+              parent="mrp.menu_mrp_configuration"
+              sequence="90"/>
+    <menuitem id="menu_zen_decision_table"
+              name="Decision Tables"
+              parent="menu_zen_root"
+              action="base_zen_decision.action_zen_decision_table"
+              sequence="10"/>
+    <menuitem id="menu_zen_decision_log"
+              name="Decision Log"
+              parent="menu_zen_root"
+              action="base_zen_decision.action_zen_decision_log"
+              sequence="20"/>
+
+</odoo>
