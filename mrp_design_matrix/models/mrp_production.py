@@ -168,10 +168,11 @@ class MrpProduction(models.Model):
             )
             coeff = self._eval_matrix_coeff_cached(line, t2_coeff_by_key)
             qty_final = qty_base * coeff
-            if qty_final > 0.0:
-                self._create_or_update_matrix_move(
-                    move_product, qty_final, move_uom, line
-                )
+            # Реконсилирай със standard-exploded move (create/update/remove),
+            # за да НЕ се дублира; qty<=0 маха реда (O-variant неактивен).
+            self._create_or_update_matrix_move(
+                move_product, qty_final, move_uom, line
+            )
             # Extra products injected by the formula's add_products
             for extra in add_products:
                 self._create_formula_extra_move(extra, full_ctx)
@@ -402,7 +403,23 @@ class MrpProduction(models.Model):
         self._create_or_update_matrix_move(product, qty, uom)
 
     def _create_or_update_matrix_move(self, product, qty, uom, bom_line=None):
-        """Create a raw material move for the MO."""
+        """Create / update / remove a raw material move for the MO.
+
+        Реконсилира с movement-а, който standard explosion (super().
+        action_confirm) вече е създал за същия ``bom_line`` — обновява го
+        на място вместо да дублира. При ``qty <= 0`` (matrix коефициент 0 →
+        O-variant неактивен) редът се маха, така че компонентът НЕ се появява
+        в MO-то. Ad-hoc moves (``bom_line=None``) нямат standard аналог → create.
+        """
+        existing = self.env["stock.move"]
+        if bom_line:
+            existing = self.move_raw_ids.filtered(
+                lambda m: m.bom_line_id.id == bom_line.id
+            )
+        if qty <= 0.0:
+            if existing:
+                existing.unlink()
+            return
         vals = {
             "name": product.display_name,
             "product_id": product.id,
@@ -417,7 +434,11 @@ class MrpProduction(models.Model):
         }
         if bom_line:
             vals["bom_line_id"] = bom_line.id
-        self.env["stock.move"].create(vals)
+        if existing:
+            existing[:1].write(vals)
+            existing[1:].unlink()
+        else:
+            self.env["stock.move"].create(vals)
 
     def _create_matrix_workorder(self, op: dict, ctx=None):
         """Create a workorder from a T3 output row.
