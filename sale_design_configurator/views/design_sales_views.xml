@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2024-2026 Rosen Vladimirov  (AGPL-3.0-or-later / commercial)
+
+     Sales ниво: статус-бар на design lot-а + sales-потвърждение (заключва
+     sales параметрите, подава към техническото). Техническото меню/UI е в
+     technical_check_design_configurator; производственото — в
+     mrp_technical_configurator.
+-->
+<odoo>
+    <record id="stock_lot_form_design_sales" model="ir.ui.view">
+        <field name="name">stock.lot.form.design.sales</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.view_production_lot_form"/>
+        <field name="arch" type="xml">
+            <!-- Статусът отива в (нов) header; lot формата няма header по подразбиране -->
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <field name="design_state" widget="statusbar"
+                            statusbar_visible="draft,sales_confirmed,technical_confirmed"/>
+                    <button name="action_design_sales_confirm" type="object"
+                            string="Confirm (Sales)" class="oe_highlight"
+                            invisible="design_state != 'draft' or not design_param_definition_id"
+                            groups="sale_design_configurator.group_design_sales"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -3,6 +3,7 @@
 // License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import { Component } from "@odoo/owl";
+import { _t } from "@web/core/l10n/translation";
 
 import {
     evaluateT0,
@@ -61,9 +62,9 @@ export class RuleMatrixPreview extends Component {
         const errs = this.t0Errors;
         const warns = this.t0Warnings;
         const parts = [];
-        if (errs) parts.push(`${errs} error${errs > 1 ? "s" : ""}`);
-        if (warns) parts.push(`${warns} warning${warns > 1 ? "s" : ""}`);
-        return parts.length ? parts.join(", ") : "All OK";
+        if (errs) parts.push(_t("%s error(s)", errs));
+        if (warns) parts.push(_t("%s warning(s)", warns));
+        return parts.length ? parts.join(", ") : _t("All OK");
     }
 
     get t0StatusClass() {

@@ -1,0 +1,133 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mrp_design_matrix
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Language: bg\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/rule_matrix_preview/rule_matrix_preview.js:0
+msgid "%s error(s)"
+msgstr "%s грешка(и)"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/rule_matrix_preview/rule_matrix_preview.js:0
+msgid "%s warning(s)"
+msgstr "%s предупреждение(я)"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/rule_matrix_preview/rule_matrix_preview.js:0
+msgid "All OK"
+msgstr "Всичко е наред"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/rule_matrix_preview/rule_matrix_preview.xml:0
+msgid "T0 Constraints"
+msgstr "T0 Ограничения"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/rule_matrix_preview/rule_matrix_preview.xml:0
+msgid "T1 Geometry"
+msgstr "T1 Геометрия"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/rule_matrix_preview/rule_matrix_preview.xml:0
+msgid "T2 Materials"
+msgstr "T2 Материали"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/rule_matrix_preview/rule_matrix_preview.xml:0
+msgid "T3 Operations"
+msgstr "T3 Операции"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/rule_matrix_preview/rule_matrix_preview.xml:0
+msgid "No matrix tables available"
+msgstr "Няма налични матрични таблици"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/rule_matrix_preview/rule_matrix_preview.xml:0
+msgid "Component"
+msgstr "Компонент"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/rule_matrix_preview/rule_matrix_preview.xml:0
+msgid "Coeff"
+msgstr "Коеф."
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/rule_matrix_preview/rule_matrix_preview.xml:0
+msgid "Final"
+msgstr "Крайно"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/matrix_preview_dialog/matrix_preview_dialog.xml:0
+msgid "Parameters"
+msgstr "Параметри"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/matrix_preview_dialog/matrix_preview_dialog.xml:0
+msgid "No design parameter definition linked to this BoM."
+msgstr "Няма дизайн параметри, свързани с тази рецепта."
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/matrix_preview_dialog/matrix_preview_button.xml:0
+msgid "Matrix Rules"
+msgstr "Матрични правила"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/inline_matrix_preview/inline_matrix_preview.xml:0
+msgid "Constraint Preview"
+msgstr "Преглед на ограниченията"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/design_matrix_field/design_matrix_field.xml:0
+msgid "No decision table."
+msgstr "Няма decision таблица."
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/design_matrix_field/design_matrix_field.xml:0
+msgid "Create Table"
+msgstr "Създай таблица"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/design_matrix_field/design_matrix_field.xml:0
+msgid "Table defined but no rules yet."
+msgstr "Таблицата е дефинирана, но още няма правила."
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/design_matrix_field/design_matrix_field.xml:0
+msgid "Add input and output columns to start defining rules."
+msgstr "Добавете входни и изходни колони, за да дефинирате правила."
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/design_matrix_field/design_matrix_field.xml:0
+msgid "Rule"
+msgstr "Правило"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/design_matrix_field/design_matrix_field.xml:0
+msgid "Input"
+msgstr "Вход"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/design_matrix_field/design_matrix_field.xml:0
+msgid "Output"
+msgstr "Изход"
+
+#. module: mrp_design_matrix
+#: model:ir.model.fields,field_description:mrp_design_matrix.field_product_attribute__design_role
+msgid "Design Role"
+msgstr "Дизайн роля"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/static/src/components/matrix_preview_dialog/matrix_preview_dialog.js:0
+msgid "Matrix Preview"
+msgstr "Преглед на матрицата"

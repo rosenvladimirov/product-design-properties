@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2024-2026 Rosen Vladimirov  (AGPL-3.0-or-later / commercial)
+
+     Роля „мениджър" — единствените, които виждат парите (себестойност/продажна).
+     Имплицира production (вижда всички нива), за да е истински надзор.
+-->
+<odoo noupdate="1">
+    <record id="group_design_manager" model="res.groups">
+        <field name="name">Design / Manager (Cost)</field>
+        <field name="implied_ids"
+               eval="[(4, ref('sale_design_configurator.group_design_production'))]"/>
+    </record>
+</odoo>

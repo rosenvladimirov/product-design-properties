@@ -34,6 +34,47 @@ class StockMove(models.Model):
             vals["design_lot_id"] = self.design_lot_id.id
         return vals
 
+    @api.model
+    def _prepare_merge_moves_distinct_fields(self):
+        """Не сливай движения с различен design лот (както forced_lot)."""
+        distinct = super()._prepare_merge_moves_distinct_fields()
+        distinct.append("design_lot_id")
+        return distinct
+
+    def _action_assign(self, force_qty=False):
+        """Incoming PO receipt с design лот → присвои лота на реда
+        (по аналог на forced_lot _action_assign / _create_forced_lot_move_lines)."""
+        res = super()._action_assign(force_qty=force_qty)
+        for move in self.filtered(
+            lambda m: m.design_lot_id
+            and m.picking_type_id.code == "incoming"
+            and m.state in ("confirmed", "partially_available", "assigned")
+        ):
+            move._assign_design_lot_move_line()
+        return res
+
+    def _assign_design_lot_move_line(self):
+        """Гарантирай един move line с design лота за остатъчното количество."""
+        self.ensure_one()
+        lot = self.design_lot_id
+        if not lot:
+            return
+        # махни редовете с друг/без лот
+        self.move_line_ids.filtered(lambda l: l.lot_id != lot).unlink()
+        remaining = self.product_uom_qty - sum(self.move_line_ids.mapped("quantity"))
+        if remaining <= 0 or self.move_line_ids.filtered(lambda l: l.lot_id == lot):
+            return
+        self.env["stock.move.line"].create({
+            "move_id": self.id,
+            "product_id": self.product_id.id,
+            "product_uom_id": self.product_uom.id,
+            "location_id": self.location_id.id,
+            "location_dest_id": self.location_dest_id.id,
+            "picking_id": self.picking_id.id,
+            "lot_id": lot.id,
+            "quantity": remaining,
+        })
+
 
 class MrpProduction(models.Model):
     _inherit = "mrp.production"
@@ -87,6 +128,9 @@ class MrpProduction(models.Model):
                 "definitionId": bom.design_param_definition_id.id,
                 "existingLotId": existing.id if existing else False,
                 "moId": self.id,
+                # MO = производствено ниво: преглед/корекция на всички параметри,
+                # без 3D/снимки (визуалното е само за sales).
+                "level": "production",
             },
         }
 

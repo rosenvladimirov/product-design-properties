@@ -1,0 +1,35 @@
+// Copyright 2024-2026 Rosen Vladimirov  (AGPL-3.0-or-later / commercial)
+// Едър, touch-friendly рендер на дизайн полетата за таблет (технически надзор).
+.o_design_tablet {
+    .o_design_tablet_head {
+        margin-bottom: 12px;
+        h1 { font-size: 2rem; font-weight: 600; margin: 0; }
+        h2 { font-size: 1.25rem; color: #6c757d; margin: 4px 0 0; }
+    }
+
+    // По-едри полета и контроли за пръст
+    .o_field_widget input,
+    .o_field_widget select,
+    .o_field_widget textarea,
+    .o_field_widget .o_input {
+        font-size: 1.15rem;
+        min-height: 48px;
+    }
+
+    // Properties (design_params) — повече въздух между редовете
+    .o_field_properties .o_property_field {
+        padding: 6px 0;
+        font-size: 1.1rem;
+    }
+
+    .btn-lg {
+        min-height: 52px;
+        font-size: 1.1rem;
+        padding: 0 20px;
+    }
+
+    label,
+    .o_form_label {
+        font-size: 1.05rem;
+    }
+}

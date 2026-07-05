@@ -12,6 +12,7 @@
  */
 
 import { Component } from "@odoo/owl";
+import { _t } from "@web/core/l10n/translation";
 import { patch } from "@web/core/utils/patch";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
@@ -65,7 +66,7 @@ patch(SaleOrderLineProductField.prototype, {
 
         if (!this.props.record.resId) {
             this.notification.add(
-                "Save the line before configuring the design.",
+                _t("Save the line before configuring the design."),
                 { type: "info" }
             );
             return;

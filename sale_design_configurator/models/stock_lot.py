@@ -11,8 +11,41 @@
 from odoo import api, fields, models
 
 
+DESIGN_STATE = [
+    ("draft", "Draft"),
+    ("sales_confirmed", "Sales Confirmed"),
+    ("technical_confirmed", "Technical Confirmed"),
+]
+
+
 class StockLot(models.Model):
     _inherit = "stock.lot"
+
+    # -- Design workflow stage (sales -> technical -> production) -------------
+    design_state = fields.Selection(
+        DESIGN_STATE,
+        string="Design Stage",
+        default="draft",
+        copy=False,
+        index=True,
+        help="Workflow stage of the design lot. Sales fills the sales-level "
+        "parameters and confirms (locking them); the technical person fills "
+        "the technical-level parameters on a tablet and confirms, releasing "
+        "the lot to production. Levels come from the definition's param_levels.",
+    )
+
+    # -- Workflow transitions ------------------------------------------------
+
+    def action_design_sales_confirm(self):
+        """Sales confirms: lock sales-level parameters, hand over to technical.
+
+        Technical/production transitions live in their own level modules
+        (technical_check_design_configurator / mrp_technical_configurator).
+        """
+        self.filtered(lambda lot: lot.design_state == "draft").write(
+            {"design_state": "sales_confirmed"}
+        )
+        return True
 
     # -- Helpers -------------------------------------------------------------
 
@@ -20,12 +53,21 @@ class StockLot(models.Model):
     def generate_design_lot_name(self, product_id):
         """
         Called from DesignConfiguratorWidget._saveDesignLot() via ORM.
-        Returns a unique lot name from sequence, or falls back to a
-        product-based name.
+        Returns a unique lot name. Ако е инсталиран product_category_lot_sequence
+        и категорията на продукта има линкната последователност — ползва нея;
+        иначе стандартния `stock.lot.serial`; накрая product-based fallback.
         """
-        name = self.env["ir.sequence"].next_by_code("stock.lot.serial")
+        product = self.env["product.product"].browse(product_id)
+        sequence = self.env["ir.sequence"]
+        # Soft-check: без твърда зависимост от product_category_lot_sequence.
+        if hasattr(product, "_get_lot_sequence"):
+            sequence = product._get_lot_sequence()
+        name = (
+            sequence._next()
+            if sequence
+            else self.env["ir.sequence"].next_by_code("stock.lot.serial")
+        )
         if not name:
-            product = self.env["product.product"].browse(product_id)
             name = (
                 f"DL-{product.default_code or product.id}"
                 f"-{fields.Datetime.now().strftime('%y%m%d%H%M')}"

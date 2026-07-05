@@ -3,6 +3,7 @@
 // License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import { Component, useState } from "@odoo/owl";
+import { _t } from "@web/core/l10n/translation";
 import { Dialog } from "@web/core/dialog/dialog";
 import { useService } from "@web/core/utils/hooks";
 import { RuleMatrixPreview } from "../rule_matrix_preview/rule_matrix_preview";
@@ -22,6 +23,10 @@ export class MatrixPreviewDialog extends Component {
         bomId: { type: Number },
         close: { type: Function },
     };
+
+    get dialogTitle() {
+        return _t("Matrix Preview");
+    }
 
     setup() {
         this.orm = useService("orm");

@@ -14,7 +14,7 @@
 <templates xml:space="preserve">
 
 <t t-name="sale_design_configurator.DesignConfiguratorWidget">
-    <div class="o_design_configurator">
+    <div t-attf-class="o_design_configurator{{ (show3D or costMode) ? '' : ' o_cfg_no_viewport' }}">
 
         <!-- Left panel: parameters -->
         <div class="o_cfg_panel">
@@ -34,6 +34,7 @@
                                 step="1"
                                 t-att-value="param.value"
                                 t-att-data-param="param.name"
+                                t-att-disabled="param._levelReadonly"
                                 t-on-input="onSliderInput"
                             />
                         </div>
@@ -52,13 +53,14 @@
                                 t-att-step="param.step || 1"
                                 t-att-value="param.value"
                                 t-att-data-param="param.name"
+                                t-att-disabled="param._levelReadonly"
                                 t-on-input="onSliderInput"
                             />
                         </div>
                     </t>
 
-                    <!-- Selection: segmented buttons -->
-                    <t t-if="param.type === 'selection' and param.selection">
+                    <!-- Selection (≤4 опции): РАДИО / сегмент-бутони -->
+                    <t t-if="param.type === 'selection' and param.selection and param.selection.length &lt;= 4">
                         <div class="o_cfg_param_row">
                             <div class="o_cfg_param_label">
                                 <span><t t-esc="param.string"/></span>
@@ -69,12 +71,34 @@
                                         t-att-class="'o_cfg_seg_btn' + (params[param.name] === opt[0] ? ' active' : '')"
                                         t-att-data-value="opt[0]"
                                         t-att-data-param="param.name"
+                                        t-att-disabled="param._levelReadonly"
                                         t-on-click="onSegmentClick"
                                     >
                                         <t t-esc="opt[1]"/>
                                     </button>
                                 </t>
                             </div>
+                        </div>
+                    </t>
+
+                    <!-- Selection (&gt;4 опции): ПАДАЩО МЕНЮ (dropdown) -->
+                    <t t-if="param.type === 'selection' and param.selection and param.selection.length &gt; 4">
+                        <div class="o_cfg_param_row">
+                            <div class="o_cfg_param_label">
+                                <span><t t-esc="param.string"/></span>
+                            </div>
+                            <select class="o_input o_cfg_select"
+                                    t-att-data-param="param.name"
+                                    t-att-disabled="param._levelReadonly"
+                                    t-on-change="onSelectChange" style="width:100%;">
+                                <option value="">—</option>
+                                <t t-foreach="param.selection" t-as="opt" t-key="opt[0]">
+                                    <option t-att-value="opt[0]"
+                                            t-att-selected="params[param.name] === opt[0]">
+                                        <t t-esc="opt[1]"/>
+                                    </option>
+                                </t>
+                            </select>
                         </div>
                     </t>
 
@@ -85,23 +109,25 @@
                                 type="checkbox"
                                 t-att-checked="params[param.name]"
                                 t-att-data-param="param.name"
+                                t-att-disabled="param._levelReadonly"
                                 t-on-change="onCheckChange"
                             />
                             <span><t t-esc="param.string"/></span>
                         </label>
                     </t>
 
-                    <!-- Char: text input -->
+                    <!-- Char: ЧИСЛО-input за размери, иначе текст-input -->
                     <t t-if="param.type === 'char'">
                         <div class="o_cfg_param_row">
                             <div class="o_cfg_param_label">
                                 <span><t t-esc="param.string"/></span>
                             </div>
                             <input
-                                type="text"
+                                t-att-type="isNumericParam(param.string) ? 'number' : 'text'"
                                 class="o_input"
                                 t-att-value="params[param.name]"
                                 t-att-data-param="param.name"
+                                t-att-disabled="param._levelReadonly"
                                 t-on-change="onTextChange"
                                 style="width: 100%;"/>
                         </div>
@@ -125,6 +151,7 @@
                                 step="1"
                                 t-att-value="param.value"
                                 t-att-data-param="param.name"
+                                t-att-disabled="param._levelReadonly"
                                 t-on-input="onSliderInput"
                             />
                         </div>
@@ -183,6 +210,10 @@
                 </div>
             </t>
 
+            <!-- Изборите (материали/екстри/операции) И калкулацията са в
+                 полупрозрачния панел над 3D-то; левият панел е само за
+                 стойностни параметри. -->
+
             <!-- Validation messages -->
             <div class="o_cfg_validation" t-if="ui.validErrors.length or ui.validWarns.length">
                 <t t-foreach="ui.validErrors" t-as="err" t-key="err">
@@ -218,10 +249,69 @@
 
         </div>
 
-        <!-- Right panel: Rule Matrix Preview (when no 3D/SVG assets) -->
-        <t t-if="showRulePreview">
+        <!-- Cost ниво: себестойност на мястото на картинката -->
+        <t t-if="costMode">
+            <div class="o_cfg_viewport o_cfg_cost">
+                <div class="o_cfg_cost_inner">
+                    <h3 class="o_cfg_cost_title">Cost Review</h3>
+                    <table class="table table-sm o_cfg_cost_table">
+                        <thead>
+                            <tr>
+                                <th>Material</th>
+                                <th class="text-end">Qty</th>
+                                <th class="text-end">Unit</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="(cost.data and cost.data.lines) or []" t-as="ln" t-key="ln_index">
+                                <td t-esc="ln.product_name"/>
+                                <td class="text-end" t-esc="(ln.qty || 0).toFixed(2)"/>
+                                <td class="text-end" t-esc="(ln.unit_cost || 0).toFixed(2)"/>
+                                <td class="text-end" t-esc="(ln.subtotal || 0).toFixed(2)"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table class="table table-sm o_cfg_cost_table"
+                           t-if="cost.data and cost.data.operations and cost.data.operations.length">
+                        <thead>
+                            <tr><th>Operation</th><th class="text-end">Min</th><th class="text-end">Cost</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="cost.data.operations" t-as="op" t-key="op_index">
+                                <td t-esc="op.name"/>
+                                <td class="text-end" t-esc="(op.minutes || 0).toFixed(1)"/>
+                                <td class="text-end" t-esc="(op.cost || 0).toFixed(2)"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="o_cfg_cost_totals">
+                        <div>Materials: <span t-esc="((cost.data and cost.data.total_material) || 0).toFixed(2)"/></div>
+                        <div>Labour: <span t-esc="((cost.data and cost.data.total_labor) || 0).toFixed(2)"/></div>
+                        <div class="o_cfg_cost_total">
+                            <strong>Cost: <span t-esc="((cost.data and cost.data.total_cost) || 0).toFixed(2)"/></strong>
+                        </div>
+                        <div class="o_cfg_cost_sale">
+                            Suggested sale (markup): <span t-esc="((cost.data and cost.data.sale_suggested) || 0).toFixed(2)"/>
+                        </div>
+                        <div t-if="cost.data and (cost.data.sale_actual or cost.data.sale_actual === 0)">
+                            Actual sale (pricelist): <span t-esc="(cost.data.sale_actual || 0).toFixed(2)"/>
+                        </div>
+                        <div t-if="cost.data and (cost.data.sale_actual or cost.data.sale_actual === 0)"
+                             t-attf-class="o_cfg_cost_diff {{ ((cost.data.sale_actual||0) - (cost.data.sale_suggested||0)) >= 0 ? 'text-success' : 'text-danger' }}">
+                            Check (actual − suggested): <span t-esc="(((cost.data.sale_actual||0) - (cost.data.sale_suggested||0))).toFixed(2)"/>
+                        </div>
+                        <div class="text-danger" t-if="cost.data and cost.data.error" t-esc="cost.data.error"/>
+                    </div>
+                </div>
+            </div>
+        </t>
+
+        <!-- Right panel само на визуално ниво (sales); technical/production без 3D -->
+        <!-- Десен панел: rule-preview ИЛИ 3D canvas, но изборите (overlay) ВИНАГИ -->
+        <t t-if="show3D">
             <div class="o_cfg_viewport">
-                <RuleMatrixPreview
+                <RuleMatrixPreview t-if="showRulePreview"
                     params="params"
                     constraintTable="props.constraintTable"
                     geometryTable="props.geometryTable"
@@ -229,14 +319,8 @@
                     operationTable="props.operationTable"
                     bomLines="props.bomLines or []"
                 />
-            </div>
-        </t>
-
-        <!-- Right panel: 3D viewport (when 3D/SVG assets exist) -->
-        <t t-else="">
-            <div class="o_cfg_viewport">
-                <canvas t-ref="canvas"/>
-                <div class="o_cfg_viewport_controls">
+                <canvas t-if="!showRulePreview" t-ref="canvas"/>
+                <div class="o_cfg_viewport_controls" t-if="!showRulePreview">
                     <button class="o_cfg_ctrl_btn" t-on-click="toggleAutoRotate"
                             t-att-title="ui.autoRotate ? 'Pause rotation' : 'Resume rotation'">
                         <i t-att-class="ui.autoRotate ? 'fa fa-pause' : 'fa fa-play'"/>
@@ -245,27 +329,66 @@
                         <i class="fa fa-refresh"/>
                     </button>
                 </div>
-                <div class="o_cfg_rotate_hint" t-if="ui.autoRotate">Drag to rotate</div>
+                <div class="o_cfg_rotate_hint" t-if="!showRulePreview and ui.autoRotate">Drag to rotate</div>
 
-                <!-- Accessory overlay panel (bottom sheet) -->
+                <!-- Полупрозрачен панел над 3D (вика се с клик на дръжката):
+                     ВСИЧКИ избори — материали (снимки), екстри, операции. -->
                 <div t-ref="overlay" class="o_cfg_overlay"
+                     t-if="componentGroups.length or overlayGroups.length or accessoryChips.toggles.length or operationGroups.length"
                      t-att-style="'height:' + ui.overlayHeight + 'px'">
                     <div class="o_cfg_overlay_handle" t-on-mousedown="onOverlayHandleDrag">
                         <div class="o_cfg_overlay_grip"/>
                     </div>
                     <div class="o_cfg_overlay_body">
-                        <div class="o_cfg_overlay_desc" t-if="ui.description">
-                            <t t-esc="ui.description"/>
-                        </div>
-                        <t t-foreach="overlayGroups" t-as="group" t-key="group.bomProductId">
+                        <!-- Атрибути на полуфабрикатите (крило/каса/лайсна):
+                             цветът се носи от тях. „Цвят" е филтриран по „Покритие". -->
+                        <t t-foreach="componentGroups" t-as="cg" t-key="'cg_' + cg.lineId">
+                            <div class="o_cfg_overlay_comp_title"><t t-esc="cg.componentName"/></div>
+                            <t t-foreach="cg.sections" t-as="sec"
+                               t-key="'sec_' + cg.lineId + '_' + sec.attrId">
+                                <div class="o_cfg_overlay_section_title"><t t-esc="sec.name"/></div>
+                                <div class="o_cfg_overlay_grid" t-if="sec.isMedia">
+                                    <t t-foreach="sec.options" t-as="o"
+                                       t-key="sec.key + '_' + o.ptavId">
+                                        <div t-att-class="'o_cfg_overlay_card' + (o.selected ? ' active' : '')"
+                                             t-att-data-key="sec.key"
+                                             t-att-data-value="o.ptavId"
+                                             t-att-title="o.name"
+                                             t-on-click="onComponentAttrSelect">
+                                            <img t-if="o.image" t-att-src="o.image"
+                                                 class="o_cfg_overlay_card_img" t-att-alt="o.name"/>
+                                            <div t-if="!o.image"
+                                                 t-att-class="'o_cfg_overlay_card_swatch' + (o.htmlColor ? '' : ' o_cfg_swatch_none')"
+                                                 t-att-style="o.htmlColor ? ('background:' + o.htmlColor) : ''"/>
+                                            <div class="o_cfg_overlay_card_name"><t t-esc="o.name"/></div>
+                                        </div>
+                                    </t>
+                                </div>
+                                <div class="o_cfg_chip_row" t-if="!sec.isMedia">
+                                    <button t-foreach="sec.options" t-as="o"
+                                            t-key="sec.key + '_' + o.ptavId"
+                                            t-att-class="'o_cfg_chip' + (o.selected ? ' active' : '')"
+                                            t-att-data-key="sec.key"
+                                            t-att-data-value="o.ptavId"
+                                            t-on-click="onComponentAttrSelect">
+                                        <span t-esc="o.name"/>
+                                    </button>
+                                </div>
+                            </t>
+                        </t>
+
+                        <!-- Избор на материали (снимки) — legacy -->
+                        <t t-foreach="overlayGroups" t-as="group" t-key="'ov_' + group.paramKey">
                             <div class="o_cfg_overlay_section_title">
                                 <t t-esc="group.componentName"/>
                             </div>
                             <div class="o_cfg_overlay_grid">
-                                <t t-foreach="group.variants" t-as="v" t-key="v.variant_id">
+                                <t t-foreach="group.variants" t-as="v"
+                                   t-key="group.paramKey + '_' + v.variant_id">
                                     <div t-att-class="'o_cfg_overlay_card' + (v.selected ? ' active' : '')"
                                          t-att-data-param="group.paramKey"
                                          t-att-data-variant="v.variantStr"
+                                         t-att-title="v.ptav_name"
                                          t-on-click="onAccessorySelect">
                                         <img t-att-src="v.imageUrl"
                                              class="o_cfg_overlay_card_img"
@@ -277,6 +400,65 @@
                                 </t>
                             </div>
                         </t>
+                        <!-- Екстри / електроника (toggle) -->
+                        <t t-if="accessoryChips.toggles.length">
+                            <div class="o_cfg_overlay_section_title">Extras</div>
+                            <div class="o_cfg_chip_row">
+                                <button t-foreach="accessoryChips.toggles" t-as="chip"
+                                        t-key="'tg_' + chip.name"
+                                        t-att-class="'o_cfg_chip' + (chip.active ? ' active' : '')"
+                                        t-att-data-param="chip.name"
+                                        t-att-data-readonly="chip.readonly ? '1' : '0'"
+                                        t-att-disabled="chip.readonly"
+                                        t-on-click="toggleAccessoryChip">
+                                    <i t-att-class="chip.active ? 'fa fa-check-circle' : 'fa fa-circle-o'"/>
+                                    <span t-esc="chip.label"/>
+                                </button>
+                            </div>
+                        </t>
+                        <!-- Операции, групирани по работен център (РЦ Фрезоване,
+                             Монтажи, ...) -->
+                        <t t-foreach="operationGroups" t-as="og" t-key="'og_' + og.wcName">
+                            <div class="o_cfg_overlay_section_title">
+                                <t t-esc="og.wcName"/>
+                            </div>
+                            <div class="o_cfg_chip_row">
+                                <button t-foreach="og.ops" t-as="op" t-key="'op_' + op.opKey"
+                                        t-att-class="'o_cfg_chip' + (op.active ? ' active' : '')"
+                                        t-att-data-op="op.opKey"
+                                        t-on-click="toggleOperationChip">
+                                    <i t-att-class="op.active ? 'fa fa-check-circle' : 'fa fa-circle-o'"/>
+                                    <span t-esc="op.name"/>
+                                </button>
+                            </div>
+                        </t>
+
+                        <!-- Калкулация (себестойност/цена) в панела.
+                             Не-мениджъри получават REDACTED отговор (без
+                             себестойност) → показва се само продажната. -->
+                        <div class="o_cfg_overlay_calc"
+                             t-if="cost.data and (cost.data.total_cost !== undefined or cost.data.sale_suggested !== undefined or cost.data.error)">
+                            <div class="o_cfg_overlay_section_title">Calculation</div>
+                            <t t-if="cost.data.total_cost !== undefined">
+                                <div class="o_cfg_calc_row">
+                                    <span>Materials</span>
+                                    <span t-esc="((cost.data.total_material) || 0).toFixed(2)"/>
+                                </div>
+                                <div class="o_cfg_calc_row">
+                                    <span>Labour</span>
+                                    <span t-esc="((cost.data.total_labor) || 0).toFixed(2)"/>
+                                </div>
+                                <div class="o_cfg_calc_row o_cfg_calc_total">
+                                    <span>Cost</span>
+                                    <span t-esc="((cost.data.total_cost) || 0).toFixed(2)"/>
+                                </div>
+                            </t>
+                            <div class="o_cfg_calc_row o_cfg_calc_sale">
+                                <span>Suggested price</span>
+                                <span t-esc="((cost.data.sale_suggested) || 0).toFixed(2)"/>
+                            </div>
+                            <div class="text-danger small" t-if="cost.data.error" t-esc="cost.data.error"/>
+                        </div>
                     </div>
                 </div>
             </div>

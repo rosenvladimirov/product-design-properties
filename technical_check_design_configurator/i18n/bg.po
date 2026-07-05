@@ -1,0 +1,74 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* technical_check_design_configurator
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Language: bg\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: technical_check_design_configurator
+#: model_terms:ir.ui.view,arch_db:technical_check_design_configurator.stock_lot_form_technical
+msgid "Fill Technical Data"
+msgstr "Попълни технически данни"
+
+#. module: technical_check_design_configurator
+#: model_terms:ir.ui.view,arch_db:technical_check_design_configurator.stock_lot_form_technical
+msgid "Confirm (Technical)"
+msgstr "Потвърди (технически)"
+
+#. module: technical_check_design_configurator
+#: model_terms:ir.ui.view,arch_db:technical_check_design_configurator.stock_lot_form_technical
+msgid "Reopen (Technical)"
+msgstr "Отвори отново (технически)"
+
+#. module: technical_check_design_configurator
+#: model_terms:ir.ui.view,arch_db:technical_check_design_configurator.stock_lot_form_technical
+msgid "Create Sale Order"
+msgstr "Създай поръчка за продажба"
+
+#. module: technical_check_design_configurator
+#: model_terms:ir.ui.view,arch_db:technical_check_design_configurator.stock_lot_form_technical
+msgid "Open Configurator"
+msgstr "Отвори конфигуратора"
+
+#. module: technical_check_design_configurator
+#: model_terms:ir.ui.view,arch_db:technical_check_design_configurator.stock_lot_form_technical
+msgid "Design Parameters"
+msgstr "Дизайн параметри"
+
+#. module: technical_check_design_configurator
+#: model:ir.actions.act_window,name:technical_check_design_configurator.action_design_technical_queue
+#: model:ir.ui.menu,name:technical_check_design_configurator.menu_technical_design_queue
+msgid "Technical Design"
+msgstr "Технически дизайн"
+
+#. module: technical_check_design_configurator
+#: model_terms:ir.actions.act_window,help:technical_check_design_configurator.action_design_technical_queue
+msgid "No design lots awaiting technical input"
+msgstr "Няма дизайн лотове, чакащи техническо попълване"
+
+#. module: technical_check_design_configurator
+#: model:ir.actions.act_window,name:technical_check_design_configurator.action_design_lot_create_wizard
+msgid "New Design Lot"
+msgstr "Нов дизайн лот"
+
+#. module: technical_check_design_configurator
+#: model:ir.ui.menu,name:technical_check_design_configurator.menu_technical_design_new
+msgid "New Design"
+msgstr "Нов дизайн"
+
+#. module: technical_check_design_configurator
+#: model_terms:ir.ui.view,arch_db:technical_check_design_configurator.design_lot_create_wizard_form
+msgid "Configure"
+msgstr "Конфигурирай"
+
+#. module: technical_check_design_configurator
+#: model_terms:ir.ui.view,arch_db:technical_check_design_configurator.design_lot_create_wizard_form
+msgid "Cancel"
+msgstr "Отказ"

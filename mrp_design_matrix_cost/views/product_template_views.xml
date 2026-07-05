@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2024-2026 Rosen Vladimirov  (AGPL-3.0-or-later / commercial) -->
+<odoo>
+    <record id="product_template_form_design_markup" model="ir.ui.view">
+        <field name="name">product.template.form.design.markup</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Теолино-style надценки за дизайн-остойностяване (до Sales Price) -->
+            <field name="list_price" position="after">
+                <field name="material_markup_percent"/>
+                <field name="labor_markup_percent"/>
+            </field>
+        </field>
+    </record>
+</odoo>

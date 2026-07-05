@@ -92,11 +92,91 @@ class MrpProduction(models.Model):
         # 7. T3 — workorders
         if bom.operation_table:
             t3 = ZenWrapper.evaluate(bom.operation_table, full_ctx)
-            for op in t3 if isinstance(t3, list) else t3.get("result", []):
+            # zen-engine 0.53: single-hit връща dict, не list — нормализирай
+            # (изравнено с _eval_t2_materials/_eval_t0_constraints)
+            if isinstance(t3, dict):
+                t3 = t3.get("result", t3)
+                if isinstance(t3, dict):
+                    t3 = [t3]
+            for op in t3 if isinstance(t3, list) else []:
                 self._create_matrix_workorder(op)
+
+        # 7b. Избрани операции (configurator): остави само избраните work orders.
+        self._filter_chosen_operation_workorders(lot)
+
+        # 7c. Цвят/материал/мотив: суап на placeholder-полуфабриката към
+        # конкретния вариант по избраните product-атрибути (от конфигуратора).
+        self._swap_component_variants(lot)
 
         # 8. Semi-finished: child lots / mto_stop
         self._handle_semifinished_lots(full_ctx)
+
+    def _filter_chosen_operation_workorders(self, lot):
+        """Оставя само ИЗБРАНИТЕ операции сред work order-ите.
+
+        Операциите на BoM-а (``operation_ids``) се показват в таб „Операции"
+        и native Odoo авто-създава work order за ВСИЧКИ при потвърждаване.
+        Тук махаме тези, които НЕ са избрани в конфигуратора
+        (``lot.matrix_operation_choices`` = списък opKey). Съпоставяне по ИМЕ
+        (``operation_choices_def`` name = routing operation name).
+        """
+        defs = self.bom_id.operation_choices_def or []
+        if not defs:
+            return
+        selected = set(lot.matrix_operation_choices or [])
+        def_names = {d.get("name") for d in defs if d.get("name")}
+        selected_names = {
+            d.get("name") for d in defs if d.get("key") in selected
+        }
+        to_remove = self.workorder_ids.filtered(
+            lambda wo: wo.operation_id
+            and wo.operation_id.name in def_names
+            and wo.operation_id.name not in selected_names
+        )
+        if to_remove:
+            to_remove.unlink()
+
+    def _swap_component_variants(self, lot):
+        """Суап на placeholder-полуфабрикатите към конкретния вариант.
+
+        Цветът/материалът/мотивът се носи от вложените полуфабрикати
+        (крило/каса/лайсна) като product варианти. Конфигураторът пази избора
+        в ``lot.matrix_component_attrs`` = {"cattr_<bomLineId>_<attrId>":
+        <ptav_id>}. Тук за всеки BoM ред събираме избраните ptav-и, намираме/
+        създаваме варианта за комбинацията и пренасочваме raw move-а към него.
+        """
+        choices = lot.matrix_component_attrs or {}
+        if not choices:
+            return
+        by_line = {}
+        for key, ptav_id in choices.items():
+            # key = cattr_<bomLineId>_<attrId>
+            parts = str(key).split("_")
+            if len(parts) < 3 or not ptav_id:
+                continue
+            try:
+                line_id = int(parts[1])
+                ptav = int(ptav_id)
+            except (ValueError, TypeError):
+                continue
+            by_line.setdefault(line_id, []).append(ptav)
+        if not by_line:
+            return
+        PTAV = self.env["product.template.attribute.value"]
+        for move in self.move_raw_ids:
+            line_id = move.bom_line_id.id
+            if line_id not in by_line:
+                continue
+            ptavs = PTAV.browse(by_line[line_id]).exists()
+            if not ptavs:
+                continue
+            tmpl = ptavs[0].product_tmpl_id
+            # намери/създай варианта за избраната комбинация (dynamic).
+            variant = tmpl._get_variant_for_combination(ptavs)
+            if not variant:
+                variant = tmpl._create_product_variant(ptavs)
+            if variant and variant.id != move.product_id.id:
+                move.product_id = variant.id
 
     # ── Step helpers (split from main algorithm for complexity) ──────────
 
@@ -164,7 +244,9 @@ class MrpProduction(models.Model):
         if not bom.material_table:
             return [], {}
         raw = ZenWrapper.evaluate(bom.material_table, full_ctx)
-        rows = raw if isinstance(raw, list) else raw.get("result", [])
+        # zen връща LIST при няколко съвпадения (collect) или единичен DICT
+        # при едно — нормализирай като _eval_t0_constraints (dict → [dict]).
+        rows = raw if isinstance(raw, list) else [raw] if isinstance(raw, dict) else []
         coeff_by_key = {}
         for item in rows:
             key = item.get("bom_line_coeff_key")
@@ -175,7 +257,17 @@ class MrpProduction(models.Model):
     def _generate_bom_line_moves(
         self, bom, full_ctx: dict, t2_coeff_by_key: dict
     ) -> None:
-        """Loop over bom_line_ids and create raw moves."""
+        """Подход B: ПОСТ-ОБРАБОТВА native ``move_raw_ids`` (създадени от
+        стандартния BoM explosion в ``super().action_confirm()``) — НЕ създава
+        паралелен набор.
+
+        За всеки native raw move, свързан с BoM ред (``bom_line_id``):
+          - qty = quantity_formula(context) × coeff(T2);
+          - coeff == 0 (неактивиран O-variant/екстра) → ``unlink`` на движението;
+          - PTAV резолюция → сменя ``product_id`` на конкретния вариант.
+        Редове без native move (динамично добавени) се създават наново.
+        ``add_products`` от формулата се добавят както преди.
+        """
         bom_lines = bom.bom_line_ids
         # Batch prefetch: turns N queries into one for large BoMs.
         bom_lines.fetch(
@@ -188,20 +280,75 @@ class MrpProduction(models.Model):
                 "matrix_coeff_rule",
             ]
         )
+        # Карта BoM ред → native raw move(ове) от explosion-а.
+        moves_by_line = {}
+        for move in self.move_raw_ids:
+            if move.bom_line_id:
+                moves_by_line.setdefault(
+                    move.bom_line_id.id, self.env["stock.move"]
+                )
+                moves_by_line[move.bom_line_id.id] |= move
+
         for line in bom_lines:
             qty_base, move_product, move_uom, add_products = (
                 self._unpack_formula_result(line, full_ctx)
             )
+            # Явен избор на материал (configurator selector): ако потребителят
+            # е избрал конкретен продукт за този слот, той заменя placeholder-а.
+            chosen = self._resolve_material_choice(line, full_ctx)
+            if chosen:
+                move_product = chosen
+                move_uom = chosen.uom_id
             coeff = self._eval_matrix_coeff_cached(line, t2_coeff_by_key)
             qty_final = qty_base * coeff
-            # Реконсилирай със standard-exploded move (create/update/remove),
-            # за да НЕ се дублира; qty<=0 маха реда (O-variant неактивен).
-            self._create_or_update_matrix_move(
-                move_product, qty_final, move_uom, line
-            )
+            moves = moves_by_line.get(line.id, self.env["stock.move"])
+
+            if qty_final <= 0.0:
+                # Неактивиран ред (coeff 0 / формула 0) → махни native-ите.
+                if moves:
+                    moves.unlink()
+            elif moves:
+                # Обнови съществуващия native move (един), махни дублите.
+                keep = moves[0]
+                keep.product_uom_qty = qty_final
+                if move_product and move_product.id != keep.product_id.id:
+                    keep.product_id = move_product.id
+                # uom sync и без product смяна (формула с dict {uom}) — гап
+                # спрямо реконсилиращия helper (daac2d9)
+                if move_uom and keep.product_uom.id != move_uom.id:
+                    keep.product_uom = move_uom.id
+                extra_dupes = moves - keep
+                if extra_dupes:
+                    extra_dupes.unlink()
+            else:
+                # Ред без native move (напр. динамично добавен) → създай.
+                self._create_or_update_matrix_move(
+                    move_product, qty_final, move_uom, line
+                )
+
             # Extra products injected by the formula's add_products
             for extra in add_products:
                 self._create_formula_extra_move(extra, full_ctx)
+
+    def _resolve_material_choice(self, line, full_ctx: dict):
+        """Връща избрания от потребителя продукт за този ред (или None).
+
+        Конфигураторът пази избора в контекста под ключ ``choice_<key>``
+        (key = matrix_coeff_rule или ``line<id>``) = product.id. Приема се
+        само ако е сред ``material_choice_ids`` (валидация).
+        """
+        if not line.material_choice_ids:
+            return None
+        key = line.matrix_coeff_rule or ("line%d" % line.id)
+        val = full_ctx.get("choice_%s" % key)
+        if not val:
+            return None
+        try:
+            pid = int(val)
+        except (TypeError, ValueError):
+            return None
+        chosen = line.material_choice_ids.filtered(lambda p: p.id == pid)
+        return chosen[:1] or None
 
     def _unpack_formula_result(self, line, full_ctx: dict) -> tuple:
         """Evaluate the BoM line formula and return ``(qty, product, uom, add_products)``.
@@ -356,9 +503,9 @@ class MrpProduction(models.Model):
         """Inject product variant attribute values into the design context.
 
         Uses ``bom.variant_context_map`` to map context keys to attribute
-        names.  For example ``{"coating": "Покритие (SolidDoor)"}`` reads
-        the variant's "Покритие (SolidDoor)" attribute value and injects
-        it as ``coating`` in the context — available to T0/T1/T2/T3.
+        names.  For example ``{"coating": "Coating"}`` reads the variant's
+        "Coating" attribute value and injects it as ``coating`` in the
+        context — available to T0/T1/T2/T3.
         """
         vmap = bom.variant_context_map
         if not vmap:
@@ -421,7 +568,7 @@ class MrpProduction(models.Model):
         """
         if line.matrix_coeff_rule and self.bom_id.material_table:
             t2 = ZenWrapper.evaluate(self.bom_id.material_table, ctx)
-            items = t2 if isinstance(t2, list) else t2.get("result", [])
+            items = t2 if isinstance(t2, list) else [t2] if isinstance(t2, dict) else []
             for item in items:
                 if item.get("bom_line_coeff_key") == line.matrix_coeff_rule:
                     return float(item.get("coefficient", line.coeff_default))
@@ -498,21 +645,68 @@ class MrpProduction(models.Model):
             self.env["stock.move"].create(vals)
 
     def _create_matrix_workorder(self, op: dict):
-        """Create a workorder from a T3 output row."""
-        workcenter_ref = op.get("workcenter_ref")
-        if not workcenter_ref:
+        """Create a workorder from a T3 output row.
+
+        Толерантен reader за ДВЕТЕ T3 схеми (изравнено с cost engine-а):
+        - нова: ``workcenter_code`` (+ ``duration_min``) → search по code; ZEN връща
+          string literal с кавички ('"SDMILL"') → strip. sudo: работните центрове са
+          фирмено-специфични (напр. SDMETAL е на друга фирма) и не могат да се споделят.
+        - legacy: ``workcenter_ref`` (xmlid) → env.ref.
+        Преди четеше САМО workcenter_ref → новата схема тихо не създаваше операции.
+        """
+        workcenter = None
+        code = op.get("workcenter_code")
+        if isinstance(code, str):
+            code = code.strip().strip('"').strip("'").strip()
+        if code:
+            # САМО собствената фирма на MO или споделен (company=False) център:
+            # mrp.workorder.workcenter_id е check_company=True → чужд-фирмен
+            # център (напр. SDMETAL на другата фирма) би СЧУПИЛ MO confirm
+            # (_check_company важи и под su). Cross-company операция не може да
+            # е workorder тук — моделира се като подизпълнение/отделно MO.
+            WC = self.env["mrp.workcenter"].sudo()
+            workcenter = WC.search(
+                [("code", "=", code), ("company_id", "=", self.company_id.id)],
+                limit=1,
+            ) or WC.search(
+                [("code", "=", code), ("company_id", "=", False)], limit=1
+            )
+            if not workcenter and WC.search([("code", "=", code)], limit=1):
+                _logger.info(
+                    "T3 op %r: workcenter exists only in another company — "
+                    "skipped for MO %s (company %s).",
+                    code, self.name, self.company_id.id)
+                return
+        if not workcenter:
+            workcenter_ref = op.get("workcenter_ref")
+            if workcenter_ref:
+                try:
+                    workcenter = self.env.ref(workcenter_ref)
+                except ValueError:
+                    _logger.warning("Unknown workcenter ref: %s", workcenter_ref)
+        if not workcenter:
+            # не тихо: T3 ред без резолвируем работен център е data грешка
+            _logger.warning(
+                "T3 op row has no resolvable workcenter (code=%r, ref=%r) — skipped.",
+                op.get("workcenter_code"), op.get("workcenter_ref"))
             return
         try:
-            workcenter = self.env.ref(workcenter_ref)
-        except ValueError:
-            _logger.warning("Unknown workcenter ref: %s", workcenter_ref)
-            return
-        self.env["mrp.workorder"].create(
-            {
-                "name": op.get("name", workcenter.name),
-                "production_id": self.id,
-                "workcenter_id": workcenter.id,
-                "product_uom_id": self.product_uom_id.id,
-                "qty_production": self.product_qty,
-            }
-        )
+            minutes = float(op.get("duration_min") or op.get("duration")
+                            or op.get("minutes") or 0.0)
+        except (TypeError, ValueError):
+            minutes = 0.0
+        vals = {
+            "name": op.get("name", workcenter.name),
+            "production_id": self.id,
+            "workcenter_id": workcenter.id,
+            "product_uom_id": self.product_uom_id.id,
+            "qty_production": self.product_qty,
+        }
+        if minutes > 0:
+            vals["duration_expected"] = minutes
+        try:
+            self.env["mrp.workorder"].create(vals)
+        except Exception as exc:  # noqa: BLE001 — T3 ред не бива да събаря confirm
+            _logger.warning(
+                "T3 workorder create failed for %s (wc=%s): %s — skipped.",
+                self.name, workcenter.display_name, exc)

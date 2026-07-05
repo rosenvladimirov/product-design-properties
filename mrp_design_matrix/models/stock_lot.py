@@ -10,7 +10,7 @@
 # by the AGPL-3.0-or-later.
 import logging
 
-from odoo import api, models
+from odoo import api, fields, models
 from odoo.tools.safe_eval import safe_eval
 
 _logger = logging.getLogger(__name__)
@@ -21,18 +21,37 @@ class StockLot(models.Model):
 
     # width / height / thickness come from stock_move_forced_lot_multi_dim
 
+    # Явни избори на материал от конфигуратора: {"choice_<key>": product_id}.
+    # Пазят се отделно от design_params (Properties би изхвърлило ключове
+    # извън дефиницията).
+    matrix_material_choices = fields.Json("Material Choices")
+    # Избрани операции от конфигуратора: списък mrp.workcenter id.
+    matrix_operation_choices = fields.Json("Operation Choices")
+    # Избрани атрибути на полуфабрикатите (крило/каса/лайсна): цвят/покритие/
+    # материал/мотив. Формат {"cattr_<bomLineId>_<attrId>": <ptav_id>}.
+    # Матрицата суапва placeholder-компонента към конкретния вариант.
+    matrix_component_attrs = fields.Json("Component Attributes")
+
     # ── helpers ──────────────────────────────────────────────────────────
 
     def _get_design_context(self) -> dict:
         """
         Return a flat dict suitable for GoRules / formula evaluation.
 
-        Merges the three real dimension fields (from _dim sub-module)
-        with all entries from ``design_params`` Properties, translating:
-          - UUID keys → the schema's ``string`` field (the semantic name
-            used in T1/T2/T3 rules and BoM line formulas).
-          - Display labels → raw selection values (e.g. "Vinegar Brine"
-            → "vinegar") so rule conditions match what is stored.
+        Three decoupled name layers feed the same flat context, so a formula
+        resolves no matter which name it uses:
+          - **formula_name** (canonical, snake_case ASCII) — the стабилен
+            идентификатор; the preferred thing formulas read. Built from the
+            definition's ``param_dictionary`` (merged along the parent chain,
+            so a client overlay inherits the vertical's canon).
+          - **string** (display label) — kept for backward compatibility with
+            formulas authored before the canon (e.g. ``main_lock`` already, or
+            legacy ``Основна``).
+          - **legacy aliases** (``c_*`` / Cyrillic display) — expanded to the
+            canonical value via ``legacy_aliases`` so 2 393 legacy formulas
+            keep working WITHOUT being rewritten.
+        Selection display labels are reversed to raw values (e.g. "Vinegar
+        Brine" → "vinegar") so rule conditions match what is stored.
         """
         self.ensure_one()
         ctx = {
@@ -44,6 +63,7 @@ class StockLot(models.Model):
         # Build UUID → (string_name, display→raw) mapping from schema.
         definition = self.design_param_definition_id
         uuid_map = {}
+        uuid_to_formula = {}
         if definition:
             schema = definition.full_design_params_definition or []
             for prop in schema:
@@ -60,12 +80,48 @@ class StockLot(models.Model):
                         raw, label = entry
                         reverse[label] = raw
                 uuid_map[uuid] = (string_name, reverse)
+            # UUID → canonical formula_name (merged param_dictionary).
+            for fname, entry in (definition._get_merged_param_dictionary()).items():
+                if isinstance(entry, dict) and entry.get("uuid"):
+                    uuid_to_formula[entry["uuid"]] = fname
+
+        def _coerce_numeric(val):
+            """Char параметри с числово съдържание (КСИ H/B са char '2100')
+            → число: ZEN сравненията ('> 0', '< 900') и T0/T3 иначе ТИХО не
+            match-ват string (E2E находка: MO без операции, T0 без лимити).
+            Selection стойностите НЕ минават оттук (кодовете остават string).
+            """
+            if isinstance(val, str):
+                sv = val.strip().replace(",", ".")
+                if sv:
+                    try:
+                        return float(sv)
+                    except ValueError:
+                        return val
+            return val
 
         for key, value in (self.design_params or {}).items():
             string_name, reverse = uuid_map.get(key, (key, {}))
             # Reverse lookup display → raw for selection values only.
-            raw_value = reverse.get(value, value) if reverse else value
+            if reverse:
+                raw_value = reverse.get(value, value)
+            else:
+                raw_value = _coerce_numeric(value)
             ctx[string_name] = raw_value
+            # Canonical formula_name layer (preferred by new formulas).
+            fname = uuid_to_formula.get(key)
+            if fname:
+                ctx[fname] = raw_value
+        # Явни избори на материал (choice_<key> → product_id).
+        ctx.update(self.matrix_material_choices or {})
+
+        # Alias expansion: legacy c_* / display names → canonical value, so
+        # legacy formulas resolve from the same context. Не презаписва реални
+        # ключове (alias not in ctx).
+        if definition:
+            for alias, fname in (definition._get_merged_legacy_aliases()).items():
+                if fname in ctx and alias not in ctx:
+                    ctx[alias] = ctx[fname]
         return ctx
 
     @api.model

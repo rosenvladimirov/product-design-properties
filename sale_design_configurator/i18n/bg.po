@@ -1,0 +1,208 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sale_design_configurator
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Language: bg\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Extras"
+msgstr "Екстри"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Calculation"
+msgstr "Калкулация"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Materials"
+msgstr "Материали"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Labour"
+msgstr "Труд"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Cost"
+msgstr "Себестойност"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Suggested price"
+msgstr "Предложена цена"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Fine Tuning"
+msgstr "Фина настройка"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Cost Review"
+msgstr "Преглед на себестойността"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Material"
+msgstr "Материал"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Qty"
+msgstr "Кол."
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Unit"
+msgstr "Ед. цена"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Subtotal"
+msgstr "Междинна сума"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Operation"
+msgstr "Операция"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Min"
+msgstr "Мин"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Materials:"
+msgstr "Материали:"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Labour:"
+msgstr "Труд:"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Cost:"
+msgstr "Себестойност:"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Suggested sale (markup):"
+msgstr "Предложена продажна (надценка):"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Actual sale (pricelist):"
+msgstr "Реална продажна (ценоразпис):"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Check (actual − suggested):"
+msgstr "Сверка (реална − предложена):"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Saving..."
+msgstr "Записване..."
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Update Lot"
+msgstr "Обнови лота"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Create Design Lot"
+msgstr "Създай дизайн лот"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Cancel"
+msgstr "Отказ"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.xml:0
+msgid "Drag to rotate"
+msgstr "Влачете за завъртане"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.js:0
+msgid "Invalid configuration. Please correct the errors."
+msgstr "Невалидна конфигурация. Моля, коригирайте грешките."
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.js:0
+msgid "Design lot created successfully."
+msgstr "Дизайн лотът е създаден успешно."
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.js:0
+msgid "Error: %s"
+msgstr "Грешка: %s"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.js:0
+msgid "Other"
+msgstr "Други"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.js:0
+msgid "Glass panel is not allowed for RC4."
+msgstr "Стъклен панел не е позволен при RC4."
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.js:0
+msgid "RC5/RC6 require an individual project."
+msgstr "RC5/RC6 изискват индивидуален проект."
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.js:0
+msgid "%s: minimum thickness is %smm. Value has been corrected."
+msgstr "%s: минималната дебелина е %s мм. Стойността е коригирана."
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.js:0
+msgid "Double leaf door: the 'opening direction' must be 'none'."
+msgstr "Двукрила врата: „посока на отваряне“ трябва да е „няма“."
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator.js:0
+msgid "Solid wood door > 900mm: risk of warping."
+msgstr "Врата от масив > 900 мм: риск от изкривяване."
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/sale_order_line_configurator.js:0
+msgid "Save the line before configuring the design."
+msgstr "Запишете реда преди да конфигурирате дизайна."
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/sale_order_line_configurator.xml:0
+msgid "Configurator"
+msgstr "Конфигуратор"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/sale_order_line_configurator.xml:0
+msgid "Preview"
+msgstr "Преглед"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/sale_order_line_configurator.xml:0
+msgid "Configure"
+msgstr "Конфигурирай"
+
+#. module: sale_design_configurator
+#: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator_dialog.js:0
+msgid "Design Configurator"
+msgstr "Дизайн конфигуратор"

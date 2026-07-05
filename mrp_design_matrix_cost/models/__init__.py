@@ -1,0 +1,5 @@
+# Copyright 2024-2026 Rosen Vladimirov  (AGPL-3.0-or-later / commercial)
+from . import product_template
+from . import mrp_bom
+from . import stock_lot
+from . import mrp_production

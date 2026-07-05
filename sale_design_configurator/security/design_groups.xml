@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2024-2026 Rosen Vladimirov  (AGPL-3.0-or-later / commercial)
+
+     Роли за дизайн-конфигуратора (3 нива). Менютата и заключването на
+     полета по ниво се управляват от тези групи. Йерархия: technical вижда
+     sales, production вижда technical (implied), за да съответства на
+     „разширените параметри включват селс параметрите".
+
+     Odoo 19: res.groups вече НЯМА category_id (ir.module.category);
+     категоризацията е през res.groups.privilege (privilege_id). Тук държим
+     групите некатегоризирани (functional); privilege може да се добави после.
+-->
+<odoo noupdate="1">
+    <record id="group_design_sales" model="res.groups">
+        <field name="name">Design / Sales</field>
+    </record>
+    <record id="group_design_technical" model="res.groups">
+        <field name="name">Design / Technical</field>
+        <field name="implied_ids" eval="[(4, ref('group_design_sales'))]"/>
+    </record>
+    <record id="group_design_production" model="res.groups">
+        <field name="name">Design / Production</field>
+        <field name="implied_ids" eval="[(4, ref('group_design_technical'))]"/>
+    </record>
+</odoo>

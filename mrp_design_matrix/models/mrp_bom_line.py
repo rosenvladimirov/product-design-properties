@@ -33,6 +33,36 @@ class MrpBomLine(models.Model):
         ),
     )
 
+    # ── Loss / waste ratio (фира) — Теолино патърн ────────────────────────
+    loss = fields.Float(
+        "Loss ratio",
+        default=0.0,
+        help=(
+            "Waste/scrap fraction added on top of the geometric quantity "
+            "(0.05 = 5%). Real consumption and cost include the waste: "
+            "qty_with_loss = qty * (1 + loss)."
+        ),
+    )
+
+    # ── Explicit material choices (configurator selectors) ────────────────
+
+    material_choice_ids = fields.Many2many(
+        "product.product",
+        "mrp_bom_line_material_choice_rel",
+        "bom_line_id",
+        "choice_product_id",
+        string="Material Choices",
+        help=(
+            "Explicit list of real products the user may pick for this "
+            "placeholder slot in the configurator. The chosen product "
+            "replaces product_id on the raw move at MO time."
+        ),
+    )
+    material_choice_label = fields.Char(
+        "Material Choice Label",
+        help="Slot label shown in the configurator (e.g. 'Обков').",
+    )
+
     # ── PTAV resolution ───────────────────────────────────────────────────
 
     product_tmpl_id = fields.Many2one(

@@ -13,7 +13,7 @@
     "summary": (
         "SO line design configurator with 3D preview " "for parametric manufacturing"
     ),
-    "version": "19.0.1.2.1",
+    "version": "19.0.1.49.1",
     "category": "Sales",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "Rosen Vladimirov",
@@ -26,18 +26,29 @@
         "stock_lot_properties",
         "product_design_assets",
         "sale",
+        "purchase_stock",
+        # JS bundle-ът импортва @mrp_design_matrix/... (t0_evaluate,
+        # RuleMatrixPreview) → твърда зависимост; без нея чиста инсталация
+        # чупи web.assets_backend.
+        "mrp_design_matrix",
     ],
     "data": [
+        "security/design_groups.xml",
         "security/ir.model.access.csv",
         "views/res_config_settings_views.xml",
         "views/stock_lot_views.xml",
         "views/sale_order_views.xml",
         "views/product_views.xml",
+        "views/design_sales_views.xml",
     ],
     "assets": {
         "web.assets_backend": [
-            "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js",
+            # three.js се vendor-ва ЛОКАЛНО (беше публичен cdnjs CDN на всяка
+            # backend страница: supply-chain/GDPR/offline риск). MIT headers
+            # възстановени на трите файла (лицензно изискване).
+            "sale_design_configurator/static/lib/three/three.min.js",
             "sale_design_configurator/static/lib/three/GLTFLoader.js",
+            "sale_design_configurator/static/lib/three/meshopt_decoder.js",
             "sale_design_configurator/static/src/components/**/*",
         ],
     },

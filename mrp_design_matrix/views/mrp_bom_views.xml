@@ -81,6 +81,9 @@
             <field name="product_qty" position="after">
                 <field name="matrix_coeff_rule" optional="hide"/>
             </field>
+            <field name="product_qty" position="after">
+                <field name="loss" optional="hide"/>
+            </field>
         </field>
     </record>
 
@@ -96,6 +99,7 @@
                     <group string="Coefficient">
                         <field name="coeff_default"/>
                         <field name="matrix_coeff_rule"/>
+                        <field name="loss"/>
                     </group>
                     <group string="PTAV Resolution">
                         <field name="product_tmpl_id"/>

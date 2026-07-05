@@ -11,6 +11,7 @@
  */
 
 import { Component, useState } from "@odoo/owl";
+import { _t } from "@web/core/l10n/translation";
 import { Dialog } from "@web/core/dialog/dialog";
 import { useService } from "@web/core/utils/hooks";
 import { DesignConfiguratorWidget } from "./design_configurator";
@@ -24,9 +25,16 @@ export class DesignConfiguratorDialog extends Component {
         productId: { type: Number },
         definitionId: { type: Number },
         existingLotId: { type: [Number, Boolean], optional: true },
+        // Ниво на конфигуратора: sales | technical | production (празно = пълен).
+        // Генерично — нивата на параметрите идват от param_levels.
+        level: { type: String, optional: true },
         onLotCreated: { type: Function, optional: true },
         close: { type: Function },
     };
+
+    get dialogTitle() {
+        return _t("Design Configurator");
+    }
 
     setup() {
         this.orm = useService("orm");
@@ -34,18 +42,24 @@ export class DesignConfiguratorDialog extends Component {
             loading: true,
             definitionCode: "",
             paramDefinition: [],
+            paramLevels: {},
+            // D1: семантични роли {label → role} — UI търси по РОЛЯ, не по надпис
+            paramRoles: {},
             validationRules: [],
             profiles: [],
             bomAssets: [],
             mainProductAssets: { models_3d: [], profiles_svg: [], textures: [] },
             childComponents: [],
             accessoryVariants: [],
+            operationChoices: [],
+            componentAttributes: [],
             modelVariants: {},
             constraintTable: false,
             geometryTable: false,
             materialTable: false,
             operationTable: false,
             bomLines: [],
+            costData: {},
         });
         this._loadDefinition();
     }
@@ -54,12 +68,14 @@ export class DesignConfiguratorDialog extends Component {
         const [def] = await this.orm.read(
             "design.param.definition",
             [this.props.definitionId],
-            ["code", "full_design_params_definition", "validation_rules"]
+            ["code", "full_design_params_definition", "validation_rules", "param_levels", "param_roles"]
         );
         if (def) {
             this.state.definitionCode = def.code;
             this.state.paramDefinition = def.full_design_params_definition || [];
             this.state.validationRules = def.validation_rules || [];
+            this.state.paramLevels = def.param_levels || {};
+            this.state.paramRoles = def.param_roles || {};
         }
 
         // Fetch SVG profiles for this definition
@@ -195,7 +211,39 @@ export class DesignConfiguratorDialog extends Component {
                         break;
                     }
                 }
+                // Явни material choices от BoM реда (явен списък алтернативи).
+                try {
+                    const choiceGroups = await this.orm.call(
+                        "mrp.bom", "get_material_choices", [this.props.productId]
+                    );
+                    for (const g of (choiceGroups || [])) {
+                        accessoryVariants.push(g);
+                    }
+                } catch (e) {
+                    console.warn("Could not load material choices:", e.message);
+                }
                 this.state.accessoryVariants = accessoryVariants;
+
+                // Избираеми операции (work centers) от BoM-а.
+                try {
+                    this.state.operationChoices = await this.orm.call(
+                        "mrp.bom", "get_operation_choices", [this.props.productId]
+                    );
+                } catch (e) {
+                    console.warn("Could not load operation choices:", e.message);
+                    this.state.operationChoices = [];
+                }
+
+                // Атрибути на полуфабрикатите (цвят/покритие/материал/мотив) —
+                // цветът се носи от вложените полуфабрикати, не от матрицата.
+                try {
+                    this.state.componentAttributes = await this.orm.call(
+                        "mrp.bom", "get_component_attributes", [this.props.productId]
+                    );
+                } catch (e) {
+                    console.warn("Could not load component attributes:", e.message);
+                    this.state.componentAttributes = [];
+                }
 
                 // Load all variant 3D assets for components with GLB models
                 const modelVariants = {};
@@ -214,6 +262,18 @@ export class DesignConfiguratorDialog extends Component {
             }
         } catch (e) {
             console.warn("Could not load BoM design assets:", e.message);
+        }
+
+        // Cost ниво: дърпаме себестойност/продажна от лота (само ЧЕТЕ).
+        if (this.props.level === "cost" && this.props.existingLotId) {
+            try {
+                this.state.costData = await this.orm.call(
+                    "stock.lot", "get_design_cost", [[this.props.existingLotId]]
+                );
+            } catch (e) {
+                console.warn("Could not load design cost:", e.message);
+                this.state.costData = { error: e.message };
+            }
         }
 
         this.state.loading = false;

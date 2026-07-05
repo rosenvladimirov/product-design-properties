@@ -9,3 +9,4 @@
 # Unless you hold a valid commercial license, your use of this file is governed
 # by the AGPL-3.0-or-later.
 # Tests temporarily disabled — see git log for reason
+from . import test_attribute_roles

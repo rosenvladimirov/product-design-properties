@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2024-2026 Rosen Vladimirov  (AGPL-3.0-or-later / commercial)
+
+     Sentinel (D2): дневен канарче-тест на себестойността. Симулира еталонни
+     конфигурации (ir.config_parameter mrp_design_matrix_cost.sentinel_checks,
+     JSON — клиентският data модул го попълва) и аларми при отклонение.
+     Без конфигуриран параметър cron-ът е no-op.
+-->
+<odoo noupdate="1">
+    <record id="ir_cron_design_cost_sentinel" model="ir.cron">
+        <field name="name">Design Matrix: cost sentinel (daily canary)</field>
+        <field name="model_id" ref="mrp.model_mrp_bom"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_design_cost_sentinel()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

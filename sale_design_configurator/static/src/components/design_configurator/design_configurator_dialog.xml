@@ -14,7 +14,7 @@
 <templates xml:space="preserve">
 
 <t t-name="sale_design_configurator.DesignConfiguratorDialog">
-    <Dialog title="'Design Configurator'" size="'lg'" footer="false">
+    <Dialog title="dialogTitle" size="'lg'" footer="false">
         <t t-if="state.loading">
             <div class="text-center py-5">
                 <i class="fa fa-spinner fa-spin fa-2x text-muted"/>
@@ -26,12 +26,18 @@
                 definitionId="props.definitionId"
                 definitionCode="state.definitionCode"
                 paramDefinition="state.paramDefinition"
+                paramLevels="state.paramLevels"
+                paramRoles="state.paramRoles"
+                level="props.level or ''"
                 validationRules="state.validationRules"
                 profiles="state.profiles"
                 bomAssets="state.bomAssets"
+                costData="state.costData"
                 mainProductAssets="state.mainProductAssets"
                 childComponents="state.childComponents"
                 accessoryVariants="state.accessoryVariants"
+                operationChoices="state.operationChoices"
+                componentAttributes="state.componentAttributes"
                 modelVariants="state.modelVariants"
                 constraintTable="state.constraintTable"
                 geometryTable="state.geometryTable"

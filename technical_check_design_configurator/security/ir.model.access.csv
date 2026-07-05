@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_design_lot_create_wizard,design.lot.create.wizard,model_design_lot_create_wizard,sale_design_configurator.group_design_technical,1,1,1,1

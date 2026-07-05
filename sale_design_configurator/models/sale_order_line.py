@@ -145,6 +145,8 @@ class SaleOrderLine(models.Model):
                 ),
                 # Pass the SO line so the JS callback can write back
                 "solId": self.id,
+                # Sales level: show only sales params (with images/3D).
+                "level": "sales",
             },
         }
 
@@ -244,8 +246,10 @@ class SaleOrderLine(models.Model):
 
     # -- Propagation to MO: pass design lot through procurement --------------
 
-    def _prepare_procurement_values(self, group_id=False):
-        vals = super()._prepare_procurement_values(group_id=group_id)
+    def _prepare_procurement_values(self):
+        # Odoo 19: базовата сигнатура вече не приема group_id (групата идва от
+        # procurement_group_id), затова викаме super() без аргументи.
+        vals = super()._prepare_procurement_values()
         if self.design_lot_id:
             vals["design_lot_id"] = self.design_lot_id.id
         return vals

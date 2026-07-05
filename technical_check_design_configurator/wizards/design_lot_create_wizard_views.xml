@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2024-2026 Rosen Vladimirov  (AGPL-3.0-or-later / commercial) -->
+<odoo>
+    <record id="design_lot_create_wizard_form" model="ir.ui.view">
+        <field name="name">design.lot.create.wizard.form</field>
+        <field name="model">design.lot.create.wizard</field>
+        <field name="arch" type="xml">
+            <form string="New Design Lot">
+                <group>
+                    <field name="product_id"
+                           options="{'no_create_edit': True}"/>
+                </group>
+                <footer>
+                    <button name="action_open_configurator" type="object"
+                            string="Configure" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_design_lot_create_wizard" model="ir.actions.act_window">
+        <field name="name">New Design Lot</field>
+        <field name="res_model">design.lot.create.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- „Нов" в приложението Technical Design → визард за избор на продукт -->
+    <menuitem id="menu_technical_design_new"
+              name="New Design"
+              parent="menu_technical_design_root"
+              action="action_design_lot_create_wizard"
+              groups="sale_design_configurator.group_design_technical"
+              sequence="20"/>
+</odoo>

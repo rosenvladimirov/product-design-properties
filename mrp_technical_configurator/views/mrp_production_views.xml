@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2024-2026 Rosen Vladimirov  (AGPL-3.0-or-later / commercial)
+
+     Производствено ниво: бутон на MO за преглед/корекция на целия дизайн
+     на лота (всички нива). Видим за Design/Production. Генерично.
+-->
+<odoo>
+    <record id="mrp_production_form_design_production" model="ir.ui.view">
+        <field name="name">mrp.production.form.design.production</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_design_production" type="object"
+                        class="oe_stat_button" icon="fa-cubes"
+                        groups="sale_design_configurator.group_design_production">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Design</span>
+                        <span class="o_stat_text">Review</span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

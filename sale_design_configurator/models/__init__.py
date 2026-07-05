@@ -9,9 +9,12 @@
 # Unless you hold a valid commercial license, your use of this file is governed
 # by the AGPL-3.0-or-later.
 from . import design_param_definition
+from . import mrp_bom
 from . import product_product
 from . import stock_lot
 from . import sale_order_line
+from . import sale_order
 from . import mrp_production
+from . import purchase_order_line
 from . import res_company
 from . import res_config_settings

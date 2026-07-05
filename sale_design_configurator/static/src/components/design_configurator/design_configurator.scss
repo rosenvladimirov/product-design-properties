@@ -12,6 +12,23 @@
     min-height: 480px;
 }
 
+// Technical/production нива: без 3D viewport → формата заема цялата ширина
+.o_design_configurator.o_cfg_no_viewport {
+    grid-template-columns: 1fr;
+}
+
+// Cost ниво: себестойност на мястото на картинката
+.o_cfg_cost {
+    overflow: auto;
+    padding: 16px;
+
+    .o_cfg_cost_title { font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; }
+    .o_cfg_cost_table { font-size: 0.95rem; }
+    .o_cfg_cost_totals { margin-top: 12px; font-size: 1.05rem; }
+    .o_cfg_cost_total { font-size: 1.2rem; margin-top: 6px; }
+    .o_cfg_cost_sale { color: #198754; margin-top: 6px; }
+}
+
 .o_cfg_panel {
     border-right: 1px solid var(--color-border-primary, #dee2e6);
     display: flex;
@@ -340,6 +357,185 @@
     max-width: 100%;
 }
 
+// ── Разделител + калкулация (себестойност/цена) ──────────────────────────
+.o_cfg_divider {
+    height: 1px;
+    background: #e4e8ee;
+    margin: 14px 0 10px;
+}
+.o_cfg_calc {
+    padding: 4px 2px;
+    font-size: 13px;
+}
+.o_cfg_calc_title {
+    font-weight: 700;
+    color: #2a3344;
+    margin-bottom: 6px;
+}
+.o_cfg_calc_row {
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 0;
+    color: #495057;
+
+    span:last-child { font-variant-numeric: tabular-nums; }
+}
+.o_cfg_calc_total {
+    font-weight: 700;
+    color: #1c2330;
+    border-top: 1px solid #e4e8ee;
+    margin-top: 4px;
+    padding-top: 4px;
+}
+.o_cfg_calc_sale {
+    color: #1f9d57;
+    font-weight: 600;
+}
+
+// ── Material choices в левия панел: слайдер с иконки ─────────────────────
+.o_cfg_materials {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #e4e8ee;
+}
+.o_cfg_choice_slider {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 4px 2px 8px;
+    scroll-snap-type: x proximity;
+
+    &::-webkit-scrollbar { height: 6px; }
+    &::-webkit-scrollbar-thumb { background: #c3c9d4; border-radius: 3px; }
+}
+.o_cfg_choice_card {
+    flex: 0 0 auto;
+    width: 78px;
+    border: 2px solid #e4e8ee;
+    border-radius: 8px;
+    padding: 5px;
+    cursor: pointer;
+    background: #fff;
+    text-align: center;
+    scroll-snap-align: start;
+    transition: border-color .15s ease, box-shadow .15s ease;
+
+    &:hover { border-color: #9bb7f5; }
+    &.active {
+        border-color: #2f6fed;
+        box-shadow: 0 0 0 1px #2f6fed inset;
+    }
+}
+.o_cfg_choice_img {
+    width: 100%;
+    height: 56px;
+    object-fit: contain;
+    border-radius: 5px;
+    background: #f3f5f9;
+}
+.o_cfg_choice_name {
+    font-size: 10px;
+    line-height: 1.2;
+    color: #495057;
+    margin-top: 4px;
+    max-height: 26px;
+    overflow: hidden;
+}
+.o_cfg_chip_row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+.o_cfg_overlay_calc {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #e4e8ee;
+    font-size: 13px;
+}
+.o_cfg_select {
+    padding: 5px 8px;
+    border: 1px solid #c3c9d4;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 13px;
+    color: #2a3344;
+}
+.o_cfg_overlay_comp_title {
+    font-weight: 700;
+    font-size: 14px;
+    color: #1b2b4b;
+    margin: 14px 0 4px;
+    padding-bottom: 3px;
+    border-bottom: 2px solid #cfd6e4;
+}
+.o_cfg_overlay_card_swatch {
+    width: 100%;
+    height: 46px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    &.o_cfg_swatch_none {
+        background: repeating-linear-gradient(45deg, #eee, #eee 6px, #ddd 6px, #ddd 12px);
+    }
+}
+
+// ── Accessory chip bar (плаваща лента бутони върху 3D картината) ──────────
+.o_cfg_chips {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    z-index: 11;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    pointer-events: none; // контейнерът не лови клик; chip-овете го връщат
+    max-height: 45%;
+    overflow-y: auto;
+}
+.o_cfg_chip {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid rgba(0, 0, 0, .15);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .92);
+    backdrop-filter: blur(4px);
+    font-size: 13px;
+    font-weight: 600;
+    color: #2a3344;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .12);
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+    white-space: nowrap;
+
+    i {
+        font-size: 14px;
+    }
+}
+.o_cfg_chip:hover {
+    border-color: #2f6fed;
+}
+.o_cfg_chip.active {
+    background: #2f6fed;
+    color: #fff;
+    border-color: #2f6fed;
+}
+.o_cfg_chip[disabled] {
+    opacity: .5;
+    cursor: not-allowed;
+}
+.o_cfg_chip_thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex: 0 0 auto;
+}
+
 @media (max-width: 767px) {
     .o_design_configurator {
         grid-template-columns: 1fr;
@@ -350,5 +546,12 @@
     .o_cfg_panel {
         border-right: none;
         border-bottom: 1px solid #dee2e6;
+    }
+    .o_cfg_chips {
+        gap: 6px;
+    }
+    .o_cfg_chip {
+        font-size: 12px;
+        padding: 5px 10px;
     }
 }

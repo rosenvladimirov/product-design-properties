@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2024-2026 Rosen Vladimirov  (AGPL-3.0-or-later / commercial) -->
+<odoo>
+    <record id="stock_lot_form_cost" model="ir.ui.view">
+        <field name="name">stock.lot.form.cost</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.view_production_lot_form"/>
+        <field name="arch" type="xml">
+            <!-- Бутон „Review Cost" в хедъра (само мениджъри). Хедърът идва от
+                 sale_design_configurator (stock_lot_form_design_sales). -->
+            <xpath expr="//header" position="inside">
+                <button name="action_open_design_cost" type="object"
+                        string="Review Cost" class="btn-secondary"
+                        invisible="not design_param_definition_id"
+                        groups="mrp_design_matrix_cost.group_design_manager"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

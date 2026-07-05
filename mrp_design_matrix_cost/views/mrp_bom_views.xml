@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2024-2026 Rosen Vladimirov  (AGPL-3.0-or-later / commercial) -->
+<odoo>
+    <record id="mrp_bom_form_field_context_map" model="ir.ui.view">
+        <field name="name">mrp.bom.form.field.context.map</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp_design_matrix.mrp_bom_form_view_design_matrix"/>
+        <field name="arch" type="xml">
+            <field name="variant_context_map" position="after">
+                <!-- Read-only линк към обикновени Odoo полета (напр. цената от
+                     ценоразписа/продукта). Матрицата само ЧЕТЕ. -->
+                <field name="field_context_map"
+                       widget="ace" options="{'mode': 'javascript'}"
+                       invisible="not matrix_template_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>

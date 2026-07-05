@@ -19,10 +19,17 @@
         <field name="model">stock.lot</field>
         <field name="inherit_id" ref="stock.view_production_lot_form"/>
         <field name="arch" type="xml">
-            <field name="design_param_definition_id" position="after">
-                <widget name="design_configurator_open"
-                        invisible="not design_param_definition_id"/>
-            </field>
+            <!-- Конфигуратор-бутонът отива при stat ("магичните") бутони -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_design_configurator" type="object"
+                        class="oe_stat_button" icon="fa-cubes"
+                        invisible="not design_param_definition_id">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Design</span>
+                        <span class="o_stat_text">Configurator</span>
+                    </div>
+                </button>
+            </xpath>
         </field>
     </record>
 

@@ -9,6 +9,7 @@
 # Unless you hold a valid commercial license, your use of this file is governed
 # by the AGPL-3.0-or-later.
 from . import mrp_matrix_template
+from . import product_attribute
 from . import mrp_bom
 from . import mrp_bom_line
 from . import mrp_production
