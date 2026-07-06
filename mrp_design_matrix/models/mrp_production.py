@@ -61,19 +61,22 @@ class MrpProduction(models.Model):
         """
         self.ensure_one()
         bom = self.bom_id
-        # Odoo 19 renamed mrp.production.lot_producing_id → lot_producing_ids
-        # (One2many, to support multiple produced lots). Design matrix operates
-        # on the first lot as the "design lot".
-        lot = self.lot_producing_ids[:1]
-        if not lot:
+        # Източникът на design context е overridable: по подразбиране = първата
+        # произвеждана партида (lot_producing_ids). mrp_design_matrix_production
+        # override-ва това да чете конфига от самото MO (partida = fallback).
+        ctx = self._resolve_design_context()
+        if ctx is None:
             _logger.warning(
-                "MO %s has no lot_producing_ids — design matrix skipped.",
+                "MO %s has no design context source — design matrix skipped.",
                 self.name,
             )
             return
+        # Произвежданата партида остава носител на конфигураторните избори
+        # (operation/variant choices, child lots) независимо от източника на
+        # design context.
+        lot = self.lot_producing_ids[:1]
 
         # 1–2. Build context + variant attributes + T0 validation
-        ctx = lot._get_design_context()
         ctx["qty"] = self.product_qty
         ctx.update(self._get_variant_context_values(bom))
         t0_ctx = self._eval_t0_constraints(bom, ctx)
@@ -110,6 +113,19 @@ class MrpProduction(models.Model):
 
         # 8. Semi-finished: child lots / mto_stop
         self._handle_semifinished_lots(full_ctx)
+
+    def _resolve_design_context(self):
+        """Върни flat design context за тази MO (или ``None`` = скип матрица).
+
+        По подразбиране източникът е първата произвеждана партида
+        (``lot_producing_ids``) — историческото поведение. Модулът
+        ``mrp_design_matrix_production`` override-ва това: чете конфига от
+        самото MO, а партидата остава fallback (dual-read).
+        """
+        lot = self.lot_producing_ids[:1]
+        if not lot:
+            return None
+        return lot._get_design_context()
 
     def _filter_chosen_operation_workorders(self, lot):
         """Оставя само ИЗБРАНИТЕ операции сред work order-ите.
