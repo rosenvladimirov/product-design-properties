@@ -55,28 +55,10 @@
               action="action_mrp_bom_line_formula_template"
               sequence="80" />
 
-    <record id="mrp_bom_line_view_form_formula_template" model="ir.ui.view">
-        <field name="name">Add formula template field to BoM Line form view</field>
-        <field name="model">mrp.bom.line</field>
-        <field name="inherit_id" ref="mrp.mrp_bom_line_view_form" />
-        <field name="arch" type="xml">
-            <xpath expr="//field[@name='product_qty']/.." position="after">
-                <field name="formula_template_id" />
-            </xpath>
-        </field>
-    </record>
-
-    <record id="mrp_bom_form_view_formula_template" model="ir.ui.view">
-        <field name="name">Add formula template field to BoM form view</field>
-        <field name="model">mrp.bom</field>
-        <field name="inherit_id" ref="mrp.mrp_bom_form_view" />
-        <field name="arch" type="xml">
-            <xpath
-                expr="//field[@name='bom_line_ids']/list/field[@name='product_qty']"
-                position="after"
-            >
-                <field name="formula_template_id" optional="hide"/>
-            </xpath>
-        </field>
-    </record>
+    <!-- Наследяванията на mrp.bom / mrp.bom.line формите живеят в
+         mrp_bom_views.xml (mrp_bom_form_view_formula +
+         mrp_bom_line_view_form_formula — включват и quantity_formula).
+         Старите дубликати mrp_bom_form_view_formula_template /
+         mrp_bom_line_view_form_formula_template (донесени от Solid staging
+         merge-а) са премахнати — полето се появяваше два пъти. -->
 </odoo>
