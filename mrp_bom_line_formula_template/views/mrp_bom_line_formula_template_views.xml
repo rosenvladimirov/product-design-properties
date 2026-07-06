@@ -51,7 +51,7 @@
 
     <menuitem id="menu_mrp_bom_line_formula_template"
               name="BoM Line Formula Templates"
-              parent="mrp.menu_mrp_config"
+              parent="mrp.menu_mrp_configuration"
               action="action_mrp_bom_line_formula_template"
               sequence="80" />
 
