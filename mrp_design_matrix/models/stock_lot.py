@@ -92,14 +92,15 @@ class StockLot(models.Model):
         with all entries from ``design_params`` Properties.
         """
         self.ensure_one()
-        ctx = {
-            "width": getattr(self, "width", 0.0),
-            "height": getattr(self, "height", 0.0),
-            "thickness": getattr(self, "thickness", 0.0),
-        }
-        for key, value in (self.design_params or {}).items():
-            ctx[key] = value
-        return ctx
+        # Един резолвер за lot и MO — виж design.param.definition._build_context.
+        return self.design_param_definition_id._build_context(
+            self.design_params,
+            {
+                "width": getattr(self, "width", 0.0),
+                "height": getattr(self, "height", 0.0),
+                "thickness": getattr(self, "thickness", 0.0),
+            },
+        )
 
     @api.model
     def _create_child_lot(self, parent_lot, bom_line, product):

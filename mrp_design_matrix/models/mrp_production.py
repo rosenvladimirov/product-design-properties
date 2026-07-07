@@ -61,16 +61,16 @@ class MrpProduction(models.Model):
         """
         self.ensure_one()
         bom = self.bom_id
-        lot = self.lot_producing_id
-        if not lot:
+        # Overridable източник (mrp_design_matrix_production чете конфига от MO).
+        ctx = self._resolve_design_context()
+        if ctx is None:
             _logger.warning(
-                "MO %s has no lot_producing_id — design matrix skipped.",
+                "MO %s has no design context source — design matrix skipped.",
                 self.name,
             )
             return
 
         # 1–2. Build context + T0 validation + T0 context flags
-        ctx = lot._get_design_context()
         ctx["qty"] = self.product_qty
         t0_ctx = self._eval_t0_constraints(bom, ctx)
         ctx.update(t0_ctx)
@@ -95,6 +95,19 @@ class MrpProduction(models.Model):
         self._handle_semifinished_lots(full_ctx)
 
     # ── Step helpers (split from main algorithm for complexity) ──────────
+
+    def _resolve_design_context(self):
+        """Върни flat design context за тази MO (или ``None`` = скип матрица).
+
+        По подразбиране източникът е произвежданата партида
+        (``lot_producing_id``) — историческото поведение. Модулът
+        ``mrp_design_matrix_production`` override-ва това: чете конфига от
+        самото MO, а партидата остава fallback (dual-read).
+        """
+        lot = self.lot_producing_id
+        if not lot:
+            return None
+        return lot._get_design_context()
 
     def _eval_t0_constraints(self, bom, ctx: dict) -> dict:
         """Run T0 constraint_table; raise on errors, log warnings.
