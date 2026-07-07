@@ -37,6 +37,15 @@ class MrpProduction(models.Model):
         copy=True,
     )
 
+    def _design_producing_lot(self):
+        """Произвежданата партида, независимо от версията на Odoo:
+        18.0 = ``lot_producing_id`` (единствено), 19.0/20.0 =
+        ``lot_producing_ids`` (множество) → прави модула version-agnostic."""
+        self.ensure_one()
+        if "lot_producing_ids" in self._fields:
+            return self.lot_producing_ids[:1]
+        return self.lot_producing_id  # Odoo 18
+
     # ── Design context източник (dual-read: MO пръв, партида fallback) ────
     def _get_design_context(self):
         """Flat design context от конфига на MO-то (същия резолвер като lot).
@@ -49,9 +58,12 @@ class MrpProduction(models.Model):
         ctx = self.design_param_definition_id._build_context(
             self.design_params, {}
         )
-        lot = self.lot_producing_ids[:1]
-        if lot and lot.matrix_material_choices:
-            ctx.update(lot.matrix_material_choices)
+        lot = self._design_producing_lot()
+        # matrix_material_choices съществува само на 19.0 lot (18/20 нямат полето)
+        # → getattr за version-agnostic модул.
+        choices = getattr(lot, "matrix_material_choices", None) if lot else None
+        if choices:
+            ctx.update(choices)
         return ctx
 
     def _resolve_design_context(self):
@@ -182,7 +194,7 @@ class MrpProduction(models.Model):
         self.ensure_one()
         if not self.design_param_definition_id:
             return
-        lot = self.lot_producing_ids[:1]
+        lot = self._design_producing_lot()
         if not lot:
             return
 
