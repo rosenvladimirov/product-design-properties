@@ -35,38 +35,15 @@ class StockLot(models.Model):
             → "vinegar") so rule conditions match what is stored.
         """
         self.ensure_one()
-        ctx = {
-            "width": getattr(self, "width", 0.0),
-            "height": getattr(self, "height", 0.0),
-            "thickness": getattr(self, "thickness", 0.0),
-        }
-
-        # Build UUID → (string_name, display→raw) mapping from schema.
-        definition = self.design_param_definition_id
-        uuid_map = {}
-        if definition:
-            schema = definition.full_design_params_definition or []
-            for prop in schema:
-                if not isinstance(prop, dict):
-                    continue
-                uuid = prop.get("name")
-                if not uuid:
-                    continue
-                string_name = prop.get("string") or uuid
-                # Reverse map for selection: {display_label: raw_value}
-                reverse = {}
-                for entry in (prop.get("selection") or []):
-                    if isinstance(entry, (list, tuple)) and len(entry) == 2:
-                        raw, label = entry
-                        reverse[label] = raw
-                uuid_map[uuid] = (string_name, reverse)
-
-        for key, value in (self.design_params or {}).items():
-            string_name, reverse = uuid_map.get(key, (key, {}))
-            # Reverse lookup display → raw for selection values only.
-            raw_value = reverse.get(value, value) if reverse else value
-            ctx[string_name] = raw_value
-        return ctx
+        # Един резолвер за lot и MO — виж design.param.definition._build_context.
+        return self.design_param_definition_id._build_context(
+            self.design_params,
+            {
+                "width": getattr(self, "width", 0.0),
+                "height": getattr(self, "height", 0.0),
+                "thickness": getattr(self, "thickness", 0.0),
+            },
+        )
 
     @api.model
     def _create_child_lot(self, parent_lot, bom_line, product):

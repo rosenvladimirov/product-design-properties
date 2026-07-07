@@ -61,19 +61,17 @@ class MrpProduction(models.Model):
         """
         self.ensure_one()
         bom = self.bom_id
-        # Odoo 19 renamed mrp.production.lot_producing_id → lot_producing_ids
-        # (One2many, to support multiple produced lots). Design matrix operates
-        # on the first lot as the "design lot".
-        lot = self.lot_producing_ids[:1]
-        if not lot:
+        # Overridable източник (mrp_design_matrix_production чете конфига от MO;
+        # default = първата произвеждана партида, историческото поведение).
+        ctx = self._resolve_design_context()
+        if ctx is None:
             _logger.warning(
-                "MO %s has no lot_producing_ids — design matrix skipped.",
+                "MO %s has no design context source — design matrix skipped.",
                 self.name,
             )
             return
 
         # 1–2. Build context + variant attributes + T0 validation
-        ctx = lot._get_design_context()
         ctx["qty"] = self.product_qty
         ctx.update(self._get_variant_context_values(bom))
         t0_ctx = self._eval_t0_constraints(bom, ctx)
@@ -99,6 +97,19 @@ class MrpProduction(models.Model):
         self._handle_semifinished_lots(full_ctx)
 
     # ── Step helpers (split from main algorithm for complexity) ──────────
+
+    def _resolve_design_context(self):
+        """Върни flat design context за тази MO (или ``None`` = скип матрица).
+
+        По подразбиране източникът е първата произвеждана партида
+        (``lot_producing_ids``) — историческото поведение. Модулът
+        ``mrp_design_matrix_production`` override-ва това: чете конфига от
+        самото MO, а партидата остава fallback (dual-read).
+        """
+        lot = self.lot_producing_ids[:1]
+        if not lot:
+            return None
+        return lot._get_design_context()
 
     def _eval_t0_constraints(self, bom, ctx: dict) -> dict:
         """Run T0 constraint_table; raise on errors, log warnings.
