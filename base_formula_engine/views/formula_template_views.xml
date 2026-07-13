@@ -63,7 +63,7 @@
                 <field name="code"/>
                 <field name="usage"/>
                 <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
-                <group expand="0" string="Group By">
+                <group>
                     <filter string="Usage" name="group_usage" context="{'group_by': 'usage'}"/>
                     <filter string="Company" name="group_company" context="{'group_by': 'company_id'}"/>
                 </group>
