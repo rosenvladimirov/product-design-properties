@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)
+          https://www.gnu.org/licenses/agpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the AGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the AGPL-3.0-or-later.
+-->
+<odoo>
+
+    <record id="formula_template_view_list" model="ir.ui.view">
+        <field name="name">formula.template.list</field>
+        <field name="model">formula.template</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="code" optional="show"/>
+                <field name="usage" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="formula_template_view_form" model="ir.ui.view">
+        <field name="name">formula.template.form</field>
+        <field name="model">formula.template</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="usage"/>
+                        </group>
+                        <group>
+                            <field name="active" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Formula" name="formula">
+                            <field name="formula" placeholder="result = base * rate"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="formula_template_view_search" model="ir.ui.view">
+        <field name="name">formula.template.search</field>
+        <field name="model">formula.template</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="usage"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Usage" name="group_usage" context="{'group_by': 'usage'}"/>
+                    <filter string="Company" name="group_company" context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="formula_template_action" model="ir.actions.act_window">
+        <field name="name">Formula Templates</field>
+        <field name="res_model">formula.template</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="formula_template_menu"
+              name="Formula Templates"
+              parent="base.menu_custom"
+              action="formula_template_action"
+              groups="base.group_system"
+              sequence="60"/>
+
+</odoo>
