@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **base_formula_engine** (1.0.0) — new domain-agnostic formula kernel
+  - `formula.engine.mixin`: syntax validation + safe_eval exec with a
+    declared-outputs contract and opt-in `strict` mode (payroll-grade
+    hard fail); `_formula_eval_context` extension hook
+  - `formula.template`: reusable multi-company formula records with
+    `code` lookup (company record wins over global), per-company AND
+    global uniqueness (partial unique index)
+  - Port of the 19.0 module (feat/base-formula-engine); same code —
+    safe_eval package re-exports and orm table objects verified on 20
+
+### Added
 - **mrp_design_matrix_solid_door** (19.0.1.0.0) — new industrial submodule
   - Properties definition for SolidDoor product range (portalsolid.com)
   - 18 door models, coating/frame/slab/line/handle/lock/extras parameters
