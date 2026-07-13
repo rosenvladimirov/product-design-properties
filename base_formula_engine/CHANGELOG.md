@@ -4,6 +4,20 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.1.0] - 2026-07-13
+
+### Changed
+
+- **License: AGPL-3 → LGPL-3** (dual license commercial part unchanged).
+  Decision ADR-P-0010 (l10n_bg_accounting): this kernel sits UNDER a
+  proprietary moat (payroll formula layer) — an in-process `depends`
+  from a proprietary module on an AGPL module reproduces the
+  derivative-work problem (Case 1); LGPL-3 keeps the base open without
+  contaminating consumers. Branch never merged/published — no third
+  party acquired AGPL rights.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.0.0] - 2026-07-13
 
 ### Added

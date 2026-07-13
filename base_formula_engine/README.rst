@@ -31,5 +31,5 @@ the trust boundary. Template write access is restricted to
 License
 =======
 
-Dual license: AGPL-3.0-or-later, or a commercial license from
+Dual license: LGPL-3.0-or-later, or a commercial license from
 Rosen Vladimirov (see ``LICENSE-COMMERCIAL.md`` in the repository root).
