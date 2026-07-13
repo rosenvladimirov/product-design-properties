@@ -4,6 +4,15 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.1.0] - 2026-07-13
+
+### Changed
+
+- **License: AGPL-3 → LGPL-3** (ADR-P-0010 — kernel under a proprietary
+  moat; port of the 19.0 branch change).
+
+*Assisted by Claude Code*
+
 ## [1.0.0] - 2026-07-13
 
 ### Added
