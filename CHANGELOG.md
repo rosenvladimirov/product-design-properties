@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- **base_zen_decision** (18.0.1.2.0) — relicensed **AGPL-3 → LGPL-3**
+  (dual with commercial), kernel under a proprietary moat (ADR-P-0010).
+  License-only change (headers + manifest); no functional change. Removes
+  the AGPL derivative-work exposure for the proprietary payroll/posting
+  modules that depend in-process on this ZEN kernel.
+
 ## [18.0.2.0.0] - 2026-06-09
 
 Major release — kernel extraction, cost-plus pricing engine, six new industry
