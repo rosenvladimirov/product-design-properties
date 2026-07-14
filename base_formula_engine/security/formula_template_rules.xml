@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+          https://www.gnu.org/licenses/lgpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the LGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the LGPL-3.0-or-later.
+-->
+<odoo noupdate="1">
+
+    <!-- Multi-company: потребителят вижда шаблони на разрешените си
+         фирми или глобални (без фирма) шаблони. -->
+    <record id="formula_template_multi_company_rule" model="ir.rule">
+        <field name="name">Formula Template multi-company</field>
+        <field name="model_id" ref="model_formula_template"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">
+            ['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]
+        </field>
+    </record>
+
+</odoo>
