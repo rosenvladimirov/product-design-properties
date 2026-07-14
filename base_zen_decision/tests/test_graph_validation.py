@@ -1,13 +1,13 @@
 # Copyright 2024-2026 Rosen Vladimirov
 #
 # This file is available under a DUAL LICENSE:
-#   1. GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)
-#      https://www.gnu.org/licenses/agpl-3.0.html
+#   1. GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+#      https://www.gnu.org/licenses/lgpl-3.0.html
 #   2. A commercial license from Rosen Vladimirov, for use without the obligations
-#      of the AGPL. See LICENSE-COMMERCIAL.md. Contact: vladimirov.rosen@gmail.com
+#      of the LGPL. See LICENSE-COMMERCIAL.md. Contact: vladimirov.rosen@gmail.com
 #
 # Unless you hold a valid commercial license, your use of this file is governed
-# by the AGPL-3.0-or-later.
+# by the LGPL-3.0-or-later.
 """Тестове на validate_graph/normalize_jdm_graph (D2) — щитът срещу
 T3=[] класа инциденти (счупен/плосък граф, който zen-engine приема
 мълчаливо и връща празно за всеки контекст). Чисти функции — без DB.

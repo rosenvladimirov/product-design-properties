@@ -40,4 +40,4 @@ Operational notes
 * ``zen.decision.log`` grows unbounded by design (forensics); schedule a
   retention job if volume becomes a concern.
 
-License: AGPL-3.0-or-later or commercial (see LICENSE-COMMERCIAL.md).
+License: LGPL-3.0-or-later or commercial (see LICENSE-COMMERCIAL.md).
