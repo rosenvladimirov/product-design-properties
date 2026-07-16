@@ -49,6 +49,9 @@
                     </group>
                     <notebook>
                         <page string="Parameter Definitions" name="param_definitions">
+                            <separator string="Parameters (overview)"/>
+                            <field name="params_overview" readonly="1" nolabel="1"/>
+                            <separator string="Definition editor"/>
                             <field name="design_params_definition" />
                         </page>
                         <page string="Validation Rules" name="validation_rules">

@@ -58,6 +58,31 @@ class DesignParamDefinition(models.Model):
     design_params_definition = fields.PropertiesDefinition(
         "Design Parameter Definitions",
     )
+    # Четим read-only преглед на параметрите. PropertiesDefinition widget-ът НЕ се
+    # рендерира самостоятелно във формата (показва схема само сдвоен с Properties
+    # поле), затова дефиниционната форма изглежда празна — тук се вижда какво
+    # съдържа дефиницията (име + тип на всеки параметър).
+    params_overview = fields.Text(
+        "Parameters",
+        compute="_compute_params_overview",
+    )
+
+    @api.depends("design_params_definition")
+    def _compute_params_overview(self):
+        for rec in self:
+            lines = []
+            for it in rec.design_params_definition or []:
+                label = it.get("string") or it.get("name") or "?"
+                typ = it.get("type") or "?"
+                extra = ""
+                if typ == "selection" and it.get("selection"):
+                    extra = " [%s]" % ", ".join(
+                        v[1] if isinstance(v, (list, tuple)) and len(v) > 1
+                        else str(v)
+                        for v in it["selection"])
+                lines.append("• %s  (%s)%s" % (label, typ, extra))
+            rec.params_overview = "\n".join(lines)
+
     full_design_params_definition = fields.PropertiesDefinition(
         "Full Design Parameter Definitions (with inherited)",
         compute="_compute_full_design_params_definition",
