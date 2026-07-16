@@ -14,7 +14,7 @@
         "Shared design parameter definitions "
         "with SVG profiles for parametric manufacturing"
     ),
-    "version": "19.0.1.3.3",
+    "version": "19.0.1.4.0",
     "category": "Manufacturing",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "Rosen Vladimirov",
