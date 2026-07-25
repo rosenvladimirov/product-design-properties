@@ -1,6 +1,6 @@
 # MRP Design Matrix — Business Requirements Document (BRD)
 
-**Version:** 1.0 | **Date:** March 2026 | **Author:** Rosen Vladimirov \<vladimirov.rosen@gmail.com\> | BL Consulting | Odoo Silver Partner
+**Version:** 1.0 | **Date:** March 2026 | **Author:** Rosen Vladimirov \<vladimirov.rosen@gmail.com\> | Terraros Commerce Ltd.
 
 ---
 
