@@ -94,7 +94,7 @@ Authors
 -------
 
 * Rosen Vladimirov
-* BL Consulting
+* Terraros Commerce Ltd.
 
 Maintainers
 -----------

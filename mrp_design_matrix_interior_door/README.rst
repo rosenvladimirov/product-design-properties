@@ -60,7 +60,7 @@ Credits
 Authors
 -------
 
-* BL Consulting
+* Terraros Commerce Ltd.
 
 Maintainers
 -----------

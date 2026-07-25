@@ -1,6 +1,6 @@
 # MRP Design Matrix — Project Plan
 
-**Version:** 2.0 | **Last revision:** 2026-04-05 | **Author:** Rosen Vladimirov \<vladimirov.rosen@gmail.com\> | BL Consulting | Odoo Silver Partner
+**Version:** 2.0 | **Last revision:** 2026-04-05 | **Author:** Rosen Vladimirov \<vladimirov.rosen@gmail.com\> | Terraros Commerce Ltd.
 
 ---
 
