@@ -1,0 +1,119 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* product_design_assets
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-11 08:08+0000\n"
+"PO-Revision-Date: 2026-08-11 12:00+0300\n"
+"Last-Translator: Rosen Vladimirov <vladimirov.rosen@gmail.com>\n"
+"Language-Team: \n"
+"Language: bg_BG\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: product_design_assets
+#: model_terms:ir.ui.view,arch_db:product_design_assets.product_template_form_design_assets
+msgid ""
+"<i class=\"fa fa-info-circle\"/>\n"
+"                        Attach GLB (3D models), SVG (profiles), PNG/JPG (textures) files\n"
+"                        on each <strong>product variant</strong> form.\n"
+"                        These files are used by the design configurator for 3D visualization."
+msgstr ""
+"<i class=\"fa fa-info-circle\"/>\n"
+"                        Прикачете GLB (3D модели), SVG (профили), PNG/JPG (текстури) файлове\n"
+"                        във формуляра на всеки <strong>продуктов вариант</strong>.\n"
+"                        Тези файлове се използват от дизайн конфигуратора за 3D визуализация."
+
+#. module: product_design_assets
+#: model:ir.model,name:product_design_assets.model_mrp_bom
+msgid "Bill of Material"
+msgstr "Списък на материалите"
+
+#. module: product_design_assets
+#: model_terms:ir.ui.view,arch_db:product_design_assets.product_product_form_design_assets
+#: model_terms:ir.ui.view,arch_db:product_design_assets.product_template_form_design_assets
+msgid "Design"
+msgstr "Дизайн"
+
+#. module: product_design_assets
+#: model:ir.model.fields,field_description:product_design_assets.field_product_product__design_asset_count
+#: model:ir.model.fields,field_description:product_design_assets.field_product_product__design_asset_ids
+#: model_terms:ir.ui.view,arch_db:product_design_assets.product_product_form_design_assets
+#: model_terms:ir.ui.view,arch_db:product_design_assets.product_template_form_design_assets
+msgid "Design Assets"
+msgstr "Дизайн ресурси"
+
+#. module: product_design_assets
+#: model_terms:ir.ui.view,arch_db:product_design_assets.product_product_form_design_assets
+msgid "Design Assets (GLB, SVG, PNG)"
+msgstr "Дизайн ресурси (GLB, SVG, PNG)"
+
+#. module: product_design_assets
+#: model:ir.model.fields,field_description:product_design_assets.field_product_product__design_param_definition_id
+#: model:ir.model.fields,field_description:product_design_assets.field_product_template__design_param_definition_id
+msgid "Design Definition"
+msgstr "Дизайн дефиниция"
+
+#. module: product_design_assets
+#: model:ir.model.fields,field_description:product_design_assets.field_product_product__design_properties
+#: model:ir.model.fields,field_description:product_design_assets.field_product_template__design_properties
+#: model_terms:ir.ui.view,arch_db:product_design_assets.product_product_form_design_assets
+#: model_terms:ir.ui.view,arch_db:product_design_assets.product_template_form_design_assets
+msgid "Design Properties"
+msgstr "Дизайн свойства"
+
+#. module: product_design_assets
+#: model:ir.model.fields,field_description:product_design_assets.field_mrp_bom__display_name
+#: model:ir.model.fields,field_description:product_design_assets.field_product_product__display_name
+#: model:ir.model.fields,field_description:product_design_assets.field_product_template__display_name
+msgid "Display Name"
+msgstr "Име за показване"
+
+#. module: product_design_assets
+#: model:ir.model.fields,help:product_design_assets.field_product_product__design_asset_ids
+msgid ""
+"GLB (3D models), SVG (profiles), PNG/JPG (textures) for design configurator "
+"visualization."
+msgstr ""
+"GLB (3D модели), SVG (профили), PNG/JPG (текстури) за визуализация в дизайн "
+"конфигуратора."
+
+#. module: product_design_assets
+#: model:ir.model.fields,field_description:product_design_assets.field_mrp_bom__id
+#: model:ir.model.fields,field_description:product_design_assets.field_product_product__id
+#: model:ir.model.fields,field_description:product_design_assets.field_product_template__id
+msgid "ID"
+msgstr "Номер (ID)"
+
+#. module: product_design_assets
+#: model:ir.model,name:product_design_assets.model_product_template
+msgid "Product"
+msgstr "Продукт"
+
+#. module: product_design_assets
+#: model:ir.model,name:product_design_assets.model_product_product
+msgid "Product Variant"
+msgstr "Продуктов вариант"
+
+#. module: product_design_assets
+#: model:ir.model.fields,help:product_design_assets.field_product_product__design_properties
+msgid ""
+"Product-level design properties for configurator filtering. Values must "
+"match product.attribute.value.name for PTAV resolution."
+msgstr ""
+"Дизайн свойства на ниво продукт за филтриране в конфигуратора. Стойностите "
+"трябва да съвпадат с product.attribute.value.name за разпознаване на PTAV."
+
+#. module: product_design_assets
+#: model:ir.model.fields,help:product_design_assets.field_product_product__design_param_definition_id
+msgid ""
+"Select the design parameter set for this product. Used by the configurator "
+"for filtering and PTAV matching."
+msgstr ""
+"Изберете набора от дизайн параметри за този продукт. Използва се от "
+"конфигуратора за филтриране и съпоставяне на PTAV."

@@ -1,0 +1,179 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mrp_bom_line_formula_template
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-11 08:07+0000\n"
+"PO-Revision-Date: 2026-08-11 12:00+0300\n"
+"Last-Translator: Rosen Vladimirov <vladimirov.rosen@gmail.com>\n"
+"Language-Team: \n"
+"Language: bg_BG\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_template.field_mrp_bom_line_formula_template__active
+msgid "Active"
+msgstr "Активно"
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.model,name:mrp_bom_line_formula_template.model_mrp_bom_line
+msgid "Bill of Material Line"
+msgstr "Ред на спецификацията"
+
+#. module: mrp_bom_line_formula_template
+#: model_terms:ir.ui.view,arch_db:mrp_bom_line_formula_template.view_mrp_bom_line_formula_template_form
+msgid "BoM Line Formula Template"
+msgstr "Шаблон на формула за ред от спецификацията"
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.actions.act_window,name:mrp_bom_line_formula_template.action_mrp_bom_line_formula_template
+#: model:ir.ui.menu,name:mrp_bom_line_formula_template.menu_mrp_bom_line_formula_template
+#: model_terms:ir.ui.view,arch_db:mrp_bom_line_formula_template.view_mrp_bom_line_formula_template_tree
+msgid "BoM Line Formula Templates"
+msgstr "Шаблони на формули за редове от спецификацията"
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.model,name:mrp_bom_line_formula_template.model_mrp_bom_line_formula_template
+msgid "BoM Line Quantity Formula Template"
+msgstr "Шаблон на формула за количество на ред от спецификацията"
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_template.field_mrp_bom_line_formula_template__company_id
+msgid "Company"
+msgstr "Фирма"
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_template.field_mrp_bom_line_formula_template__create_uid
+msgid "Created by"
+msgstr "Създадено от"
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_template.field_mrp_bom_line_formula_template__create_date
+msgid "Created on"
+msgstr "Създадено на"
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_template.field_mrp_bom_line__display_name
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_template.field_mrp_bom_line_formula_template__display_name
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_template.field_mrp_production__display_name
+msgid "Display Name"
+msgstr "Име за показване"
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.model.fields,help:mrp_bom_line_formula_template.field_mrp_bom_line_formula_template__quantity_formula
+msgid ""
+"Formula evaluated when generating a production order line.\n"
+"\n"
+"Available input variables:\n"
+"- bom_line: the current BoM line\n"
+"- operation: workcenter for current BoM line\n"
+"- product: product of current BoM line\n"
+"- product_uom: UoM of the product\n"
+"- product_uom_qty: quantity of the production order\n"
+"- production: the production order being created\n"
+"- env: Odoo environment (for env.ref(), searches, etc.)\n"
+"- design context keys (width, height, etc.) when available\n"
+"\n"
+"Output variables (assign in formula):\n"
+"- result (or quantity): computed quantity (required)\n"
+"- product: override the BoM line product (optional)\n"
+"- uom: override the UoM (optional)\n"
+"\n"
+"Example:\n"
+"  result = width * height / 1000000\n"
+"  product = env.ref('my_module.special_product')\n"
+"  uom = env.ref('uom.product_uom_kgm')"
+msgstr ""
+"Формула, изчислявана при генериране на ред от производствена поръчка.\n"
+"\n"
+"Налични входни променливи:\n"
+"- bom_line: текущият ред от спецификацията\n"
+"- operation: работен център за текущия ред от спецификацията\n"
+"- product: продукт на текущия ред от спецификацията\n"
+"- product_uom: мерна единица на продукта\n"
+"- product_uom_qty: количество на производствената поръчка\n"
+"- production: създаваната производствена поръчка\n"
+"- env: Odoo среда (за env.ref(), търсения и др.)\n"
+"- ключове от дизайн контекста (width, height и др.), когато са налични\n"
+"\n"
+"Изходни променливи (задават се във формулата):\n"
+"- result (или quantity): изчислено количество (задължително)\n"
+"- product: заместване на продукта от реда на спецификацията (по избор)\n"
+"- uom: заместване на мерната единица (по избор)\n"
+"\n"
+"Пример:\n"
+"  result = width * height / 1000000\n"
+"  product = env.ref('my_module.special_product')\n"
+"  uom = env.ref('uom.product_uom_kgm')"
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.model.fields,help:mrp_bom_line_formula_template.field_mrp_bom_line__quantity_formula
+msgid ""
+"Formula to be evaluated when generating the quantity for a production order line.\n"
+"The following values are available:\n"
+"- bom_line: the current BoM line,\n"
+"- operation: the operation where the components areconsumed for current BoM line,\n"
+"- product: the Product of current BoM line,\n"
+"- product_uom: the UoM of the Product of current BoM line,\n"
+"- product_uom_qty: the quantity of the production order line,\n"
+"- production: the production order being created,\n"
+"The computed quantity must be assigned to the `quantity` variable."
+msgstr ""
+"Формула, която се изчислява при генериране на количеството за ред от производствена поръчка.\n"
+"Налични са следните стойности:\n"
+"- bom_line: текущият ред от спецификацията,\n"
+"- operation: операцията, при която се влагат компонентите за текущия ред от спецификацията,\n"
+"- product: продуктът на текущия ред от спецификацията,\n"
+"- product_uom: мерната единица на продукта от текущия ред от спецификацията,\n"
+"- product_uom_qty: количеството на реда от производствената поръчка,\n"
+"- production: създаваната производствена поръчка,\n"
+"Изчисленото количество трябва да бъде присвоено на променливата `quantity`."
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_template.field_mrp_bom_line__id
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_template.field_mrp_bom_line_formula_template__id
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_template.field_mrp_production__id
+msgid "ID"
+msgstr "Номер (ID)"
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_template.field_mrp_bom_line_formula_template__write_uid
+msgid "Last Updated by"
+msgstr "Последно актуализирано от"
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_template.field_mrp_bom_line_formula_template__write_date
+msgid "Last Updated on"
+msgstr "Последно актуализирано на"
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.model,name:mrp_bom_line_formula_template.model_mrp_production
+msgid "Manufacturing Order"
+msgstr "Производствена поръчка"
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_template.field_mrp_bom_line_formula_template__name
+msgid "Name"
+msgstr "Име"
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_template.field_mrp_bom_line__quantity_formula
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_template.field_mrp_bom_line_formula_template__quantity_formula
+msgid "Quantity Formula"
+msgstr "Формула за количество"
+
+#. module: mrp_bom_line_formula_template
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_template.field_mrp_bom_line__formula_template_id
+msgid "Quantity Formula Template"
+msgstr "Шаблон на формула за количество"
+
+#. module: mrp_bom_line_formula_template
+#: model_terms:ir.ui.view,arch_db:mrp_bom_line_formula_template.view_mrp_bom_line_formula_template_form
+msgid "quantity = product_uom_qty * 1.0"
+msgstr "quantity = product_uom_qty * 1.0"

@@ -1,0 +1,364 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* base_zen_decision
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-11 08:04+0000\n"
+"PO-Revision-Date: 2026-08-11 12:00+0300\n"
+"Last-Translator: Rosen Vladimirov <vladimirov.rosen@gmail.com>\n"
+"Language-Team: \n"
+"Language: bg_BG\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: base_zen_decision
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_table_search
+msgid "Access"
+msgstr "Достъп"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_table__active
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_table_search
+msgid "Active"
+msgstr "Активно"
+
+#. module: base_zen_decision
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_table_form
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_table_search
+msgid "Archived"
+msgstr "Архивирано"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,help:base_zen_decision.field_zen_decision_log__table_code
+msgid "Cached for filtered queries без JOIN."
+msgstr "Кеширано за филтрирани заявки без JOIN."
+
+#. module: base_zen_decision
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_table_form
+msgid "Changelog for this version…"
+msgstr "Списък на промените за тази версия…"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_log__table_code
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_table__code
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_log_search
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_table_search
+msgid "Code"
+msgstr "Код"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_log__company_id
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_table__company_id
+msgid "Company"
+msgstr "Фирма"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_log__context_in
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_log_form
+msgid "Context In"
+msgstr "Входен контекст"
+
+#. module: base_zen_decision
+#: model:ir.model.fields.selection,name:base_zen_decision.selection__zen_decision_log__executed_in__controller
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_log_search
+msgid "Controller (offline)"
+msgstr "Контролер (офлайн)"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_log__create_date
+msgid "Create Date"
+msgstr "Дата на създаване"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_log__create_uid
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_table__create_uid
+msgid "Created by"
+msgstr "Създадено от"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_table__create_date
+msgid "Created on"
+msgstr "Създадено на"
+
+#. module: base_zen_decision
+#: model:ir.actions.act_window,name:base_zen_decision.action_zen_decision_log
+#: model:ir.ui.menu,name:base_zen_decision.menu_zen_decision_log
+msgid "Decision Log"
+msgstr "Дневник на решенията"
+
+#. module: base_zen_decision
+#: model:ir.actions.act_window,name:base_zen_decision.action_zen_decision_table
+#: model:ir.ui.menu,name:base_zen_decision.menu_zen_decision_table
+msgid "Decision Tables"
+msgstr "Таблици с решения"
+
+#. module: base_zen_decision
+#. odoo-python
+#: code:addons/base_zen_decision/models/zen_engine.py:0
+msgid "Design matrix evaluation error: %s"
+msgstr "Грешка при изчисляване на матрицата на дизайна: %s"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_log__display_name
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_table__display_name
+msgid "Display Name"
+msgstr "Име за показване"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_log__table_domain
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_table__domain
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_log_search
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_table_search
+msgid "Domain"
+msgstr "Домейн"
+
+#. module: base_zen_decision
+#: model:ir.model.constraint,message:base_zen_decision.constraint_zen_decision_table_code_version_company_uniq
+msgid "Each (code, version) must be unique per company."
+msgstr "Всяка комбинация (код, версия) трябва да е уникална за фирма."
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_log__executed_in
+msgid "Executed In"
+msgstr "Изпълнено в"
+
+#. module: base_zen_decision
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_log_search
+msgid "Executed in"
+msgstr "Изпълнено в"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,help:base_zen_decision.field_zen_decision_table__notes
+msgid "Free-text changelog за тази версия."
+msgstr "Свободен текст със списък на промените за тази версия."
+
+#. module: base_zen_decision
+#: model:ir.model.fields,help:base_zen_decision.field_zen_decision_table__graph
+msgid "GoRules JDM document (nodes + edges). Stored as JSONB."
+msgstr "GoRules JDM документ (възли + ребра). Съхранява се като JSONB."
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_table__graph
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_table_form
+msgid "Graph"
+msgstr "Граф"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,help:base_zen_decision.field_zen_decision_log__table_domain
+#: model:ir.model.fields,help:base_zen_decision.field_zen_decision_table__domain
+msgid ""
+"Group label: 'mrp_matrix', 'access', 'gfo', etc. Used for UI filtering + "
+"bulk export of all graphs for one domain."
+msgstr ""
+"Групов етикет: 'mrp_matrix', 'access', 'gfo' и др. Използва се за филтриране"
+" в интерфейса + групов експорт на всички графи за един домейн."
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_log__id
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_table__id
+msgid "ID"
+msgstr "Номер (ID)"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_log__write_uid
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_table__write_uid
+msgid "Last Updated by"
+msgstr "Последно актуализирано от"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_log__write_date
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_table__write_date
+msgid "Last Updated on"
+msgstr "Последно актуализирано на"
+
+#. module: base_zen_decision
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_table_search
+msgid "MRP Matrix"
+msgstr "MRP матрица"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,help:base_zen_decision.field_zen_decision_table__version
+msgid ""
+"Monotonically increasing. publish_new_version() creates a new row with "
+"version+1, archives the previous."
+msgstr ""
+"Монотонно нарастваща. publish_new_version() създава нов ред с версия+1 и "
+"архивира предишния."
+
+#. module: base_zen_decision
+#: model:ir.model.fields,help:base_zen_decision.field_zen_decision_log__company_id
+#: model:ir.model.fields,help:base_zen_decision.field_zen_decision_table__company_id
+msgid "NULL = global graph (rare; reserved for system defaults)."
+msgstr ""
+"NULL = глобален граф (рядко; запазено за системни настройки по "
+"подразбиране)."
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_table__name
+msgid "Name"
+msgstr "Име"
+
+#. module: base_zen_decision
+#. odoo-python
+#: code:addons/base_zen_decision/models/zen_decision_table.py:0
+msgid "No active ZEN decision table for code=%(code)s in company=%(cid)s."
+msgstr ""
+"Няма активна ZEN таблица с решения за code=%(code)s във фирма=%(cid)s."
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_table__notes
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_table_form
+msgid "Notes"
+msgstr "Бележки"
+
+#. module: base_zen_decision
+#: model:ir.model.fields.selection,name:base_zen_decision.selection__zen_decision_log__executed_in__odoo
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_log_search
+msgid "Odoo"
+msgstr "Odoo"
+
+#. module: base_zen_decision
+#. odoo-python
+#: code:addons/base_zen_decision/models/zen_decision_table.py:0
+msgid ""
+"Only one active ZEN table is allowed per (code='%(code)s', "
+"company='%(co)s'). Use publish_new_version() to roll forward."
+msgstr ""
+"Разрешена е само една активна ZEN таблица за (code='%(code)s', "
+"company='%(co)s'). Използвайте publish_new_version() за преминаване към нова"
+" версия."
+
+#. module: base_zen_decision
+#: model:ir.model.fields,help:base_zen_decision.field_zen_decision_table__code
+msgid ""
+"Programmatic key. Resolution: latest active version per (code, company_id). "
+"E.g. 'mrp_t0_width_check', 'access_default_a2_perimeter'."
+msgstr ""
+"Програмен ключ. Резолюция: последната активна версия за (code, company_id). "
+"Напр. 'mrp_t0_width_check', 'access_default_a2_perimeter'."
+
+#. module: base_zen_decision
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_table_form
+msgid "Push to Proxies"
+msgstr "Изпращане към проксита"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_log__result_out
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_log_form
+msgid "Result Out"
+msgstr "Изходен резултат"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,help:base_zen_decision.field_zen_decision_log__table_version
+msgid ""
+"Snapshot of table.version at decision time. May differ from current "
+"table.version if newer versions exist."
+msgstr ""
+"Моментна снимка на table.version в момента на решението. Може да се "
+"различава от текущата table.version, ако съществуват по-нови версии."
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_log__table_id
+msgid "Table"
+msgstr "Таблица"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_log__table_version
+msgid "Table Version"
+msgstr "Версия на таблицата"
+
+#. module: base_zen_decision
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_log_search
+msgid "Today"
+msgstr "Днес"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_log__trace
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_log_form
+msgid "Trace"
+msgstr "Трасировка"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,field_description:base_zen_decision.field_zen_decision_table__version
+msgid "Version"
+msgstr "Версия"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,help:base_zen_decision.field_zen_decision_log__executed_in
+msgid ""
+"Where the decision physically ran. 'controller' rows arrive via proxy drain "
+"on reconnect."
+msgstr ""
+"Къде физически е изпълнено решението. Редовете 'controller' пристигат чрез "
+"изпразване на прокси опашката при повторно свързване."
+
+#. module: base_zen_decision
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_log_form
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_log_list
+msgid "ZEN Decision Log"
+msgstr "ZEN дневник на решенията"
+
+#. module: base_zen_decision
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_table_form
+msgid "ZEN Decision Table"
+msgstr "ZEN таблица с решения"
+
+#. module: base_zen_decision
+#: model:ir.model,name:base_zen_decision.model_zen_decision_table
+msgid "ZEN Decision Table (versioned graph)"
+msgstr "ZEN таблица с решения (версиониран граф)"
+
+#. module: base_zen_decision
+#: model_terms:ir.ui.view,arch_db:base_zen_decision.view_zen_decision_table_list
+msgid "ZEN Decision Tables"
+msgstr "ZEN таблици с решения"
+
+#. module: base_zen_decision
+#: model:ir.model,name:base_zen_decision.model_zen_decision_log
+msgid "ZEN Decision audit log (append-only)"
+msgstr "ZEN одитен дневник на решенията (само добавяне)"
+
+#. module: base_zen_decision
+#: model:ir.ui.menu,name:base_zen_decision.menu_zen_root
+msgid "ZEN Decisions"
+msgstr "ZEN решения"
+
+#. module: base_zen_decision
+#: model:ir.model.fields,help:base_zen_decision.field_zen_decision_log__trace
+msgid ""
+"ZEN engine trace (когато engine API стане налично — currently always None в "
+"Phase 1)."
+msgstr ""
+"ZEN трасировка на енджина (когато engine API стане налично — засега винаги "
+"None във Фаза 1)."
+
+#. module: base_zen_decision
+#. odoo-python
+#: code:addons/base_zen_decision/models/zen_decision_table.py:0
+msgid "ZEN graph pushed to %d proxies."
+msgstr "ZEN графът е изпратен към %d проксита."
+
+#. module: base_zen_decision
+#. odoo-python
+#: code:addons/base_zen_decision/models/zen_decision_table.py:0
+msgid "erpnet.fp.proxy not installed — graph push skipped."
+msgstr "erpnet.fp.proxy не е инсталиран — изпращането на графа е пропуснато."
+
+#. module: base_zen_decision
+#. odoo-python
+#: code:addons/base_zen_decision/models/zen_engine.py:0
+msgid ""
+"zen-engine Python package is not installed.\n"
+"Install it with:  pip install zen-engine\n"
+"\n"
+"For staged rollouts you can temporarily set the system parameter 'mrp_design_matrix.allow_missing_zen_engine' to '1' — this disables the matrix engine but allows MOs to be created for BoMs without matrix tables."
+msgstr ""
+"Python пакетът zen-engine не е инсталиран.\n"
+"Инсталирайте го с:  pip install zen-engine\n"
+"\n"
+"За поетапно внедряване можете временно да зададете системния параметър 'mrp_design_matrix.allow_missing_zen_engine' на '1' — това изключва матричния енджин, но позволява създаване на производствени поръчки за спецификации без матрични таблици."

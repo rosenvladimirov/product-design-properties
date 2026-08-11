@@ -1,0 +1,302 @@
+#  Translation of Odoo Server.
+#  This file contains the translation of the following modules:
+#  	* design_param_base
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-11 08:00+0000\n"
+"PO-Revision-Date: 2026-08-11 12:00+0300\n"
+"Last-Translator: Rosen Vladimirov <vladimirov.rosen@gmail.com>\n"
+"Language-Team: \n"
+"Language: bg_BG\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_industry__active
+msgid "Active"
+msgstr "Активно"
+
+#. module: design_param_base
+#: model:design.industry,name:design_param_base.industry_base
+msgid "Base"
+msgstr "Основа"
+
+#. module: design_param_base
+#: model:ir.model,name:design_param_base.model_mrp_bom
+msgid "Bill of Material"
+msgstr "Спецификация на материали"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_profile__camera_distance
+msgid "Camera Distance"
+msgstr "Разстояние на камерата"
+
+#. module: design_param_base
+#: model:ir.model.fields,help:design_param_base.field_design_param_definition__industry_id
+msgid ""
+"Canonical industry classification. Resolved automatically from the data tag "
+"(e.g. industry=\"bags\") via design.industry._resolve — no data-file changes"
+" needed."
+msgstr ""
+"Канонична класификация на индустрията. Определя се автоматично от тага в "
+"данните (напр. industry=\"bags\") чрез design.industry._resolve — не са "
+"нужни промени във файловете с данни."
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_industry__code
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_definition__code
+msgid "Code"
+msgstr "Код"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_industry__create_uid
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_definition__create_uid
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_profile__create_uid
+msgid "Created by"
+msgstr "Създадено от"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_industry__create_date
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_definition__create_date
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_profile__create_date
+msgid "Created on"
+msgstr "Създадено на"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_profile__extrude_depth
+msgid "Default Extrude Depth"
+msgstr "Дълбочина на екструдиране по подразбиране"
+
+#. module: design_param_base
+#: model:ir.model.fields,help:design_param_base.field_design_param_profile__extrude_depth
+msgid "Default depth (scene units) for extruding SVG paths into 3D."
+msgstr ""
+"Дълбочина по подразбиране (единици на сцената) за екструдиране на SVG пътища"
+" в 3D."
+
+#. module: design_param_base
+#: model:ir.model.fields,help:design_param_base.field_mrp_bom__design_param_definition_id
+msgid ""
+"Defines which design parameters are available for lots produced with this "
+"BoM."
+msgstr ""
+"Определя кои дизайн параметри са налични за партиди, произведени с тази "
+"спецификация (BoM)."
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_profile__definition_id
+msgid "Definition"
+msgstr "Определение"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_industry__description
+msgid "Description"
+msgstr "Описание"
+
+#. module: design_param_base
+#: model_terms:ir.ui.view,arch_db:design_param_base.design_industry_view_form
+msgid "Description…"
+msgstr "Описание…"
+
+#. module: design_param_base
+#: model:ir.actions.act_window,name:design_param_base.design_industry_action
+#: model:ir.ui.menu,name:design_param_base.menu_design_industry
+msgid "Design Industries"
+msgstr "Дизайн индустрии"
+
+#. module: design_param_base
+#: model:ir.model,name:design_param_base.model_design_industry
+msgid "Design Industry"
+msgstr "Дизайн индустрия"
+
+#. module: design_param_base
+#: model:ir.model,name:design_param_base.model_design_param_definition
+msgid "Design Parameter Definition"
+msgstr "Дефиниция на дизайн параметри"
+
+#. module: design_param_base
+#: model:ir.actions.act_window,name:design_param_base.design_param_definition_action
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_definition__design_params_definition
+#: model:ir.ui.menu,name:design_param_base.menu_design_param_definition
+msgid "Design Parameter Definitions"
+msgstr "Дефиниции на дизайн параметри"
+
+#. module: design_param_base
+#: model:ir.model,name:design_param_base.model_design_param_profile
+msgid "Design Parameter SVG Profile"
+msgstr "SVG профил на дизайн параметри"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_mrp_bom__design_param_definition_id
+msgid "Design Parameter Set"
+msgstr "Набор дизайн параметри"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_industry__display_name
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_definition__display_name
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_profile__display_name
+#: model:ir.model.fields,field_description:design_param_base.field_mrp_bom__display_name
+msgid "Display Name"
+msgstr "Име за показване"
+
+#. module: design_param_base
+#: model:ir.model.fields,help:design_param_base.field_design_param_profile__camera_distance
+msgid "Distance of the 3D camera from the model center."
+msgstr "Разстояние на 3D камерата от центъра на модела."
+
+#. module: design_param_base
+#: model:design.industry,name:design_param_base.industry_doors
+msgid "Doors & Shutters"
+msgstr "Врати и щори"
+
+#. module: design_param_base
+#: model:design.industry,name:design_param_base.industry_electronics
+msgid "Electronics"
+msgstr "Електроника"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_definition__company_ids
+msgid "Enabled Companies"
+msgstr "Разрешени фирми"
+
+#. module: design_param_base
+#: model:design.industry,name:design_param_base.industry_food
+msgid "Food"
+msgstr "Храни"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_definition__full_design_params_definition
+msgid "Full Design Parameter Definitions (with inherited)"
+msgstr "Пълни дефиниции на дизайн параметри (с наследените)"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_industry__id
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_definition__id
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_profile__id
+#: model:ir.model.fields,field_description:design_param_base.field_mrp_bom__id
+msgid "ID"
+msgstr "Номер (ID)"
+
+#. module: design_param_base
+#: model:ir.model.fields,help:design_param_base.field_design_param_definition__company_ids
+msgid "If empty, available for all companies."
+msgstr "Ако е празно, е налично за всички фирми."
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_definition__industry_id
+msgid "Industry"
+msgstr "Предмет на дейност"
+
+#. module: design_param_base
+#: model:ir.model.fields,help:design_param_base.field_design_param_definition__parent_id
+msgid "Inherit parameter definitions from parent."
+msgstr "Наследяване на дефинициите на параметри от родителя."
+
+#. module: design_param_base
+#: model:ir.model.fields,help:design_param_base.field_design_param_definition__validation_rules
+msgid "JSON array of validation rules for client-side evaluation."
+msgstr "JSON масив с правила за валидация, изчислявани от страна на клиента."
+
+#. module: design_param_base
+#: model:ir.model.fields,help:design_param_base.field_design_param_profile__profile_definition
+msgid ""
+"JSON mapping SVG element IDs to design parameters. Controls conditional "
+"visibility, colors, and extrusion depth."
+msgstr ""
+"JSON съответствие между ID-та на SVG елементи и дизайн параметри. Управлява "
+"условната видимост, цветовете и дълбочината на екструдиране."
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_industry__write_uid
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_definition__write_uid
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_profile__write_uid
+msgid "Last Updated by"
+msgstr "Последно актуализирано от"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_industry__write_date
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_definition__write_date
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_profile__write_date
+msgid "Last Updated on"
+msgstr "Последно актуализирано на"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_industry__name
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_definition__name
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_profile__name
+msgid "Name"
+msgstr "Име"
+
+#. module: design_param_base
+#: model:design.industry,name:design_param_base.industry_packaging
+msgid "Packaging"
+msgstr "Опаковане"
+
+#. module: design_param_base
+#: model_terms:ir.ui.view,arch_db:design_param_base.design_param_definition_view_form
+msgid "Parameter Definitions"
+msgstr "Дефиниции на параметри"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_definition__parent_id
+msgid "Parent Definition"
+msgstr "Родителска дефиниция"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_profile__profile_definition
+#: model_terms:ir.ui.view,arch_db:design_param_base.design_param_definition_view_form
+#: model_terms:ir.ui.view,arch_db:design_param_base.design_param_profile_view_form
+msgid "Profile Definition"
+msgstr "Дефиниция на профил"
+
+#. module: design_param_base
+#: model:ir.model.fields,help:design_param_base.field_design_param_profile__svg_content
+msgid "Raw SVG XML content with named path IDs for 3D profile rendering."
+msgstr ""
+"Суров SVG XML код с именувани ID-та на path елементи за 3D изобразяване на "
+"профила."
+
+#. module: design_param_base
+#: model_terms:ir.ui.view,arch_db:design_param_base.design_param_definition_view_form
+#: model_terms:ir.ui.view,arch_db:design_param_base.design_param_profile_view_form
+msgid "SVG Content"
+msgstr "SVG съдържание"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_definition__profile_ids
+#: model_terms:ir.ui.view,arch_db:design_param_base.design_param_definition_view_form
+msgid "SVG Profiles"
+msgstr "SVG профили"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_industry__sequence
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_definition__sequence
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_profile__sequence
+msgid "Sequence"
+msgstr "Последователност"
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_profile__svg_content
+msgid "Svg Content"
+msgstr "SVG съдържание"
+
+#. module: design_param_base
+#: model:ir.model.constraint,message:design_param_base.constraint_design_param_definition_code_unique
+msgid "The code must be unique."
+msgstr "Кодът трябва да е уникален."
+
+#. module: design_param_base
+#: model:ir.model.constraint,message:design_param_base.constraint_design_industry_code_unique
+msgid "The industry code must be unique."
+msgstr "Кодът на индустрията трябва да е уникален."
+
+#. module: design_param_base
+#: model:ir.model.fields,field_description:design_param_base.field_design_param_definition__validation_rules
+#: model_terms:ir.ui.view,arch_db:design_param_base.design_param_definition_view_form
+msgid "Validation Rules"
+msgstr "Правила за валидация"

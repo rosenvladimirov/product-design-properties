@@ -1,0 +1,192 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mrp_design_matrix_canned_peppers
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-11 09:45+0000\n"
+"PO-Revision-Date: 2026-08-11 12:57+0200\n"
+"Last-Translator: Rosen Vladimirov <vladimirov.rosen@gmail.com>\n"
+"Language-Team: \n"
+"Language: bg_BG\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_cardboard_box
+msgid "Cardboard Box (O-variant)"
+msgstr "Кашон (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_tray
+msgid "Cardboard Tray (O-variant)"
+msgstr "Картонена тарелка (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.attribute,name:mrp_design_matrix_canned_peppers.attr_container_volume
+msgid "Container Volume"
+msgstr "Обем на опаковката"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_beans
+msgid "Cooked Beans (O-variant)"
+msgstr "Варен боб (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_corner_boards
+msgid "Corner Boards (O-variant)"
+msgstr "Ъглови протектори (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_display_box
+msgid "Display Box (O-variant)"
+msgstr "Дисплей кутия (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_garlic
+msgid "Garlic (O-variant)"
+msgstr "Чесън (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_tmpl_glass_jar
+msgid "Glass Jar (O-variant)"
+msgstr "Стъклен буркан (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_label_private
+msgid "Label - Private Label (O-variant)"
+msgstr "Етикет - собствена марка (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_label_standard
+msgid "Label - Standard (O-variant)"
+msgstr "Етикет - стандартен (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_tmpl_lid
+msgid "Lid / Cap (O-variant)"
+msgstr "Капачка (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.attribute,name:mrp_design_matrix_canned_peppers.attr_lid_color
+msgid "Lid Color"
+msgstr "Цвят на капачката"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_olive_oil
+msgid "Olive Oil (O-variant)"
+msgstr "Зехтин (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_pallet
+msgid "Pallet (O-variant)"
+msgstr "Палет (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_pallet_label
+msgid "Pallet Label (O-variant)"
+msgstr "Палетен етикет (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_top_sheet
+msgid "Pallet Top Sheet (O-variant)"
+msgstr "Горен лист за палет (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_parsley
+msgid "Parsley (O-variant)"
+msgstr "Магданоз (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_raw_peppers
+msgid "Raw Peppers (O-variant)"
+msgstr "Сурови чушки (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_salt
+msgid "Salt (O-variant)"
+msgstr "Сол (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_shrink_film
+msgid "Shrink Film (O-variant)"
+msgstr "Термосвиваемо фолио (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_shrink_sleeve
+msgid "Shrink Sleeve (O-variant)"
+msgstr "Термосвиваем ръкав (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_stretch_film
+msgid "Stretch Film (O-variant)"
+msgstr "Стреч фолио (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_sugar
+msgid "Sugar (O-variant)"
+msgstr "Захар (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_sunflower_oil
+msgid "Sunflower Oil (O-variant)"
+msgstr "Слънчогледово олио (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_tmpl_tin_can
+msgid "Tin Can (O-variant)"
+msgstr "Консервна кутия (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_tomato_paste
+msgid "Tomato Paste (O-variant)"
+msgstr "Доматено пюре (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_vinegar
+msgid "Vinegar 9% (O-variant)"
+msgstr "Оцет 9% (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_water
+msgid "Water (O-variant)"
+msgstr "Вода (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.template,name:mrp_design_matrix_canned_peppers.product_white_cheese
+msgid "White Cheese / Sirene (O-variant)"
+msgstr "Бяло саламурено сирене (O-вариант)"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.attribute.value,name:mrp_design_matrix_canned_peppers.attr_val_lid_black
+msgid "black"
+msgstr "черен"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.attribute.value,name:mrp_design_matrix_canned_peppers.attr_val_lid_custom
+msgid "custom_print"
+msgstr "custom_print"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.attribute.value,name:mrp_design_matrix_canned_peppers.attr_val_lid_gold
+msgid "gold"
+msgstr "злато"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.attribute.value,name:mrp_design_matrix_canned_peppers.attr_val_lid_green
+msgid "green"
+msgstr "зелено"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.attribute.value,name:mrp_design_matrix_canned_peppers.attr_val_lid_red
+msgid "red"
+msgstr "червена"
+
+#. module: mrp_design_matrix_canned_peppers
+#: model:product.attribute.value,name:mrp_design_matrix_canned_peppers.attr_val_lid_white
+msgid "white"
+msgstr "бял"

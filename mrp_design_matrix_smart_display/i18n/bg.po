@@ -1,0 +1,137 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mrp_design_matrix_smart_display
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e-20260730\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-11 09:46+0000\n"
+"PO-Revision-Date: 2026-08-11 12:00+0300\n"
+"Last-Translator: Rosen Vladimirov <vladimirov.rosen@gmail.com>\n"
+"Language-Team: \n"
+"Language: bg_BG\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_lux_sensor
+msgid "Ambient Light Sensor (O-variant)"
+msgstr "Сензор за околна светлина (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_tmpl_display_panel
+msgid "Display Panel (O-variant)"
+msgstr "Дисплеен панел (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.attribute,name:mrp_design_matrix_smart_display.attr_display_size
+msgid "Display Size"
+msgstr "Размер на дисплея"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_front_glass
+msgid "Front Glass Panel (O-variant)"
+msgstr "Преден стъклен панел (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.attribute,name:mrp_design_matrix_smart_display.attr_housing_color
+msgid "Housing Color"
+msgstr "Цвят на корпуса"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_tmpl_housing
+msgid "Housing Enclosure (O-variant)"
+msgstr "Корпус (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_mems_mic
+msgid "MEMS Microphone (O-variant)"
+msgstr "MEMS микрофон (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_pcba_esp32
+msgid "PCBA ESP32 (O-variant)"
+msgstr "PCBA ESP32 (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_pcba_px30
+msgid "PCBA Rockchip PX30 (O-variant)"
+msgstr "PCBA Rockchip PX30 (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_pcba_rk3326
+msgid "PCBA Rockchip RK3326-S (O-variant)"
+msgstr "PCBA Rockchip RK3326-S (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_pcba_rk3566
+msgid "PCBA Rockchip RK3566 (O-variant)"
+msgstr "PCBA Rockchip RK3566 (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_psu_mains
+msgid "PSU Module Mains AC (O-variant)"
+msgstr "Захранващ модул мрежово AC (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_psu_poe
+msgid "PoE Splitter Module (O-variant)"
+msgstr "PoE сплитер модул (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_proximity_sensor
+msgid "Proximity / Gesture Sensor (O-variant)"
+msgstr "Сензор за близост / жестове (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_relay_module
+msgid "Relay Module (O-variant)"
+msgstr "Релеен модул (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_speaker
+msgid "Speaker (O-variant)"
+msgstr "Високоговорител (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_temp_humidity_sensor
+msgid "Temperature + Humidity Sensor (O-variant)"
+msgstr "Сензор за температура + влажност (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_psu_usbc
+msgid "USB-C Power Board (O-variant)"
+msgstr "USB-C захранваща платка (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_zwave_module
+msgid "Z-Wave Module (O-variant)"
+msgstr "Z-Wave модул (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.template,name:mrp_design_matrix_smart_display.product_zigbee_module
+msgid "Zigbee 3.0 Module (O-variant)"
+msgstr "Zigbee 3.0 модул (O-вариант)"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.attribute.value,name:mrp_design_matrix_smart_display.attr_val_black
+msgid "black"
+msgstr "черен"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.attribute.value,name:mrp_design_matrix_smart_display.attr_val_gray
+msgid "gray"
+msgstr "сив"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.attribute.value,name:mrp_design_matrix_smart_display.attr_val_silver
+msgid "silver"
+msgstr "Сребро"
+
+#. module: mrp_design_matrix_smart_display
+#: model:product.attribute.value,name:mrp_design_matrix_smart_display.attr_val_white
+msgid "white"
+msgstr "бял"

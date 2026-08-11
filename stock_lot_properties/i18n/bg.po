@@ -1,0 +1,42 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* stock_lot_properties
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-11 08:08+0000\n"
+"PO-Revision-Date: 2026-08-11 08:08+0000\n"
+"Last-Translator: Rosen Vladimirov <vladimirov.rosen@gmail.com>\n"
+"Language-Team: \n"
+"Language: bg\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: stock_lot_properties
+#: model:ir.model.fields,field_description:stock_lot_properties.field_stock_lot__design_param_definition_id
+msgid "Design Parameter Set"
+msgstr "Набор параметри на дизайна"
+
+#. module: stock_lot_properties
+#: model:ir.model.fields,field_description:stock_lot_properties.field_stock_lot__design_params
+msgid "Design Parameters"
+msgstr "Параметри на дизайна"
+
+#. module: stock_lot_properties
+#: model:ir.model.fields,field_description:stock_lot_properties.field_stock_lot__display_name
+msgid "Display Name"
+msgstr "Име за показване"
+
+#. module: stock_lot_properties
+#: model:ir.model.fields,field_description:stock_lot_properties.field_stock_lot__id
+msgid "ID"
+msgstr "Номер (ID)"
+
+#. module: stock_lot_properties
+#: model:ir.model,name:stock_lot_properties.model_stock_lot
+msgid "Lot/Serial"
+msgstr "Партиден/сериен"

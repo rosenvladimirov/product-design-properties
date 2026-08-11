@@ -1,0 +1,211 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mrp_bom_line_formula_wizard
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-11 09:45+0000\n"
+"PO-Revision-Date: 2026-08-11 12:00+0300\n"
+"Last-Translator: Rosen Vladimirov <vladimirov.rosen@gmail.com>\n"
+"Language-Team: \n"
+"Language: bg_BG\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: mrp_bom_line_formula_wizard
+#: model_terms:ir.ui.view,arch_db:mrp_bom_line_formula_wizard.mrp_bom_line_form_formula_wizard
+msgid ""
+"<span class=\"text-muted ms-2\" invisible=\"not has_quantity_formula\">\n"
+"                    Formula defined\n"
+"                </span>"
+msgstr ""
+"<span class=\"text-muted ms-2\" invisible=\"not has_quantity_formula\">\n"
+"                    Формулата е зададена\n"
+"                </span>"
+
+#. module: mrp_bom_line_formula_wizard
+#: model_terms:ir.ui.view,arch_db:mrp_bom_line_formula_wizard.formula_editor_wizard_form
+msgid "Apply"
+msgstr "Прилагане"
+
+#. module: mrp_bom_line_formula_wizard
+#: model:ir.model.fields,help:mrp_bom_line_formula_wizard.field_mrp_bom_line_formula_wizard__quantity_formula
+msgid ""
+"Available variables:\n"
+"  bom_line         - the current BoM line\n"
+"  production       - the manufacturing order\n"
+"  product          - product of this BoM line\n"
+"  product_uom      - UoM of the product\n"
+"  product_uom_qty  - quantity from the MO\n"
+"  operation        - routing workcenter (if set)\n"
+"  env              - Odoo environment (env.ref(), searches)\n"
+"\n"
+"Design context (when design matrix is active):\n"
+"  width, height, thickness - lot dimensions\n"
+"  + all T1 geometry outputs as flat variables\n"
+"  + all design_params from the lot\n"
+"  design_context   - full context dict\n"
+"\n"
+"Output variables (assign in formula):\n"
+"  result           - computed quantity (or 'quantity')\n"
+"  product          - override product (optional)\n"
+"  uom              - override UoM (optional)\n"
+"\n"
+"Examples:\n"
+"  result = product_uom_qty * 1.05\n"
+"\n"
+"  # Area-based with design dimensions\n"
+"  result = (width / 1000) * (height / 1000)\n"
+"\n"
+"  # Override product based on param\n"
+"  result = 1\n"
+"  if construction == 'glass':\n"
+"      product = env.ref('my_module.glass_panel')\n"
+"      uom = env.ref('uom.product_uom_unit')"
+msgstr ""
+"Налични променливи:\n"
+"  bom_line         - текущият ред от рецептурата\n"
+"  production       - производствената поръчка\n"
+"  product          - продуктът на този ред от рецептурата\n"
+"  product_uom      - мерна единица на продукта\n"
+"  product_uom_qty  - количество от производствената поръчка\n"
+"  operation        - работен център от маршрута (ако е зададен)\n"
+"  env              - Odoo среда (env.ref(), търсения)\n"
+"\n"
+"Дизайн контекст (когато дизайн матрицата е активна):\n"
+"  width, height, thickness - размери на партидата\n"
+"  + всички T1 геометрични резултати като плоски променливи\n"
+"  + всички design_params от партидата\n"
+"  design_context   - пълен контекстен dict\n"
+"\n"
+"Изходни променливи (присвояват се във формулата):\n"
+"  result           - изчислено количество (или 'quantity')\n"
+"  product          - подмяна на продукта (по избор)\n"
+"  uom              - подмяна на мерната единица (по избор)\n"
+"\n"
+"Примери:\n"
+"  result = product_uom_qty * 1.05\n"
+"\n"
+"  # На база площ с дизайн размери\n"
+"  result = (width / 1000) * (height / 1000)\n"
+"\n"
+"  # Подмяна на продукта според параметър\n"
+"  result = 1\n"
+"  if construction == 'glass':\n"
+"      product = env.ref('my_module.glass_panel')\n"
+"      uom = env.ref('uom.product_uom_unit')"
+
+#. module: mrp_bom_line_formula_wizard
+#: model:ir.model,name:mrp_bom_line_formula_wizard.model_mrp_bom_line
+msgid "Bill of Material Line"
+msgstr "Ред на спецификацията"
+
+#. module: mrp_bom_line_formula_wizard
+#: model:ir.model,name:mrp_bom_line_formula_wizard.model_mrp_bom_line_formula_wizard
+msgid "BoM Line Quantity Formula Editor"
+msgstr "Редактор на формула за количество на ред от рецептура"
+
+#. module: mrp_bom_line_formula_wizard
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_wizard.field_mrp_bom_line_formula_wizard__bom_line_id
+msgid "Bom Line"
+msgstr "Ред от рецептура"
+
+#. module: mrp_bom_line_formula_wizard
+#: model_terms:ir.ui.view,arch_db:mrp_bom_line_formula_wizard.formula_editor_wizard_form
+msgid "Cancel"
+msgstr "Отказ"
+
+#. module: mrp_bom_line_formula_wizard
+#: model_terms:ir.ui.view,arch_db:mrp_bom_line_formula_wizard.formula_editor_wizard_form
+msgid "Clear Formula"
+msgstr "Изчистване на формулата"
+
+#. module: mrp_bom_line_formula_wizard
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_wizard.field_mrp_bom_line_formula_wizard__product_name
+msgid "Component"
+msgstr "Компонент"
+
+#. module: mrp_bom_line_formula_wizard
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_wizard.field_mrp_bom_line_formula_wizard__create_uid
+msgid "Created by"
+msgstr "Създадено от"
+
+#. module: mrp_bom_line_formula_wizard
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_wizard.field_mrp_bom_line_formula_wizard__create_date
+msgid "Created on"
+msgstr "Създадено на"
+
+#. module: mrp_bom_line_formula_wizard
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_wizard.field_mrp_bom_line__display_name
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_wizard.field_mrp_bom_line_formula_wizard__display_name
+msgid "Display Name"
+msgstr "Име за показване"
+
+#. module: mrp_bom_line_formula_wizard
+#: model_terms:ir.ui.view,arch_db:mrp_bom_line_formula_wizard.mrp_bom_line_form_formula_wizard
+msgid "Edit Formula"
+msgstr "Редактиране на формула"
+
+#. module: mrp_bom_line_formula_wizard
+#. odoo-python
+#: code:addons/mrp_bom_line_formula_wizard/models/mrp_bom_line.py:0
+#: model_terms:ir.ui.view,arch_db:mrp_bom_line_formula_wizard.mrp_bom_form_view_formula_wizard
+msgid "Edit Quantity Formula"
+msgstr "Редактиране на формула за количество"
+
+#. module: mrp_bom_line_formula_wizard
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_wizard.field_mrp_bom_line_formula_wizard__quantity_formula
+#: model_terms:ir.ui.view,arch_db:mrp_bom_line_formula_wizard.formula_editor_wizard_form
+msgid "Formula"
+msgstr "Формула"
+
+#. module: mrp_bom_line_formula_wizard
+#: model_terms:ir.ui.view,arch_db:mrp_bom_line_formula_wizard.formula_editor_wizard_form
+msgid "Formula Editor"
+msgstr "Редактор на формули"
+
+#. module: mrp_bom_line_formula_wizard
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_wizard.field_mrp_bom_line__has_quantity_formula
+msgid "Has Quantity Formula"
+msgstr "Има формула за количество"
+
+#. module: mrp_bom_line_formula_wizard
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_wizard.field_mrp_bom_line__id
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_wizard.field_mrp_bom_line_formula_wizard__id
+msgid "ID"
+msgstr "Номер (ID)"
+
+#. module: mrp_bom_line_formula_wizard
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_wizard.field_mrp_bom_line_formula_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Последно актуализирано от"
+
+#. module: mrp_bom_line_formula_wizard
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_wizard.field_mrp_bom_line_formula_wizard__write_date
+msgid "Last Updated on"
+msgstr "Последно актуализирано на"
+
+#. module: mrp_bom_line_formula_wizard
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_wizard.field_mrp_bom_line_formula_wizard__formula_template_id
+msgid "Load from Template"
+msgstr "Зареждане от шаблон"
+
+#. module: mrp_bom_line_formula_wizard
+#: model:ir.model.fields,field_description:mrp_bom_line_formula_wizard.field_mrp_bom_line_formula_wizard__formula_help_text
+#: model_terms:ir.ui.view,arch_db:mrp_bom_line_formula_wizard.formula_editor_wizard_form
+msgid "Reference"
+msgstr "Справка"
+
+#. module: mrp_bom_line_formula_wizard
+#: model_terms:ir.ui.view,arch_db:mrp_bom_line_formula_wizard.formula_editor_wizard_form
+msgid "Select template to load..."
+msgstr "Изберете шаблон за зареждане..."
+
+#. module: mrp_bom_line_formula_wizard
+#: model_terms:ir.ui.view,arch_db:mrp_bom_line_formula_wizard.formula_editor_wizard_form
+msgid "result = product_uom_qty * 1.0"
+msgstr "result = product_uom_qty * 1.0"
