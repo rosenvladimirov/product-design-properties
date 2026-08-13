@@ -222,7 +222,19 @@ export class DesignConfiguratorDialog extends Component {
                 } catch (e) {
                     console.warn("Could not load material choices:", e.message);
                 }
-                this.state.accessoryVariants = accessoryVariants;
+                // Дедуп: текстурният канал (get_template_variant_assets) и
+                // material_choices могат да емитнат СЪЩИЯ аксесоар → две
+                // идентични picture-групи. Махаме само ТОЧНИ дубликати
+                // (същ componentName + същ набор варианти по ptav_name) —
+                // консервативно, не премахва различаващ се селектор.
+                const _seenAcc = new Set();
+                this.state.accessoryVariants = accessoryVariants.filter(g => {
+                    const sig = (g.componentName || "") + "||" +
+                        (g.variants || []).map(v => v.ptav_name).sort().join(",");
+                    if (_seenAcc.has(sig)) return false;
+                    _seenAcc.add(sig);
+                    return true;
+                });
 
                 // Избираеми операции (work centers) от BoM-а.
                 try {

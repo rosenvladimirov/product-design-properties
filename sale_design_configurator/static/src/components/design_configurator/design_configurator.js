@@ -13,6 +13,7 @@ import {
 import { useService } from "@web/core/utils/hooks";
 import { debounce } from "@web/core/utils/timing";
 import { registry } from "@web/core/registry";
+import { _t } from "@web/core/l10n/translation";
 import { RuleMatrixPreview } from "@mrp_design_matrix/components/rule_matrix_preview/rule_matrix_preview";
 import { evaluateT0 } from "@mrp_design_matrix/components/rule_matrix_preview/t0_evaluate";
 
@@ -385,6 +386,16 @@ export class DesignConfiguratorWidget extends Component {
         if (role === "opening_direction"
             || label === "Opening Direction" || label === "Посока") {
             this._updateHingeDirection();
+            return;
+        }
+
+        // Цвят/покритие на компонент (ключ cattr_<lineId>_<attrId>): пребоядисай
+        // 3D-то веднага, без пълен rebuild. _applyComponentColors() чете само
+        // isColor атрибутите (мотивът е отделен GLB механизъм), има guard за
+        // незаредени mesh-ове → евтино и безопасно да се вика при всяка cattr_ смяна.
+        // (Багфикс: изборът на цвят преизчисляваше цената, но не пречертаваше вратата.)
+        if (key.startsWith("cattr_")) {
+            this._applyComponentColors();
             return;
         }
 
@@ -1804,15 +1815,20 @@ export class DesignConfiguratorWidget extends Component {
     }
 
     get displayParams() {
-        // Exclude child component params (shown in their own sections)
-        const childNames = new Set(
-            (this.props.childComponents || [])
-                .flatMap(c => (c.paramDefinition || []).map(d => d.name))
-        );
+        // Exclude child component params (shown in their own "Fine Tuning" section).
+        // Изключваме и по name (UUID), И по string (етикет): merge-ът на child
+        // дефинициите в full_design_params_definition дедупира по string, докато
+        // тук guard-ът беше само по name → при разминаване (raw vs full child def)
+        // същият параметър (напр. „Height (mm)") се показваше и в главния панел, и
+        // в „Fine Tuning". Изключването по string затваря дупката.
+        const childDefs = (this.props.childComponents || [])
+            .flatMap(c => (c.paramDefinition || []));
+        const childNames = new Set(childDefs.map(d => d.name));
+        const childStrings = new Set(childDefs.map(d => d.string).filter(Boolean));
         const level = this.props.level || "";
         const levels = this.props.paramLevels || {};
         return this.props.paramDefinition
-            .filter(def => !childNames.has(def.name))
+            .filter(def => !childNames.has(def.name) && !childStrings.has(def.string))
             .filter(def => this._levelVisible(def, level, levels))
             .map(def => ({
                 ...def,

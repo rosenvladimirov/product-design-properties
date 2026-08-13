@@ -13,7 +13,7 @@
     "summary": (
         "SO line design configurator with 3D preview " "for parametric manufacturing"
     ),
-    "version": "19.0.1.49.1",
+    "version": "19.0.1.49.5",
     "category": "Sales",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "Rosen Vladimirov",
