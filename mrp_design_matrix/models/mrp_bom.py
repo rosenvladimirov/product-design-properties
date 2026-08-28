@@ -193,6 +193,59 @@ class MrpBom(models.Model):
         eval per panel and sum (slat, terminal, guide, brush, axis)."""
         return ("width" in (formula or "")) or ("height" in (formula or ""))
 
+    @staticmethod
+    def _design_normalize_pieces(raw):
+        """Разбивката на парчета от формулата — или None, ако я няма.
+
+        🔑 Разширение на договора (28.08). Досега редът можеше да обяви само
+        `n_pieces` × `piece_length_mm`, тоест N ЕДНАКВИ парчета с ЕДНА
+        дължина. Два реални случая не се побират в това:
+
+            профил на комарник   2 × 1150 + 2 × 850   (смесени дължини)
+            мрежа                1 × 1020 мм от руло   (дължината НЕ следва
+                                 от количеството — то е в m²)
+
+        Формулата вече може да присвои `pieces` — списък от речници::
+
+            pieces = [{"n": 2, "length_mm": 1150},
+                      {"n": 2, "length_mm": 850}]
+            pieces = [{"n": 1, "length_mm": 1020, "note": "от руло 140 см"}]
+
+        ⛔ Двуизмерното парче (``width_mm``) е ОТКАЗАНО решение — дословно:
+        „искам да изписва само дължина от дадена ролка, не искам 2D
+        оптимизация" (Влади, 28.08). Изборът на руло е едномерен: коя ролка
+        плюс колко дължина от нея. Ключът не се приема, за да не подсказва
+        възможност, която продуктът е отхвърлил.
+
+        ⚠️ Формулата е ПОТРЕБИТЕЛСКИ код и може да върне какво ли не, затова
+        тук всичко се проверява и негодното се изхвърля мълчаливо, вместо да
+        троши калкулацията: криво `pieces` е козметичен дефект, а изключение
+        по средата на реда изяжда цялата цена на позицията.
+
+        Връща None, когато няма нищо годно — тогава извикващият пада на
+        стария `n_pieces`/`piece_length_mm` и заварените формули работят
+        непроменени.
+        """
+        if not isinstance(raw, (list, tuple)) or not raw:
+            return None
+        out = []
+        for item in raw:
+            if not isinstance(item, dict):
+                continue
+            try:
+                n = int(item.get("n") or item.get("qty") or 0)
+                length = float(item.get("length_mm") or 0)
+            except (TypeError, ValueError):
+                continue
+            if n <= 0 or length <= 0:
+                continue
+            piece = {"n": n, "length_mm": int(round(length))}
+            note = item.get("note")
+            if note:
+                piece["note"] = str(note)[:64]
+            out.append(piece)
+        return out or None
+
     def simulate_with_params(self, design_params_rich, product_uom_qty=1.0,
                              per_subassembly_pairs=None):
         """Evaluate every active BoM line's quantity_formula against the
@@ -229,6 +282,10 @@ class MrpBom(models.Model):
                             "qty_per_panel": float,
                             "n_pieces": int|None, # explicit from formula
                             "piece_length_mm": int|None,
+                            # optional, when the formula sets `pieces`:
+                            # mixed lengths and/or two-dimensional cuts
+                            "pieces": [{"n": int, "length_mm": int,
+                                        "note": str|absent}]|absent,
                         },
                         ...
                     ],
@@ -262,14 +319,23 @@ class MrpBom(models.Model):
                     if val and val > 0:
                         n_pieces = panel_locals.get("n_pieces")
                         piece_len = panel_locals.get("piece_length_mm")
-                        cuts.append({
+                        entry = {
                             "panel": idx + 1,
                             "L_mm": int(l_i),
                             "H_mm": int(h_i),
                             "qty_per_panel": float(val),
                             "n_pieces": int(n_pieces) if n_pieces is not None else None,
                             "piece_length_mm": int(piece_len) if piece_len is not None else None,
-                        })
+                        }
+                        # Разбивката по парчета, ако формулата я е обявила.
+                        # Старите две полета ОСТАВАТ непроменени до нея: те
+                        # хранят заварените изгледи, а новото поле е добавка,
+                        # не замяна.
+                        pieces = self._design_normalize_pieces(
+                            panel_locals.get("pieces"))
+                        if pieces:
+                            entry["pieces"] = pieces
+                        cuts.append(entry)
             else:
                 qty, _ = self._design_eval_formula(formula, base_ns)
                 if qty is None:

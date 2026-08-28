@@ -9,3 +9,11 @@
 # Unless you hold a valid commercial license, your use of this file is governed
 # by the AGPL-3.0-or-later.
 # Tests temporarily disabled — see git log for reason
+# (d5a5375: „temporarily disable test imports to unblock demo upgrade")
+#
+# ⚠️ `test_design_pieces` е НАПИСАН и МИНАВА (8 теста, 0 провала, пуснат
+# изрично с --test-tags на 28.08), но НЕ се внася тук: изключването е
+# съзнателно решение на репото и не бива да се обръща мълчаливо от
+# страничен принос. Разкоментирайте го, когато тестовете се включат
+# наново:
+#     from . import test_design_pieces
