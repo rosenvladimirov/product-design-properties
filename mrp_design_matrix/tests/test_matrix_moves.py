@@ -105,6 +105,7 @@ class TestMatrixMoves(TransactionCase):
         constraint_table=None,
         geometry_table=None,
         material_table=None,
+        operation_table=None,
         lines=None,
     ):
         """Create a BoM with the given tables and lines."""
@@ -116,6 +117,7 @@ class TestMatrixMoves(TransactionCase):
                 "constraint_table": constraint_table,
                 "geometry_table": geometry_table,
                 "material_table": material_table,
+                "operation_table": operation_table,
             }
         )
         for line_vals in lines or []:
@@ -279,6 +281,133 @@ class TestMatrixMoves(TransactionCase):
         self.assertTrue(
             glass_moves,
             "O-variant should activate when matrix returns a non-zero coeff",
+        )
+
+    # ── T3 operations: маршрутът е канонът, T3 допълва ────────────────
+
+    def _wc(self, code):
+        return self.env["mrp.workcenter"].create({"name": code, "code": code})
+
+    def _t3_bom(self, *codes):
+        """BoM с T3, който връща по един ред за всеки подаден код на център.
+
+        🚨 Условието е върху ``width``, а НЕ върху ``material``, при все че
+        останалите тестове тук ползват ``material``. Измерено на 31.08.2026:
+        ``_get_design_context`` връща ключ **``Material``** (полето ``string``),
+        не ``material`` (полето ``name``) — параметър без ``param_dictionary``
+        стига до таблиците само под етикета си. Правило с вход ``material``
+        НИКОГА не се задейства, T3 връща нула реда, и тогава тестът за дедупа
+        минава, защото няма какво да се дублира — тоест не доказва нищо.
+        ``width`` е измерено налично в контекста. Въпросът дали контекстът или
+        заварените тестове са сгрешени е ОТДЕЛЕН и стои отворен (ADR-0010).
+        """
+        return self._build_bom(
+            operation_table=_jdm(
+                inputs=["width"],
+                outputs=["workcenter_code", "duration_min"],
+                rules=[
+                    {
+                        "_id": "r%d" % i,
+                        "width": ">= 0",
+                        "workcenter_code": '"%s"' % code,
+                        "duration_min": "10",
+                    }
+                    for i, code in enumerate(codes, start=1)
+                ],
+            ),
+        )
+
+    def _routing_wo(self, mo, workcenter):
+        """Имитира workorder-а, който native Odoo ражда от реда на маршрута.
+
+        Ключовото е ``operation_id``: по него се различава маршрутният
+        workorder от T3-ния.
+        """
+        operation = self.env["mrp.routing.workcenter"].create(
+            {
+                "name": "Routing %s" % workcenter.code,
+                "bom_id": mo.bom_id.id,
+                "workcenter_id": workcenter.id,
+                "time_cycle_manual": 42.0,
+            }
+        )
+        return self.env["mrp.workorder"].create(
+            {
+                "name": operation.name,
+                "production_id": mo.id,
+                "workcenter_id": workcenter.id,
+                "operation_id": operation.id,
+                "product_uom_id": mo.product_uom_id.id,
+                "duration_expected": 42.0,
+            }
+        )
+
+    def test_t3_skips_workcenter_already_covered_by_routing(self):
+        """T3 НЕ ражда втори workorder за център, който маршрутът покрива.
+
+        Регресията: СПЦС/MO/00555 получи 9 workorder-а от BoM с 5 операции,
+        защото двата пътя минаваха без дедуп и трудът се удвои.
+        """
+        wc = self._wc("SDMETAL")
+        bom = self._t3_bom("SDMETAL")
+        mo, _ = self._build_mo_with_lot(bom, {"material": "wood"})
+        self._routing_wo(mo, wc)
+
+        mo._generate_design_matrix_moves()
+
+        na_centara = mo.workorder_ids.filtered(lambda w: w.workcenter_id == wc)
+        self.assertEqual(
+            len(na_centara),
+            1,
+            "routing already covers SDMETAL — T3 must not add a second workorder",
+        )
+        self.assertTrue(
+            na_centara.operation_id,
+            "the surviving workorder must be the routing one, not the T3 one",
+        )
+        self.assertEqual(
+            sum(mo.workorder_ids.mapped("duration_expected")),
+            42.0,
+            "labour must not double",
+        )
+
+    def test_t3_still_creates_for_workcenter_outside_the_routing(self):
+        """Контролата: T3 ДОПЪЛВА там, където маршрутът мълчи.
+
+        Без този тест поправката би минала и ако T3 беше изключено изцяло.
+        """
+        pokrit = self._wc("SDMETAL")
+        nepokrit = self._wc("SDQC")
+        bom = self._t3_bom("SDMETAL", "SDQC")
+        mo, _ = self._build_mo_with_lot(bom, {"material": "wood"})
+        self._routing_wo(mo, pokrit)
+
+        mo._generate_design_matrix_moves()
+
+        self.assertEqual(
+            len(mo.workorder_ids.filtered(lambda w: w.workcenter_id == pokrit)),
+            1,
+            "covered workcenter stays at one workorder",
+        )
+        ot_t3 = mo.workorder_ids.filtered(lambda w: w.workcenter_id == nepokrit)
+        self.assertEqual(
+            len(ot_t3), 1, "T3 must still create for an uncovered workcenter"
+        )
+        self.assertFalse(
+            ot_t3.operation_id, "a T3 workorder carries no routing operation"
+        )
+
+    def test_t3_creates_both_when_there_is_no_routing_at_all(self):
+        """BoM без маршрут → T3 е единственият източник, нищо не се губи."""
+        self._wc("SDMETAL")
+        self._wc("SDQC")
+        bom = self._t3_bom("SDMETAL", "SDQC")
+        mo, _ = self._build_mo_with_lot(bom, {"material": "wood"})
+
+        mo._generate_design_matrix_moves()
+
+        self.assertEqual(
+            len(mo.workorder_ids), 2, "with no routing, both T3 rows must land"
         )
 
     # ── Safety nets ───────────────────────────────────────────────────

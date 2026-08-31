@@ -706,6 +706,25 @@ class MrpProduction(models.Model):
                 "T3 op row has no resolvable workcenter (code=%r, ref=%r) — skipped.",
                 op.get("workcenter_code"), op.get("workcenter_ref"))
             return
+        # 🚨 МАРШРУТЪТ Е КАНОНЪТ, T3 само ДОПЪЛВА (решение Атанас, 31.08.2026).
+        # `action_confirm` минава по два пътя в една транзакция: native Odoo ражда
+        # workorder за всеки ред на маршрута (`bom.operation_ids`), а веднага след
+        # това T3 ражда по един за всеки свой ред. Дедуп нямаше ⇒ MO на BoM с
+        # маршрут И непразно T3 получаваше двата комплекта и трудът се УДВОЯВАШЕ
+        # (СПЦС/MO/00555: 9 workorder-а от BoM с 5 операции, 369.60 = 2 × 184.80).
+        # Разпознаването е по `operation_id`: маршрутните го носят, T3-ните — не,
+        # затова проверката гледа само тях и два T3 реда за един център остават
+        # възможни (T3 може легитимно да добави втора операция на същия център).
+        pokrit_ot_marshruta = self.workorder_ids.filtered(
+            lambda wo: wo.operation_id and wo.workcenter_id == workcenter
+        )
+        if pokrit_ot_marshruta:
+            _logger.info(
+                "T3 op for workcenter %s skipped on MO %s — already covered by "
+                "routing operation %s.",
+                workcenter.display_name, self.name,
+                pokrit_ot_marshruta[:1].operation_id.display_name)
+            return
         try:
             minutes = float(op.get("duration_min") or op.get("duration")
                             or op.get("minutes") or 0.0)
