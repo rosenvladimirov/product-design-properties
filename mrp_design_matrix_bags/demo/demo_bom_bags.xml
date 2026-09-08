@@ -15,7 +15,8 @@
         <!-- Demo finished product -->
         <record id="product_tmpl_bag_60l" model="product.template">
             <field name="name">Garbage Bag 60L</field>
-            <field name="type">product</field>
+            <field name="type">consu</field>
+            <field name="is_storable">True</field>
             <field name="uom_id" ref="uom.product_uom_unit"/>
             <field name="tracking">lot</field>
         </record>
@@ -49,7 +50,7 @@
             <field name="bom_id" ref="bom_bag_60l"/>
             <field name="product_id" ref="product_tmpl_resin_hdpe"/>
             <field name="product_qty">1.0</field>
-            <field name="product_uom_id" ref="uom.product_uom_kg"/>
+            <field name="product_uom_id" ref="uom.product_uom_kgm"/>
             <!-- Formula: width(mm) * effective_length(mm) * thickness(μm) * density / 1e9 * qty -->
             <field name="quantity_formula">
 quantity = (width / 1000) * (effective_length / 1000) * (thickness / 1000000) * density * product_uom_qty
@@ -61,7 +62,7 @@ quantity = (width / 1000) * (effective_length / 1000) * (thickness / 1000000) * 
             <field name="bom_id" ref="bom_bag_60l"/>
             <field name="product_id" ref="product_tmpl_ink"/>
             <field name="product_qty">0.0</field>
-            <field name="product_uom_id" ref="uom.product_uom_kg"/>
+            <field name="product_uom_id" ref="uom.product_uom_kgm"/>
             <!-- Activated by matrix when has_print=True -->
             <field name="coeff_default">0.0</field>
             <field name="matrix_coeff_rule">ink-o</field>

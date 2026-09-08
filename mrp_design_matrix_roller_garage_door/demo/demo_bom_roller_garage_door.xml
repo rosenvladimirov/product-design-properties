@@ -16,7 +16,8 @@
     <!-- Finished product -->
     <record id="product_tmpl_rgd_standard" model="product.template">
         <field name="name">Roller Garage Door — Standard</field>
-        <field name="type">product</field>
+        <field name="type">consu</field>
+        <field name="is_storable">True</field>
         <field name="uom_id" ref="uom.product_uom_unit"/>
         <field name="tracking">lot</field>
     </record>
@@ -27,37 +28,44 @@
     <!-- Components -->
     <record id="product_tmpl_rgd_slats" model="product.template">
         <field name="name">Garage Door Slats (O-variant)</field>
-        <field name="type">product</field>
-        <field name="uom_id" ref="uom.product_uom_kg"/>
+        <field name="type">consu</field>
+        <field name="is_storable">True</field>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
     </record>
     <record id="product_tmpl_rgd_guides" model="product.template">
         <field name="name">Guide Rails C-profile</field>
-        <field name="type">product</field>
-        <field name="uom_id" ref="uom.product_uom_kg"/>
+        <field name="type">consu</field>
+        <field name="is_storable">True</field>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
     </record>
     <record id="product_tmpl_rgd_bottom_bar" model="product.template">
         <field name="name">Bottom Seal Bar</field>
-        <field name="type">product</field>
-        <field name="uom_id" ref="uom.product_uom_kg"/>
+        <field name="type">consu</field>
+        <field name="is_storable">True</field>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
     </record>
     <record id="product_tmpl_rgd_spring" model="product.template">
         <field name="name">Torsion Spring Assembly</field>
-        <field name="type">product</field>
+        <field name="type">consu</field>
+        <field name="is_storable">True</field>
         <field name="uom_id" ref="uom.product_uom_unit"/>
     </record>
     <record id="product_tmpl_rgd_motor" model="product.template">
         <field name="name">Garage Door Motor (O-variant)</field>
-        <field name="type">product</field>
+        <field name="type">consu</field>
+        <field name="is_storable">True</field>
         <field name="uom_id" ref="uom.product_uom_unit"/>
     </record>
     <record id="product_tmpl_rgd_side_seal" model="product.template">
         <field name="name">Side Seal Strip (O-variant)</field>
-        <field name="type">product</field>
-        <field name="uom_id" ref="uom.product_uom_kg"/>
+        <field name="type">consu</field>
+        <field name="is_storable">True</field>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
     </record>
     <record id="product_tmpl_rgd_wicket_door" model="product.template">
         <field name="name">Wicket Door Kit (O-variant)</field>
-        <field name="type">product</field>
+        <field name="type">consu</field>
+        <field name="is_storable">True</field>
         <field name="uom_id" ref="uom.product_uom_unit"/>
     </record>
 
@@ -91,7 +99,7 @@
         <field name="bom_id" ref="bom_rgd_standard"/>
         <field name="product_id" ref="product_tmpl_rgd_slats"/>
         <field name="product_qty">1.0</field>
-        <field name="product_uom_id" ref="uom.product_uom_kg"/>
+        <field name="product_uom_id" ref="uom.product_uom_kgm"/>
         <field name="quantity_formula">
 import math
 slat_count = math.ceil(height / slat_height_mm) if slat_height_mm else 0
@@ -105,7 +113,7 @@ quantity = (width / 1000) * slat_count * (slat_height_mm / 1000) * slat_weight_m
         <field name="bom_id" ref="bom_rgd_standard"/>
         <field name="product_id" ref="product_tmpl_rgd_guides"/>
         <field name="product_qty">1.0</field>
-        <field name="product_uom_id" ref="uom.product_uom_kg"/>
+        <field name="product_uom_id" ref="uom.product_uom_kgm"/>
         <field name="quantity_formula">
 quantity = 2 * (height / 1000) * guide_weight_m * product_uom_qty
         </field>
@@ -117,7 +125,7 @@ quantity = 2 * (height / 1000) * guide_weight_m * product_uom_qty
         <field name="bom_id" ref="bom_rgd_standard"/>
         <field name="product_id" ref="product_tmpl_rgd_bottom_bar"/>
         <field name="product_qty">1.0</field>
-        <field name="product_uom_id" ref="uom.product_uom_kg"/>
+        <field name="product_uom_id" ref="uom.product_uom_kgm"/>
         <field name="quantity_formula">
 quantity = (width / 1000) * 1.4 * product_uom_qty
         </field>
@@ -152,7 +160,7 @@ quantity = (2 if width > 3000 else 1) * product_uom_qty
         <field name="bom_id" ref="bom_rgd_standard"/>
         <field name="product_id" ref="product_tmpl_rgd_side_seal"/>
         <field name="product_qty">1.0</field>
-        <field name="product_uom_id" ref="uom.product_uom_kg"/>
+        <field name="product_uom_id" ref="uom.product_uom_kgm"/>
         <field name="quantity_formula">
 quantity = 2 * (height / 1000) * 0.3 * product_uom_qty
         </field>

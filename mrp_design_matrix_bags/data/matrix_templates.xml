@@ -37,12 +37,12 @@
         <record id="product_tmpl_resin_hdpe" model="product.template">
             <field name="name">Resin HDPE (O-variant)</field>
             <field name="type">consu</field>
-            <field name="uom_id" ref="uom.product_uom_kg"/>
+            <field name="uom_id" ref="uom.product_uom_kgm"/>
         </record>
         <record id="product_tmpl_ink" model="product.template">
             <field name="name">Flexo Ink</field>
             <field name="type">consu</field>
-            <field name="uom_id" ref="uom.product_uom_kg"/>
+            <field name="uom_id" ref="uom.product_uom_kgm"/>
         </record>
         <record id="product_tmpl_tie" model="product.template">
             <field name="name">Tie Band</field>

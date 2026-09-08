@@ -39,42 +39,50 @@
   <!-- ── Component products ────────────────────────────────────────────── -->
   <record id="product_tmpl_rs_al_guide" model="product.template">
     <field name="name">RS — AL Guide 53x22 (703001)</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_meter"/>
   </record>
   <record id="product_tmpl_rs_brush_guide" model="product.template">
     <field name="name">RS — Brush Guide 6x6 (730043)</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_meter"/>
   </record>
   <record id="product_tmpl_rs_gasket" model="product.template">
     <field name="name">RS — Gasket XMO 60 (1052001)</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_meter"/>
   </record>
   <record id="product_tmpl_rs_terminal" model="product.template">
     <field name="name">RS — Terminal 51x8 (704005)</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_meter"/>
   </record>
   <record id="product_tmpl_rs_box_165" model="product.template">
     <field name="name">RS — Box Standard 165x165 (701002)</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_meter"/>
   </record>
   <record id="product_tmpl_rs_axis40" model="product.template">
     <field name="name">RS — Axis 40 (723040)</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_meter"/>
   </record>
   <record id="product_tmpl_rs_axis60" model="product.template">
     <field name="name">RS — Axis 60 (723041) [motor O-variant]</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_meter"/>
   </record>
   <record id="product_tmpl_rs_slat_al" model="product.template">
     <field name="name">RS — Slat AL 40mm profile (702001)</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_meter"/>
   </record>
   <record id="product_tmpl_rs_end_cap" model="product.template">
@@ -150,7 +158,8 @@
   <!-- O-variant: motor -->
   <record id="product_tmpl_rs_motor" model="product.template">
     <field name="name">RS — Somfy Motor ALTUS 50 iO [O-variant]</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_unit"/>
   </record>
   <!-- O-variant: crank -->
@@ -191,7 +200,8 @@
   <!-- ── Finished product ──────────────────────────────────────────────── -->
   <record id="product_tmpl_roller_shutter" model="product.template">
     <field name="name">Roller Shutter — Teolino</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_unit"/>
     <field name="tracking">lot</field>
   </record>

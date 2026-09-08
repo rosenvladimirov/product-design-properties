@@ -78,13 +78,15 @@ class AccessAttendanceLog(models.Model):
     company_id = fields.Many2one(
         related="perimeter_id.company_id", store=True, index=True)
 
-    _open_per_subject_perimeter = models.Constraint(
-        # PostgreSQL partial unique — ensures само 1 open запис per
-        # (subject, perimeter) едновременно. Closed records (exit_ts SET)
-        # са изключени.
-        "CHECK (exit_ts IS NULL OR exit_ts >= entry_ts)",
-        "exit_ts must be >= entry_ts.",
-    )
+    # PostgreSQL partial unique — ensures само 1 open запис per
+    # (subject, perimeter) едновременно. Closed records (exit_ts SET)
+    # са изключени.
+    # 18.0: models.Constraint е 19-only descriptor → _sql_constraints списък.
+    _sql_constraints = [
+        ("open_per_subject_perimeter",
+         "CHECK (exit_ts IS NULL OR exit_ts >= entry_ts)",
+         "exit_ts must be >= entry_ts."),
+    ]
 
     @api.depends("entry_ts", "exit_ts")
     def _compute_duration(self):

@@ -21,3 +21,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - T3: 4 operations — slat cutting + assembly always; motor install &
   programming for electric/smart; QC always.
 - Demo BoM with 7 BoM lines (4 formula-driven + 3 O-variants).
+
+## 18.0.1.0.1 (2026-09-08)
+
+### Fixed
+- Демо данните реферираха `uom.product_uom_kg` — идентификатор, който не
+  съществува в ядрото на 18.0 (то дефинира `product_uom_kgm`). Инсталацията
+  с демо данни падаше с External ID not found. Осем места.

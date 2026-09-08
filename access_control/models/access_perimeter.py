@@ -71,10 +71,12 @@ class AccessPerimeter(models.Model):
     active = fields.Boolean(default=True)
     notes = fields.Text()
 
-    _code_company_uniq = models.Constraint(
-        "unique(code, company_id)",
-        "Each perimeter code must be unique per company.",
-    )
+    # 18.0: models.Constraint е 19-only descriptor → _sql_constraints списък.
+    _sql_constraints = [
+        ("code_company_uniq",
+         "unique(code, company_id)",
+         "Each perimeter code must be unique per company."),
+    ]
 
     @api.constrains("parent_id")
     def _check_parent_recursion(self):

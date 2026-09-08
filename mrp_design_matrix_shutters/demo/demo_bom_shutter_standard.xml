@@ -47,37 +47,44 @@
   <!-- ── Component products (descriptive placeholders) ─────────────────── -->
   <record id="product_tmpl_teo_al_guide" model="product.template">
     <field name="name">TEO — AL Guide 53x22 (703001)</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_meter"/>
   </record>
   <record id="product_tmpl_teo_brush_guide" model="product.template">
     <field name="name">TEO — Brush Guide 6x6 (730043)</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_meter"/>
   </record>
   <record id="product_tmpl_teo_slat" model="product.template">
     <field name="name">TEO — Slat profile 40/50 (70200x)</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_meter"/>
   </record>
   <record id="product_tmpl_teo_terminal" model="product.template">
     <field name="name">TEO — Terminal / bottom bar (704005)</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_meter"/>
   </record>
   <record id="product_tmpl_teo_gasket" model="product.template">
     <field name="name">TEO — Gasket XMO (1052001)</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_meter"/>
   </record>
   <record id="product_tmpl_teo_box" model="product.template">
     <field name="name">TEO — Main Box (70100x) [skip on Built-In]</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_meter"/>
   </record>
   <record id="product_tmpl_teo_axis" model="product.template">
     <field name="name">TEO — Axis Ø40/Ø60 (72304x)</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_meter"/>
   </record>
   <record id="product_tmpl_teo_end_cap" model="product.template">
@@ -148,24 +155,28 @@
   </record>
   <record id="product_tmpl_teo_motor" model="product.template">
     <field name="name">TEO — Tubular Motor (standard) [O]</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_unit"/>
   </record>
   <record id="product_tmpl_teo_motor_safety" model="product.template">
     <field name="name">TEO — Tubular Motor (with safety profile, radio IO) [O — Thermo]</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_unit"/>
   </record>
   <record id="product_tmpl_teo_guide_feather" model="product.template">
     <field name="name">TEO — Feather Guide 50x160 (703002) [O — Thermo]</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_meter"/>
   </record>
 
   <!-- ── Finished product ──────────────────────────────────────────────── -->
   <record id="product_tmpl_teolino_shutter" model="product.template">
     <field name="name">Roller Shutter (parametric)</field>
-    <field name="type">product</field>
+    <field name="type">consu</field>
+    <field name="is_storable">True</field>
     <field name="uom_id" ref="uom.product_uom_unit"/>
     <field name="tracking">lot</field>
   </record>

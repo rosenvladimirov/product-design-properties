@@ -46,10 +46,12 @@ class AccessOccupancy(models.Model):
     company_id = fields.Many2one(
         related="perimeter_id.company_id", store=True, index=True)
 
-    _subject_perimeter_uniq = models.Constraint(
-        "unique(subject_id, perimeter_id)",
-        "One occupancy row per (subject, perimeter).",
-    )
+    # 18.0: models.Constraint е 19-only descriptor → _sql_constraints списък.
+    _sql_constraints = [
+        ("subject_perimeter_uniq",
+         "unique(subject_id, perimeter_id)",
+         "One occupancy row per (subject, perimeter)."),
+    ]
 
     @api.model
     def upsert(self, subject_id, perimeter_id, direction, event_id, ts):

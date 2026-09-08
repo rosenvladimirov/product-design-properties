@@ -14,7 +14,7 @@
         "Polymorphic physical access control: subjects, perimeters, "
         "control points, ZEN-driven decision flow with offline sync."
     ),
-    "version": "18.0.1.12.1",
+    "version": "18.0.1.12.2",
     "category": "Security",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "Rosen Vladimirov",
@@ -46,8 +46,10 @@
         "views/hr_department_views.xml",
         "views/hr_rfid_card_views.xml",
         "views/access_facility_svg_views.xml",
-        "views/access_facility_dashboard_views.xml",
+        # menu.xml ПРЕДИ dashboard_views: последният ползва
+        # %(action_access_dashboard_url)d, което menu.xml дефинира.
         "views/menu.xml",
+        "views/access_facility_dashboard_views.xml",
         "wizards/access_controller_calibration_views.xml",
         "data/zen_graph_access_default.xml",
         "data/access_time_slot_data.xml",

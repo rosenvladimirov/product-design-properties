@@ -15,7 +15,8 @@
         <!-- Demo finished product: Roasted Peppers Whole 720ml -->
         <record id="product_tmpl_peppers_720" model="product.template">
             <field name="name">Roasted Peppers Whole 720ml</field>
-            <field name="type">product</field>
+            <field name="type">consu</field>
+            <field name="is_storable">True</field>
             <field name="uom_id" ref="uom.product_uom_unit"/>
             <field name="tracking">lot</field>
         </record>
