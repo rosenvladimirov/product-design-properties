@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2024-2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)
+          https://www.gnu.org/licenses/agpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the AGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the AGPL-3.0-or-later.
+-->
+<odoo>
+
+    <record id="mrp_routing_workcenter_form_view_shop" model="ir.ui.view">
+        <field name="name">mrp.routing.workcenter.form.shop.context</field>
+        <field name="model">mrp.routing.workcenter</field>
+        <field name="inherit_id" ref="mrp.mrp_routing_workcenter_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group" position="after">
+                <group string="Shop Floor" name="shop_context">
+                    <group>
+                        <field name="shop_barcode" placeholder="01/29,02/05"/>
+                        <field name="semi_finished"/>
+                    </group>
+                    <group>
+                        <field name="time_calendar" widget="float_time"/>
+                        <field name="time_source"/>
+                        <field name="shop_frequency" widget="percentage"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Баркодът и полуфабрикатът се четат най-често наведнъж с времето,
+         затова влизат и в списъка на операциите по рецепта. -->
+    <record id="mrp_routing_workcenter_list_view_shop" model="ir.ui.view">
+        <field name="name">mrp.routing.workcenter.list.shop.context</field>
+        <field name="model">mrp.routing.workcenter</field>
+        <field name="inherit_id" ref="mrp.mrp_routing_workcenter_tree_view"/>
+        <field name="arch" type="xml">
+            <!-- Всичките след `name`: `//list position="inside"` би ги сложил
+                 след <control> на наследника за рецептата. -->
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="shop_barcode" optional="show"/>
+                <field name="semi_finished" optional="show"/>
+                <field name="time_calendar" widget="float_time" optional="hide"/>
+                <field name="time_source" optional="hide"/>
+                <field name="shop_frequency" widget="percentage" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -14,6 +14,56 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   modules that depend in-process on this ZEN kernel.
 
 ### Added
+- **mrp_design_matrix** (19.0.3.12.0) — shop floor context on operations
+  - `shop_barcode` (comma separated when one operation covers several),
+    `semi_finished`, `time_calendar`, `time_source`, `shop_frequency`
+  - 🔑 The barcode previously lived inside the operation name, which is
+    translatable and therefore unusable for matching scan data
+  - Two times side by side: calendar for capacity, clean for labour cost
+  - `action_fill_shop_barcode_from_name()` migrates the barcodes already
+    written in names; manual by design, never overwrites
+
+### Added
+- **mrp_design_matrix** (19.0.3.11.0) — lot names resolved from the
+  COMBINATION, one sequence per prefix
+  - A prefix template in the product's design properties
+    (`{series}{lock_points}`) is resolved against the design context, and
+    **every new combination gets its own sequence** — found by prefix, or
+    created on first use
+  - The lookup follows the same contract as the core inverse of
+    `product.template.serial_prefix_format` (by prefix alone; new records
+    with code `stock.lot.serial`, padding 7, no company), so both sides
+    serve one sequence per prefix instead of numbering from two
+  - An unresolvable template, or one producing a `%` (which `ir.sequence`
+    interpolates), is reported and the lot falls back to the product
+    sequence — a number is never silently wrong
+  - Child lots stopped passing an explicit name, which bypassed both Odoo's
+    compute and the combination; `_generate_child_lot_name` is now the last
+    resort for a product with no sequence at all, and its
+    `next_by_code("stock.lot.serial")` is gone
+
+### Changed
+- **sale_design_configurator** (19.0.1.50.0) — `generate_design_lot_name`
+  takes the combination and answers from the first source available:
+  combination sequence, product category sequence, the product's own
+  `lot_sequence_id`, then the product-based fallback. The old
+  `next_by_code("stock.lot.serial")` step returned an arbitrary one of the
+  per-prefix sequences the core creates. The configurator (JS) now passes
+  the collected design parameters along with the product.
+
+### Added
+- **product_design_assets** (19.0.1.1.0) — lot prefix carried by the product
+  design properties
+  - A design parameter with canonical name (`formula_name`) `lot_prefix` is
+    pushed onto the standard `product.template.serial_prefix_format`
+  - Odoo's lot machinery is untouched: naming stays in
+    `stock.lot._compute_name`, and the sequence is still found or created by
+    the core inverse of `serial_prefix_format`. This only decides *which*
+    prefix applies, so a product range no longer has to be numbered by hand
+    template by template
+  - Variants of one template asking for different prefixes are left
+    unchanged and logged — a template carries a single sequence
+  - `depends` now lists `stock` explicitly (previously only transitive)
 - **base_formula_engine** (19.0.1.0.0) — new domain-agnostic formula kernel
   - `formula.engine.mixin`: syntax validation + safe_eval exec with a
     declared-outputs contract and opt-in `strict` mode (payroll-grade

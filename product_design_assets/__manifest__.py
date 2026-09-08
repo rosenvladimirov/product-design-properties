@@ -14,7 +14,7 @@
         "Link design visual assets (GLB, SVG, PNG) "
         "from product attachments for 3D configurators"
     ),
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "category": "Manufacturing",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "Rosen Vladimirov",
@@ -22,7 +22,7 @@
     "license": "AGPL-3",
     "application": False,
     "installable": True,
-    "depends": ["product", "mrp", "design_param_base"],
+    "depends": ["product", "stock", "mrp", "design_param_base"],
     "data": [
         "views/product_views.xml",
     ],

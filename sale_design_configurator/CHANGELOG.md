@@ -25,6 +25,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
   dropped — a distinct selector is never removed. Conservative fix for the
   right-overlay double-accessory issue.
 
+## [19.0.1.50.0] - 2026-09-08
+
+### Changed
+
+- `generate_design_lot_name` now takes the combination (`design_params`,
+  `definition_id`) and answers from the first source available: the
+  sequence of that combination (prefix template), then the product category
+  sequence, then the product's own `lot_sequence_id`, then the
+  product-based fallback.
+- 🚨 The old `next_by_code("stock.lot.serial")` step is replaced by the
+  product's `lot_sequence_id`. The core creates one sequence with that very
+  code per prefix, so the lookup by code alone returned an arbitrary one of
+  them — and got worse with every prefix anyone added.
+- The configurator (JS) passes the collected design parameters along with
+  the product, so a combination can decide its own series.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.49.3] - 2026-07-09
 
 ### Fixed

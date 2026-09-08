@@ -8,7 +8,21 @@
 #
 # Unless you hold a valid commercial license, your use of this file is governed
 # by the AGPL-3.0-or-later.
+import logging
+
 from odoo import api, fields, models
+
+_logger = logging.getLogger(__name__)
+
+# Каноничното (formula_name) име на параметъра, който носи префикса за
+# лотовете. Резолвва се през слития param_dictionary — етикетът и uuid-ът
+# на property-то могат да се сменят, каноничното име е стабилният ключ.
+LOT_PREFIX_PARAM = "lot_prefix"
+
+# Стойността може да е ШАБЛОН по комбинацията ("{series}{lock_points}"),
+# а не готов префикс. Такъв шаблон НЕ отива в полето на шаблона —
+# резолвва се на партида, защото всяка комбинация иска своя поредица.
+LOT_PREFIX_PLACEHOLDER = "{"
 
 DESIGN_MIMETYPES = [
     "model/gltf-binary",
@@ -51,6 +65,96 @@ class ProductProduct(models.Model):
         compute="_compute_design_asset_count",
         string="Design Assets",
     )
+
+    # ── Lot prefix, carried by the design properties ─────────────────
+    # Механиката на партидите НЕ се пипа: Odoo сама решава името
+    # (`stock.lot._compute_name` от `product_id.lot_sequence_id`) и сама
+    # намира или създава последователността (`_inverse_serial_prefix_format`).
+    # Тук се решава САМО кой е префиксът — за да не се задава на ръка по
+    # хиляди шаблона, когато дизайн параметрите вече го знаят.
+
+    def _design_lot_prefix(self):
+        """Return the raw lot prefix value from this product's design properties.
+
+        The value is either a ready prefix ("Б") or a template resolved per
+        combination ("{series}{lock_points}") — see
+        ``_design_lot_prefix_is_template``.
+        """
+        self.ensure_one()
+        definition = self.design_param_definition_id
+        if not definition:
+            return ""
+        entry = (definition._get_merged_param_dictionary() or {}).get(LOT_PREFIX_PARAM)
+        uuid = entry.get("uuid") if isinstance(entry, dict) else None
+        if not uuid:
+            return ""
+        # 🚨 Properties: празна и нулева стойност се четат като False, не като
+        # "" / 0 — затова стойността се нормализира изрично, вместо да се
+        # разчита на falsy сравнение.
+        value = (self.design_properties or {}).get(uuid)
+        return str(value).strip() if value else ""
+
+    def _design_lot_prefix_is_template(self):
+        """Whether the prefix has to be resolved against a combination."""
+        self.ensure_one()
+        return LOT_PREFIX_PLACEHOLDER in self._design_lot_prefix()
+
+    def _sync_design_lot_prefix(self):
+        """Push a ready design prefix onto ``product.template.serial_prefix_format``.
+
+        The core inverse of that field reuses the existing sequence for the
+        prefix or creates a new one, so nothing here generates names or
+        sequences. Two cases are deliberately skipped:
+
+        * a prefix template — one sequence per template could not serve the
+          many prefixes a matrix produces, so it is resolved per combination
+          when the lot is created;
+        * variants of one template asking for different ready prefixes — a
+          template carries a single sequence, and guessing a winner would
+          silently renumber a range.
+        """
+        # Само продуктите с дизайн дефиниция могат да носят префикс —
+        # филтърът пази `create` на всеки обикновен вариант от обхождане.
+        for template in self.filtered("design_param_definition_id").mapped(
+            "product_tmpl_id"
+        ):
+            prefixes = {
+                prefix
+                for prefix in (
+                    variant._design_lot_prefix()
+                    for variant in template.product_variant_ids
+                )
+                if prefix and LOT_PREFIX_PLACEHOLDER not in prefix
+            }
+            if not prefixes:
+                continue
+            if len(prefixes) > 1:
+                # Не се гадае кой префикс печели — шаблонът има само една
+                # последователност, а разминаването е конфигурационен въпрос.
+                _logger.warning(
+                    "Product template %s: variants ask for %d different lot "
+                    "prefixes (%s). Odoo keeps one sequence per template, so "
+                    "the prefix is left unchanged.",
+                    template.display_name,
+                    len(prefixes),
+                    ", ".join(sorted(prefixes)),
+                )
+                continue
+            prefix = prefixes.pop()
+            if template.serial_prefix_format != prefix:
+                template.serial_prefix_format = prefix
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        products = super().create(vals_list)
+        products._sync_design_lot_prefix()
+        return products
+
+    def write(self, vals):
+        res = super().write(vals)
+        if {"design_properties", "design_param_definition_id"} & set(vals):
+            self._sync_design_lot_prefix()
+        return res
 
     def _compute_design_asset_count(self):
         for product in self:

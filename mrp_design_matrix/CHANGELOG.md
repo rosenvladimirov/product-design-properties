@@ -4,6 +4,66 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.3.12.0] - 2026-09-08
+
+### Added
+
+- Shop floor context on `mrp.routing.workcenter`. One shop measurement
+  carries five things about an operation and Odoo had room only for the
+  duration, so the barcode lived inside the operation NAME (15 operations
+  carry it in brackets, one carries two at once) and the frequency, the
+  source and the calendar time had nowhere to go at all:
+  - `shop_barcode` — the barcode(s) as scanned, comma separated when one
+    operation covers several. 🔑 The name is a translatable field, so a
+    barcode written there cannot be matched against scan data; this one can.
+  - `semi_finished` — which part the operation works on (metal/wood frame,
+    metal/wood leaf, profiles, aluminium frame, edging, painted parts, final
+    assembly, quality), so operations follow the parts instead of one row
+    per work center.
+  - `time_calendar` — the calendar time (a full operator day divided by the
+    median doors), for capacity; the clean time in `time_cycle_manual` stays
+    the basis for labour cost. Both are needed, they differ by 1-2x.
+  - `time_source` — measured / shop log / norm 2011 / norm 2016 / estimate.
+    A measured time and an estimate are not equally trustworthy, and that
+    has to survive in the data.
+  - `shop_frequency` — the measured share of doors passing the operation.
+    Below 1.0 means conditional in practice, even when nothing marks it so.
+- `action_fill_shop_barcode_from_name()` reads the barcodes out of existing
+  operation names into the new field. Deliberately a manual action and not
+  an upgrade hook — it writes on live operations, and it never overwrites a
+  barcode that is already set.
+
+*Assisted by Claude Code*
+
+## [19.0.3.11.0] - 2026-09-08
+
+### Added
+
+- Lot names resolved from the COMBINATION. When the product carries a lot
+  prefix template in its design properties (`{series}{lock_points}`), the
+  prefix is resolved against the design context and **every new combination
+  gets its own sequence** — found by prefix, or created on first use.
+- The sequence lookup follows the same contract as the core inverse of
+  `product.template.serial_prefix_format` (lookup by prefix alone, new
+  records with code `stock.lot.serial`, padding 7, no company), so both
+  sides serve one sequence per prefix instead of handing out the same
+  numbers from two.
+- An unresolvable template, or one producing a `%` (which `ir.sequence`
+  interpolates), is reported and the lot falls back to the product
+  sequence — the number is never silently wrong.
+
+### Changed
+
+- Child lots no longer pass an explicit name, so Odoo's own
+  `stock.lot._compute_name` (or the combination) decides it. An explicit
+  name bypassed both.
+- `_generate_child_lot_name` is now only the last resort for a product with
+  no sequence at all. 🚨 Its `next_by_code("stock.lot.serial")` is gone: the
+  core creates one record with that code per prefix, so a lookup by code
+  alone got less predictable with every prefix added.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.6.0] - 2026-04-06
 
 ### Added

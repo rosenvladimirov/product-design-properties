@@ -8,11 +8,6 @@
 #
 # Unless you hold a valid commercial license, your use of this file is governed
 # by the AGPL-3.0-or-later.
-from . import design_param_definition
-from . import mrp_matrix_template
-from . import product_attribute
-from . import mrp_bom
-from . import mrp_bom_line
-from . import mrp_routing_workcenter
-from . import mrp_production
-from . import stock_lot
+# Тестът се ИМПОРТИРА — виж капана в mrp_design_matrix/tests/__init__.py:
+# изключен импорт значи тест, който не може да падне.
+from . import test_lot_prefix

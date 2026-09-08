@@ -15,3 +15,5 @@
 # 🔲 test_design_context и test_ptav_resolution остават изключени — не са проверявани.
 from . import test_attribute_roles
 from . import test_matrix_moves
+from . import test_lot_prefix_combination
+from . import test_shop_context

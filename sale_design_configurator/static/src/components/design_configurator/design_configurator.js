@@ -553,9 +553,12 @@ export class DesignConfiguratorWidget extends Component {
             await this.orm.write("stock.lot", [this.props.existingLotId], vals);
             return this.props.existingLotId;
         }
-        // Нов лот: генерирай име от (категорийната) последователност.
+        // Нов лот: името се иска от сървъра, като му се подава и КОМБИНАЦИЯТА —
+        // продукт с префиксен шаблон дава своя поредица за всяка комбинация,
+        // а без шаблон отговорът пада към категорийната/продуктовата.
         vals.name = await this.orm.call(
-            "stock.lot", "generate_design_lot_name", [this.props.productId]
+            "stock.lot", "generate_design_lot_name",
+            [this.props.productId, designParams, this.props.definitionId]
         );
         const [lotId] = await this.orm.create("stock.lot", [vals]);
         return lotId;

@@ -10,7 +10,6 @@
 # by the AGPL-3.0-or-later.
 from odoo import api, fields, models
 
-
 DESIGN_STATE = [
     ("draft", "Draft"),
     ("sales_confirmed", "Sales Confirmed"),
@@ -50,23 +49,43 @@ class StockLot(models.Model):
     # -- Helpers -------------------------------------------------------------
 
     @api.model
-    def generate_design_lot_name(self, product_id):
+    def generate_design_lot_name(
+        self, product_id, design_params=None, definition_id=False
+    ):
         """
         Called from DesignConfiguratorWidget._saveDesignLot() via ORM.
-        Returns a unique lot name. Ако е инсталиран product_category_lot_sequence
-        и категорията на продукта има линкната последователност — ползва нея;
-        иначе стандартния `stock.lot.serial`; накрая product-based fallback.
+        Returns a unique lot name, taken from the first source that answers:
+
+        1. the sequence of THIS COMBINATION, when the product carries a
+           prefix template — every new combination gets its own series;
+        2. the product category sequence, if ``product_category_lot_sequence``
+           is installed;
+        3. the product's own sequence — the standard Odoo field, which also
+           carries a ready prefix set from the design properties;
+        4. a product-based fallback, so the required field is never empty.
         """
         product = self.env["product.product"].browse(product_id)
+        # 1. Комбинацията решава, ако продуктът носи ШАБЛОН за префикс.
+        name = self._design_lot_name_from_combination(
+            {
+                "product_id": product_id,
+                "design_params": design_params or {},
+                "design_param_definition_id": definition_id,
+            }
+        )
+        if name:
+            return name
+        # 2. Категорийната последователност (soft-check: без твърда
+        # зависимост от product_category_lot_sequence).
         sequence = self.env["ir.sequence"]
-        # Soft-check: без твърда зависимост от product_category_lot_sequence.
         if hasattr(product, "_get_lot_sequence"):
             sequence = product._get_lot_sequence()
-        name = (
-            sequence._next()
-            if sequence
-            else self.env["ir.sequence"].next_by_code("stock.lot.serial")
-        )
+        # 3. 🚨 Полето на продукта, НЕ `next_by_code("stock.lot.serial")`:
+        # ядрото създава по един запис с този код за всеки нов префикс, така
+        # че търсенето само по код ставаше по-непредсказуемо с всеки префикс.
+        if not sequence:
+            sequence = product.lot_sequence_id
+        name = sequence.next_by_id() if sequence else False
         if not name:
             name = (
                 f"DL-{product.default_code or product.id}"
