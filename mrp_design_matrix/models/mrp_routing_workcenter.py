@@ -61,18 +61,32 @@ class MrpRoutingWorkcenter(models.Model):
         "Use it for capacity planning; the clean operation time in Duration "
         "stays the basis for labour cost. Typically 1-2x the clean time.",
     )
+    # 🔑 Два източника, защото едно време има две числа, а те рядко идват от
+    # едно и също място: в маршрутите на Солид 26 от 60 операции (43%) носят
+    # чисто време от норма или измерване И календарно от дневника на баркодовете.
+    # С един етикет половината от реда получава чужд произход — точно обратното
+    # на това, за което полето съществува.
+    _TIME_SOURCES = [
+        ("measured", "Measured (clean)"),
+        ("shop_log", "Shop log (calendar)"),
+        ("norm_2011", "Norm 2011 (structural)"),
+        ("norm_2016", "Norm 2016 (wet paint)"),
+        ("estimate", "Estimate"),
+    ]
+
     time_source = fields.Selection(
-        selection=[
-            ("measured", "Measured (clean)"),
-            ("shop_log", "Shop log (calendar)"),
-            ("norm_2011", "Norm 2011 (structural)"),
-            ("norm_2016", "Norm 2016 (wet paint)"),
-            ("estimate", "Estimate"),
-        ],
+        selection=_TIME_SOURCES,
         string="Time Source",
-        help="Where the time comes from. A measured time and an estimate are "
-        "not equally trustworthy, and that difference has to survive in the "
-        "data instead of living in someone's memory.",
+        help="Where the clean operation time in Duration comes from. A measured "
+        "time and an estimate are not equally trustworthy, and that difference "
+        "has to survive in the data instead of living in someone's memory.",
+    )
+    time_calendar_source = fields.Selection(
+        selection=_TIME_SOURCES,
+        string="Calendar Time Source",
+        help="Where Calendar Time comes from. Usually the shop log, which is "
+        "calendar by construction; kept separate because the clean time next to "
+        "it often comes from a norm or a measurement instead.",
     )
     shop_frequency = fields.Float(
         string="Shop Frequency",

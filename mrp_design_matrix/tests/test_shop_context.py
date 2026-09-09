@@ -86,3 +86,25 @@ class TestShopContext(TransactionCase):
         self.assertEqual(operation.time_calendar, 15.5)
         self.assertEqual(operation.time_source, "measured")
         self.assertAlmostEqual(operation.shop_frequency, 0.86)
+
+    def test_each_time_keeps_its_own_source(self):
+        """Двете времена рядко идват от едно място — всяко носи своя произход.
+
+        В маршрутите на Солид 43% от операциите имат чисто време от норма или
+        измерване и календарно от дневника на баркодовете. Един етикет за реда
+        приписва на едното число произхода на другото.
+        """
+        operation = self._make_operation(
+            "Leaf assembly",
+            time_cycle_manual=30.0,
+            time_source="norm_2011",
+            time_calendar=11.0,
+            time_calendar_source="shop_log",
+        )
+        self.assertEqual(operation.time_source, "norm_2011")
+        self.assertEqual(operation.time_calendar_source, "shop_log")
+        self.assertNotEqual(
+            operation.time_source,
+            operation.time_calendar_source,
+            "the two sources must be able to differ on the same operation",
+        )

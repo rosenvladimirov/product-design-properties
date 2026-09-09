@@ -25,8 +25,9 @@
                         <field name="semi_finished"/>
                     </group>
                     <group>
-                        <field name="time_calendar" widget="float_time"/>
                         <field name="time_source"/>
+                        <field name="time_calendar" widget="float_time"/>
+                        <field name="time_calendar_source"/>
                         <field name="shop_frequency" widget="percentage"/>
                     </group>
                 </group>
@@ -46,8 +47,9 @@
             <xpath expr="//field[@name='name']" position="after">
                 <field name="shop_barcode" optional="show"/>
                 <field name="semi_finished" optional="show"/>
-                <field name="time_calendar" widget="float_time" optional="hide"/>
                 <field name="time_source" optional="hide"/>
+                <field name="time_calendar" widget="float_time" optional="hide"/>
+                <field name="time_calendar_source" optional="hide"/>
                 <field name="shop_frequency" widget="percentage" optional="hide"/>
             </xpath>
         </field>
