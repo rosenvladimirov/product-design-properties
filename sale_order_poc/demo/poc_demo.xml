@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+          https://www.gnu.org/licenses/lgpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the LGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the LGPL-3.0-or-later.
+-->
+<odoo>
+    <!-- Речник: мярката е в кода; суфиксът е само за показ. -->
+    <record id="demo_param_width_mm" model="sale.order.poc.param">
+        <field name="code">width_mm</field>
+        <field name="name">Width</field>
+        <field name="param_type">float</field>
+        <field name="suffix">mm</field>
+    </record>
+    <record id="demo_param_length_mm" model="sale.order.poc.param">
+        <field name="code">length_mm</field>
+        <field name="name">Length</field>
+        <field name="param_type">float</field>
+        <field name="suffix">mm</field>
+    </record>
+    <record id="demo_param_thickness_um" model="sale.order.poc.param">
+        <field name="code">thickness_um</field>
+        <field name="name">Thickness</field>
+        <field name="param_type">float</field>
+        <field name="suffix">µm</field>
+    </record>
+    <record id="demo_param_density" model="sale.order.poc.param">
+        <field name="code">density</field>
+        <field name="name">Density</field>
+        <field name="param_type">float</field>
+        <field name="suffix">g/cm³</field>
+        <field name="default_value">0.92</field>
+    </record>
+    <record id="demo_param_material" model="sale.order.poc.param">
+        <field name="code">material</field>
+        <field name="name">Material</field>
+        <field name="param_type">selection</field>
+        <field name="default_value">ldpe</field>
+    </record>
+    <record id="demo_param_material_ldpe" model="sale.order.poc.param.option">
+        <field name="param_id" ref="demo_param_material"/>
+        <field name="sequence">10</field>
+        <field name="key">ldpe</field>
+        <field name="name">LDPE</field>
+    </record>
+    <record id="demo_param_material_hdpe" model="sale.order.poc.param.option">
+        <field name="param_id" ref="demo_param_material"/>
+        <field name="sequence">20</field>
+        <field name="key">hdpe</field>
+        <field name="name">HDPE</field>
+    </record>
+    <record id="demo_param_printed" model="sale.order.poc.param">
+        <field name="code">printed</field>
+        <field name="name">Printed</field>
+        <field name="param_type">boolean</field>
+    </record>
+    <record id="demo_param_weight_g" model="sale.order.poc.param">
+        <field name="code">weight_g</field>
+        <field name="name">Bag Weight</field>
+        <field name="param_type">float</field>
+        <field name="suffix">g</field>
+        <field name="digits">3</field>
+    </record>
+
+    <!-- Шаблон „торба“: две стени, тегло от размерите. -->
+    <record id="demo_template_bag" model="sale.order.poc.template">
+        <field name="code">demo_bag</field>
+        <field name="name">Bag</field>
+        <field name="label_formula">result = '%gx%g mm / %g µm' % (width_mm, length_mm, thickness_um)</field>
+    </record>
+    <record id="demo_template_bag_s1" model="sale.order.poc.template.line">
+        <field name="template_id" ref="demo_template_bag"/>
+        <field name="sequence">10</field>
+        <field name="display_type">line_section</field>
+        <field name="name">Dimensions</field>
+    </record>
+    <record id="demo_template_bag_width" model="sale.order.poc.template.line">
+        <field name="template_id" ref="demo_template_bag"/>
+        <field name="sequence">11</field>
+        <field name="param_id" ref="demo_param_width_mm"/>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="demo_template_bag_length" model="sale.order.poc.template.line">
+        <field name="template_id" ref="demo_template_bag"/>
+        <field name="sequence">12</field>
+        <field name="param_id" ref="demo_param_length_mm"/>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="demo_template_bag_thickness" model="sale.order.poc.template.line">
+        <field name="template_id" ref="demo_template_bag"/>
+        <field name="sequence">13</field>
+        <field name="param_id" ref="demo_param_thickness_um"/>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="demo_template_bag_s2" model="sale.order.poc.template.line">
+        <field name="template_id" ref="demo_template_bag"/>
+        <field name="sequence">20</field>
+        <field name="display_type">line_section</field>
+        <field name="name">Material</field>
+    </record>
+    <record id="demo_template_bag_material" model="sale.order.poc.template.line">
+        <field name="template_id" ref="demo_template_bag"/>
+        <field name="sequence">21</field>
+        <field name="param_id" ref="demo_param_material"/>
+    </record>
+    <record id="demo_template_bag_density" model="sale.order.poc.template.line">
+        <field name="template_id" ref="demo_template_bag"/>
+        <field name="sequence">22</field>
+        <field name="param_id" ref="demo_param_density"/>
+    </record>
+    <record id="demo_template_bag_printed" model="sale.order.poc.template.line">
+        <field name="template_id" ref="demo_template_bag"/>
+        <field name="sequence">23</field>
+        <field name="param_id" ref="demo_param_printed"/>
+    </record>
+    <record id="demo_template_bag_s3" model="sale.order.poc.template.line">
+        <field name="template_id" ref="demo_template_bag"/>
+        <field name="sequence">30</field>
+        <field name="display_type">line_section</field>
+        <field name="name">Computed</field>
+    </record>
+    <record id="demo_template_bag_weight" model="sale.order.poc.template.line">
+        <field name="template_id" ref="demo_template_bag"/>
+        <field name="sequence">31</field>
+        <field name="param_id" ref="demo_param_weight_g"/>
+        <field name="formula">result = 2 * width_mm * length_mm * thickness_um * density / 1000000</field>
+        <field name="allow_manual" eval="True"/>
+    </record>
+
+    <record id="demo_product_bag" model="product.product">
+        <field name="name">Bag (configured)</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="tracking">lot</field>
+        <field name="sale_ok" eval="True"/>
+        <field name="list_price">0.05</field>
+        <field name="poc_template_id" ref="demo_template_bag"/>
+    </record>
+</odoo>

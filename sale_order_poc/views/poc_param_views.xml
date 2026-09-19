@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+          https://www.gnu.org/licenses/lgpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the LGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the LGPL-3.0-or-later.
+-->
+<odoo>
+    <record id="sale_order_poc_param_view_list" model="ir.ui.view">
+        <field name="name">sale.order.poc.param.list</field>
+        <field name="model">sale.order.poc.param</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="param_type"/>
+                <field name="suffix"/>
+                <field name="default_value"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="sale_order_poc_param_view_form" model="ir.ui.view">
+        <field name="name">sale.order.poc.param.form</field>
+        <field name="model">sale.order.poc.param</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="param_type"/>
+                            <field name="comodel" invisible="param_type not in ('many2one', 'many2many')"
+                                   required="param_type in ('many2one', 'many2many')"/>
+                            <field name="domain" invisible="param_type not in ('many2one', 'many2many')"/>
+                        </group>
+                        <group>
+                            <field name="suffix"/>
+                            <field name="digits" invisible="param_type != 'float'"/>
+                            <field name="default_value"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="description" placeholder="Help for the user filling in the value"/>
+                    <field name="option_ids" invisible="param_type not in ('selection', 'tags')">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="key"/>
+                            <field name="name"/>
+                            <field name="color" widget="color_picker"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="sale_order_poc_param_view_search" model="ir.ui.view">
+        <field name="name">sale.order.poc.param.search</field>
+        <field name="model">sale.order.poc.param</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code"/>
+                <field name="name"/>
+                <filter name="inactive" string="Archived" domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter name="group_type" string="Type" context="{'group_by': 'param_type'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="sale_order_poc_param_action" model="ir.actions.act_window">
+        <field name="name">Configuration Parameters</field>
+        <field name="res_model">sale.order.poc.param</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

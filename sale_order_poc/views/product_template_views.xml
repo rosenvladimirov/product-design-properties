@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+          https://www.gnu.org/licenses/lgpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the LGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the LGPL-3.0-or-later.
+-->
+<odoo>
+    <record id="product_template_form_view_inherit_sale_order_poc" model="ir.ui.view">
+        <field name="name">product.template.form.sale.order.poc</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Production Configuration" name="sale_order_poc" invisible="not sale_ok">
+                    <group>
+                        <field name="poc_template_id" options="{'no_create': True}"/>
+                    </group>
+                    <field name="poc_default_params" nolabel="1" colspan="2" columns="2"
+                           invisible="not poc_template_id"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+          https://www.gnu.org/licenses/lgpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the LGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the LGPL-3.0-or-later.
+-->
+<odoo>
+    <record id="sale_order_poc_template_view_list" model="ir.ui.view">
+        <field name="name">sale.order.poc.template.list</field>
+        <field name="model">sale.order.poc.template</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="usage"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="sale_order_poc_template_view_form" model="ir.ui.view">
+        <field name="name">sale.order.poc.template.form</field>
+        <field name="model">sale.order.poc.template</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_recompute_draft_pocs" type="object"
+                            string="Recompute Draft Configurations"
+                            confirm="Recompute the computed parameters of all draft configurations of this template?"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_pocs" type="object" class="oe_stat_button" icon="fa-sliders">
+                            <field name="poc_count" widget="statinfo" string="Configurations"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Bag"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="usage"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Parameters" name="lines">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="display_type"/>
+                                    <field name="name" string="Section"/>
+                                    <field name="fold" optional="hide"/>
+                                    <field name="param_id" options="{'no_create': True}"/>
+                                    <field name="param_type" optional="show"/>
+                                    <field name="required"/>
+                                    <field name="formula"/>
+                                    <field name="allow_manual"/>
+                                    <field name="allow_fallback"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Summary" name="summary">
+                            <group>
+                                <field name="label_formula" widget="code" options="{'mode': 'python'}"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="sale_order_poc_template_action" model="ir.actions.act_window">
+        <field name="name">Configuration Templates</field>
+        <field name="res_model">sale.order.poc.template</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

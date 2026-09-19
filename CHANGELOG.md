@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **sale_order_poc** (19.0.1.0.0, LGPL-3) — new module: Production
+  Configuration of a sale order line, the generic carrier of production
+  parameters for any company (ADR sale-order-poc/0001–0011)
+  - Parameter dictionary + templates; the properties definition is
+    computed from the template lines and cannot be written
+  - Computed parameters with origin (formula / manual), one reader, one
+    writer; after confirmation only a manager edits, changes are posted
+  - The lot belongs to the configuration; restricted moves reserve only
+    from its lot family
 - **mrp_bom_line_formula_template** (19.0.2.3.0) — `add_products` of a
   formula becomes extra raw moves of the same BoM line on a plain MO;
   draft MOs match raw moves by (BoM line, product); hook

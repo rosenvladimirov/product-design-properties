@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+          https://www.gnu.org/licenses/lgpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the LGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the LGPL-3.0-or-later.
+-->
+<odoo>
+    <record id="view_order_form_inherit_sale_order_poc" model="ir.ui.view">
+        <field name="name">sale.order.form.sale.order.poc</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_pocs" type="object" class="oe_stat_button"
+                        icon="fa-sliders" invisible="not poc_count">
+                    <field name="poc_count" widget="statinfo" string="Configurations"/>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_uom_qty']" position="before">
+                <field name="poc_template_id" column_invisible="1"/>
+                <field name="poc_id" column_invisible="1"/>
+                <field name="poc_summary" optional="show"/>
+                <button name="action_open_poc" type="object" icon="fa-sliders"
+                        title="Production Configuration"
+                        invisible="not poc_template_id and not poc_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

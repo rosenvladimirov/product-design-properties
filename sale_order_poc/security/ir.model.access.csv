@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_poc_param_all,poc.param all,model_sale_order_poc_param,base.group_user,1,0,0,0
+access_poc_param_manager,poc.param manager,model_sale_order_poc_param,group_poc_manager,1,1,1,1
+access_poc_param_option_all,poc.param.option all,model_sale_order_poc_param_option,base.group_user,1,0,0,0
+access_poc_param_option_manager,poc.param.option manager,model_sale_order_poc_param_option,group_poc_manager,1,1,1,1
+access_poc_template_all,poc.template all,model_sale_order_poc_template,base.group_user,1,0,0,0
+access_poc_template_manager,poc.template manager,model_sale_order_poc_template,group_poc_manager,1,1,1,1
+access_poc_template_line_all,poc.template.line all,model_sale_order_poc_template_line,base.group_user,1,0,0,0
+access_poc_template_line_manager,poc.template.line manager,model_sale_order_poc_template_line,group_poc_manager,1,1,1,1
+access_poc_user,sale.order.poc user,model_sale_order_poc,group_poc_user,1,1,1,1
+access_poc_stock,sale.order.poc stock,model_sale_order_poc,stock.group_stock_user,1,0,0,0

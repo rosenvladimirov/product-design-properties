@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+          https://www.gnu.org/licenses/lgpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the LGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the LGPL-3.0-or-later.
+-->
+<odoo>
+    <menuitem id="menu_sale_order_poc"
+              name="Production Configurations"
+              parent="sale.sale_order_menu"
+              action="sale_order_poc_action"
+              groups="group_poc_user"
+              sequence="30"/>
+    <menuitem id="menu_sale_order_poc_config"
+              name="Production Configuration"
+              parent="sale.menu_sale_config"
+              groups="group_poc_manager"
+              sequence="40"/>
+    <menuitem id="menu_sale_order_poc_template"
+              name="Templates"
+              parent="menu_sale_order_poc_config"
+              action="sale_order_poc_template_action"
+              sequence="10"/>
+    <menuitem id="menu_sale_order_poc_param"
+              name="Parameters"
+              parent="menu_sale_order_poc_config"
+              action="sale_order_poc_param_action"
+              sequence="20"/>
+</odoo>
