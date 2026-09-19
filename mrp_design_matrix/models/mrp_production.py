@@ -31,6 +31,14 @@ class MrpProduction(models.Model):
                 production._generate_design_matrix_moves()
         return res
 
+    def _formula_expand_add_products(self, bom_line):
+        # Матричен BoM добавя ``add_products`` сам при потвърждаване
+        # (_create_formula_extra_move); ако и експлозията ги разгърне,
+        # редовете се удвояват.
+        if bom_line.bom_id.constraint_table:
+            return False
+        return super()._formula_expand_add_products(bom_line)
+
     # ── Main algorithm ────────────────────────────────────────────────────
 
     def _generate_design_matrix_moves(self):

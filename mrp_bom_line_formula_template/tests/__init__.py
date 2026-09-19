@@ -10,3 +10,4 @@
 # by the AGPL-3.0-or-later.
 from . import test_formula_eval
 from . import test_move_generation
+from . import test_add_products

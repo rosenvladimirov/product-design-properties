@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **mrp_bom_line_formula_template** (19.0.2.3.0) — `add_products` of a
+  formula becomes extra raw moves of the same BoM line on a plain MO;
+  draft MOs match raw moves by (BoM line, product); hook
+  `_formula_expand_add_products`
+
+### Fixed
+- **mrp_design_matrix** (19.0.3.13.1) — a matrix BoM switches the new
+  `add_products` expansion off, so its extra moves are not doubled
+
 ### Changed
 - **base_zen_decision** (19.0.1.3.0) — relicensed **AGPL-3 → LGPL-3**
   (dual with commercial), kernel under a proprietary moat (ADR-P-0010).

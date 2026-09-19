@@ -4,6 +4,15 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.3.13.1] - 2026-09-19
+
+### Fixed
+
+- A matrix BoM (`constraint_table`) keeps adding the formula's
+  `add_products` itself at confirmation; the new expansion in
+  `mrp_bom_line_formula_template` 19.0.2.3.0 is switched off for it through
+  `_formula_expand_add_products`, so the extra moves are not doubled.
+
 ## [19.0.3.12.0] - 2026-09-08
 
 ### Added
