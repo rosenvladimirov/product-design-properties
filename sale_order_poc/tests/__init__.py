@@ -12,3 +12,5 @@ from . import test_dictionary_template
 from . import test_poc_params
 from . import test_sale_flow
 from . import test_lot_family
+from . import test_license_graph
+from . import test_ui

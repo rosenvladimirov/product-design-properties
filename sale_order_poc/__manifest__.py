@@ -12,7 +12,7 @@
     "name": "Sale Order Production Configuration",
     "summary": "Production configuration of a sale order line: parameters "
     "from templates, derived values, lot link",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "category": "Sales/Sales",
     "author": "Rosen Vladimirov",
     "maintainers": ["rosen-vladimirov"],
@@ -39,6 +39,11 @@
     "demo": [
         "demo/poc_demo.xml",
     ],
+    "assets": {
+        "web.assets_tests": [
+            "sale_order_poc/static/tests/tours/**/*",
+        ],
+    },
     "installable": True,
     "application": False,
 }

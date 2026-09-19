@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **sale_order_poc** (19.0.1.0.1) — Bulgarian translation; license graph
+  test (no AGPL/proprietary dependency, LGPL header in every file); a
+  sales-only user confirms a configured order; browser tours for the
+  configuration form
+
+### Fixed
+- **sale_order_poc** (19.0.1.0.1) — a sales-only user can open a
+  configuration: lot fields are shown to inventory users only
+
+### Added
 - **sale_order_poc** (19.0.1.0.0, LGPL-3) — new module: Production
   Configuration of a sale order line, the generic carrier of production
   parameters for any company (ADR sale-order-poc/0001–0011)

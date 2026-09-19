@@ -153,6 +153,12 @@ class PocCommon(TransactionCase):
             login="poc_salesman",
             groups="sales_team.group_sale_salesman,stock.group_stock_user",
         )
+        # само продажби: изходът на S1 иска потвърждаване без складови права
+        cls.pure_salesman = new_test_user(
+            cls.env,
+            login="poc_pure_salesman",
+            groups="sales_team.group_sale_salesman",
+        )
         cls.manager = new_test_user(
             cls.env,
             login="poc_manager",

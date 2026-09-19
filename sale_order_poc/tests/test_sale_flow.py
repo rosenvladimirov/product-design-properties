@@ -28,12 +28,19 @@ class TestSaleFlow(PocCommon):
             order.action_confirm()
 
     def test_salesman_configures_and_confirms(self):
+        self._check_salesman_flow(self.salesman)
+
+    def test_pure_salesman_configures_and_confirms(self):
+        """Същото без складови права: лотът и процюърмънтът не искат склад."""
+        self._check_salesman_flow(self.pure_salesman)
+
+    def _check_salesman_flow(self, user):
         """Продавач без права на мениджър ражда, попълва и потвърждава.
 
         Лотът се ражда преди процюърмънта и движението на доставката носи
         конфигурацията и ограничението по лотовете ѝ.
         """
-        env = self.env(user=self.salesman)
+        env = self.env(user=user)
         order = env["sale.order"].create(
             {
                 "partner_id": self.partner.id,

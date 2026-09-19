@@ -69,6 +69,17 @@ class TestDictionaryTemplate(PocCommon):
                 {"param_definition": [{"name": "abc", "type": "char", "string": "X"}]}
             )
 
+    def test_widget_definition_change_is_refused(self):
+        """Пътят на уиджета: списък с definition_changed пише схемата на
+        шаблона с правата на потребителя — и мениджърът спира в пазача."""
+        poc = self._make_poc()
+        definition = [dict(entry) for entry in self.template.param_definition]
+        definition.append(
+            {"name": "x_new", "string": "New", "type": "char", "definition_changed": True}
+        )
+        with self.assertRaisesRegex(UserError, "template lines"):
+            poc.with_user(self.manager).write({"params": definition})
+
     def test_formula_cycle_is_refused(self):
         """Цикъл между формулите дава грешка при запис на шаблона."""
         a = self.env["sale.order.poc.param"].create(

@@ -23,7 +23,7 @@
                 <field name="product_id"/>
                 <field name="template_id"/>
                 <field name="summary"/>
-                <field name="lot_id" optional="show"/>
+                <field name="lot_id" optional="show" groups="stock.group_stock_user"/>
                 <field name="company_id" groups="base.group_multi_company" optional="hide"/>
                 <field name="state" widget="badge"
                        decoration-info="state == 'draft'" decoration-success="state == 'confirmed'"/>
@@ -47,8 +47,10 @@
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
+                        <!-- лотът е складов запис: продавач без склад не го чете -->
                         <button name="action_view_lots" type="object" class="oe_stat_button"
-                                icon="fa-barcode" invisible="not lot_count">
+                                icon="fa-barcode" invisible="not lot_count"
+                                groups="stock.group_stock_user">
                             <field name="lot_count" widget="statinfo" string="Lots"/>
                         </button>
                     </div>
@@ -71,7 +73,7 @@
                         <group>
                             <field name="template_id" readonly="state != 'draft'"
                                    options="{'no_create': True, 'no_open': True}"/>
-                            <field name="lot_id"/>
+                            <field name="lot_id" groups="stock.group_stock_user"/>
                             <field name="manual_params" invisible="not manual_params"/>
                             <field name="company_id" groups="base.group_multi_company"/>
                             <field name="can_edit_confirmed" invisible="1"/>
@@ -104,7 +106,7 @@
                 <field name="order_id"/>
                 <field name="partner_id"/>
                 <field name="product_id"/>
-                <field name="lot_id"/>
+                <field name="lot_id" groups="stock.group_stock_user"/>
                 <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
                 <filter name="confirmed" string="Confirmed" domain="[('state', '=', 'confirmed')]"/>
                 <separator/>

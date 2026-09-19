@@ -4,6 +4,29 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.0.1] - 2026-09-19
+
+### Added
+
+- Bulgarian translation (`i18n/bg.po`, 202 terms). Lot and batch are two
+  terms: "Лот" and "Партида".
+- License graph test: the module is LGPL-3, depends on no AGPL or
+  proprietary module (transitively), and every file carries the LGPL
+  header (ADR sale-order-poc/0005).
+- A salesman with sales rights only (no inventory rights) configures and
+  confirms an order.
+- Browser tours: a sales-only user fills and saves the parameters (the
+  computed ones are written on save, not live); a manager reaches the
+  properties definition editor, whose save the template guard refuses.
+
+### Fixed
+
+- A sales-only user could not open a configuration at all: the form read
+  its lots, and only inventory users may read `stock.lot`. The lot fields
+  and the Lots button are now shown to inventory users only.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.0.0] - 2026-09-19
 
 ### Added
