@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **sale_order_poc_mrp** (19.0.1.0.0, LGPL-3) — new module: the
+  manufacturing bridge of the production configuration, no formula engine
+  of its own (ADR sale-order-poc/0007–0010, 0016)
+  - MO carries the configuration, its lot and summary; orders of different
+    configurations are never merged
+  - Component orders of the configuration get family lots and follow the
+    parent's need up and down while not started
+  - Recompute from the configuration on POC change, quantity change and
+    Update BoM: only the differences, matched by (BoM line, product)
+
+### Added
 - **sale_order_poc** (19.0.1.0.1) — Bulgarian translation; license graph
   test (no AGPL/proprietary dependency, LGPL header in every file); a
   sales-only user confirms a configured order; browser tours for the

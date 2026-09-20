@@ -1,0 +1,208 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sale_order_poc_mrp
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-19 18:05+0000\n"
+"PO-Revision-Date: 2026-09-19 21:00+0300\n"
+"Last-Translator: Rosen Vladimirov <vladimirov.rosen@gmail.com>\n"
+"Language-Team: \n"
+"Language: bg_BG\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: sale_order_poc_mrp
+#. odoo-python
+#: code:addons/sale_order_poc_mrp/models/mrp_production.py:0
+msgid ""
+"%(mo)s: the configuration needs less than already consumed:\n"
+"%(moves)s"
+msgstr ""
+"%(mo)s: конфигурацията иска по-малко от вече изразходваното:\n"
+"%(moves)s"
+
+#. module: sale_order_poc_mrp
+#. odoo-python
+#: code:addons/sale_order_poc_mrp/models/mrp_production.py:0
+msgid ""
+"%(parent)s now needs %(need)s %(uom)s of %(product)s for configuration "
+"%(poc)s; this order makes %(qty)s."
+msgstr ""
+"%(parent)s вече иска %(need)s %(uom)s от %(product)s за конфигурация "
+"%(poc)s; тази поръчка произвежда %(qty)s."
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,help:sale_order_poc_mrp.field_sale_order_poc_template__restrict_component_lots
+msgid ""
+"A component manufactured for the configuration is reserved only from the "
+"configuration's own lots. Off: the operator picks any lot."
+msgstr ""
+"Компонент, произведен за конфигурацията, се резервира само от нейните "
+"лотове. Изключено: операторът избира всеки лот."
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_mrp_bom_line__force_mts
+msgid "Always Take from Stock"
+msgstr "Винаги от склада"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model,name:sale_order_poc_mrp.model_mrp_bom_line
+msgid "Bill of Material Line"
+msgstr "Ред на спецификацията"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model,name:sale_order_poc_mrp.model_change_production_qty
+msgid "Change Production Qty"
+msgstr "Промяна на производственото количество"
+
+#. module: sale_order_poc_mrp
+#. odoo-python
+#: code:addons/sale_order_poc_mrp/models/mrp_production.py:0
+msgid "Components recomputed from the configuration:"
+msgstr "Компонентите са преизчислени по конфигурацията:"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_mrp_production__poc_params
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_mrp_workorder__poc_params
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_mrp.mrp_production_form_view_poc
+msgid "Configuration"
+msgstr "Конфигурация"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_mrp_production__poc_summary
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_mrp_workorder__poc_summary
+msgid "Configuration Summary"
+msgstr "Обобщение на конфигурацията"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_change_production_qty__display_name
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_mrp_bom_line__display_name
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_mrp_production__display_name
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_mrp_workorder__display_name
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_sale_order_poc__display_name
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_sale_order_poc_template__display_name
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_stock_move__display_name
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_stock_rule__display_name
+msgid "Display Name"
+msgstr "Име за показване"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,help:sale_order_poc_mrp.field_sale_order_poc_template__lot_batches
+msgid ""
+"Each backorder of a manufacturing order gets the next batch of the "
+"configuration lot. The delivery takes all batches."
+msgstr ""
+"Всеки бекордер на производствена поръчка получава следващата партида на лота"
+" на конфигурацията. Доставката взема всички партиди."
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_change_production_qty__id
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_mrp_bom_line__id
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_mrp_production__id
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_mrp_workorder__id
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_sale_order_poc__id
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_sale_order_poc_template__id
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_stock_move__id
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_stock_rule__id
+msgid "ID"
+msgstr "ID"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_sale_order_poc__production_ids
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_mrp.sale_order_poc_view_form_mrp
+msgid "Manufacturing"
+msgstr "Производство"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model,name:sale_order_poc_mrp.model_mrp_production
+msgid "Manufacturing Order"
+msgstr "Производствена поръчка"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_sale_order_poc_template__lot_batches
+msgid "New Lot per Backorder"
+msgstr "Нова партида за всеки бекордер"
+
+#. module: sale_order_poc_mrp
+#. odoo-python
+#: code:addons/sale_order_poc_mrp/models/mrp_production.py:0
+msgid ""
+"Only manufacturing orders of the same production configuration can be "
+"merged."
+msgstr ""
+"Могат да се сливат само производствени поръчки на една и съща конфигурация "
+"на производството."
+
+#. module: sale_order_poc_mrp
+#: model:ir.model,name:sale_order_poc_mrp.model_sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_mrp_production__poc_id
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_mrp_workorder__poc_id
+msgid "Production Configuration"
+msgstr "Конфигурация на производството"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model,name:sale_order_poc_mrp.model_sale_order_poc_template
+msgid "Production Configuration Template"
+msgstr "Шаблон за конфигурация на производството"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_sale_order_poc__production_count
+msgid "Production Count"
+msgstr "Брой производствени поръчки"
+
+#. module: sale_order_poc_mrp
+#. odoo-python
+#: code:addons/sale_order_poc_mrp/models/mrp_production.py:0
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_mrp.mrp_production_form_view_poc
+msgid "Recompute from Configuration"
+msgstr "Преизчисли по конфигурацията"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_sale_order_poc_template__restrict_component_lots
+msgid "Reserve Own Component Lots"
+msgstr "Резервирай собствените лотове на компонентите"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model,name:sale_order_poc_mrp.model_stock_move
+msgid "Stock Move"
+msgstr "Движение в склада"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model,name:sale_order_poc_mrp.model_stock_rule
+msgid "Stock Rule"
+msgstr "Правило за наличност"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_mrp_production__poc_template_id
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_mrp_workorder__poc_template_id
+msgid "Template"
+msgstr "Шаблон"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,help:sale_order_poc_mrp.field_mrp_bom_line__force_mts
+msgid ""
+"The component is taken from stock even if its routes would manufacture it "
+"for the configuration (e.g. granulate, packaging)."
+msgstr ""
+"Компонентът се взема от склада, дори ако маршрутите му биха го произвели за "
+"конфигурацията (напр. гранулат, опаковка)."
+
+#. module: sale_order_poc_mrp
+#. odoo-python
+#: code:addons/sale_order_poc_mrp/models/mrp_production.py:0
+msgid ""
+"The production configuration %(poc)s changed after this order started. Check"
+" the components and recompute them from the configuration."
+msgstr ""
+"Конфигурацията на производството %(poc)s се промени, след като тази поръчка "
+"е започнала. Проверете компонентите и ги преизчислете по конфигурацията."
+
+#. module: sale_order_poc_mrp
+#: model:ir.model,name:sale_order_poc_mrp.model_mrp_workorder
+msgid "Work Order"
+msgstr "Работна поръчка"

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+          https://www.gnu.org/licenses/lgpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the LGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the LGPL-3.0-or-later.
+-->
+<odoo>
+    <record id="mrp_production_form_view_poc" model="ir.ui.view">
+        <field name="name">mrp.production.form.poc</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/field[@name='state']" position="before">
+                <button name="action_poc_recompute" type="object"
+                        string="Recompute from Configuration"
+                        invisible="not poc_id or state not in ('confirmed', 'progress', 'to_close')"/>
+            </xpath>
+            <xpath expr="//field[@name='bom_id']" position="after">
+                <field name="poc_id" invisible="not poc_id"/>
+                <field name="poc_summary" invisible="not poc_summary"/>
+                <field name="poc_template_id" invisible="1"/>
+            </xpath>
+            <xpath expr="//page[@name='components']" position="after">
+                <page string="Configuration" name="poc_configuration" invisible="not poc_id">
+                    <field name="poc_params" nolabel="1" columns="2" readonly="1"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="mrp_production_tree_view_poc" model="ir.ui.view">
+        <field name="name">mrp.production.list.poc</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_id']" position="after">
+                <field name="poc_summary" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_mrp_production_filter_poc" model="ir.ui.view">
+        <field name="name">mrp.production.search.poc</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.view_mrp_production_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_id']" position="after">
+                <field name="poc_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

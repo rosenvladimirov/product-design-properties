@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+          https://www.gnu.org/licenses/lgpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the LGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the LGPL-3.0-or-later.
+-->
+<odoo>
+    <record id="mrp_production_workorder_tree_view_poc" model="ir.ui.view">
+        <field name="name">mrp.workorder.list.poc</field>
+        <field name="model">mrp.workorder</field>
+        <field name="inherit_id" ref="mrp.mrp_production_workorder_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='production_id']" position="after">
+                <field name="poc_summary" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

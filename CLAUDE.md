@@ -34,6 +34,7 @@ mrp_design_matrix_canned_peppers/
 
 sale_design_configurator/       ← SO ред → конфигуратор → лот → МО bridge
 sale_order_poc/                 ← LGPL-3: Production Configuration на SO ред (генеричен POC), ADR sale-order-poc/*
+sale_order_poc_mrp/             ← LGPL-3: мостът към MRP (лот, без сливане, преизчисляване), без свой двигател
 ```
 
 ### Dependency chain (отдолу нагоре)
