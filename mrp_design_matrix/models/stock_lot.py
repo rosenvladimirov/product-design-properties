@@ -75,11 +75,24 @@ class StockLot(models.Model):
     # по същия договор като ядрото, не по втори механизъм.
 
     @api.model
+    def _lot_prefix_value(self, value):
+        """Стойност от контекста, годна за представка на партида."""
+        if value is None:
+            return ""
+        if isinstance(value, float) and value.is_integer():
+            return int(value)
+        return value
+
     def _format_lot_prefix(self, prefix_template, context):
         """Resolve a prefix template ("{series}{lock_points}") to a prefix."""
         # None в контекста би влязло в номера като "None" — по-добре празно.
+        # 🚨 `_build_context._coerce_numeric` превръща char параметър с числово
+        # съдържание в float заради ZEN сравненията ("3" → 3.0). В номер това
+        # влиза като "3.0" и представката става "Е3.0" вместо "Е3" — затова
+        # цялото число се изписва цяло. Стойност с истинска дробна част си
+        # остава както е: тя НЕ е артефакт от преобразуването.
         safe_context = {
-            key: ("" if value is None else value)
+            key: self._lot_prefix_value(value)
             for key, value in (context or {}).items()
         }
         try:

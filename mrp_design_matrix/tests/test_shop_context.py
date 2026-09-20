@@ -27,10 +27,26 @@ class TestShopContext(TransactionCase):
         cls.workcenter = cls.env["mrp.workcenter"].create(
             {"name": "Test Powder Coating", "code": "TSTPWD"}
         )
+        # `bom_id` е required в ядрото (mrp/models/mrp_routing.py) — операция
+        # без рецепта не се създава, затова тестът си носи една.
+        cls.product = cls.env["product.product"].create(
+            {"name": "Test Shop Context Product", "is_storable": True}
+        )
+        cls.bom = cls.env["mrp.bom"].create(
+            {
+                "product_tmpl_id": cls.product.product_tmpl_id.id,
+                "product_qty": 1.0,
+            }
+        )
 
     def _make_operation(self, name, **vals):
         return self.Operation.create(
-            dict(name=name, workcenter_id=self.workcenter.id, **vals)
+            dict(
+                name=name,
+                workcenter_id=self.workcenter.id,
+                bom_id=self.bom.id,
+                **vals,
+            )
         )
 
     def test_one_operation_can_carry_several_barcodes(self):

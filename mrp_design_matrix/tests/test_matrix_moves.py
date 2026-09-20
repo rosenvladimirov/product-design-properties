@@ -97,6 +97,12 @@ class TestMatrixMoves(TransactionCase):
                         "selection": [["wood", "Wood"], ["glass", "Glass"]],
                     },
                 ],
+                # Без речник в контекста влиза САМО етикетът („Material"), а
+                # таблиците питат за `material` — и не намират нищо. Реалните
+                # дефиниции винаги носят речник; тестът също.
+                "param_dictionary": {
+                    "material": {"uuid": "material", "name": {}, "aliases": []},
+                },
             }
         )
 
@@ -150,14 +156,18 @@ class TestMatrixMoves(TransactionCase):
 
     def test_t0_error_raises_user_error(self):
         """A T0 error rule that matches raises UserError."""
+        # Договорът на T0 от zen 0.53 нататък: таблицата дава `level` и
+        # `message` на ред (виж `_eval_t0_constraints` и реалните таблици на
+        # вертикалите). Старият изход `errors` вече не се чете.
         t0 = _jdm(
             inputs=["material"],
-            outputs=["errors"],
+            outputs=["level", "message"],
             rules=[
                 {
                     "_id": "r1",
                     "material": '"glass"',
-                    "errors": '[{"message": "glass not supported"}]',
+                    "level": '"error"',
+                    "message": '"glass not supported"',
                 },
             ],
         )
@@ -251,15 +261,17 @@ class TestMatrixMoves(TransactionCase):
 
     def test_bom_line_o_variant_activated_by_matrix(self):
         """T2 material table activates an O-variant via matrix_coeff_rule."""
+        # `bom_line_coeff_key` КАЗВА кой ред се активира, а стойността идва
+        # от `coefficient` — не от поле с името на ключа (`_eval_t2_materials`).
         t2 = _jdm(
             inputs=["material"],
-            outputs=["glass_coeff", "bom_line_coeff_key"],
+            outputs=["bom_line_coeff_key", "coefficient"],
             rules=[
                 {
                     "_id": "r1",
                     "material": '"glass"',
-                    "glass_coeff": "1.0",
                     "bom_line_coeff_key": '"glass_coeff"',
+                    "coefficient": "1.0",
                 },
             ],
         )

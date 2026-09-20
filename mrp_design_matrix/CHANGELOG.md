@@ -4,6 +4,24 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.3.13.2] - 2026-09-20
+
+### Fixed
+
+- A lot prefix resolved from the combination came out as `Е3.0` instead of
+  `Е3`, so the lot number read `Е3.00000001`. A char parameter holding a
+  number is coerced to a float for the ZEN comparisons, and the prefix was
+  formatted with the decimal part; an integral value is now written whole,
+  while a real fraction is left alone.
+- Three tests in `test_matrix_moves` were stale and had never run (the copy
+  in a client tree imported a single test file): they used the pre-0.53 T0
+  output `errors` instead of `level`/`message`, read the T2 coefficient from
+  a field named after the key instead of `coefficient`, and built a
+  definition with no `param_dictionary`, so the context carried only the
+  label `Material` and the tables never matched.
+- `test_shop_context` created an operation without a BoM, but `bom_id` is
+  required in the core.
+
 ## [19.0.3.13.1] - 2026-09-19
 
 ### Fixed
