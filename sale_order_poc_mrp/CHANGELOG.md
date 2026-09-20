@@ -4,6 +4,16 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.1.0] - 2026-09-20
+
+### Added
+
+- `mrp.production._poc_context_names()` — the names of the Stage 2
+  contract without the values, so that the formula check of
+  `sale_order_poc_mrp_formula` has one source of truth.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.0.0] - 2026-09-19
 
 ### Added

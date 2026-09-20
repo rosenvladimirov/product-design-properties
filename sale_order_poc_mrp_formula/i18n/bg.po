@@ -1,0 +1,86 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sale_order_poc_mrp_formula
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-20 15:43+0000\n"
+"PO-Revision-Date: 2026-09-20 19:00+0300\n"
+"Last-Translator: Rosen Vladimirov <vladimirov.rosen@gmail.com>\n"
+"Language-Team: \n"
+"Language: bg_BG\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: sale_order_poc_mrp_formula
+#. odoo-python
+#: code:addons/sale_order_poc_mrp_formula/models/mrp_bom.py:0
+msgid "%(product)s has no production configuration template."
+msgstr "%(product)s няма шаблон за конфигурация на производството."
+
+#. module: sale_order_poc_mrp_formula
+#: model:ir.model,name:sale_order_poc_mrp_formula.model_mrp_bom
+msgid "Bill of Material"
+msgstr "Спецификация"
+
+#. module: sale_order_poc_mrp_formula
+#: model:ir.model,name:sale_order_poc_mrp_formula.model_mrp_bom_line
+msgid "Bill of Material Line"
+msgstr "Ред на спецификацията"
+
+#. module: sale_order_poc_mrp_formula
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_mrp_formula.mrp_bom_form_view_poc_formula
+msgid "Check Configuration Formulas"
+msgstr "Провери формулите по конфигурацията"
+
+#. module: sale_order_poc_mrp_formula
+#: model:ir.model.fields,field_description:sale_order_poc_mrp_formula.field_mrp_bom__display_name
+#: model:ir.model.fields,field_description:sale_order_poc_mrp_formula.field_mrp_bom_line__display_name
+msgid "Display Name"
+msgstr "Име за показване"
+
+#. module: sale_order_poc_mrp_formula
+#. odoo-python
+#: code:addons/sale_order_poc_mrp_formula/models/mrp_bom.py:0
+msgid "Every formula name is in the production configuration."
+msgstr "Всички имена във формулите ги има в конфигурацията на производството."
+
+#. module: sale_order_poc_mrp_formula
+#: model:ir.model.fields,field_description:sale_order_poc_mrp_formula.field_mrp_bom__id
+#: model:ir.model.fields,field_description:sale_order_poc_mrp_formula.field_mrp_bom_line__id
+msgid "ID"
+msgstr "ID"
+
+#. module: sale_order_poc_mrp_formula
+#. odoo-python
+#: code:addons/sale_order_poc_mrp_formula/models/mrp_bom.py:0
+msgid ""
+"These names are not in the configuration:\n"
+"%(lines)s"
+msgstr ""
+"Тези имена ги няма в конфигурацията:\n"
+"%(lines)s"
+
+#. module: sale_order_poc_mrp_formula
+#. odoo-python
+#: code:addons/sale_order_poc_mrp_formula/__init__.py:0
+msgid ""
+"Uninstall mrp_bom_line_formula_quantity first: it is the old fork of the "
+"same formula engine."
+msgstr ""
+"Първо деинсталирайте mrp_bom_line_formula_quantity: това е старият форк на "
+"същия двигател за формули."
+
+#. module: sale_order_poc_mrp_formula
+#. odoo-python
+#: code:addons/sale_order_poc_mrp_formula/__init__.py:0
+msgid ""
+"mrp_bom_line_formula_template %(version)s is too old; 19.0.2.3.0 or later is"
+" needed for add_products."
+msgstr ""
+"mrp_bom_line_formula_template %(version)s е твърде стар; за add_products "
+"трябва 19.0.2.3.0 или по-нов."

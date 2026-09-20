@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **sale_order_poc_mrp_formula** (19.0.1.0.0, AGPL-3, auto install) — new
+  module: the production configuration feeds the BoM line quantity
+  formulas; a table parameter becomes extra components through
+  `add_products`; button "Check Configuration Formulas" on the BoM
+  (ADR sale-order-poc/0005, 0006)
+- **sale_order_poc_mrp** (19.0.1.1.0) — `_poc_context_names()`, the names
+  of the Stage 2 contract, for the formula check
+
+### Added
 - **sale_order_poc** (19.0.1.1.0) — aspects and tables: an aspect template
   adds its own parameters to one configuration (codes may not overlap with
   the main template), and a table parameter declares child rows that reach

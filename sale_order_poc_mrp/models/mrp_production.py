@@ -13,7 +13,7 @@ from collections import defaultdict
 
 from markupsafe import Markup
 
-from odoo import Command, fields, models
+from odoo import Command, api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -75,6 +75,27 @@ class MrpProduction(models.Model):
             "sqrt": math.sqrt,
             "pi": math.pi,
         }
+
+    @api.model
+    def _poc_context_names(self):
+        """Имената на договора без стойностите на POC — един източник и за
+        проверката на формулите (sale_order_poc_mrp_formula)."""
+        return frozenset(
+            {
+                "poc",
+                "poc_product",
+                "lot",
+                "order_qty",
+                "order_uom",
+                "mo_qty",
+                "mo_uom",
+                "mo_product",
+                "ceil",
+                "floor",
+                "sqrt",
+                "pi",
+            }
+        )
 
     def _get_move_raw_values(
         self, product, product_uom_qty, product_uom, operation_id=False, bom_line=False
