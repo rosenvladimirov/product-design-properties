@@ -9,6 +9,8 @@
 # Unless you hold a valid commercial license, your use of this file is governed
 # by the LGPL-3.0-or-later.
 from . import poc_param
+from . import poc_aspect
+from . import poc_line
 from . import poc_template
 from . import sale_order_poc
 from . import sale_order_line

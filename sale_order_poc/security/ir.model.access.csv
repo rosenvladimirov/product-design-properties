@@ -9,3 +9,7 @@ access_poc_template_line_all,poc.template.line all,model_sale_order_poc_template
 access_poc_template_line_manager,poc.template.line manager,model_sale_order_poc_template_line,group_poc_manager,1,1,1,1
 access_poc_user,sale.order.poc user,model_sale_order_poc,group_poc_user,1,1,1,1
 access_poc_stock,sale.order.poc stock,model_sale_order_poc,stock.group_stock_user,1,0,0,0
+access_poc_aspect_user,sale.order.poc.aspect user,model_sale_order_poc_aspect,group_poc_user,1,1,1,1
+access_poc_aspect_stock,sale.order.poc.aspect stock,model_sale_order_poc_aspect,stock.group_stock_user,1,0,0,0
+access_poc_line_user,sale.order.poc.line user,model_sale_order_poc_line,group_poc_user,1,1,1,1
+access_poc_line_stock,sale.order.poc.line stock,model_sale_order_poc_line,stock.group_stock_user,1,0,0,0

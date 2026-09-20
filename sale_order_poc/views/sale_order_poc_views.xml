@@ -75,6 +75,7 @@
                                    options="{'no_create': True, 'no_open': True}"/>
                             <field name="lot_id" groups="stock.group_stock_user"/>
                             <field name="manual_params" invisible="not manual_params"/>
+                            <field name="table_count" invisible="1"/>
                             <field name="company_id" groups="base.group_multi_company"/>
                             <field name="can_edit_confirmed" invisible="1"/>
                             <field name="release_needed" invisible="1"/>
@@ -84,6 +85,36 @@
                         <page string="Parameters" name="params">
                             <field name="params" nolabel="1" colspan="2" columns="2"
                                    readonly="state == 'cancel' or (state == 'confirmed' and not can_edit_confirmed)"/>
+                        </page>
+                        <page string="Aspects" name="aspects"
+                              invisible="not template_id">
+                            <field name="aspect_ids" nolabel="1"
+                                   readonly="state == 'cancel' or (state == 'confirmed' and not can_edit_confirmed)">
+                                <list>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="template_id"/>
+                                </list>
+                                <form>
+                                    <group>
+                                        <field name="allowed_aspect_ids" invisible="1"/>
+                                        <field name="template_id"/>
+                                    </group>
+                                    <field name="params" nolabel="1" columns="2"/>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Tables" name="tables" invisible="not table_count">
+                            <field name="line_ids" nolabel="1"
+                                   readonly="state == 'cancel' or (state == 'confirmed' and not can_edit_confirmed)">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="param_id"/>
+                                    <field name="key"/>
+                                    <field name="product_id"/>
+                                    <field name="value"/>
+                                    <field name="uom_id"/>
+                                </list>
+                            </field>
                         </page>
                         <page string="Special Requirements" name="note">
                             <field name="note" nolabel="1"

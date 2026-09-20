@@ -25,6 +25,8 @@ PARAM_TYPES = [
     ("tags", "Tags"),
     ("many2one", "Record"),
     ("many2many", "Records"),
+    # таблицата не е пропърти: обявява детски редове (ADR sale-order-poc/0004)
+    ("table", "Table"),
 ]
 
 CODE_RE = re.compile(r"^[a-z][a-z0-9_]*$")
@@ -210,6 +212,8 @@ class SaleOrderPocParam(models.Model):
         зареждането на базата. Етикетите са на езика от контекста.
         """
         self.ensure_one()
+        if self.param_type == "table":
+            return None
         entry = {"name": self.code, "string": self.name, "type": self.param_type}
         if self.param_type == "selection":
             entry["selection"] = [[o.key, o.name] for o in self.option_ids]
@@ -234,6 +238,8 @@ class SaleOrderPocParam(models.Model):
         if not raw:
             return None
         ptype = self.param_type
+        if ptype == "table":
+            return None
         try:
             if ptype == "boolean":
                 return raw.lower() in ("1", "true", "yes", "y")

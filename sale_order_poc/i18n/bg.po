@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-19 15:27+0000\n"
+"POT-Creation-Date: 2026-09-20 15:31+0000\n"
 "PO-Revision-Date: 2026-09-19 18:00+0300\n"
 "Last-Translator: Rosen Vladimirov <vladimirov.rosen@gmail.com>\n"
 "Language-Team: \n"
@@ -15,6 +15,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: sale_order_poc
+#. odoo-python
+#: code:addons/sale_order_poc/models/poc_aspect.py:0
+msgid "%(aspect)s is not allowed by template %(template)s."
+msgstr "%(aspect)s не е позволен от шаблона %(template)s."
 
 #. module: sale_order_poc
 #. odoo-python
@@ -30,9 +36,21 @@ msgstr "%(param)s се изчислява по формула и не може �
 
 #. module: sale_order_poc
 #. odoo-python
+#: code:addons/sale_order_poc/models/poc_line.py:0
+msgid "%(param)s is not a table parameter."
+msgstr "%(param)s не е параметър тип таблица."
+
+#. module: sale_order_poc
+#. odoo-python
 #: code:addons/sale_order_poc/models/sale_order_poc.py:0
 msgid "%(poc)s is missing required parameters: %(params)s"
 msgstr "На %(poc)s липсват задължителни параметри: %(params)s"
+
+#. module: sale_order_poc
+#. odoo-python
+#: code:addons/sale_order_poc/models/poc_aspect.py:0
+msgid "%(template)s is not an aspect."
+msgstr "%(template)s не е аспект."
 
 #. module: sale_order_poc
 #. odoo-python
@@ -135,6 +153,17 @@ msgid "Activity Type Icon"
 msgstr "Икона за Вид Дейност"
 
 #. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_aspect__allowed_aspect_ids
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__allowed_aspect_ids
+msgid "Allowed Aspects"
+msgstr "Позволени аспекти"
+
+#. module: sale_order_poc
+#: model:ir.model.constraint,message:sale_order_poc.constraint_sale_order_poc_aspect_aspect_uniq
+msgid "An aspect appears once per configuration."
+msgstr "Един аспект се среща веднъж за конфигурация."
+
+#. module: sale_order_poc
 #: model:ir.model.constraint,message:sale_order_poc.constraint_sale_order_poc_sale_line_uniq
 msgid "An order line has one production configuration."
 msgstr "Редът на поръчката има една конфигурация на производството."
@@ -147,9 +176,16 @@ msgid "Archived"
 msgstr "Архивирано"
 
 #. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_aspect__template_id
 #: model:ir.model.fields.selection,name:sale_order_poc.selection__sale_order_poc_template__usage__aspect
 msgid "Aspect"
 msgstr "Аспект"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__aspect_ids
+#: model_terms:ir.ui.view,arch_db:sale_order_poc.sale_order_poc_view_form
+msgid "Aspects"
+msgstr "Аспекти"
 
 #. module: sale_order_poc
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__message_attachment_count
@@ -276,6 +312,8 @@ msgstr "Потвърдена"
 
 #. module: sale_order_poc
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__create_uid
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_aspect__create_uid
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_line__create_uid
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_param__create_uid
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_param_option__create_uid
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__create_uid
@@ -285,6 +323,8 @@ msgstr "Създадено от"
 
 #. module: sale_order_poc
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__create_date
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_aspect__create_date
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_line__create_date
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_param__create_date
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_param_option__create_date
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__create_date
@@ -321,6 +361,11 @@ msgid "Default"
 msgstr "По подразбиране"
 
 #. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__default_aspect_ids
+msgid "Default Aspects"
+msgstr "Аспекти по подразбиране"
+
+#. module: sale_order_poc
 #: model:sale.order.poc.param,name:sale_order_poc.demo_param_density
 msgid "Density"
 msgstr "Плътност"
@@ -345,6 +390,8 @@ msgstr "Размери"
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order__display_name
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_line__display_name
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__display_name
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_aspect__display_name
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_line__display_name
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_param__display_name
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_param_option__display_name
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__display_name
@@ -430,6 +477,8 @@ msgstr "Помощ за потребителя, който попълва сто
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order__id
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_line__id
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__id
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_aspect__id
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_line__id
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_param__id
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_param_option__id
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__id
@@ -486,6 +535,7 @@ msgid "Keep Value on Error"
 msgstr "Запази стойността при грешка"
 
 #. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_line__key
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_param_option__key
 msgid "Key"
 msgstr "Ключ"
@@ -508,6 +558,8 @@ msgstr "Формула за обобщение"
 
 #. module: sale_order_poc
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__write_uid
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_aspect__write_uid
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_line__write_uid
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_param__write_uid
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_param_option__write_uid
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__write_uid
@@ -517,6 +569,8 @@ msgstr "Последно актуализирано от"
 
 #. module: sale_order_poc
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__write_date
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_aspect__write_date
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_line__write_date
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_param__write_date
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_param_option__write_date
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__write_date
@@ -728,6 +782,7 @@ msgstr "Параметър"
 
 #. module: sale_order_poc
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__param_origins
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_aspect__param_origins
 msgid "Param Origins"
 msgstr "Произход на параметрите"
 
@@ -739,8 +794,24 @@ msgstr "Параметър"
 #. module: sale_order_poc
 #. odoo-python
 #: code:addons/sale_order_poc/models/poc_template.py:0
+msgid "Parameter %(code)s is a table; it is filled by rows, not by a formula."
+msgstr "Параметърът %(code)s е таблица; попълва се с редове, не с формула."
+
+#. module: sale_order_poc
+#. odoo-python
+#: code:addons/sale_order_poc/models/poc_template.py:0
 msgid "Parameter %(code)s is computed; it cannot be required."
 msgstr "Параметърът %(code)s се изчислява; не може да е задължителен."
+
+#. module: sale_order_poc
+#. odoo-python
+#: code:addons/sale_order_poc/models/poc_template.py:0
+msgid ""
+"Parameter %(code)s is in %(first)s and in %(second)s; an aspect may not "
+"repeat a code."
+msgstr ""
+"Параметърът %(code)s е в %(first)s и в %(second)s; аспект не може да повтаря"
+" код."
 
 #. module: sale_order_poc
 #. odoo-python
@@ -756,6 +827,7 @@ msgstr "Параметър %(param)s на %(poc)s: %(error)s"
 
 #. module: sale_order_poc
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__params
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_aspect__params
 #: model:ir.ui.menu,name:sale_order_poc.menu_sale_order_poc_param
 #: model_terms:ir.ui.view,arch_db:sale_order_poc.sale_order_poc_template_view_form
 #: model_terms:ir.ui.view,arch_db:sale_order_poc.sale_order_poc_view_form
@@ -786,6 +858,8 @@ msgstr "Променени параметри:"
 #. module: sale_order_poc
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order__poc_ids
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_line__poc_ids
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_aspect__poc_id
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_line__poc_id
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__poc_ids
 msgid "Poc"
 msgstr "Конфигурация"
@@ -804,6 +878,7 @@ msgstr "С печат"
 #. module: sale_order_poc
 #: model:ir.model,name:sale_order_poc.model_product_template
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__product_id
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_line__product_id
 #: model:ir.model.fields.selection,name:sale_order_poc.selection__sale_order_poc_template__usage__main
 msgid "Product"
 msgstr "Продукт"
@@ -826,6 +901,11 @@ msgid "Production Configuration"
 msgstr "Конфигурация на производството"
 
 #. module: sale_order_poc
+#: model:ir.model,name:sale_order_poc.model_sale_order_poc_aspect
+msgid "Production Configuration Aspect"
+msgstr "Аспект на конфигурацията на производството"
+
+#. module: sale_order_poc
 #: model:ir.model,name:sale_order_poc.model_sale_order_poc_param
 msgid "Production Configuration Parameter"
 msgstr "Параметър на конфигурацията на производството"
@@ -834,6 +914,11 @@ msgstr "Параметър на конфигурацията на произво
 #: model:ir.model,name:sale_order_poc.model_sale_order_poc_param_option
 msgid "Production Configuration Parameter Option"
 msgstr "Опция на параметър на конфигурацията на производството"
+
+#. module: sale_order_poc
+#: model:ir.model,name:sale_order_poc.model_sale_order_poc_line
+msgid "Production Configuration Table Row"
+msgstr "Ред на таблица в конфигурацията на производството"
 
 #. module: sale_order_poc
 #: model:ir.model,name:sale_order_poc.model_sale_order_poc_template
@@ -955,6 +1040,8 @@ msgid "Selection"
 msgstr "Избор"
 
 #. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_aspect__sequence
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_line__sequence
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_param_option__sequence
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__sequence
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template_line__sequence
@@ -1028,6 +1115,33 @@ msgid "Summary formula of template %(template)s: %(error)s"
 msgstr "Формула за обобщение на шаблона %(template)s: %(error)s"
 
 #. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_line__param_id
+#: model:ir.model.fields.selection,name:sale_order_poc.selection__sale_order_poc_param__param_type__table
+msgid "Table"
+msgstr "Таблица"
+
+#. module: sale_order_poc
+#. odoo-python
+#: code:addons/sale_order_poc/models/poc_line.py:0
+msgid "Table %(param)s is not in the template of %(poc)s or in its aspects."
+msgstr "Таблицата %(param)s не е в шаблона на %(poc)s, нито в аспектите му."
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__table_count
+msgid "Table Count"
+msgstr "Брой таблици"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__line_ids
+msgid "Table Rows"
+msgstr "Редове на таблиците"
+
+#. module: sale_order_poc
+#: model_terms:ir.ui.view,arch_db:sale_order_poc.sale_order_poc_view_form
+msgid "Tables"
+msgstr "Таблици"
+
+#. module: sale_order_poc
 #: model:ir.model.fields.selection,name:sale_order_poc.selection__sale_order_poc_param__param_type__tags
 msgid "Tags"
 msgstr "Маркери"
@@ -1065,6 +1179,11 @@ msgid "Text"
 msgstr "Текст"
 
 #. module: sale_order_poc
+#: model:ir.model.fields,help:sale_order_poc.field_sale_order_poc_line__key
+msgid "The axis of the row: a section, a colour, a role."
+msgstr "Оста на реда: секция, цвят или роля."
+
+#. module: sale_order_poc
 #. odoo-python
 #: code:addons/sale_order_poc/models/poc_param.py:0
 msgid "The code %(code)s is reserved: formulas already use this name."
@@ -1100,6 +1219,12 @@ msgstr ""
 #: model:ir.model.fields,help:sale_order_poc.field_sale_order_poc_template_line__required
 msgid "The configuration cannot go to production without this value."
 msgstr "Конфигурацията не може да отиде в производство без тази стойност."
+
+#. module: sale_order_poc
+#. odoo-python
+#: code:addons/sale_order_poc/models/poc_template.py:0
+msgid "The default aspects must be allowed first: %(aspects)s"
+msgstr "Аспектите по подразбиране трябва първо да са позволени: %(aspects)s"
 
 #. module: sale_order_poc
 #. odoo-python
@@ -1166,6 +1291,7 @@ msgstr "Вид на изключение на дейност в базата."
 
 #. module: sale_order_poc
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__product_uom_id
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_line__uom_id
 msgid "Unit"
 msgstr "Мярка"
 
@@ -1173,6 +1299,11 @@ msgstr "Мярка"
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__usage
 msgid "Usage"
 msgstr "Предназначение"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_line__value
+msgid "Value"
+msgstr "Стойност"
 
 #. module: sale_order_poc
 #: model:ir.model.fields,help:sale_order_poc.field_sale_order_poc_param__default_value

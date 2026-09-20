@@ -32,3 +32,24 @@ class TestPocUi(PocCommon, HttpCase):
     def test_manager_reaches_the_definition_editor(self):
         poc = self._make_poc()
         self.start_tour(self._url(poc), "sale_order_poc_manager", login="poc_manager")
+
+    def test_aspect_parameters_are_edited_in_the_popup(self):
+        """Аспектът се редактира в изскачащия прозорец (ADR sale-order-poc/0004)."""
+        param = self.env["sale.order.poc.param"].create(
+            {"code": "t_print_colors", "name": "Print Colors", "param_type": "integer"}
+        )
+        aspect_template = self.env["sale.order.poc.template"].create(
+            {
+                "code": "t_print",
+                "name": "Printing",
+                "usage": "aspect",
+                "line_ids": [(0, 0, {"param_id": param.id})],
+            }
+        )
+        self.template.allowed_aspect_ids = [(4, aspect_template.id)]
+        poc = self._fill(self._make_poc())
+        self.env["sale.order.poc.aspect"].create(
+            {"poc_id": poc.id, "template_id": aspect_template.id}
+        )
+        self.start_tour(self._url(poc), "sale_order_poc_aspect", login="poc_pure_salesman")
+        self.assertEqual(poc._poc_values()["t_print_colors"], 6)

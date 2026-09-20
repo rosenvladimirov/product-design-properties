@@ -50,6 +50,11 @@
                         <group>
                             <field name="code"/>
                             <field name="usage"/>
+                            <field name="allowed_aspect_ids" widget="many2many_tags"
+                                   invisible="usage != 'main'"/>
+                            <field name="default_aspect_ids" widget="many2many_tags"
+                                   domain="[('id', 'in', allowed_aspect_ids)]"
+                                   invisible="usage != 'main'"/>
                         </group>
                         <group>
                             <field name="company_id" groups="base.group_multi_company"/>

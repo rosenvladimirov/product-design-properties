@@ -111,3 +111,38 @@ registry.category("web_tour.tours").add("sale_order_poc_manager", {
         },
     ],
 });
+
+registry.category("web_tour.tours").add("sale_order_poc_aspect", {
+    steps: () => [
+        {
+            content: "Open the Aspects tab",
+            trigger: ".o_notebook .nav-link:contains(Aspects)",
+            run: "click",
+        },
+        {
+            content: "Open the aspect",
+            trigger: ".o_field_widget[name=aspect_ids] .o_data_cell:contains(Printing)",
+            run: "click",
+        },
+        {
+            content: "The aspect has its own parameters",
+            trigger: ".modal .o_property_field[property-name=t_print_colors] input",
+            run: "edit 6",
+        },
+        {
+            content: "Leave the field",
+            trigger: ".modal .modal-title",
+            run: "click",
+        },
+        {
+            content: "The value is applied",
+            trigger: ".modal .o_property_field[property-name=t_print_colors] input:value(6)",
+        },
+        {
+            content: "Save the aspect",
+            trigger: ".modal footer button.o_form_button_save",
+            run: "click",
+        },
+        ...stepUtils.saveForm(),
+    ],
+});

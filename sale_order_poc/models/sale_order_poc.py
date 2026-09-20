@@ -27,7 +27,9 @@ STATE_BY_ORDER_STATE = {
 
 # потребителските полета; системните (лот, произход, резюме) минават с
 # контекст poc_system (ADR sale-order-poc/0009)
-USER_FIELDS = frozenset({"params", "template_id", "note"})
+USER_FIELDS = frozenset(
+    {"params", "template_id", "note", "aspect_ids", "line_ids"}
+)
 
 
 def _is_empty(value):
@@ -102,6 +104,14 @@ class SaleOrderPoc(models.Model):
         copy=True,
     )
     param_origins = fields.Json(copy=True, readonly=True)
+    # разширенията на носителя (ADR sale-order-poc/0004)
+    aspect_ids = fields.One2many(
+        "sale.order.poc.aspect", "poc_id", string="Aspects", copy=True
+    )
+    line_ids = fields.One2many(
+        "sale.order.poc.line", "poc_id", string="Table Rows", copy=True
+    )
+    table_count = fields.Integer(compute="_compute_table_count")
     manual_params = fields.Char(
         string="Manual Values",
         compute="_compute_manual_params",
@@ -143,13 +153,19 @@ class SaleOrderPoc(models.Model):
     @api.depends("param_origins", "template_id")
     def _compute_manual_params(self):
         for poc in self:
-            origins = poc.param_origins or {}
-            names = [
-                line.param_id.name
-                for line in poc.template_id.line_ids
-                if line.param_id and origins.get(line.param_id.code) == "manual"
-            ]
+            names = []
+            for container in poc._poc_containers():
+                origins = container.param_origins or {}
+                names += [
+                    line.param_id.name
+                    for line in container.template_id.line_ids
+                    if line.param_id and origins.get(line.param_id.code) == "manual"
+                ]
             poc.manual_params = ", ".join(names) or False
+
+    def _compute_table_count(self):
+        for poc in self:
+            poc.table_count = len(poc._poc_table_params())
 
     def _compute_lot_count(self):
         for poc in self:
@@ -182,7 +198,49 @@ class SaleOrderPoc(models.Model):
         неговите етикет вместо ключ и False вместо 0 (:829-838).
         """
         self.ensure_one()
-        return self._poc_read_properties(self, "params")
+        values = {}
+        for container in self._poc_containers():
+            values.update(self._poc_read_properties(container, "params"))
+        values.update(self._poc_table_values())
+        return values
+
+    def _poc_containers(self):
+        """Носителите на стойности: основният и по един на аспект.
+
+        Properties има точно един контейнер на запис
+        (ORM/fields_properties.py:401-405), затова аспектът е отделен ред
+        (ADR sale-order-poc/0004). Кодовете им са disjoint, така че за
+        формулите пространството е едно.
+        """
+        self.ensure_one()
+        return [self] + list(self.aspect_ids)
+
+    def _poc_table_params(self):
+        """Параметрите тип таблица на основния шаблон и на аспектите."""
+        self.ensure_one()
+        lines = self.template_id.line_ids | self.aspect_ids.template_id.line_ids
+        return lines.param_id.filtered(lambda param: param.param_type == "table")
+
+    def _poc_table_values(self):
+        """Таблиците в договора: {код: [{key, product, value, uom}…]}.
+
+        Празната клетка е липсващ ред, не нула; редът е по sequence.
+        """
+        self.ensure_one()
+        tables = {param.code: [] for param in self._poc_table_params()}
+        # изрично по sequence: след create редовете са в кеша по ред на
+        # създаване, а договорът обещава подредба
+        for line in self.line_ids.sorted(lambda line: (line.sequence, line.id)):
+            if line.param_id.code in tables:
+                tables[line.param_id.code].append(
+                    {
+                        "key": line.key,
+                        "product": line.product_id,
+                        "value": line.value,
+                        "uom": line.uom_id,
+                    }
+                )
+        return tables
 
     @api.model
     def _poc_read_properties(self, record, field_name):
@@ -245,15 +303,18 @@ class SaleOrderPoc(models.Model):
         новите се сливат отгоре. Кодове извън схемата се пропускат.
         """
         for poc in self:
-            types = {
-                entry["name"]: entry["type"]
-                for entry in (poc.template_id.param_definition or [])
-            }
-            raw = dict(poc.params._values or {})
-            for code, value in updates.items():
-                if code in types:
+            for container in poc._poc_containers():
+                types = {
+                    entry["name"]: entry["type"]
+                    for entry in (container.template_id.param_definition or [])
+                }
+                mine = {code: v for code, v in updates.items() if code in types}
+                if not mine:
+                    continue
+                raw = dict(container.params._values or {})
+                for code, value in mine.items():
                     raw[code] = poc._poc_encode(types[code], value)
-            poc.params = raw
+                container.params = raw
 
     # ── Раждане ──────────────────────────────────────────────────────
 
@@ -274,6 +335,16 @@ class SaleOrderPoc(models.Model):
             vals_list
         )
         for poc, vals in zip(pocs, vals_list, strict=True):
+            if "aspect_ids" not in vals and poc.template_id.default_aspect_ids:
+                # аспектите по подразбиране на шаблона (ADR sale-order-poc/0004)
+                self.env["sale.order.poc.aspect"].with_context(
+                    poc_system=True
+                ).create(
+                    [
+                        {"poc_id": poc.id, "template_id": aspect.id}
+                        for aspect in poc.template_id.default_aspect_ids
+                    ]
+                )
             if "params" not in vals:
                 poc._poc_apply_defaults()
         pocs._poc_compute_derived()
@@ -287,21 +358,23 @@ class SaleOrderPoc(models.Model):
         константите на продукта (``poc_default_params``).
         """
         self.ensure_one()
-        defaults = {}
-        for line in self.template_id.line_ids.filtered("param_id"):
-            value = line.param_id._parse_default()
-            if value is not None:
-                defaults[line.param_id.code] = value
-        product_tmpl = self.product_id.product_tmpl_id
-        if product_tmpl.poc_template_id == self.template_id:
-            product_values = product_tmpl.poc_default_params._values or {}
-            defaults.update(
-                {code: v for code, v in product_values.items() if v is not None}
-            )
-        if defaults:
-            raw = dict(self.params._values or {})
-            raw.update(defaults)
-            self.with_context(poc_system=True).params = raw
+        for container in self._poc_containers():
+            defaults = {}
+            for line in container.template_id.line_ids.filtered("param_id"):
+                value = line.param_id._parse_default()
+                if value is not None:
+                    defaults[line.param_id.code] = value
+            if container == self:
+                product_tmpl = self.product_id.product_tmpl_id
+                if product_tmpl.poc_template_id == self.template_id:
+                    product_values = product_tmpl.poc_default_params._values or {}
+                    defaults.update(
+                        {code: v for code, v in product_values.items() if v is not None}
+                    )
+            if defaults:
+                raw = dict(container.params._values or {})
+                raw.update(defaults)
+                container.with_context(poc_system=True).params = raw
 
     # ── Stage 1: изчислените параметри ───────────────────────────────
 
@@ -331,19 +404,32 @@ class SaleOrderPoc(models.Model):
         (ADR sale-order-poc/0003).
         """
         engine = self.env["formula.engine.mixin"]
+        Template = self.env["sale.order.poc.template"]
         for poc in self:
             template = poc.template_id
-            lines = template._poc_formula_lines() if template else []
+            containers = poc._poc_containers()
+            all_lines = self.env["sale.order.poc.template.line"].browse()
+            for container in containers:
+                all_lines |= container.template_id.line_ids
+            lines = Template._poc_order_formula_lines(all_lines, poc.display_name)
             if not lines and not template.label_formula:
                 continue
+            # всеки ред пише в своя контейнер: основният шаблон или аспектът
+            container_by_template = {
+                container.template_id: container for container in containers
+            }
             values = poc._poc_values()
-            origins = dict(poc.param_origins or {})
+            origins = {
+                container: dict(container.param_origins or {})
+                for container in containers
+            }
             base = poc._poc_formula_context()
             updates = {}
             fallbacks = []
             for line in lines:
                 code = line.param_id.code
-                if line.allow_manual and origins.get(code) == "manual":
+                container = container_by_template[line.template_id]
+                if line.allow_manual and origins[container].get(code) == "manual":
                     continue
                 if poc._poc_inputs_missing(line.formula, values):
                     # входовете още ги няма (черновата се попълва): изходът е
@@ -352,7 +438,7 @@ class SaleOrderPoc(models.Model):
                     if values.get(code) is not None:
                         values[code] = None
                         updates[code] = None
-                    origins.pop(code, None)
+                    origins[container].pop(code, None)
                     continue
                 try:
                     result = engine._formula_eval(
@@ -373,7 +459,7 @@ class SaleOrderPoc(models.Model):
                     ) from exc
                 values[code] = result
                 updates[code] = result
-                origins[code] = "formula"
+                origins[container][code] = "formula"
             summary = poc.summary
             if template.label_formula and poc._poc_inputs_missing(
                 template.label_formula, values
@@ -396,13 +482,13 @@ class SaleOrderPoc(models.Model):
             system = poc.with_context(poc_system=True)
             if updates:
                 system._poc_set_params(updates)
-            system_vals = {}
-            if origins != (poc.param_origins or {}):
-                system_vals["param_origins"] = origins
+            for container, container_origins in origins.items():
+                if container_origins != (container.param_origins or {}):
+                    container.with_context(poc_system=True).param_origins = (
+                        container_origins
+                    )
             if summary != poc.summary:
-                system_vals["summary"] = summary
-            if system_vals:
-                system.write(system_vals)
+                system.write({"summary": summary})
             if fallbacks:
                 poc.message_post(
                     body=Markup("<p>%s</p><ul>%s</ul>")
@@ -462,30 +548,38 @@ class SaleOrderPoc(models.Model):
                 )
             )
 
+    def _poc_check_children_editable(self):
+        """Аспектите и редовете на таблиците са потребителски данни: след
+        потвърждаване ги мени само мениджър (ADR sale-order-poc/0009)."""
+        if self.env.context.get("poc_system"):
+            return
+        self._poc_check_can_edit({"aspect_ids": True})
+
     def _poc_mark_manual(self, before):
         """Потребител смени изчислен параметър: ръчен или грешка."""
         self.ensure_one()
         after = self._poc_values()
-        origins = dict(self.param_origins or {})
-        changed = False
-        for line in self.template_id.line_ids:
-            if not (line.formula and line.param_id):
-                continue
-            code = line.param_id.code
-            if after.get(code) == before.get(code):
-                continue
-            if not line.allow_manual:
-                # пропъртитата нямат „само за четене“ по ключ — забраната е тук
-                raise UserError(
-                    self.env._(
-                        "%(param)s is computed by a formula and cannot be edited.",
-                        param=line.param_id.name,
+        for container in self._poc_containers():
+            origins = dict(container.param_origins or {})
+            changed = False
+            for line in container.template_id.line_ids:
+                if not (line.formula and line.param_id):
+                    continue
+                code = line.param_id.code
+                if after.get(code) == before.get(code):
+                    continue
+                if not line.allow_manual:
+                    # пропъртитата нямат „само за четене“ по ключ — забраната е тук
+                    raise UserError(
+                        self.env._(
+                            "%(param)s is computed by a formula and cannot be edited.",
+                            param=line.param_id.name,
+                        )
                     )
-                )
-            origins[code] = "manual"
-            changed = True
-        if changed:
-            self.with_context(poc_system=True).write({"param_origins": origins})
+                origins[code] = "manual"
+                changed = True
+            if changed:
+                container.with_context(poc_system=True).param_origins = origins
 
     def _poc_post_changes(self, before):
         """Разликата „код: старо → ново“ в чатъра на потвърдена конфигурация
@@ -527,14 +621,16 @@ class SaleOrderPoc(models.Model):
     def _poc_check_required(self):
         for poc in self:
             values = poc._poc_values()
-            missing = [
-                line.param_id.name
-                for line in poc.template_id.line_ids
-                if line.required
-                and line.param_id
-                and line.param_id.param_type != "boolean"
-                and _is_empty(values.get(line.param_id.code))
-            ]
+            missing = []
+            for container in poc._poc_containers():
+                missing += [
+                    line.param_id.name
+                    for line in container.template_id.line_ids
+                    if line.required
+                    and line.param_id
+                    and line.param_id.param_type != "boolean"
+                    and _is_empty(values.get(line.param_id.code))
+                ]
             if missing:
                 raise UserError(
                     self.env._(

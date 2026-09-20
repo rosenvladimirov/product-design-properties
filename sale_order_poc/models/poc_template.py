@@ -68,6 +68,23 @@ class SaleOrderPocTemplate(models.Model):
         help="Formula whose result is the one-line summary of a configuration, "
         "e.g. result = '%sx%s mm' % (width_mm, length_mm)"
     )
+    # аспектите се добавят към конкретен POC (ADR sale-order-poc/0004)
+    allowed_aspect_ids = fields.Many2many(
+        "sale.order.poc.template",
+        "sale_order_poc_template_aspect_rel",
+        "template_id",
+        "aspect_id",
+        string="Allowed Aspects",
+        domain=[("usage", "=", "aspect")],
+    )
+    default_aspect_ids = fields.Many2many(
+        "sale.order.poc.template",
+        "sale_order_poc_template_default_aspect_rel",
+        "template_id",
+        "aspect_id",
+        string="Default Aspects",
+        domain=[("usage", "=", "aspect")],
+    )
     poc_ids = fields.One2many("sale.order.poc", "template_id")
     poc_count = fields.Integer(compute="_compute_poc_count")
 
@@ -119,7 +136,10 @@ class SaleOrderPocTemplate(models.Model):
                         }
                     )
                 elif line.param_id:
-                    definition.append(line.param_id._definition_entry())
+                    # таблиците не влизат в схемата: те са детски редове
+                    entry = line.param_id._definition_entry()
+                    if entry:
+                        definition.append(entry)
             template.param_definition = definition or False
 
     def _compute_poc_count(self):
@@ -143,6 +163,40 @@ class SaleOrderPocTemplate(models.Model):
             )
         return super().write(vals)
 
+    @api.constrains("allowed_aspect_ids", "default_aspect_ids", "line_ids", "usage")
+    def _check_aspect_keys(self):
+        """Кодовете на основния шаблон и на позволените аспекти не се
+        застъпват, нито аспектите помежду си: за формулите пространството е
+        едно и плоско (ADR sale-order-poc/0004)."""
+        for template in self:
+            if not (template.allowed_aspect_ids or template.default_aspect_ids):
+                continue
+            outside = template.default_aspect_ids - template.allowed_aspect_ids
+            if outside:
+                raise ValidationError(
+                    self.env._(
+                        "The default aspects must be allowed first: %(aspects)s",
+                        aspects=", ".join(outside.mapped("name")),
+                    )
+                )
+            used = {
+                code: template.display_name
+                for code in template.line_ids.param_id.mapped("code")
+            }
+            for aspect in template.allowed_aspect_ids:
+                for code in aspect.line_ids.param_id.mapped("code"):
+                    if code in used:
+                        raise ValidationError(
+                            self.env._(
+                                "Parameter %(code)s is in %(first)s and in "
+                                "%(second)s; an aspect may not repeat a code.",
+                                code=code,
+                                first=used[code],
+                                second=aspect.display_name,
+                            )
+                        )
+                    used[code] = aspect.display_name
+
     @api.constrains("line_ids", "label_formula")
     def _check_formula_graph(self):
         for template in self:
@@ -161,7 +215,13 @@ class SaleOrderPocTemplate(models.Model):
         се смятат веднъж, без повторения.
         """
         self.ensure_one()
-        lines = self.line_ids.filtered(lambda line: line.formula and line.param_id)
+        return self._poc_order_formula_lines(self.line_ids, self.display_name)
+
+    @api.model
+    def _poc_order_formula_lines(self, lines, name):
+        """Подрежда редове с формула по зависимости — на един шаблон или на
+        основния ∪ аспектите, защото кодовете им са disjoint (ADR 0004)."""
+        lines = lines.filtered(lambda line: line.formula and line.param_id)
         by_code = {line.param_id.code: line for line in lines}
         sorter = graphlib.TopologicalSorter()
         for line in lines.sorted(lambda line: (line.sequence, line.id)):
@@ -175,7 +235,7 @@ class SaleOrderPocTemplate(models.Model):
                 self.env._(
                     "The formulas of template %(template)s depend on each other in "
                     "a circle: %(cycle)s",
-                    template=self.display_name,
+                    template=name,
                     cycle=" → ".join(exc.args[1]),
                 )
             ) from exc
@@ -260,6 +320,14 @@ class SaleOrderPocTemplateLine(models.Model):
             if not line.param_id:
                 raise ValidationError(self.env._("A template line needs a parameter."))
             if line.formula:
+                if line.param_type == "table":
+                    raise ValidationError(
+                        self.env._(
+                            "Parameter %(code)s is a table; it is filled by rows, "
+                            "not by a formula.",
+                            code=line.param_id.code,
+                        )
+                    )
                 if line.required:
                     raise ValidationError(
                         self.env._(

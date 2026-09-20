@@ -4,6 +4,32 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.1.0] - 2026-09-20
+
+### Added
+
+- Aspects: a template with usage "aspect" is added to one configuration
+  (printing, label, packing scheme) and brings its own parameters. The
+  codes of the main template and of the allowed aspects may not overlap,
+  so the formulas see one flat space. A template may give default
+  aspects (ADR sale-order-poc/0004).
+- Table parameters: a parameter of type "table" is not a property; it
+  declares child rows (key, product, value, unit). In a formula the table
+  is a list of rows ordered by sequence; an empty cell is a missing row,
+  not a zero. Tables reach the manufacturing order through the
+  `add_products` output of the formula (ADR sale-order-poc/0012).
+- After confirmation the aspects and the table rows are user data: only a
+  configuration manager changes them.
+
+### Known limits
+
+- The related `poc_params` on the lot, the manufacturing order and the
+  work order show only the MAIN container: Properties has exactly one
+  definition record per field. The aspects are read through the
+  configuration.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.0.1] - 2026-09-19
 
 ### Added

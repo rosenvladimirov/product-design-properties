@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **sale_order_poc** (19.0.1.1.0) — aspects and tables: an aspect template
+  adds its own parameters to one configuration (codes may not overlap with
+  the main template), and a table parameter declares child rows that reach
+  a formula as a list (ADR sale-order-poc/0004)
+
+### Added
 - **sale_order_poc_mrp** (19.0.1.0.0, LGPL-3) — new module: the
   manufacturing bridge of the production configuration, no formula engine
   of its own (ADR sale-order-poc/0007–0010, 0016)
