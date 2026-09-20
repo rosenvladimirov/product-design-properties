@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **sale_order_poc** (19.0.1.2.0) — `_poc_render()`: `{{ code }}` becomes the
+  value without eval, an empty line falls out, `html` escapes; the work
+  order layer of the private repo builds its note with it
+
+### Added
 - **sale_order_poc_mrp_formula** (19.0.1.0.0, AGPL-3, auto install) — new
   module: the production configuration feeds the BoM line quantity
   formulas; a table parameter becomes extra components through

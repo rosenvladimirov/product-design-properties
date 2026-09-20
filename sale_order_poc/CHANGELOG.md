@@ -4,6 +4,18 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.2.0] - 2026-09-20
+
+### Added
+
+- `_poc_render(text, fmt, extra)` — `{{ code }}` becomes the value, without
+  eval. A line whose value is empty falls out entirely, a selection shows
+  its label, a number its digits and suffix, and `fmt="html"` escapes.
+  The work order layer builds the Shop Floor note and the quality
+  instructions with it (ADR sale-order-poc/0010).
+
+*Assisted by Claude Code*
+
 ## [19.0.1.1.0] - 2026-09-20
 
 ### Added

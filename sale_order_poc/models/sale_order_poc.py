@@ -10,8 +10,9 @@
 # by the LGPL-3.0-or-later.
 import datetime
 import math
+import re
 
-from markupsafe import Markup
+from markupsafe import Markup, escape
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError
@@ -24,6 +25,8 @@ STATE_BY_ORDER_STATE = {
     "sale": "confirmed",
     "cancel": "cancel",
 }
+
+PLACEHOLDER = re.compile(r"\{\{\s*([a-z][a-z0-9_]*)\s*\}\}")
 
 # потребителските полета; системните (лот, произход, резюме) минават с
 # контекст poc_system (ADR sale-order-poc/0009)
@@ -214,6 +217,12 @@ class SaleOrderPoc(models.Model):
         """
         self.ensure_one()
         return [self] + list(self.aspect_ids)
+
+    def _poc_params(self):
+        """Всички параметри на конфигурацията: основният шаблон и аспектите."""
+        self.ensure_one()
+        lines = self.template_id.line_ids | self.aspect_ids.template_id.line_ids
+        return lines.param_id
 
     def _poc_table_params(self):
         """Параметрите тип таблица на основния шаблон и на аспектите."""
@@ -507,6 +516,58 @@ class SaleOrderPoc(models.Model):
         return any(
             values.get(name) is None for name in formula_names(formula) & values.keys()
         )
+
+    # ── Текст по конфигурацията ──────────────────────────────────────
+
+    def _poc_render(self, text, fmt="markdown", extra=None):
+        """``{{ код }}`` → стойността, БЕЗ eval.
+
+        Ред, в който някой заместител е празен, изпада целият: бележката за
+        цеха не бива да показва „Цвят:“ без цвят. Селекцията излиза с
+        етикета си, числото — закръглено и със суфикса на параметъра.
+        ``fmt='html'`` ескейпва стойностите.
+        """
+        self.ensure_one()
+        if not text:
+            return ""
+        values = {**self._poc_values(), **(extra or {})}
+        params = {param.code: param for param in self._poc_params()}
+        rendered = []
+        for line in text.splitlines():
+            codes = PLACEHOLDER.findall(line)
+            if codes and any(_is_empty(values.get(code)) for code in codes):
+                continue
+            rendered.append(
+                PLACEHOLDER.sub(
+                    lambda match: self._poc_render_value(
+                        params.get(match.group(1)), values.get(match.group(1)), fmt
+                    ),
+                    line,
+                )
+            )
+        return "\n".join(rendered)
+
+    @api.model
+    def _poc_render_value(self, param, value, fmt):
+        """Стойността, както я чете човек: етикет, закръгляне, суфикс."""
+        if isinstance(value, models.BaseModel):
+            text = ", ".join(value.mapped("display_name"))
+        elif param and param.param_type == "selection":
+            options = {option.key: option.name for option in param.option_ids}
+            text = options.get(value, "" if value is None else str(value))
+        elif param and param.param_type == "tags":
+            options = {option.key: option.name for option in param.option_ids}
+            text = ", ".join(options.get(key, key) for key in value or [])
+        elif param and param.param_type == "float" and isinstance(value, (int, float)):
+            text = ("%%.%df" % max(param.digits, 0)) % value
+            text = text.rstrip("0").rstrip(".") if "." in text else text
+        elif value is None or value is False:
+            text = ""
+        else:
+            text = str(value)
+        if text and param and param.suffix:
+            text = "%s %s" % (text, param.suffix)
+        return escape(text) if fmt == "html" else text
 
     # ── Редакция ─────────────────────────────────────────────────────
 
