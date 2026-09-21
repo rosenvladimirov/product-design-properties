@@ -68,6 +68,16 @@ class SaleOrderPocTemplate(models.Model):
         help="Formula whose result is the one-line summary of a configuration, "
         "e.g. result = '%sx%s mm' % (width_mm, length_mm)"
     )
+    # клиентът одобрява конфигурацията с офертата (ADR sale-order-poc/0017)
+    sale_description = fields.Text(
+        string="Quotation Text",
+        translate=True,
+        help="Text added to the description of the sales order line, so the "
+        "customer sees and accepts the configuration with the quotation. "
+        "Write {{ code }} for a parameter; a line whose parameter is empty is "
+        "left out. The text follows the configuration while the quotation is "
+        "a draft or sent; a block edited by hand is not overwritten.",
+    )
     # аспектите се добавят към конкретен POC (ADR sale-order-poc/0004)
     allowed_aspect_ids = fields.Many2many(
         "sale.order.poc.template",

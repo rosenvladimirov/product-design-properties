@@ -1356,3 +1356,50 @@ msgstr "мм"
 #: model:sale.order.poc.param,suffix:sale_order_poc.demo_param_thickness_um
 msgid "µm"
 msgstr "µm"
+
+#. module: sale_order_poc
+#: model_terms:ir.ui.view,arch_db:sale_order_poc.sale_order_poc_template_view_form
+msgid "Box: {{ box_l }} × {{ box_w }} × {{ box_d }} mm"
+msgstr "Кашон: {{ box_l }} × {{ box_w }} × {{ box_d }} мм"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__sale_description
+#: model_terms:ir.ui.view,arch_db:sale_order_poc.sale_order_poc_template_view_form
+msgid "Quotation Text"
+msgstr "Текст за офертата"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__sale_description_block
+msgid "Sale Description Block"
+msgstr "Вписан текст в офертата"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,help:sale_order_poc.field_sale_order_poc_template__sale_description
+msgid ""
+"Text added to the description of the sales order line, so the customer sees "
+"and accepts the configuration with the quotation. Write {{ code }} for a "
+"parameter; a line whose parameter is empty is left out. The text follows the"
+" configuration while the quotation is a draft or sent; a block edited by "
+"hand is not overwritten."
+msgstr ""
+"Текст, който се добавя към описанието на реда на продажбата, за да види "
+"клиентът конфигурацията и да я приеме с офертата. Пишете {{ код }} за "
+"параметър; ред с празен параметър изпада. Текстът следва конфигурацията, "
+"докато офертата е чернова или изпратена; блок, редактиран на ръка, не се "
+"презаписва."
+
+#. module: sale_order_poc
+#. odoo-python
+#: code:addons/sale_order_poc/models/sale_order_poc.py:0
+msgid ""
+"The quotation text of this configuration was edited by hand, so it was not "
+"updated. The quotation no longer follows the configuration."
+msgstr ""
+"Текстът на тази конфигурация в офертата е редактиран на ръка, затова не е "
+"обновен. Офертата вече не следва конфигурацията."
+
+#. module: sale_order_poc
+#. odoo-python
+#: code:addons/sale_order_poc/models/sale_order_poc.py:0
+msgid "Yes"
+msgstr "Да"

@@ -16,3 +16,4 @@ from . import test_license_graph
 from . import test_ui
 from . import test_aspects_tables
 from . import test_render
+from . import test_sale_description

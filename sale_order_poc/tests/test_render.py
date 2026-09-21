@@ -46,6 +46,18 @@ class TestRender(PocCommon):
         self.assertIn("&amp;", text)
         self.assertNotIn("<Print>", text)
 
+    def test_checkbox_reads_as_yes_and_false_drops_its_line(self):
+        handles = self.env["sale.order.poc.param"].create(
+            {"code": "t_handles", "name": "Handles", "param_type": "boolean"}
+        )
+        self.template.line_ids = [(0, 0, {"sequence": 99, "param_id": handles.id})]
+        poc = self._fill(self._make_poc())
+        text = "Width: {{ t_width_mm }}\nHandles: {{ t_handles }}"
+        poc._poc_set_params({"t_handles": True})
+        self.assertEqual(poc._poc_render(text), "Width: 300 mm\nHandles: Yes")
+        poc._poc_set_params({"t_handles": False})
+        self.assertEqual(poc._poc_render(text), "Width: 300 mm")
+
     def test_unknown_placeholder_drops_its_line(self):
         poc = self._fill(self._make_poc())
         self.assertEqual(poc._poc_render("Nope: {{ t_nothing }}"), "")

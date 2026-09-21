@@ -4,6 +4,25 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.3.0] - 2026-09-21
+
+### Added
+
+- The customer approves the configuration with the quotation (ADR
+  sale-order-poc/0017). The template has a "Quotation Text" with
+  `{{ code }}` placeholders; the configuration writes it into the
+  description of the sales order line, in the customer's language, while
+  the quotation is a draft or sent. The product text around the block
+  stays. A block edited by hand is not overwritten; the chatter says the
+  quotation no longer follows the configuration.
+
+### Fixed
+
+- `_poc_render` showed a checkbox as `True`; it now reads `Yes`, and an
+  unticked one drops its line like any empty value.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.2.0] - 2026-09-20
 
 ### Added

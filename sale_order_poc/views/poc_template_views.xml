@@ -83,6 +83,10 @@
                                 <field name="label_formula" widget="code" options="{'mode': 'python'}"/>
                             </group>
                         </page>
+                        <page string="Quotation Text" name="sale_description">
+                            <field name="sale_description" nolabel="1"
+                                   placeholder="Box: {{ box_l }} × {{ box_w }} × {{ box_d }} mm"/>
+                        </page>
                     </notebook>
                 </sheet>
             </form>

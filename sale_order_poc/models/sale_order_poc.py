@@ -131,6 +131,8 @@ class SaleOrderPoc(models.Model):
     lot_ids = fields.One2many("stock.lot", "poc_id", string="Lots")
     lot_count = fields.Integer(compute="_compute_lot_count")
     summary = fields.Char(readonly=True, copy=False, index="trigram")
+    # последно вписаният блок в описанието на реда (ADR sale-order-poc/0017)
+    sale_description_block = fields.Text(readonly=True, copy=False)
     note = fields.Html(string="Special Requirements")
     can_edit_confirmed = fields.Boolean(compute="_compute_can_edit_confirmed")
     release_needed = fields.Boolean(compute="_compute_release_needed")
@@ -509,6 +511,56 @@ class SaleOrderPoc(models.Model):
                         ),
                     )
                 )
+        # извън цикъла: шаблон без формули също има текст за офертата
+        self._poc_apply_sale_description()
+
+    # ── Текстът в офертата ───────────────────────────────────────────
+
+    def _poc_apply_sale_description(self):
+        """Вписва текста на шаблона в описанието на реда на продажбата.
+
+        Клиентът одобрява конфигурацията, като приеме офертата, затова тя
+        трябва да се вижда в самата оферта (ADR sale-order-poc/0017).
+        Текстът следва конфигурацията, докато офертата е чернова или
+        изпратена; потвърдената носи одобрения текст и не се пипа.
+
+        Помни се последно вписаният блок. Намери ли се в описанието, се
+        подменя, а текстът около него остава. Не се ли намери, някой го е
+        редактирал на ръка — тогава не се презаписва, а в чатъра отива
+        бележка, че офертата не следва конфигурацията.
+        """
+        for poc in self:
+            # системен запис като лота и резюмето: правото идва от записа на
+            # POC; продавач може да пише POC на поръчка, която не може да чете
+            line = poc.sudo().sale_line_id
+            if not line or line.order_id.state not in ("draft", "sent"):
+                continue
+            # на езика на клиента, както ядрото пише описанието на реда
+            lang = line.order_id._get_lang()
+            poc_lang = poc.with_context(lang=lang)
+            text = poc_lang.template_id.sale_description
+            block = poc_lang._poc_render(text).strip() if text else ""
+            old = poc.sale_description_block or ""
+            if block == old:
+                continue
+            name = line.name or ""
+            if old and old not in name:
+                poc.message_post(
+                    body=self.env._(
+                        "The quotation text of this configuration was edited by "
+                        "hand, so it was not updated. The quotation no longer "
+                        "follows the configuration."
+                    )
+                )
+                continue
+            if old:
+                name = name.replace(old, block, 1)
+                if not block:
+                    name = name.rstrip()
+            elif block:
+                name = f"{name.rstrip()}\n\n{block}" if name.strip() else block
+            line.name = name
+            poc.with_context(poc_system=True).sale_description_block = block or False
 
     @api.model
     def _poc_inputs_missing(self, formula, values):
@@ -561,6 +613,9 @@ class SaleOrderPoc(models.Model):
         elif param and param.param_type == "float" and isinstance(value, (int, float)):
             text = ("%%.%df" % max(param.digits, 0)) % value
             text = text.rstrip("0").rstrip(".") if "." in text else text
+        elif param and param.param_type == "boolean":
+            # „True“ не е текст за клиента; лъжата изпада с реда си
+            text = self.env._("Yes") if value else ""
         elif value is None or value is False:
             text = ""
         else:
