@@ -44,6 +44,19 @@ class SaleOrderLine(models.Model):
         )
         return lines.with_env(self.env)
 
+    def write(self, vals):
+        res = super().write(vals)
+        if "product_uom_qty" in vals:
+            # количеството е във формулите (order_qty) и в текста на офертата;
+            # потвърденият ред се преизчислява през процюърмънта (_poc_confirm),
+            # черновата — оттук, иначе остава със старото количество
+            pocs = self.filtered(
+                lambda line: line.order_id.state in ("draft", "sent")
+            ).poc_id
+            if pocs:
+                pocs._poc_compute_derived()
+        return res
+
     def action_open_poc(self):
         self.ensure_one()
         if not self.poc_id and not self.poc_template_id:

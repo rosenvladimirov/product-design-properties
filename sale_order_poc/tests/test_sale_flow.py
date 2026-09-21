@@ -101,6 +101,24 @@ class TestSaleFlow(PocCommon):
         order.order_line.product_uom_qty = 250.0
         self.assertEqual(poc._poc_values()["t_bags_total"], 250.0)
 
+    def test_quantity_change_on_draft_line_recomputes(self):
+        """Черновата също следва количеството — нея процюърмънтът не я вика."""
+        total = self.env["sale.order.poc.param"].create(
+            {"code": "t_bags_total", "name": "Bags", "param_type": "float"}
+        )
+        self.template.write(
+            {
+                "line_ids": [
+                    (0, 0, {"sequence": 60, "param_id": total.id, "formula": "result = order_qty"})
+                ]
+            }
+        )
+        order = self._make_order(qty=100.0)
+        poc = self._fill(self._make_poc(order))
+        self.assertEqual(poc._poc_values()["t_bags_total"], 100.0)
+        order.order_line.product_uom_qty = 250.0
+        self.assertEqual(poc._poc_values()["t_bags_total"], 250.0)
+
     def test_line_added_to_confirmed_order_waits_for_release(self):
         order = self._make_order(qty=10.0)
         self._fill(self._make_poc(order))

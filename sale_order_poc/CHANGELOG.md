@@ -4,6 +4,17 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.4.0] - 2026-09-21
+
+### Fixed
+
+- A quantity change on a draft or sent quotation line did not recompute its
+  configuration: only the procurement of a confirmed line did. `order_qty`
+  is in the formulas and in the quotation text, so the draft kept the old
+  quantity until something else changed.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.3.0] - 2026-09-21
 
 ### Added
