@@ -92,16 +92,73 @@ class SaleOrderLine(models.Model):
 
     @api.depends("design_lot_id", "design_lot_id.design_params")
     def _compute_design_params_summary(self):
+        """\u0420\u0435\u0437\u044e\u043c\u0435 \u043d\u0430 \u0440\u0435\u0434\u0430 \u0441 \u0427\u041e\u0412\u0415\u0428\u041a\u0418 \u0438\u043c\u0435\u043d\u0430, \u043d\u0435 \u0441 Property UUID-\u0442\u0430.
+
+        ``design_params`` \u0435 \u043a\u043b\u044e\u0447\u0438\u0440\u0430\u043d \u043f\u043e UUID \u2014 \u043f\u0435\u0447\u0430\u0442\u0430\u043d \u0441\u0443\u0440\u043e\u0432, \u0440\u0435\u0434\u044a\u0442
+        \u0438\u0437\u0433\u043b\u0435\u0436\u0434\u0430\u0448\u0435 \u043a\u0430\u0442\u043e ``0e4920bfb6318e39: 1600.0``, \u043a\u043e\u0435\u0442\u043e \u043d\u0435 \u043a\u0430\u0437\u0432\u0430 \u043d\u0438\u0449\u043e
+        \u043d\u0430 \u0442\u044a\u0440\u0433\u043e\u0432\u0435\u0446\u0430. \u0421\u0445\u0435\u043c\u0430\u0442\u0430 \u043d\u0430 \u0434\u0435\u0444\u0438\u043d\u0438\u0446\u0438\u044f\u0442\u0430 \u043d\u043e\u0441\u0438 ``string`` (\u0435\u0442\u0438\u043a\u0435\u0442\u0430) \u0438
+        ``selection`` (\u0434\u0432\u043e\u0439\u043a\u0438\u0442\u0435 \u0441\u0442\u043e\u0439\u043d\u043e\u0441\u0442/\u0435\u0442\u0438\u043a\u0435\u0442), \u0437\u0430\u0442\u043e\u0432\u0430 \u0440\u0435\u0437\u043e\u043b\u0432\u0430\u043c\u0435 \u0438
+        \u0434\u0432\u0435\u0442\u0435. \u0421\u0445\u0435\u043c\u0430\u0442\u0430 \u0441\u0435 \u0447\u0435\u0442\u0435 \u043f\u043e \u0432\u0435\u0434\u043d\u044a\u0436 \u043d\u0430 \u0434\u0435\u0444\u0438\u043d\u0438\u0446\u0438\u044f, \u043d\u0435 \u043d\u0430 \u0440\u0435\u0434.
+        """
+        schema_cache = {}
+
+        def schema_for(definition):
+            if definition.id not in schema_cache:
+                labels, choices, order = {}, {}, {}
+                # Редът на реда се определя от param_levels, а не от позицията
+                # в схемата. Схемата е „родителска верига + собствени", тоест
+                # най-общото стои отпред: за кашон това изкарваше размерите на
+                # врата (900×2100×40, наследени от base_dimensions) пред типа
+                # вълна. Нивото казва кое КОЙ вижда — редът на офертата е на
+                # търговеца, затова sales параметрите вървят първи.
+                # Нивата се мърджват по родителската верига както
+                # param_dictionary и legacy_aliases: размерите на кашона
+                # живеят в родителската дефиниция, печатът — в детето, а
+                # редът на офертата ги показва заедно.
+                levels = {}
+                for defn in reversed(definition._chain_bottom_up()):
+                    if defn.param_levels:
+                        levels.update(defn.param_levels)
+                rank = {"sales": 0, "technical": 1, "production": 2}
+                for pos, prop in enumerate(
+                        definition.full_design_params_definition or []):
+                    if not isinstance(prop, dict) or not prop.get("name"):
+                        continue
+                    uuid = prop["name"]
+                    label = prop.get("string") or uuid
+                    labels[uuid] = label
+                    # param_levels е ключиран по етикета, не по UUID.
+                    lvl = levels.get(label) or levels.get(uuid)
+                    order[uuid] = rank.get(lvl, 3) * 10 ** 4 + pos
+                    choices[uuid] = {
+                        str(raw): label
+                        for entry in (prop.get("selection") or [])
+                        if isinstance(entry, (list, tuple)) and len(entry) == 2
+                        for raw, label in [entry]
+                    }
+                schema_cache[definition.id] = (labels, choices, order)
+            return schema_cache[definition.id]
+
         for line in self:
             lot = line.design_lot_id
             if not lot or not lot.design_params:
                 line.design_params_summary = ""
                 continue
+            labels, choices, order = ({}, {}, {})
+            if lot.design_param_definition_id:
+                labels, choices, order = schema_for(lot.design_param_definition_id)
             parts = []
-            for k, v in (lot.design_params or {}).items():
-                if v not in (None, False, ""):
-                    parts.append(f"{k}: {v}")
-            line.design_params_summary = "  \u00b7  ".join(parts[:6])
+            for key, value in (lot.design_params or {}).items():
+                if value in (None, False, ""):
+                    continue
+                name = labels.get(key, key)
+                shown = choices.get(key, {}).get(str(value), value)
+                # \u0420\u0435\u0434\u044a\u0442 \u0435 \u0442\u043e\u0437\u0438 \u043e\u0442 \u0434\u0435\u0444\u0438\u043d\u0438\u0446\u0438\u044f\u0442\u0430, \u043d\u0435 \u0430\u0437\u0431\u0443\u0447\u0435\u043d: \u0441\u043f\u0435\u0446\u0438\u0444\u0438\u0447\u043d\u0438\u0442\u0435 \u0437\u0430
+                # \u0438\u0437\u0434\u0435\u043b\u0438\u0435\u0442\u043e \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u0438 \u0441\u0442\u043e\u044f\u0442 \u043f\u0440\u0435\u0434 \u043d\u0430\u0441\u043b\u0435\u0434\u0435\u043d\u0438\u0442\u0435 \u043e\u0442 \u0440\u043e\u0434\u0438\u0442\u0435\u043b\u044f,
+                # \u0442\u0430\u043a\u0430 \u0447\u0435 \u043e\u0442\u0440\u044f\u0437\u0432\u0430\u043d\u0435\u0442\u043e \u0434\u043e \u0448\u0435\u0441\u0442 \u043f\u043e\u043a\u0430\u0437\u0432\u0430 \u043a\u0430\u043a\u0432\u043e\u0442\u043e \u0438\u043c\u0430 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435.
+                parts.append((order.get(key, 10 ** 6), f"{name}: {shown}"))
+            line.design_params_summary = "  \u00b7  ".join(
+                text for _, text in sorted(parts, key=lambda p: p[0])[:6])
 
     # -- Onchange: reset design lot when product changes ---------------------
 
@@ -180,13 +237,18 @@ class SaleOrderLine(models.Model):
         # Inject variant attribute values via variant_context_map
         if hasattr(bom, "variant_context_map") and bom.variant_context_map:
             for ctx_key, attr_name in bom.variant_context_map.items():
-                for ptav in self.product_id.product_template_variant_value_ids:
+                # Запазеното поле, не `…variant_value_ids` — то изрязва линиите
+                # с една стойност (виж _get_variant_context_values в двигателя).
+                # Иначе конфигураторът и производството виждат РАЗЛИЧЕН контекст.
+                for ptav in self.product_id.product_template_attribute_value_ids:
                     if ptav.attribute_id.name == attr_name:
                         params[ctx_key] = ptav.name
                         break
         return {
             "params": params,
-            "constraintTable": bom.constraint_table,
+            "constraintTable": bom._translated_constraint_table()
+            if hasattr(bom, "_translated_constraint_table")
+            else bom.constraint_table,
         }
 
     def set_design_lot(self, lot_id):

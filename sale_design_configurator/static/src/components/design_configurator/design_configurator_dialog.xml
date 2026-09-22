@@ -27,6 +27,7 @@
                 definitionCode="state.definitionCode"
                 paramDefinition="state.paramDefinition"
                 paramLevels="state.paramLevels"
+                paramDictionary="state.paramDictionary"
                 paramRoles="state.paramRoles"
                 level="props.level or ''"
                 validationRules="state.validationRules"
@@ -45,6 +46,7 @@
                 operationTable="state.operationTable"
                 bomLines="state.bomLines"
                 existingLotId="props.existingLotId or false"
+                solId="props.solId or false"
                 onLotCreated.bind="onLotCreated"
                 onClose.bind="onClose"
             />

@@ -39,6 +39,79 @@ class MrpProduction(models.Model):
             return False
         return super()._formula_expand_add_products(bom_line)
 
+    # ── Матрична рецепта без конфигурация ─────────────────────────────────
+
+    def _missing_design_context_level(self):
+        """Как реагира матрицата на MO без конфигурация: ``warn`` или ``raise``.
+
+        Базата ПРЕДУПРЕЖДАВА и пропуска паса — така се държи двигателят от
+        самото начало и така остават вертикалите, които законно раждат MO
+        без свой конфиг.
+
+        Вертикал, при който тихата непълнота е по-опасна от спряно
+        потвърждаване, връща ``raise`` (решение на Росен за Солид,
+        09.09.2026: мерено на staging 54 от 103 матрични MO-та минаваха
+        мълчешком, а по една и съща рецепта разликата е 4→18, 3→11 и
+        39→67 материални реда — MO-то получаваше статичния скелет на
+        рецептата вместо разгънатия състав).
+        """
+        return "warn"
+
+    def _handle_missing_design_context(self):
+        """Матрична рецепта, а няма откъде да дойде конфигурацията.
+
+        🔑 МАТРИЧНИТЕ ДЕЦА НЕ СА НАРУШИТЕЛИ (10.09.2026). Вертикал може да
+        пуска паса и за рецепти БЕЗ ``constraint_table`` — крилото и касата
+        (child MO-та от MTO). Те по устройство нямат СВОЙ конфиг: техният
+        идва от родителя през ``forced_lot_ids`` на суровото движение
+        (``_handle_semifinished_lots``). Мерено на живо: гардът спираше
+        цялата верига на СПСГП/MO/00098 за MATRIX-S50-KASA, при напълно
+        изправен родител. Проверката е МЕКА — базовият модул не зависи от
+        вертикала, по същия договор като
+        ``product_category_lot_sequence._lot_sequence_is_matrix_driven``.
+        """
+        self.ensure_one()
+        if hasattr(self, "_matrix_parent_production"):
+            try:
+                if self._matrix_parent_production():
+                    _logger.info(
+                        "MO %s is a matrix child; its configuration comes "
+                        "from the parent — design matrix skipped.",
+                        self.name,
+                    )
+                    return
+            except Exception:  # вертикалът може да смени сигнатурата
+                pass
+        # Изход за миграции и импорти: context skip_design_matrix_guard.
+        if self.env.context.get("skip_design_matrix_guard"):
+            _logger.warning(
+                "MO %s has no design context source — design matrix skipped "
+                "(guard bypassed via context).",
+                self.name,
+            )
+            return
+        if self._missing_design_context_level() != "raise":
+            _logger.warning(
+                "MO %s has no design context source — design matrix skipped.",
+                self.name,
+            )
+            return
+        raise UserError(
+            _(
+                "Manufacturing order %(mo)s uses a design-matrix bill of "
+                "materials for %(product)s, but carries no design "
+                "configuration.\n\n"
+                "Neither the order itself nor a produced lot holds one, so "
+                "the matrix cannot expand the components — the order would "
+                "be built from the static skeleton of the bill of materials "
+                "only.\n\n"
+                "Configure the design lot on the sales order line, or set "
+                "the design parameters on this manufacturing order.",
+                mo=self.name,
+                product=self.product_id.display_name,
+            )
+        )
+
     # ── Main algorithm ────────────────────────────────────────────────────
 
     def _generate_design_matrix_moves(self):
@@ -74,10 +147,7 @@ class MrpProduction(models.Model):
         # override-ва това да чете конфига от самото MO (partida = fallback).
         ctx = self._resolve_design_context()
         if ctx is None:
-            _logger.warning(
-                "MO %s has no design context source — design matrix skipped.",
-                self.name,
-            )
+            self._handle_missing_design_context()
             return
         # Произвежданата партида остава носител на конфигураторните избори
         # (operation/variant choices, child lots) независимо от източника на
@@ -227,7 +297,9 @@ class MrpProduction(models.Model):
             if not isinstance(row, dict):
                 continue
             level = row.get("level")
-            msg = row.get("message", row)
+            # Текстовете на правилата са данни; преводът им идва от речника
+            # на слоя, който ги е дал (mrp.bom._translate_rule_message).
+            msg = bom._translate_rule_message(row.get("message", row))
             if level == "error":
                 raise UserError(_("Design constraint violation: %s") % msg)
             if level == "warning":
@@ -535,8 +607,14 @@ class MrpProduction(models.Model):
         if not vmap:
             return {}
         result = {}
+        # 🚨 10.09.2026: `product_template_variant_value_ids` носи домейн
+        # `attribute_line_id.value_count > 1` — Odoo изрязва линиите с ЕДНА
+        # стойност, защото по тях вариантите не се различават. За контекста
+        # обаче стойността си е стойност: „Вид врата: Блиндирана“ на BoM 36 и
+        # „Материал на каса“ на интериорните никога не стигаха до T0–T3.
+        # Запазеното поле носи цялата комбинация на варианта.
         for ctx_key, attr_name in vmap.items():
-            for ptav in self.product_id.product_template_variant_value_ids:
+            for ptav in self.product_id.product_template_attribute_value_ids:
                 if ptav.attribute_id.name == attr_name:
                     result[ctx_key] = ptav.name
                     break

@@ -4,6 +4,54 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.3.15.0] - 2026-09-21
+
+### Changed
+
+- The Solid copy joins the same code as the Packit one and upstream. Two
+  different contents were both called 19.0.3.14.0 — the Packit merge of
+  20.09 and the Solid tree, which had carried three fixes of its own since
+  09.09. This release is above both, so a version number again means one
+  thing across the fleet.
+- A manufacturing order on a matrix bill of materials with no design
+  configuration no longer decides its own fate in the engine: the level is
+  the vertical's choice through `_missing_design_context_level`. The engine
+  warns and skips, as it always did, so a vertical that legitimately
+  produces such orders keeps working; Solid, where silent incompleteness is
+  more dangerous than a blocked confirmation, returns `raise`. The matrix
+  children exemption and the `skip_design_matrix_guard` escape for
+  migrations move along with it.
+
+### Fixed
+
+- Carried over from the Solid side: the variant context read
+  `product_template_variant_value_ids`, which the core narrows to attribute
+  lines with more than one value, so a single-value line (a door kind, a
+  frame material) never reached T0–T3; and a lot prefix family kept two
+  sequences for one prefix, because the lookup compared a resolved prefix
+  against a stored interpolation template.
+
+### Added
+
+- Carried over from the Solid side: three tests that were only in that tree
+  — the missing-context levels, the variant context, and the adoption of an
+  existing lot sequence.
+
+## [19.0.3.14.0] - 2026-09-20
+
+### Changed
+
+- The Packit copy and the upstream one are one code again. They had drifted
+  apart under the SAME version numbers: Packit went 3.10.0 → 3.11.0 → 3.12.0
+  with its own two features while upstream went its own way to 3.13.1, so
+  "19.0.3.12.0" meant two different things. This release is upstream 3.13.1
+  plus both Packit features, and the number is above both so the collision
+  cannot repeat.
+- Carried over from the Packit side: `_normalize_design_context` (the hook
+  where a vertical derives values that follow from others, before T0–T3) and
+  `_translate_rule_message` (rule texts are data in the JSON tables, so they
+  are translated from the dictionary of the layer that supplied them).
+
 ## [19.0.3.13.2] - 2026-09-20
 
 ### Fixed

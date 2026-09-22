@@ -8,12 +8,16 @@
 #
 # Unless you hold a valid commercial license, your use of this file is governed
 # by the AGPL-3.0-or-later.
+import copy
+import json
+
 from odoo import _, api, fields, models
 from odoo.addons.base_zen_decision.models.zen_engine import (
     normalize_jdm_graph,
     validate_graph,
 )
 from odoo.exceptions import ValidationError
+from odoo.tools.translate import code_translations
 
 
 class MrpBom(models.Model):
@@ -310,3 +314,57 @@ class MrpBom(models.Model):
                 "attributes": attrs,
             })
         return components
+
+    # ── Преводът на съобщенията от правилата ──────────────────────────────
+
+    def _rule_translation_modules(self):
+        """Модулите, чиито речници носят текстовете на правилата.
+
+        Съобщенията в T0–T3 са ДАННИ (JSON в таблицата), не низове в код,
+        тъй че `.pot` не ги изнася и `env._()` не ги намира: то търси в
+        речника на модула, от който е извикано. Затова всеки слой добавя
+        себе си тук, а преводът живее в неговия `i18n/<език>.po`, както
+        при всички останали текстове.
+
+        Редът е от общото към частното — по-частният речник печели.
+        """
+        return ["mrp_design_matrix"]
+
+    def _translate_rule_message(self, message):
+        """Съобщението на правило на езика на потребителя, ако има превод."""
+        text = message if isinstance(message, str) else str(message or "")
+        lang = self.env.context.get("lang") or self.env.user.lang
+        if not text or not lang or lang.startswith("en"):
+            return text
+        for module in reversed(self._rule_translation_modules()):
+            catalog = code_translations.get_python_translations(module, lang)
+            if text in catalog:
+                return catalog[text]
+        return text
+
+    def _translated_constraint_table(self):
+        """Копие на T0 с преведени съобщения — за екрана на поръчката.
+
+        Клиентът оценява таблицата у себе си и показва текста както е в
+        нея. Записът в базата остава на английски: един език в данните,
+        преводите в речниците.
+        """
+        self.ensure_one()
+        table = self.constraint_table
+        if not isinstance(table, dict):
+            return table
+        table = copy.deepcopy(table)
+        for node in table.get("nodes") or []:
+            if node.get("type") != "decisionTableNode":
+                continue
+            outs = [c.get("id") for c in (node.get("content") or {}).get("outputs") or []
+                    if c.get("field") == "message" or c.get("id") == "message"]
+            for rule in (node.get("content") or {}).get("rules") or []:
+                for col in outs:
+                    raw = rule.get(col)
+                    if isinstance(raw, str) and raw.startswith('"') and raw.endswith('"'):
+                        text = json.loads(raw)
+                        rule[col] = json.dumps(
+                            self._translate_rule_message(text), ensure_ascii=False
+                        )
+        return table

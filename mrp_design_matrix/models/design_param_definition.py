@@ -102,4 +102,15 @@ class DesignParamDefinition(models.Model):
             for alias, fname in (definition._get_merged_legacy_aliases()).items():
                 if fname in ctx and alias not in ctx:
                     ctx[alias] = ctx[fname]
+            ctx = definition._normalize_design_context(ctx)
+        return ctx
+
+    def _normalize_design_context(self, ctx):
+        """Кука за вертикала: последна дума над контекста, ПРЕДИ T0–T3.
+
+        Тук вертикалът извежда стойности, които не се въвеждат, а следват
+        от други — напр. вълната на кашона следва от избрания материал.
+        Минава и за партидата, и за MO-то, и за калкулацията, защото
+        всички четат контекста оттук. По подразбиране не пипа нищо.
+        """
         return ctx

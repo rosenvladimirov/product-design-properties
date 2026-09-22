@@ -91,3 +91,41 @@ msgstr "Само потребители Design / Manager (Cost) имат дос�
 #: code:addons/mrp_design_matrix_cost/models/mrp_bom.py:0
 msgid "Only internal users can access the design configurator."
 msgstr "Само вътрешни потребители имат достъп до дизайн конфигуратора."
+
+#. module: mrp_design_matrix_cost
+#: model_terms:ir.ui.view,arch_db:mrp_design_matrix_cost.product_product_form_design_markup
+#: model_terms:ir.ui.view,arch_db:mrp_design_matrix_cost.product_template_form_design_markup
+msgid "Design Costing"
+msgstr "Дизайн — калкулация"
+
+#. module: mrp_design_matrix_cost
+#: model:ir.model.fields,field_description:mrp_design_matrix_cost.field_product_product__labor_markup_percent
+#: model:ir.model.fields,field_description:mrp_design_matrix_cost.field_product_template__labor_markup_percent
+msgid "Labour Markup (%)"
+msgstr "Надценка на труда (%)"
+
+#. module: mrp_design_matrix_cost
+#: model:ir.model.fields,help:mrp_design_matrix_cost.field_product_product__labor_markup_percent
+#: model:ir.model.fields,help:mrp_design_matrix_cost.field_product_template__labor_markup_percent
+msgid ""
+"Markup applied on the labour cost to suggest a sale price (separate from "
+"materials). 0 = no markup."
+msgstr ""
+"Надценка върху себестойността на труда за предложената продажна цена "
+"(отделно от материалите). 0 = без надценка."
+
+#. module: mrp_design_matrix_cost
+#: model:ir.model.fields,help:mrp_design_matrix_cost.field_product_product__material_markup_percent
+#: model:ir.model.fields,help:mrp_design_matrix_cost.field_product_template__material_markup_percent
+msgid ""
+"Markup applied on the material cost to suggest a sale price (separate from "
+"labour). 0 = no markup."
+msgstr ""
+"Надценка върху себестойността на материалите за предложената продажна цена "
+"(отделно от труда). 0 = без надценка."
+
+#. module: mrp_design_matrix_cost
+#: model:ir.model.fields,field_description:mrp_design_matrix_cost.field_product_product__material_markup_percent
+#: model:ir.model.fields,field_description:mrp_design_matrix_cost.field_product_template__material_markup_percent
+msgid "Material Markup (%)"
+msgstr "Надценка на материалите (%)"

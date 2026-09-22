@@ -1,16 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright 2024-2026 Rosen Vladimirov  (AGPL-3.0-or-later / commercial) -->
 <odoo>
+    <!-- Теолино-style надценки за дизайн-остойностяване — в раздела „Дизайн“,
+         с етикети. Вмъкнати в реда на продажната цена, Odoo 19 ги рисуваше
+         като две голи „0,00“ и то на ВСЕКИ артикул (Пакит, 22.09.2026). Без
+         условие за видимост: дефиницията на кашона често идва от рецептата.
+         Разделът се добавя от ДВА изгледа на product_design_assets — за
+         шаблона и за варианта — затова и тук са два. -->
     <record id="product_template_form_design_markup" model="ir.ui.view">
         <field name="name">product.template.form.design.markup</field>
         <field name="model">product.template</field>
-        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="inherit_id" ref="product_design_assets.product_template_form_design_assets"/>
         <field name="arch" type="xml">
-            <!-- Теолино-style надценки за дизайн-остойностяване (до Sales Price) -->
-            <field name="list_price" position="after">
-                <field name="material_markup_percent"/>
-                <field name="labor_markup_percent"/>
-            </field>
+            <xpath expr="//page[@name='design_properties_page']/group[1]" position="after">
+                <group string="Design Costing" name="design_costing">
+                    <group>
+                        <field name="material_markup_percent"/>
+                        <field name="labor_markup_percent"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_product_form_design_markup" model="ir.ui.view">
+        <field name="name">product.product.form.design.markup</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product_design_assets.product_product_form_design_assets"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='design_properties_page']/group[1]" position="after">
+                <group string="Design Costing" name="design_costing">
+                    <group>
+                        <field name="material_markup_percent"/>
+                        <field name="labor_markup_percent"/>
+                    </group>
+                </group>
+            </xpath>
         </field>
     </record>
 </odoo>

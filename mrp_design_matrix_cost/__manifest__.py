@@ -16,7 +16,7 @@
         "read-only field link that pulls the real sale price from the standard "
         "pricelist/product (the matrix only reads the price, never writes it)."
     ),
-    "version": "19.0.1.7.3",
+    "version": "19.0.1.8.1",
     "category": "Manufacturing",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "Rosen Vladimirov",
