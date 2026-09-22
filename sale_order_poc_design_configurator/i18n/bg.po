@@ -1,0 +1,98 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sale_order_poc_design_configurator
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-22 10:30+0000\n"
+"PO-Revision-Date: 2026-09-22 13:30+0300\n"
+"Last-Translator: Rosen Vladimirov <vladimirov.rosen@gmail.com>\n"
+"Language-Team: \n"
+"Language: bg_BG\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: sale_order_poc_design_configurator
+#: model:ir.model.fields,help:sale_order_poc_design_configurator.field_sale_order_poc__matrix_cost_unit
+msgid ""
+"Cost of one unit of this configuration: the bill of materials the matrix "
+"builds for it, priced by the standard costing."
+msgstr ""
+"Себестойност на един брой от тази конфигурация: рецептата, която матрицата "
+"сглобява за нея, оценена по стандартната калкулация."
+
+#. module: sale_order_poc_design_configurator
+#. odoo-python
+#: code:addons/sale_order_poc_design_configurator/models/sale_order_poc.py:0
+msgid ""
+"Lot %(lot)s already belongs to configuration %(other)s — it cannot be "
+"adopted by %(poc)s."
+msgstr ""
+"Партида %(lot)s вече принадлежи на конфигурация %(other)s — конфигурация "
+"%(poc)s не може да я осинови."
+
+#. module: sale_order_poc_design_configurator
+#: model:ir.model.fields,field_description:sale_order_poc_design_configurator.field_sale_order_poc__matrix_price_note
+msgid "Matrix Price Note"
+msgstr "Бележка към цената от матрицата"
+
+#. module: sale_order_poc_design_configurator
+#: model:ir.model.fields,field_description:sale_order_poc_design_configurator.field_sale_order_poc__matrix_price_written
+msgid "Matrix Price Written"
+msgstr "Вписана цена от матрицата"
+
+#. module: sale_order_poc_design_configurator
+#: model:ir.model.fields,field_description:sale_order_poc_design_configurator.field_sale_order_poc__matrix_cost_unit
+msgid "Matrix Unit Cost"
+msgstr "Единична себестойност от матрицата"
+
+#. module: sale_order_poc_design_configurator
+#: model:ir.model.fields,field_description:sale_order_poc_design_configurator.field_sale_order_poc__matrix_price_unit
+msgid "Matrix Unit Price"
+msgstr "Единична цена от матрицата"
+
+#. module: sale_order_poc_design_configurator
+#. odoo-python
+#: code:addons/sale_order_poc_design_configurator/models/sale_order_poc_price.py:0
+msgid "No bill of materials for %s."
+msgstr "Няма рецепта за %s."
+
+#. module: sale_order_poc_design_configurator
+#. odoo-python
+#: code:addons/sale_order_poc_design_configurator/models/sale_order_poc_price.py:0
+msgid "No reference price: %s"
+msgstr "Няма референтна цена: %s"
+
+#. module: sale_order_poc_design_configurator
+#: model:ir.model.fields,help:sale_order_poc_design_configurator.field_sale_order_poc__matrix_price_unit
+msgid ""
+"Reference price of this configuration: the matrix builds its bill of "
+"materials without producing anything, the standard costing prices it and the"
+" reference pricelist turns the cost into a price. While the quotation is a "
+"draft or sent, it becomes the price of the line."
+msgstr ""
+"Референтната цена на тази конфигурация: матрицата сглобява рецептата ѝ, без "
+"да произвежда нищо, стандартната калкулация я оценява, а референтната ценова"
+" листа превръща себестойността в цена. Докато офертата е чернова или "
+"изпратена, тя става цената на реда."
+
+#. module: sale_order_poc_design_configurator
+#. odoo-python
+#: code:addons/sale_order_poc_design_configurator/models/sale_order_poc_price.py:0
+msgid "The matrix calculation is incomplete."
+msgstr "Калкулацията на матрицата е непълна."
+
+#. module: sale_order_poc_design_configurator
+#. odoo-python
+#: code:addons/sale_order_poc_design_configurator/models/sale_order_poc_price.py:0
+msgid "The reference price engine is not installed."
+msgstr "Машината за референтна цена не е инсталирана."
+
+#. module: sale_order_poc_design_configurator
+#: model:ir.model.fields,help:sale_order_poc_design_configurator.field_sale_order_poc__matrix_price_note
+msgid "Why the matrix gave no price, when it could not."
+msgstr "Защо матрицата не е дала цена, когато не е могла."

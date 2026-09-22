@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2024-2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)
+          https://www.gnu.org/licenses/agpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the AGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the AGPL-3.0-or-later.
+
+     Цената, която матрицата смята за офертата (ADR sale-order-poc/0019):
+     до количеството, за да се чете като „толкова за брой при това количество“.
+-->
+<odoo>
+    <record id="sale_order_poc_view_form_design_matrix" model="ir.ui.view">
+        <field name="name">sale.order.poc.form.design.matrix</field>
+        <field name="model">sale.order.poc</field>
+        <field name="inherit_id" ref="sale_order_poc.sale_order_poc_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('o_row')][field[@name='product_uom_qty']]" position="after">
+                <field name="matrix_cost_unit"
+                       invisible="not matrix_cost_unit"/>
+                <field name="matrix_price_unit"
+                       invisible="not matrix_price_unit and not matrix_price_note"/>
+                <field name="matrix_price_note" class="text-warning"
+                       invisible="not matrix_price_note"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
