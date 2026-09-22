@@ -10,5 +10,6 @@
 # by the LGPL-3.0-or-later.
 from . import test_license_graph
 from . import test_mo_link
+from . import test_mo_params
 from . import test_recompute
 from . import test_ui

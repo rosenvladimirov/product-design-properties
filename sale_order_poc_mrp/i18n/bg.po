@@ -206,3 +206,56 @@ msgstr ""
 #: model:ir.model,name:sale_order_poc_mrp.model_mrp_workorder
 msgid "Work Order"
 msgstr "Работна поръчка"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,help:sale_order_poc_mrp.field_sale_order_poc_param__show_in_production
+msgid ""
+"Default for the template lines that use this parameter: the value is shown "
+"on the manufacturing order form."
+msgstr ""
+"Подразбиране за редовете на шаблоните с този параметър: стойността се "
+"показва във формата на производствената поръчка."
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_sale_order_poc_template__mo_param_definition
+msgid "Manufacturing Order Parameters"
+msgstr "Параметри за производствената поръчка"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_mrp_production__poc_mo_params
+msgid "Manufacturing Parameters"
+msgstr "Параметри за производството"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model,name:sale_order_poc_mrp.model_sale_order_poc_param
+msgid "Production Configuration Parameter"
+msgstr "Параметър на конфигурацията на производството"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model,name:sale_order_poc_mrp.model_sale_order_poc_template_line
+msgid "Production Configuration Template Line"
+msgstr "Ред на шаблон за конфигурация на производството"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_sale_order_poc_param__show_in_production
+#: model:ir.model.fields,field_description:sale_order_poc_mrp.field_sale_order_poc_template_line__show_in_production
+msgid "Show in Manufacturing Order"
+msgstr "Показвай в производствената поръчка"
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,help:sale_order_poc_mrp.field_sale_order_poc_template__mo_param_definition
+msgid ""
+"The part of the schema shown on the manufacturing order: only the lines "
+"marked 'Show in Manufacturing Order'."
+msgstr ""
+"Частта от схемата, която се показва в производствената поръчка: само "
+"редовете с отметка „Показвай в производствената поръчка“."
+
+#. module: sale_order_poc_mrp
+#: model:ir.model.fields,help:sale_order_poc_mrp.field_sale_order_poc_template_line__show_in_production
+msgid ""
+"The value of this parameter is shown on the manufacturing order form, next "
+"to the responsible person."
+msgstr ""
+"Стойността на параметъра се показва във формата на производствената поръчка,"
+" до отговорното лице."

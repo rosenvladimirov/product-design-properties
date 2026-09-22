@@ -11,6 +11,7 @@
 from . import mrp_bom_line
 from . import mrp_production
 from . import mrp_workorder
+from . import poc_mo_params
 from . import sale_order_poc
 from . import stock_move
 from . import stock_rule

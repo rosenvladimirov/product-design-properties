@@ -4,6 +4,29 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.2.0] - 2026-09-22
+
+### Added
+
+- "Show in Manufacturing Order" on the parameter (the default) and on the
+  template line (the effective value). The marked parameters appear on the
+  manufacturing order form, under the responsible person, the way the
+  order data of the Polygroup sample did (ADR sale-order-poc/0018).
+- `mo_param_definition` on the template: the part of the schema with only
+  the marked lines; a section heading goes along only in front of a shown
+  parameter, never folded.
+- `mrp.production.poc_mo_params`: the same values as `poc_params` under
+  the narrower schema. The core drops a value that is not in the schema,
+  so nothing is copied.
+- A hidden placeholder `poc_mo_params_placeholder` in the form;
+  `_get_view` replaces it with the field. A vertical moves the
+  placeholder with an xpath to show the parameters elsewhere.
+- The values are read through `sudo`: a manufacturing order in the
+  producing company shows the configuration of the selling company (the
+  inter-company chain of Solid 55).
+
+*Assisted by Claude Code*
+
 ## [19.0.1.1.0] - 2026-09-20
 
 ### Added

@@ -10,8 +10,9 @@
    Unless you hold a valid commercial license, your use of this file is
    governed by the LGPL-3.0-or-later.
 */
-// Формата на MO с конфигурация: резюмето, параметрите само за четене и
-// бутонът за преизчисляване (ADR sale-order-poc/0008, 0009).
+// Формата на MO с конфигурация: резюмето, отметнатите параметри във формата,
+// параметрите само за четене и бутонът за преизчисляване (ADR
+// sale-order-poc/0008, 0009, 0018).
 import { registry } from "@web/core/registry";
 
 registry.category("web_tour.tours").add("sale_order_poc_mrp_planner", {
@@ -19,6 +20,18 @@ registry.category("web_tour.tours").add("sale_order_poc_mrp_planner", {
         {
             content: "The configuration summary is on the order",
             trigger: ".o_field_widget[name=poc_summary]:contains(300x500/20)",
+        },
+        // отметнатите параметри стоят във формата, без да се отваря раздел
+        // (ADR sale-order-poc/0018)
+        {
+            content: "The marked parameter is on the form",
+            trigger:
+                ".o_field_widget[name=poc_mo_params] .o_property_field[property-name=t_width_mm]",
+        },
+        {
+            content: "An unmarked parameter is not",
+            trigger:
+                ".o_field_widget[name=poc_mo_params]:not(:has(.o_property_field[property-name=t_length_mm]))",
         },
         {
             content: "Open the Configuration tab",

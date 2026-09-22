@@ -11,10 +11,14 @@
 import math
 from collections import defaultdict
 
+from lxml import etree
 from markupsafe import Markup
 
 from odoo import Command, api, fields, models
 from odoo.exceptions import UserError
+
+# името на скрития елемент във формата на MO, който _get_view заменя
+POC_MO_PLACEHOLDER = "poc_mo_params_placeholder"
 
 
 class MrpProduction(models.Model):
@@ -45,6 +49,43 @@ class MrpProduction(models.Model):
         readonly=True,
     )
     poc_summary = fields.Char(related="poc_id.summary", string="Configuration Summary")
+    # същите стойности, но със схемата само на отметнатите редове: ядрото
+    # пропуска стойност извън схемата (ORM/fields_properties.py:620-637).
+    # related минава през sudo, а схемата се чете през sudo
+    # (fields_properties.py:404-405) — MO във фирмата производител вижда POC
+    # на продаващата фирма (ADR sale-order-poc/0018)
+    poc_mo_params = fields.Properties(
+        string="Manufacturing Parameters",
+        related="poc_id.params",
+        definition="poc_template_id.mo_param_definition",
+        readonly=True,
+    )
+
+    @api.model
+    def _get_view(self, view_id=None, view_type="form", **options):
+        """Скритият плейсхолдър във формата става отметнатите параметри на POC.
+
+        Изгледът само казва КЪДЕ (``POC_MO_PLACEHOLDER``); вертикал, който
+        иска параметрите другаде, мести плейсхолдъра с xpath. Празно поле
+        не се показва (ADR sale-order-poc/0018).
+        """
+        arch, view = super()._get_view(view_id, view_type, **options)
+        if view_type == "form":
+            for node in arch.xpath(f"//*[@name='{POC_MO_PLACEHOLDER}']"):
+                node.getparent().replace(
+                    node,
+                    etree.Element(
+                        "field",
+                        {
+                            "name": "poc_mo_params",
+                            "nolabel": "1",
+                            "colspan": "2",
+                            "readonly": "1",
+                            "invisible": "not poc_mo_params",
+                        },
+                    ),
+                )
+        return arch, view
 
     # ── Договорът на Stage 2 ─────────────────────────────────────────
 

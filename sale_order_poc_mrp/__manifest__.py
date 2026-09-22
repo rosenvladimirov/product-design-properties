@@ -12,7 +12,7 @@
     "name": "Sale Order Production Configuration - Manufacturing",
     "summary": "Production configuration of the sale order line on the "
     "manufacturing order: lot, no merging, recompute from configuration",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.2.0",
     "category": "Manufacturing/Manufacturing",
     "author": "Rosen Vladimirov",
     "maintainers": ["rosen-vladimirov"],

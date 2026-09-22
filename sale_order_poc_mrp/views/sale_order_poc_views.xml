@@ -35,6 +35,20 @@
                 <field name="lot_batches"/>
                 <field name="restrict_component_lots"/>
             </xpath>
+            <xpath expr="//field[@name='line_ids']/list/field[@name='allow_fallback']" position="after">
+                <field name="show_in_production" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="sale_order_poc_param_view_form_mrp" model="ir.ui.view">
+        <field name="name">sale.order.poc.param.form.mrp</field>
+        <field name="model">sale.order.poc.param</field>
+        <field name="inherit_id" ref="sale_order_poc.sale_order_poc_param_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='default_value']" position="after">
+                <field name="show_in_production"/>
+            </xpath>
         </field>
     </record>
 </odoo>

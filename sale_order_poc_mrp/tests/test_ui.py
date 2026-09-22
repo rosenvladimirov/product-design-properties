@@ -19,6 +19,10 @@ class TestPocMrpUi(PocMrpCommon, HttpCase):
 
     def test_planner_sees_and_recomputes(self):
         new_test_user(self.env, login="poc_planner", groups="mrp.group_mrp_user")
+        # ширината е за цеха, дължината — не (ADR sale-order-poc/0018)
+        self.template.line_ids.filtered(
+            lambda l: l.param_id == self.p_width
+        ).show_in_production = True
         order, poc = self._confirmed_order(qty=10.0)
         production = poc.production_ids
         self.start_tour(

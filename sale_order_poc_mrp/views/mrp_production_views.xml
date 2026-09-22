@@ -27,6 +27,12 @@
                 <field name="poc_summary" invisible="not poc_summary"/>
                 <field name="poc_template_id" invisible="1"/>
             </xpath>
+            <!-- Скрит плейсхолдър: _get_view го заменя с отметнатите параметри на
+                 POC, под отговорното лице — там, където Полигруп показва данните
+                 от поръчката (ADR sale-order-poc/0018). Вертикалът го мести с xpath. -->
+            <xpath expr="//group[@name='group_extra_info']/field[@name='user_id']" position="after">
+                <div name="poc_mo_params_placeholder" invisible="1"/>
+            </xpath>
             <xpath expr="//page[@name='components']" position="after">
                 <page string="Configuration" name="poc_configuration" invisible="not poc_id">
                     <field name="poc_params" nolabel="1" columns="2" readonly="1"/>
