@@ -179,3 +179,66 @@ class TestMatrixPrice(MatrixPocCommon):
         _order, line, poc = self._order()
         self.assertFalse(poc.lot_id)
         self.assertFalse(line.design_lot_id)
+
+    # ── Ограниченията (T0) стигат до POC ─────────────────────────────
+
+    def _t0(self, level):
+        """T0 на рецептата: ширина над 250 мм е „твърде широка“."""
+        self.bom.constraint_table = {
+            "nodes": [
+                {
+                    "id": "t0",
+                    "name": "T0",
+                    "type": "decisionTable",
+                    "content": {
+                        "hitPolicy": "collect",
+                        "inputs": [
+                            {"id": "t_width_mm", "name": "w", "field": "t_width_mm"}
+                        ],
+                        "outputs": [
+                            {"id": "level", "name": "level", "field": "level"},
+                            {"id": "message", "name": "message", "field": "message"},
+                        ],
+                        "rules": [
+                            {
+                                "_id": "r_wide",
+                                "t_width_mm": "> 250",
+                                "level": f'"{level}"',
+                                "message": '"Too wide for the press."',
+                            }
+                        ],
+                    },
+                }
+            ],
+            "edges": [],
+        }
+
+    def test_a_constraint_error_stops_the_price(self):
+        self._t0("error")
+        _order, _line, poc = self._order(qty=100.0)  # ширина 300 > 250
+        self.assertEqual(poc.matrix_price_note, "Too wide for the press.")
+        self.assertFalse(poc.matrix_price_unit)
+        calls = len(self.calls)
+        with self._dry_run():
+            poc._poc_set_params({"t_length_mm": 600.0})
+            poc._poc_compute_derived()
+        self.assertEqual(
+            len(self.calls), calls, "no dry run behind a broken constraint"
+        )
+        self.assertEqual(poc.matrix_price_note, "Too wide for the press.")
+
+    def test_a_constraint_warning_keeps_the_price(self):
+        self._t0("warning")
+        _order, line, poc = self._order(qty=100.0)
+        # цената на POC се смята наново при всяка промяна; редът я носи
+        self.assertAlmostEqual(poc.matrix_price_unit, 2.60, places=4)
+        self.assertAlmostEqual(line.price_unit, 2.60, places=4)
+        self.assertEqual(poc.matrix_price_note, "Too wide for the press.")
+
+    def test_a_design_within_the_constraints_has_no_note(self):
+        self._t0("error")
+        with self._dry_run():
+            order = self._make_order(qty=100.0)
+            poc = self._fill(self._make_poc(order), width=200.0)
+        self.assertAlmostEqual(order.order_line.price_unit, 2.60, places=4)
+        self.assertFalse(poc.matrix_price_note)

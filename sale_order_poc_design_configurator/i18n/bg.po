@@ -94,5 +94,15 @@ msgstr "Машината за референтна цена не е инстал
 
 #. module: sale_order_poc_design_configurator
 #: model:ir.model.fields,help:sale_order_poc_design_configurator.field_sale_order_poc__matrix_price_note
-msgid "Why the matrix gave no price, when it could not."
-msgstr "Защо матрицата не е дала цена, когато не е могла."
+msgid ""
+"Why the matrix gave no price, or what its constraints warn about for this "
+"configuration."
+msgstr ""
+"Защо матрицата не е дала цена или какво предупреждават ограниченията ѝ за "
+"тази конфигурация."
+
+#. module: sale_order_poc_design_configurator
+#. odoo-python
+#: code:addons/sale_order_poc_design_configurator/models/sale_order_poc_price.py:0
+msgid "The matrix constraints failed: %s"
+msgstr "Ограниченията на матрицата не се изпълниха: %s"

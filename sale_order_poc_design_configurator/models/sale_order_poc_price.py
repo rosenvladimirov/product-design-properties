@@ -19,6 +19,8 @@
 from odoo import Command, fields, models
 from odoo.tools import float_compare
 
+from odoo.addons.base_zen_decision.models.zen_engine import ZenWrapper
+
 
 class SaleOrderPoc(models.Model):
     _inherit = "sale.order.poc"
@@ -47,7 +49,8 @@ class SaleOrderPoc(models.Model):
         string="Matrix Price Note",
         readonly=True,
         copy=False,
-        help="Why the matrix gave no price, when it could not.",
+        help="Why the matrix gave no price, or what its constraints warn "
+        "about for this configuration.",
     )
     # последно вписаната цена в реда: разминаване значи ръчна цена
     matrix_price_written = fields.Float(
@@ -85,10 +88,12 @@ class SaleOrderPoc(models.Model):
                 )
                 or 1.0
             )
-            cost, note = poc._poc_matrix_dry_run_cost(product, context, qty)
+            cost, note, warnings = poc._poc_matrix_dry_run_cost(product, context, qty)
             price = 0.0
             if not note:
                 price, note = poc._poc_matrix_reference_price(product, cost, qty)
+            # защо няма цена — първо; предупрежденията на T0 — след него
+            note = "\n".join([text for text in [note, *warnings] if text])
             line_price = product.uom_id._compute_price(price, line.product_uom_id)
             system = poc.with_context(poc_system=True).sudo()
             system.write(
@@ -116,19 +121,29 @@ class SaleOrderPoc(models.Model):
         НЕ се записва, и я цени стандартният двигател (`_compute_bom_price`
         — същият като „Изчисли цената от рецептата“ на артикула).
 
-        Връща (себестойност, бележка); бележка значи „няма цена“.
+        Връща (себестойност, бележка, предупреждения); бележка значи „няма
+        цена“, а предупрежденията на T0 не я спират.
         """
         self.ensure_one()
         Bom = self.env["mrp.bom"].sudo()
         bom = Bom._bom_find(product).get(product)
         if not bom:
-            return 0.0, self.env._("No bill of materials for %s.", product.display_name)
+            return (
+                0.0,
+                self.env._("No bill of materials for %s.", product.display_name),
+                [],
+            )
+        # ограниченията (T0) — същите, които спират производствената поръчка;
+        # предупреждението не спира цената, но търговецът го вижда
+        errors, warnings = self._poc_matrix_constraints(bom, context, qty)
+        if errors:
+            return 0.0, "\n".join(errors), warnings
         # sudo минава проверката за достъп до парите — пише се само цената
         dry = bom.simulate_design_cost(context, qty)
         if dry.get("error"):
-            return 0.0, dry["error"]
+            return 0.0, dry["error"], warnings
         if dry.get("incomplete"):
-            return 0.0, self.env._("The matrix calculation is incomplete.")
+            return 0.0, self.env._("The matrix calculation is incomplete."), warnings
         lines = [
             Command.create(
                 {
@@ -164,7 +179,37 @@ class SaleOrderPoc(models.Model):
                 "operation_ids": operations,
             }
         )
-        return product.sudo()._compute_bom_price(virtual), False
+        return product.sudo()._compute_bom_price(virtual), False, warnings
+
+    def _poc_matrix_constraints(self, bom, context, qty):
+        """T0 на рецептата за тази конфигурация: (грешки, предупреждения).
+
+        Същото като при създаване на производствената поръчка (грешка я
+        спира, предупреждението отива в чатъра ѝ), но тук само се чете.
+        Текстовете са на езика на потребителя, през речника на слоя, който
+        ги е дал. Грешка в самата таблица е грешка: цена по счупени
+        ограничения не се дава.
+        """
+        self.ensure_one()
+        if not bom.constraint_table:
+            return [], []
+        ctx = dict(context)
+        ctx.setdefault("qty", qty)
+        try:
+            t0 = ZenWrapper.evaluate(bom.constraint_table, ctx)
+        except Exception as exc:  # noqa: BLE001 — таблицата е данни
+            return [self.env._("The matrix constraints failed: %s", exc)], []
+        rows = t0 if isinstance(t0, list) else [t0] if isinstance(t0, dict) else []
+        errors, warnings = [], []
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            level = row.get("level")
+            if level not in ("error", "warning"):
+                continue
+            message = bom._translate_rule_message(row.get("message", ""))
+            (errors if level == "error" else warnings).append(message)
+        return errors, warnings
 
     def _poc_matrix_reference_price(self, product, cost, qty):
         """Себестойността през машината за референтна цена.

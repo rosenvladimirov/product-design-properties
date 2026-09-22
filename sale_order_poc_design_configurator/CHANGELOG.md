@@ -4,6 +4,21 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.1.0] - 2026-09-22
+
+### Added
+
+- The constraints of the matrix (T0 of the bill of materials) reach the
+  configuration when the quotation is priced — the same ones that stop or
+  warn the manufacturing order. An error stops the price and is the note;
+  a warning keeps the price and goes into the note (ADR
+  packit-corrugated-matrix/0005: the print colour limits must be seen on
+  the quotation, not first on the manufacturing order).
+
+### Changed
+
+- `Matrix Price Note` also carries the warnings of the constraints.
+
 ## [19.0.1.0.0] - 2026-09-22
 
 ### Added
