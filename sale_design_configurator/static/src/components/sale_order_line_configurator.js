@@ -46,12 +46,15 @@ async function savedSaleLine(record) {
     const root = record.model.root;
     const lines = root.data.order_line;
     const index = lines ? lines.records.indexOf(record) : -1;
-    const productId = m2oId(record.data.product_id);
-    if (index < 0 || !(await root.save())) {
+    // новият ред може още да няма product_id в клиента (идва от шаблона при
+    // записа) — сверката е по полето, което вече има стойност
+    const key = record.data.product_id ? "product_id" : "product_template_id";
+    const ref = m2oId(record.data[key]);
+    if (index < 0 || !ref || !(await root.save())) {
         return null;
     }
     const saved = root.data.order_line.records[index];
-    if (!saved || !saved.resId || m2oId(saved.data.product_id) !== productId) {
+    if (!saved || !saved.resId || m2oId(saved.data[key]) !== ref) {
         return null;
     }
     return saved;
@@ -142,8 +145,20 @@ export class DesignConfiguratorOpenWidget extends Component {
         return Boolean(expr) && evaluateBooleanExpr(expr, this.props.record.evalContextWithVirtualIds);
     }
 
-    onClick() {
-        const record = this.props.record;
+    async onClick() {
+        let record = this.props.record;
+        if (record.resModel === "sale.order.line" && !record.resId) {
+            // продуктът и дефиницията на нов ред идват от сървъра при записа
+            const notification = this.notification;
+            record = await savedSaleLine(record);
+            if (!record) {
+                notification.add(
+                    _t("Save the quotation before configuring the design."),
+                    { type: "warning" }
+                );
+                return;
+            }
+        }
         const model = record.resModel;
         let productId, defId, lotId;
 
