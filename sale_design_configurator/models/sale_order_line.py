@@ -9,6 +9,8 @@
 # Unless you hold a valid commercial license, your use of this file is governed
 # by the AGPL-3.0-or-later.
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
+from odoo.tools import float_compare
 
 
 class SaleOrderLine(models.Model):
@@ -305,6 +307,50 @@ class SaleOrderLine(models.Model):
             "definitionId": bom.design_param_definition_id.id,
             "definitionCode": bom.design_param_definition_id.code,
         }
+
+    # -- Lot at sale confirmation --------------------------------------------
+
+    def _design_lot_on_confirm(self):
+        """Ред без дизайн лот получава нов, щом продуктът го иска при продажбата.
+
+        Името идва от ``generate_design_lot_name`` — същото като при кубчето:
+        комбинацията, ако има шаблон за префикс, иначе поредицата на продукта
+        (буквата). Партидата е системен запис: продавач без складови права
+        също потвърждава.
+        """
+        Lot = self.env["stock.lot"].sudo()
+        for line in self:
+            product = line.product_id
+            if (
+                line.display_type
+                or line.design_lot_id
+                or not product.design_lot_on_confirm
+                or product.tracking not in ("lot", "serial")
+            ):
+                continue
+            if product.tracking == "serial" and float_compare(
+                line.product_uom_qty,
+                1.0,
+                precision_rounding=line.product_uom_id.rounding or 0.01,
+            ):
+                # един сериен номер е една бройка — ред за няколко би получил
+                # номер, който не може да покрие количеството
+                raise UserError(
+                    _(
+                        "%(product)s is tracked by serial number and gets its "
+                        "number when the order is confirmed: put one unit per "
+                        "line.",
+                        product=product.display_name,
+                    )
+                )
+            definition = product.design_param_definition_id
+            vals = {
+                "product_id": product.id,
+                "name": Lot.generate_design_lot_name(product.id, {}, definition.id),
+            }
+            if definition:
+                vals["design_param_definition_id"] = definition.id
+            line.design_lot_id = Lot.create(vals).id
 
     # -- Propagation to MO: pass design lot through procurement --------------
 

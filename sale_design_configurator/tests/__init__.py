@@ -12,3 +12,4 @@
 # (e59e50a, 05.04.2026). test_sale_line_design_lot остава изключен;
 # тестът за името на лота се пуска — сливането 21.09 го изпусна без него.
 from . import test_design_lot_name
+from . import test_design_lot_on_confirm

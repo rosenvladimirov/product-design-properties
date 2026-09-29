@@ -4,6 +4,20 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.2.3.0] - 2026-09-29
+
+### Added
+
+- "Lot at Sale Confirmation" on the product. Confirming the sales order
+  gives a line without a design lot a new one, named like the cube names
+  it: the combination, else the product's lot sequence (the letter). It
+  is created before the procurement, so the existing chain carries it to
+  the purchase receipt, the manufacturing order and the delivery. A
+  traded door gets its number at the sale, not at the receipt. A serial
+  product asks for one unit per line.
+
+*Assisted by Claude Code*
+
 ## [19.0.2.2.1] - 2026-09-22
 
 ### Fixed

@@ -11,6 +11,7 @@
 from . import design_param_definition
 from . import mrp_bom
 from . import product_product
+from . import product_template
 from . import stock_lot
 from . import sale_order_line
 from . import sale_order

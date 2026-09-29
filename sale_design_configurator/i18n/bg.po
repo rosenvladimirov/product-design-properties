@@ -206,3 +206,33 @@ msgstr "Конфигурирай"
 #: code:addons/sale_design_configurator/static/src/components/design_configurator/design_configurator_dialog.js:0
 msgid "Design Configurator"
 msgstr "Дизайн конфигуратор"
+
+#. module: sale_design_configurator
+#: model:ir.model.fields,field_description:sale_design_configurator.field_product_product__design_lot_on_confirm
+#: model:ir.model.fields,field_description:sale_design_configurator.field_product_template__design_lot_on_confirm
+msgid "Lot at Sale Confirmation"
+msgstr "Партида при потвърждаване на продажбата"
+
+#. module: sale_design_configurator
+#: model:ir.model.fields,help:sale_design_configurator.field_product_product__design_lot_on_confirm
+#: model:ir.model.fields,help:sale_design_configurator.field_product_template__design_lot_on_confirm
+msgid ""
+"Confirming a sales order gives the line a new lot, named by the product's "
+"lot sequence, unless the line already has a design lot. The lot travels "
+"with the procurement to the purchase receipt, the manufacturing order and "
+"the delivery."
+msgstr ""
+"При потвърждаване на продажбата редът получава нова партида с номер от "
+"поредицата на продукта, освен ако вече има дизайн партида. Партидата "
+"минава по снабдяването до приемането от доставчика, производствената "
+"поръчка и доставката."
+
+#. module: sale_design_configurator
+#. odoo-python
+#: code:addons/sale_design_configurator/models/sale_order_line.py:0
+msgid ""
+"%(product)s is tracked by serial number and gets its number when the order "
+"is confirmed: put one unit per line."
+msgstr ""
+"%(product)s се проследява по сериен номер и получава номера си при "
+"потвърждаване на поръчката: по една бройка на ред."

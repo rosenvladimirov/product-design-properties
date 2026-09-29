@@ -39,4 +39,18 @@
         </field>
     </record>
 
+    <!-- product.template form: партида при потвърждаване на продажбата -->
+    <record id="product_template_form_design_lot_on_confirm" model="ir.ui.view">
+        <field name="name">product.template.form.design.lot.on.confirm</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="stock.view_template_property_form"/>
+        <field name="arch" type="xml">
+            <field name="tracking" position="after">
+                <field name="design_lot_on_confirm"
+                       invisible="not is_storable or tracking == 'none'"
+                       groups="stock.group_production_lot"/>
+            </field>
+        </field>
+    </record>
+
 </odoo>

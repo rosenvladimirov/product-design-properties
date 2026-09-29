@@ -18,7 +18,11 @@ class SaleOrder(models.Model):
         """При потвърждаване на поръчката дизайн лотовете в draft минават в
         sales_confirmed (заключват sales параметрите и подават към техническото).
         Дотогава този преход ставаше само ръчно с бутона на лота.
+
+        Редовете, чийто продукт иска партида при продажбата, я получават
+        ПРЕДИ процюърмънта — иначе тя не тръгва към покупката и MO.
         """
+        self.order_line._design_lot_on_confirm()
         res = super()._action_confirm()
         design_lots = self.order_line.design_lot_id.filtered(
             lambda lot: lot.design_state == "draft"
