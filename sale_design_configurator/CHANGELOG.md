@@ -4,6 +4,19 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.2.3.1] - 2026-09-29
+
+### Fixed
+
+- The cube on a new line of an unsaved quotation created the design lot
+  and then failed with `Expected singleton: sale.order()`: the line had no
+  id, so the lot was never set on it and the reload ran the line onchange
+  without its order. The cube now saves the quotation first and opens the
+  configurator on the saved line. The model's ORM links the lot, since the
+  save redraws the rows and the widget that opened the dialog is gone.
+
+*Assisted by Claude Code*
+
 ## [19.0.2.3.0] - 2026-09-29
 
 ### Added

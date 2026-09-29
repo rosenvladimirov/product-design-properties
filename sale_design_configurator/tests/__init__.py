@@ -13,3 +13,4 @@
 # тестът за името на лота се пуска — сливането 21.09 го изпусна без него.
 from . import test_design_lot_name
 from . import test_design_lot_on_confirm
+from . import test_cube_new_line

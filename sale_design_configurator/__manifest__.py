@@ -13,7 +13,7 @@
     "summary": (
         "SO line design configurator with 3D preview " "for parametric manufacturing"
     ),
-    "version": "19.0.2.3.0",
+    "version": "19.0.2.3.1",
     "category": "Sales",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "Rosen Vladimirov",
@@ -50,6 +50,9 @@
             "sale_design_configurator/static/lib/three/GLTFLoader.js",
             "sale_design_configurator/static/lib/three/meshopt_decoder.js",
             "sale_design_configurator/static/src/components/**/*",
+        ],
+        "web.assets_tests": [
+            "sale_design_configurator/static/tests/tours/**/*",
         ],
     },
 }

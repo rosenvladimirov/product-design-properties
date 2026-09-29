@@ -29,8 +29,48 @@ function m2oId(val) {
     return val;
 }
 
-function openDesignConfigurator(dialogService, orm, record, productId, definitionId, existingLotId) {
+/**
+ * Редът трябва да е записан, преди да се роди партида за него.
+ *
+ * Нов ред (или нова оферта) няма id: `set_design_lot` получаваше празен
+ * списък, а `record.load()` пускаше onchange на реда БЕЗ поръчката и падаше
+ * в `_get_lang` с „Expected singleton: sale.order()“ (Солид, 29.09). Затова
+ * офертата се записва първо. Записът пресъздава редовете на списъка — старият
+ * обект вече не е редът, — затова записаният се намира по позицията си и се
+ * сверява по продукта. Връща записания ред или null, ако записът не мина.
+ */
+async function savedSaleLine(record) {
+    if (record.resId || record.resModel !== "sale.order.line") {
+        return record;
+    }
+    const root = record.model.root;
+    const lines = root.data.order_line;
+    const index = lines ? lines.records.indexOf(record) : -1;
+    const productId = m2oId(record.data.product_id);
+    if (index < 0 || !(await root.save())) {
+        return null;
+    }
+    const saved = root.data.order_line.records[index];
+    if (!saved || !saved.resId || m2oId(saved.data.product_id) !== productId) {
+        return null;
+    }
+    return saved;
+}
+
+async function openDesignConfigurator(dialogService, orm, record, productId, definitionId, existingLotId, notification) {
+    record = await savedSaleLine(record);
+    if (!record) {
+        notification?.add(
+            _t("Save the quotation before configuring the design."),
+            { type: "warning" }
+        );
+        return;
+    }
     const lineId = record.resId;
+    // Записът прерисува редовете и унищожава уиджета, който е отворил
+    // диалога — неговият `orm` (от useService) след това отказва с
+    // „Component is destroyed“ и партидата остава без ред. Моделът живее.
+    orm = record.model.orm || orm;
     dialogService.add(DesignConfiguratorDialog, {
         productId,
         definitionId,
@@ -94,6 +134,7 @@ export class DesignConfiguratorOpenWidget extends Component {
     setup() {
         this.dialogService = useService("dialog");
         this.orm = useService("orm");
+        this.notification = useService("notification");
     }
 
     get isInvisible() {
@@ -138,7 +179,7 @@ export class DesignConfiguratorOpenWidget extends Component {
 
         openDesignConfigurator(
             this.dialogService, this.orm, record,
-            productId, defId, lotId
+            productId, defId, lotId, this.notification
         );
     }
 }

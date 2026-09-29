@@ -236,3 +236,9 @@ msgid ""
 msgstr ""
 "%(product)s се проследява по сериен номер и получава номера си при "
 "потвърждаване на поръчката: по една бройка на ред."
+
+#. module: sale_design_configurator
+#. odoo-javascript
+#: code:addons/sale_design_configurator/static/src/components/sale_order_line_configurator.js:0
+msgid "Save the quotation before configuring the design."
+msgstr "Запишете офертата, преди да конфигурирате дизайна."
