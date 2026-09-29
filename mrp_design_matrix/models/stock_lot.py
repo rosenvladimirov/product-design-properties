@@ -133,6 +133,33 @@ class StockLot(models.Model):
         sequence = self.env["ir.sequence"].search([("prefix", "=", prefix)], limit=1)
         if sequence:
             return sequence
+        # 🚨 10.09.2026 — ДВА ЕЗИКА ЗА ЕДИН ПРЕФИКС.
+        # Търсенето по буквален низ никога не намира фамилните поредици,
+        # защото те пазят ШАБЛОН за интерполация: „Б%(range_y)s", а тук
+        # префиксът вече е разрешен до „Б26". Резултатът е втора поредица за
+        # същата буква и същата година — мерено: 139 „Lot/Serial — Блиндирани
+        # врати (Б)" (padding 4, диапазон 2026, следващ 28) и 136 „Блиндирана
+        # врата Serial Sequence" (padding 7) дават Б260028 срещу Б260000001.
+        # Едно семейство, две пространства на номера — и на всяка нова година
+        # се ражда още една.
+        # Затова, преди да се създава: питаме съществуващите какво биха дали
+        # ДНЕС и приемаме онази, чийто интерполиран префикс съвпада.
+        for kandidat in self.env["ir.sequence"].search([("prefix", "like", prefix[:1])]):
+            if kandidat.prefix == prefix:
+                return kandidat
+            try:
+                razreshen, _suffix = kandidat._get_prefix_suffix()
+            except Exception:  # ядрото може да смени частния метод
+                continue
+            if razreshen == prefix:
+                _logger.info(
+                    "Lot prefix %r is already served by sequence %s (%r); "
+                    "adopting it instead of creating a second one.",
+                    prefix,
+                    kandidat.display_name,
+                    kandidat.prefix,
+                )
+                return kandidat
         return self.env["ir.sequence"].create(
             {
                 "name": f"{prefix} Lot Sequence",

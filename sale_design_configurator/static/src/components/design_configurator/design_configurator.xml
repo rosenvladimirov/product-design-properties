@@ -22,34 +22,28 @@
             <div class="o_cfg_params">
                 <t t-foreach="displayParams" t-as="param" t-key="param.name">
 
-                    <!-- Float: Width/Height/Thickness → slider, Wall Width → spinner, rest → slider -->
-                    <t t-if="param.type === 'float' and param.string and (param.string.includes('Wall') or param.string.includes('Каса'))">
+                    <!--
+                        Float → ЧИСЛОВО поле, не плъзгач.
+
+                        Плъзгачът беше без обхват: min/max/step не оцеляват в
+                        design_params_definition (в базата стоят само default,
+                        name, selection, string, type), тъй че всеки плъзгач
+                        вървеше 0–9999 и 400 мм стоеше на 4% от пистата. За
+                        размер в милиметри това е неизползваемо, а точната
+                        стойност се въвежда, не се улучва.
+
+                        Заради това по-долу имаше и втора секция „Fine Tuning"
+                        със същите параметри като числови полета — заобиколка
+                        на същия дефект. Махната е заедно с причината.
+                    -->
+                    <t t-if="param.type === 'float'">
                         <div class="o_cfg_spinner_row">
-                            <span class="o_cfg_spinner_label"><t t-esc="param.string"/></span>
+                            <span class="o_cfg_spinner_label"><t t-esc="param.label"/></span>
                             <input
                                 type="number"
                                 class="o_input o_cfg_spinner"
-                                t-att-min="param.min || 0"
-                                t-att-max="param.max || 9999"
-                                step="1"
-                                t-att-value="param.value"
-                                t-att-data-param="param.name"
-                                t-att-disabled="param._levelReadonly"
-                                t-on-input="onSliderInput"
-                            />
-                        </div>
-                    </t>
-
-                    <t t-if="param.type === 'float' and (!param.string or !(param.string.includes('Wall') or param.string.includes('Каса')))">
-                        <div class="o_cfg_param_row">
-                            <div class="o_cfg_param_label">
-                                <span><t t-esc="param.string"/></span>
-                                <strong><t t-esc="param.value"/></strong>
-                            </div>
-                            <input
-                                type="range"
-                                t-att-min="param.min || 0"
-                                t-att-max="param.max || 9999"
+                                t-att-min="param.min"
+                                t-att-max="param.max"
                                 t-att-step="param.step || 1"
                                 t-att-value="param.value"
                                 t-att-data-param="param.name"
@@ -63,7 +57,7 @@
                     <t t-if="param.type === 'selection' and param.selection and param.selection.length &lt;= 4">
                         <div class="o_cfg_param_row">
                             <div class="o_cfg_param_label">
-                                <span><t t-esc="param.string"/></span>
+                                <span><t t-esc="param.label"/></span>
                             </div>
                             <div class="o_cfg_seg">
                                 <t t-foreach="param.selection" t-as="opt" t-key="opt[0]">
@@ -85,7 +79,7 @@
                     <t t-if="param.type === 'selection' and param.selection and param.selection.length &gt; 4">
                         <div class="o_cfg_param_row">
                             <div class="o_cfg_param_label">
-                                <span><t t-esc="param.string"/></span>
+                                <span><t t-esc="param.label"/></span>
                             </div>
                             <select class="o_input o_cfg_select"
                                     t-att-data-param="param.name"
@@ -112,7 +106,7 @@
                                 t-att-disabled="param._levelReadonly"
                                 t-on-change="onCheckChange"
                             />
-                            <span><t t-esc="param.string"/></span>
+                            <span><t t-esc="param.label"/></span>
                         </label>
                     </t>
 
@@ -120,7 +114,7 @@
                     <t t-if="param.type === 'char'">
                         <div class="o_cfg_param_row">
                             <div class="o_cfg_param_label">
-                                <span><t t-esc="param.string"/></span>
+                                <span><t t-esc="param.label"/></span>
                             </div>
                             <input
                                 t-att-type="isNumericParam(param.string) ? 'number' : 'text'"
@@ -133,29 +127,6 @@
                         </div>
                     </t>
 
-                </t>
-            </div>
-
-            <!-- Fine tuning: spinners for dimension params -->
-            <div class="o_cfg_finetune">
-                <div class="o_cfg_finetune_title">Fine Tuning</div>
-                <t t-foreach="displayParams" t-as="param" t-key="'ft_' + param.name">
-                    <t t-if="param.type === 'float' and param.string and param.string.includes('mm') and !(param.string.includes('Wall') or param.string.includes('Каса'))">
-                        <div class="o_cfg_spinner_row">
-                            <span class="o_cfg_spinner_label"><t t-esc="param.string"/></span>
-                            <input
-                                type="number"
-                                class="o_input o_cfg_spinner"
-                                t-att-min="param.min || 0"
-                                t-att-max="param.max || 9999"
-                                step="1"
-                                t-att-value="param.value"
-                                t-att-data-param="param.name"
-                                t-att-disabled="param._levelReadonly"
-                                t-on-input="onSliderInput"
-                            />
-                        </div>
-                    </t>
                 </t>
             </div>
 
@@ -311,7 +282,14 @@
         <!-- Десен панел: rule-preview ИЛИ 3D canvas, но изборите (overlay) ВИНАГИ -->
         <t t-if="show3D">
             <div class="o_cfg_viewport">
-                <RuleMatrixPreview t-if="showRulePreview"
+                <!-- Жив чертеж от вертикала: изпреварва матричния
+                     preview, защото показва самото изделие, а не таблиците. -->
+                <div t-if="hasLivePreview" class="o_cfg_live_preview">
+                    <div class="o_cfg_live_preview_svg" t-out="ui.previewSvg"/>
+                    <div t-if="ui.previewNestingSvg"
+                         class="o_cfg_live_preview_svg" t-out="ui.previewNestingSvg"/>
+                </div>
+                <RuleMatrixPreview t-if="showRulePreview and !hasLivePreview"
                     params="params"
                     constraintTable="props.constraintTable"
                     geometryTable="props.geometryTable"
@@ -319,7 +297,7 @@
                     operationTable="props.operationTable"
                     bomLines="props.bomLines or []"
                 />
-                <canvas t-if="!showRulePreview" t-ref="canvas"/>
+                <canvas t-if="!showRulePreview and !hasLivePreview" t-ref="canvas"/>
                 <div class="o_cfg_viewport_controls" t-if="!showRulePreview">
                     <button class="o_cfg_ctrl_btn" t-on-click="toggleAutoRotate"
                             t-att-title="ui.autoRotate ? 'Pause rotation' : 'Resume rotation'">

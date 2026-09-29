@@ -147,6 +147,57 @@ class TestSimulateDesignCost(TransactionCase):
         res = self.bom.simulate_design_cost({}, 1.0)
         self.assertEqual(res["currency_id"], self.env.company.currency_id.id)
 
+    # ── вариант по параметър (param_attribute_map) ────────────────────────
+    def test_variant_by_param_is_priced_not_the_placeholder(self):
+        """Цени се вариантът, който MO-то ще влага, а не заместителят на реда."""
+        env = self.env
+        attr = env["product.attribute"].create({
+            "name": "D2 Material",
+            "create_variant": "always",
+            "value_ids": [(0, 0, {"name": "Kraft"}), (0, 0, {"name": "Black"})],
+        })
+        # Резолюцията стига до атрибута по xmlid, както във вертикалите.
+        env["ir.model.data"].create({
+            "module": "mrp_design_matrix_cost",
+            "name": "test_attr_d2_material",
+            "model": "product.attribute",
+            "res_id": attr.id,
+        })
+        board = env["product.template"].create({
+            "name": "D2 Board",
+            "type": "consu",
+            "attribute_line_ids": [(0, 0, {
+                "attribute_id": attr.id,
+                "value_ids": [(6, 0, attr.value_ids.ids)],
+            })],
+        })
+        variant = {
+            v.product_template_attribute_value_ids.name: v
+            for v in board.product_variant_ids
+        }
+        variant["Kraft"].standard_price = 1.0
+        variant["Black"].standard_price = 3.0
+        box = env["product.template"].create({"name": "D2 Box", "type": "consu"})
+        bom = env["mrp.bom"].create({
+            "product_tmpl_id": box.id,
+            "product_qty": 1.0,
+            "type": "normal",
+            "bom_line_ids": [(0, 0, {
+                "product_id": variant["Kraft"].id,
+                "product_qty": 2.0,
+                "param_attribute_map": {
+                    "material": "mrp_design_matrix_cost.test_attr_d2_material",
+                },
+            })],
+        })
+        # Избран материал ⇒ неговата цена: 2 × 3 = 6, не 2 × 1.
+        res = bom.simulate_design_cost({"material": "Black"}, 1.0)
+        self.assertAlmostEqual(res["total_material"], 6.0, places=2)
+        self.assertEqual(res["lines"][0]["product_id"], variant["Black"].id)
+        # Без избор остава заместителят — както и в MO-то.
+        res = bom.simulate_design_cost({}, 1.0)
+        self.assertAlmostEqual(res["total_material"], 2.0, places=2)
+
     # ── труд (T3) ─────────────────────────────────────────────────────────
     @skipUnless(_ZEN_AVAILABLE, "zen-engine not installed")
     def test_labor_from_t3(self):

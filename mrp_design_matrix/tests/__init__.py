@@ -17,3 +17,6 @@ from . import test_attribute_roles
 from . import test_matrix_moves
 from . import test_lot_prefix_combination
 from . import test_shop_context
+from . import test_context_guard
+from . import test_lot_sequence_adoption
+from . import test_variant_context

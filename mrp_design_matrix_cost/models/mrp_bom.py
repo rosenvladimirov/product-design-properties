@@ -337,6 +337,15 @@ class MrpBom(models.Model):
                     _logger.warning("cost formula eval (line %s): %s", line.id, exc)
                     eval_errors.append(
                         "formula (%s): %s" % (line.product_id.display_name, exc))
+            # Вариант по параметър (param_attribute_map): същата резолюция като
+            # production._unpack_formula_result. Без нея се цени заместителят —
+            # картонът по поръчка излиза на цената на VP-11, какъвто и материал
+            # да е избран, а MO-то влага правилния.
+            if line.param_attribute_map and line.product_tmpl_id:
+                resolved = empty_mo._resolve_variant_by_ptav(
+                    line.product_tmpl_id, line.param_attribute_map, full_ctx)
+                if resolved:
+                    product = resolved
             # material_choice: ако конфигураторът е подал избор (choice_<key>),
             # цени реалния вариант, а не placeholder-а (иначе Обков/Брава и др.
             # остават 0). Същата резолюция като production._resolve_material_choice.
@@ -395,6 +404,8 @@ class MrpBom(models.Model):
                 "qty": qty_with_loss,
                 "loss": line.loss or 0.0,
                 "uom": line.product_uom_id.name,
+                # сухият пробег сглобява от редовете временна рецепта
+                "uom_id": line.product_uom_id.id,
                 "unit_cost": unit_cost,
                 "subtotal": subtotal,
                 "price_source": price_source,
@@ -442,6 +453,7 @@ class MrpBom(models.Model):
                 "qty": eqty,
                 "loss": 0.0,
                 "uom": eprod.uom_id.name,
+                "uom_id": eprod.uom_id.id,
                 "unit_cost": unit_cost,
                 "subtotal": subtotal,
                 "price_source": price_source,
@@ -483,6 +495,7 @@ class MrpBom(models.Model):
                     operations.append({
                         "name": str(op.get("name") or wc.name),
                         "workcenter": wc.name,
+                        "workcenter_id": wc.id,
                         "minutes": round(minutes, 1),
                         "rate": rate,
                         "cost": cost,

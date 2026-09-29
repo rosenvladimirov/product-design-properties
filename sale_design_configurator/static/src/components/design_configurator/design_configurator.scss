@@ -10,6 +10,10 @@
     height: 70vh;
     max-height: 680px;
     min-height: 480px;
+    // Редът е точно колкото контейнера. Без това колоната с чертежите расте
+    // до височината им, външният overflow ги реже, а вътрешният скрол не се
+    // включва никога — долният чертеж (разкроят) остава недостижим.
+    grid-template-rows: minmax(0, 1fr);
 }
 
 // Technical/production нива: без 3D viewport → формата заема цялата ширина
@@ -164,6 +168,10 @@
     background: #f0eff0;
     position: relative;
     height: 100%;
+    // Грид клетка без overflow има min-height: auto = височината на
+    // съдържанието. Нулата я връзва за реда, за да скролва прегледът вътре.
+    min-height: 0;
+    overflow: hidden;
 }
 
 .o_cfg_viewport canvas {
@@ -539,6 +547,11 @@
 @media (max-width: 767px) {
     .o_design_configurator {
         grid-template-columns: 1fr;
+        // Панелът и прегледът един под друг, всеки със свой скрол.
+        grid-template-rows: minmax(0, 1fr) minmax(280px, 1fr);
+    }
+    .o_design_configurator.o_cfg_no_viewport {
+        grid-template-rows: minmax(0, 1fr);
     }
     .o_cfg_viewport {
         min-height: 280px;
@@ -553,5 +566,24 @@
     .o_cfg_chip {
         font-size: 12px;
         padding: 5px 10px;
+    }
+}
+
+// Жив чертеж (die-line) — SVG-то носи собствен viewBox и се мащабира само.
+.o_cfg_live_preview {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    padding: 8px;
+    background: #ffffff;
+
+    .o_cfg_live_preview_svg {
+        width: 100%;
+
+        svg {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
     }
 }

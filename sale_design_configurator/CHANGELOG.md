@@ -4,6 +4,48 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.2.2.1] - 2026-09-22
+
+### Fixed
+
+- The cube on the sales order line opens the dialog directly, not
+  through `action_open_design_configurator`, so the line never reached
+  the vertical hook and the configurator opened on the defaults. The
+  cube now passes the line too.
+- `get_design_definition_for_product` may answer `autoOpen: false`: a
+  vertical that leads the line another way stops the configurator from
+  opening by itself on product change.
+- The cube honours its `invisible` on the sales order line. Odoo 19 lists
+  render a `<widget>` cell regardless of `invisible`, so
+  `not has_design_definition` never hid it; the widget now evaluates
+  the expression itself.
+
+## [19.0.2.2.0] - 2026-09-21
+
+### Added
+
+- The configurator opened from a sales order line passes the line to
+  the vertical hook (`get_param_patch`, context `design_sale_line_id`).
+  A vertical that knows the line — the production configuration of the
+  sale — imposes its values and locks them, instead of the configurator
+  opening on the definition defaults.
+
+## [19.0.2.1.2] - 2026-09-21
+
+### Fixed
+
+- Carried over from the Solid tree: the design context handed to the
+  configurator read `product_template_variant_value_ids`, which the core
+  narrows to attribute lines with more than one value. A single-value line
+  was therefore missing from the configurator's context while production
+  read it — the same product, two different contexts.
+- Restored after the merge with the Packit tree, whose 2.x copy had split
+  off before them: the lot name follows the combination again
+  (19.0.1.50.0), picking a colour repaints the 3D model (19.0.1.49.3), an
+  accessory reached from two channels is shown once (19.0.1.49.4), and a
+  child-component parameter is no longer repeated in the main panel
+  (19.0.1.49.5).
+
 ## 19.0.1.49.5 — 2026-07-11
 
 ### Fixed

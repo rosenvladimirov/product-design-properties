@@ -15,6 +15,7 @@ import { Component } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 import { patch } from "@web/core/utils/patch";
 import { registry } from "@web/core/registry";
+import { evaluateBooleanExpr } from "@web/core/py_js/py";
 import { useService } from "@web/core/utils/hooks";
 import { DesignConfiguratorDialog } from "./design_configurator/design_configurator_dialog";
 
@@ -34,6 +35,10 @@ function openDesignConfigurator(dialogService, orm, record, productId, definitio
         productId,
         definitionId,
         existingLotId: existingLotId || false,
+        // редът стига до куката на вертикала: стойностите, които идват от
+        // продажбата (конфигурацията на производството). Кубчето на реда
+        // отваря диалога директно, не през action_open_design_configurator.
+        solId: record.resModel === "sale.order.line" ? lineId : false,
         onLotCreated: async (lotId) => {
             await orm.call("sale.order.line", "set_design_lot", [[lineId], lotId]);
             await record.load();
@@ -62,7 +67,8 @@ patch(SaleOrderLineProductField.prototype, {
             "get_design_definition_for_product",
             [productId]
         );
-        if (!result || !result.definitionId) return;
+        // autoOpen=false: вертикалът води реда по друг път (напр. POC на офертата)
+        if (!result || !result.definitionId || result.autoOpen === false) return;
 
         if (!this.props.record.resId) {
             this.notification.add(
@@ -88,6 +94,11 @@ export class DesignConfiguratorOpenWidget extends Component {
     setup() {
         this.dialogService = useService("dialog");
         this.orm = useService("orm");
+    }
+
+    get isInvisible() {
+        const expr = this.props.invisibleExpr;
+        return Boolean(expr) && evaluateBooleanExpr(expr, this.props.record.evalContextWithVirtualIds);
     }
 
     onClick() {
@@ -134,4 +145,7 @@ export class DesignConfiguratorOpenWidget extends Component {
 
 registry.category("view_widgets").add("design_configurator_open", {
     component: DesignConfiguratorOpenWidget,
+    // Списъкът на Odoo 19 НЕ смята `invisible` на <widget> клетка — рисува я
+    // винаги (web/views/list/list_renderer.xml). Уиджетът го смята сам.
+    extractProps: ({ attrs }) => ({ invisibleExpr: attrs.invisible || "" }),
 });

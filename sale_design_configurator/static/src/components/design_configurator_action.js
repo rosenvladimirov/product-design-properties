@@ -39,6 +39,9 @@ class DesignConfiguratorAction extends Component {
             productId: params.productId,
             definitionId: params.definitionId,
             existingLotId: params.existingLotId || false,
+            // редът стига до куката на вертикала: стойностите, които
+            // идват от продажбата (конфигурацията на производството)
+            solId: params.solId || false,
             level: params.level || "",
 
             onLotCreated: async (lotId, lotParams) => {

@@ -25,6 +25,7 @@ export class DesignConfiguratorDialog extends Component {
         productId: { type: Number },
         definitionId: { type: Number },
         existingLotId: { type: [Number, Boolean], optional: true },
+        solId: { type: [Number, Boolean], optional: true },
         // Ниво на конфигуратора: sales | technical | production (празно = пълен).
         // Генерично — нивата на параметрите идват от param_levels.
         level: { type: String, optional: true },
@@ -42,6 +43,7 @@ export class DesignConfiguratorDialog extends Component {
             loading: true,
             definitionCode: "",
             paramDefinition: [],
+            paramDictionary: {},
             paramLevels: {},
             // D1: семантични роли {label → role} — UI търси по РОЛЯ, не по надпис
             paramRoles: {},
@@ -68,7 +70,17 @@ export class DesignConfiguratorDialog extends Component {
         const [def] = await this.orm.read(
             "design.param.definition",
             [this.props.definitionId],
-            ["code", "full_design_params_definition", "validation_rules", "param_levels", "param_roles"]
+            [
+                "code",
+                "full_design_params_definition",
+                "validation_rules",
+                "param_levels",
+                "param_roles",
+                // Човешките имена живеят ТУК, не в схемата: PropertiesDefinition
+                // пази само default/name/selection/string/type, тъй че `string`
+                // остава XML атрибутът (`box_l`) и точно той се виждаше на екрана.
+                "param_dictionary",
+            ]
         );
         if (def) {
             this.state.definitionCode = def.code;
@@ -76,6 +88,7 @@ export class DesignConfiguratorDialog extends Component {
             this.state.validationRules = def.validation_rules || [];
             this.state.paramLevels = def.param_levels || {};
             this.state.paramRoles = def.param_roles || {};
+            this.state.paramDictionary = def.param_dictionary || {};
         }
 
         // Fetch SVG profiles for this definition

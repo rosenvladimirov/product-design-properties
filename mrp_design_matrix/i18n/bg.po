@@ -131,3 +131,16 @@ msgstr "Дизайн роля"
 #: code:addons/mrp_design_matrix/static/src/components/matrix_preview_dialog/matrix_preview_dialog.js:0
 msgid "Matrix Preview"
 msgstr "Преглед на матрицата"
+
+#. module: mrp_design_matrix
+#. odoo-python
+#: code:addons/mrp_design_matrix/models/mrp_production.py:0
+msgid "Design constraint violation: %s"
+msgstr "Нарушено ограничение на дизайна: %s"
+
+#. module: mrp_design_matrix
+#. odoo-python
+#: code:addons/mrp_design_matrix/models/mrp_production.py:0
+msgid "Design warning: %s"
+msgstr "Предупреждение по дизайна: %s"
+

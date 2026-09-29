@@ -6,14 +6,15 @@ import {
     Component,
     useState,
     useRef,
+    markup,
     onMounted,
     onWillUnmount,
     onWillUpdateProps,
 } from "@odoo/owl";
+import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
 import { debounce } from "@web/core/utils/timing";
 import { registry } from "@web/core/registry";
-import { _t } from "@web/core/l10n/translation";
 import { RuleMatrixPreview } from "@mrp_design_matrix/components/rule_matrix_preview/rule_matrix_preview";
 import { evaluateT0 } from "@mrp_design_matrix/components/rule_matrix_preview/t0_evaluate";
 
@@ -32,6 +33,9 @@ export class DesignConfiguratorWidget extends Component {
         // Generic level gating: {param_string: "sales"|"technical"|"production"}
         // + active level. Empty level = full configurator (show everything).
         paramLevels: { type: Object, optional: true },
+        // {formula_name: {uuid, name: {en_US, bg_BG}, aliases}} — оттам идва
+        // ЧОВЕШКОТО име на параметъра.
+        paramDictionary: { type: Object, optional: true },
         // D1: семантични роли {param_string → role} (width|height|wall_width|
         // opening_direction|rebuild|numeric|operation|hide_in_description|…)
         // — UI-ът резолвва параметри по РОЛЯ; label lookup остава fallback.
@@ -57,6 +61,7 @@ export class DesignConfiguratorWidget extends Component {
         operationTable: { type: [Object, { value: false }], optional: true },
         bomLines: { type: Array, optional: true },
         existingLotId: { type: [Number, Boolean], optional: true },
+        solId: { type: [Number, Boolean], optional: true },
         onLotCreated: { type: Function },
         onClose: { type: Function },
     };
@@ -87,7 +92,19 @@ export class DesignConfiguratorWidget extends Component {
             overlayOpen: false,
             overlayHeight: 24,
             description: "",
+            // Жив чертеж от вертикала (кашон: разгъвка + разкрой). Пълни се
+            // от get_live_preview_svg и се преизчислява при всяка промяна.
+            previewSvg: "",
+            previewNestingSvg: "",
+            previewTitle: "",
+            previewSubtitle: "",
+            // Параметри, заключени от вертикала (get_param_patch) — напр.
+            // вълната на кашона следва материала и не се пипа на ръка.
+            lockedParams: [],
         });
+        this._refreshPreviewDebounced = debounce(
+            this._refreshPreview.bind(this), 300
+        );
 
         this._three = {
             renderer: null, scene: null, camera: null, group: null,
@@ -104,6 +121,12 @@ export class DesignConfiguratorWidget extends Component {
             if (this.props.existingLotId) {
                 await this._loadExistingLot(this.props.existingLotId);
             }
+            // Заключените параметри и изведените от тях стойности — още при
+            // отваряне, иначе заварена партида показва стария board_type.
+            await this._applyParamPatch(false);
+            // Чертежът трябва да е там още при отваряне, не чак след
+            // първото движение на параметър.
+            this._refreshPreview();
             // Initialize child component params with defaults
             for (const child of (this.props.childComponents || [])) {
                 for (const def of (child.paramDefinition || [])) {
@@ -361,6 +384,86 @@ export class DesignConfiguratorWidget extends Component {
         return !has3D && !hasSVG && hasMatrix;
     }
 
+    // ── Жив чертеж от вертикала ─────────────────────────────────────────
+
+    /**
+     * Пита дефиницията за чертеж по ТЕКУЩИТЕ стойности.
+     *
+     * Куката е генерична: конфигураторът не знае дали изделието е кашон,
+     * врата или чувал — вертикалът решава дали има какво да нарисува и
+     * връща празно, ако няма. Различава се от design.param.profile, където
+     * SVG-то е записано в базата и е едно за дефиницията.
+     */
+    async _refreshPreview() {
+        if (!this.props.definitionId) {
+            return;
+        }
+        try {
+            const res = await this.orm.call(
+                "design.param.definition",
+                "get_live_preview_svg",
+                [this.props.definitionId, { ...this.params }]
+            );
+            // markup(), иначе t-out екранира SVG-то и на екрана излиза
+            // САМИЯТ изходен код на чертежа вместо чертеж. Съдържанието
+            // идва от собствения ни рендер, не от потребителски вход.
+            this.ui.previewSvg = res?.svg ? markup(res.svg) : "";
+            this.ui.previewNestingSvg = res?.nesting_svg
+                ? markup(res.nesting_svg)
+                : "";
+            this.ui.previewTitle = res?.title || "";
+            this.ui.previewSubtitle = res?.subtitle || "";
+        } catch {
+            // Чертежът е придружаващ — грешка в него не бива да блокира
+            // конфигурирането.
+            this.ui.previewSvg = "";
+            this.ui.previewNestingSvg = "";
+        }
+    }
+
+    get hasLivePreview() {
+        return !!this.ui.previewSvg;
+    }
+
+    /**
+     * Пита вертикала кои стойности следват от промяната и какво е заключено.
+     *
+     * Стойностите се сливат направо в params, без onParamChange — иначе
+     * всяка изведена стойност би пуснала нова кука. Грешка в куката не
+     * блокира конфигурирането: тя е придружаваща, като чертежа.
+     */
+    async _applyParamPatch(changedKey) {
+        if (!this.props.definitionId) {
+            return;
+        }
+        try {
+            const res = await this.orm.call(
+                "design.param.definition",
+                "get_param_patch",
+                [this.props.definitionId, changedKey || false, { ...this.params }],
+                // редът на продажбата: вертикал, който знае за него (POC),
+                // налага своите стойности и ги заключва
+                { context: { design_sale_line_id: this.props.solId || false } }
+            );
+            let touched = false;
+            for (const [name, value] of Object.entries(res?.values || {})) {
+                if (this.params[name] !== value) {
+                    this.params[name] = value;
+                    touched = true;
+                }
+            }
+            this.ui.lockedParams = res?.locked || [];
+            if (touched) {
+                this._validate();
+                this._updateDescription();
+                this._recomputeCostDebounced();
+                this._refreshPreviewDebounced();
+            }
+        } catch {
+            this.ui.lockedParams = [];
+        }
+    }
+
     // ── User interaction ────────────────────────────────────────────────
 
     onParamChange(key, value) {
@@ -371,6 +474,14 @@ export class DesignConfiguratorWidget extends Component {
         // Преизчисли калкулацията при смяна на параметър (debounced) —
         // и на sales (жива калкулация), и на cost ниво.
         this._recomputeCostDebounced();
+        this._refreshPreviewDebounced();
+
+        // Selection параметър може да носи други (материалът → вълната и
+        // параметрите ѝ) — вертикалът решава през get_param_patch.
+        const changedDef = (this.props.paramDefinition || []).find(d => d.name === key);
+        if (changedDef?.type === "selection") {
+            this._applyParamPatch(key);
+        }
 
         // Find the param definition to check what changed
         const allDefs = [
@@ -416,6 +527,19 @@ export class DesignConfiguratorWidget extends Component {
         this.params[key] = parseFloat(ev.target.value) || 0;
         this._applyScale();
         this._updateDescription();
+        // Плъзгачът мени РАЗМЕР — тоест точно това, което чертежът и
+        // калкулацията показват. Без тези три реда те наваксваха чак при
+        // следващото кликване другаде, защото висят на onParamChange, а
+        // той не се вика оттук.
+        //
+        // Не се минава през onParamChange нарочно: той при нужда
+        // пресъздава 3D модела, а това при движение на плъзгач е скъпо и
+        // ненужно — геометрията само се мащабира (_applyScale по-горе).
+        // Двете опреснявания са debounced на 300 ms, тъй че местенето не
+        // ражда заявка на пиксел.
+        this._validate();
+        this._recomputeCostDebounced();
+        this._refreshPreviewDebounced();
     }
 
     onSegmentClick(ev) {
@@ -1817,13 +1941,34 @@ export class DesignConfiguratorWidget extends Component {
         }
     }
 
+    /**
+     * UUID → човешко име, от речника на дефиницията.
+     *
+     * `def.string` е атрибутът от XML-а (`box_l`), защото Odoo
+     * PropertiesDefinition отхвърля непознати ключове и човешките имена не
+     * могат да живеят в схемата. Затова се резолвират оттук; липсва ли име,
+     * пада на `string` — точно както беше досега.
+     */
+    get paramLabels() {
+        const dict = this.props.paramDictionary || {};
+        const lang = (document.documentElement.getAttribute("lang") || "").replace("-", "_");
+        const out = {};
+        for (const payload of Object.values(dict)) {
+            const uuid = payload && payload.uuid;
+            const names = (payload && payload.name) || {};
+            if (!uuid) continue;
+            out[uuid] = names[lang] || names.bg_BG || names.en_US || "";
+        }
+        return out;
+    }
+
     get displayParams() {
-        // Exclude child component params (shown in their own "Fine Tuning" section).
+        // Exclude child component params (shown in their own sections).
         // Изключваме и по name (UUID), И по string (етикет): merge-ът на child
         // дефинициите в full_design_params_definition дедупира по string, докато
         // тук guard-ът беше само по name → при разминаване (raw vs full child def)
         // същият параметър (напр. „Height (mm)") се показваше и в главния панел, и
-        // в „Fine Tuning". Изключването по string затваря дупката.
+        // в секцията на детайла. Изключването по string затваря дупката.
         const childDefs = (this.props.childComponents || [])
             .flatMap(c => (c.paramDefinition || []));
         const childNames = new Set(childDefs.map(d => d.name));
@@ -1836,7 +1981,9 @@ export class DesignConfiguratorWidget extends Component {
             .map(def => ({
                 ...def,
                 value: this.params[def.name],
-                _levelReadonly: this._levelReadonly(def, level, levels),
+                label: this.paramLabels[def.name] || def.string,
+                _levelReadonly: this._levelReadonly(def, level, levels)
+                    || this.ui.lockedParams.includes(def.name),
             }));
     }
 
