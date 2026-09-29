@@ -31,10 +31,18 @@ class TestDesignLotOnConfirm(TransactionCase):
         )
         cls.partner = cls.env["res.partner"].create({"name": "DLC Customer"})
         cls.vendor = cls.env["res.partner"].create({"name": "DLC Vendor"})
+        cls.warehouse = cls.env["stock.warehouse"].search(
+            [("company_id", "=", cls.env.company.id)], limit=1
+        )
+        cls.route_mto = cls.warehouse.mto_pull_id.route_id
+        cls.route_mto.active = True
+        cls.route_buy = cls.warehouse.buy_pull_id.route_id
         cls.door = cls._door("DLC Door", "lot")
 
     @classmethod
-    def _door(cls, name, tracking, flag=True):
+    def _door(cls, name, tracking, flag=True, to_order=True):
+        """Поръчковата врата е MTO + Buy, както търгуваните при Солид."""
+        routes = (cls.route_mto | cls.route_buy) if to_order else cls.route_buy
         return cls.env["product.product"].create(
             {
                 "name": name,
@@ -42,6 +50,8 @@ class TestDesignLotOnConfirm(TransactionCase):
                 "tracking": tracking,
                 "lot_sequence_id": cls.sequence.id,
                 "design_lot_on_confirm": flag,
+                "route_ids": [Command.set(routes.ids)],
+                "seller_ids": [Command.create({"partner_id": cls.vendor.id})],
             }
         )
 
@@ -72,6 +82,18 @@ class TestDesignLotOnConfirm(TransactionCase):
         order.action_confirm()
         self.assertFalse(order.order_line.design_lot_id)
 
+    def test_a_door_from_stock_gets_no_new_lot(self):
+        """Складовата врата: партидата е от приемането, при продажба — нищо.
+
+        Солид, 29.09: Adorabell и Scrigno Filo 44 се купуват за склада; нова
+        партида при продажбата би останала без наличност.
+        """
+        door = self._door("DLC Stock Door", "lot", to_order=False)
+        order = self._order(door)
+        order.action_confirm()
+        self.assertFalse(order.order_line.design_lot_id)
+        self.assertFalse(self.env["stock.lot"].search([("product_id", "=", door.id)]))
+
     def test_a_design_lot_on_the_line_is_kept(self):
         own = self.env["stock.lot"].create(
             {"name": "DLC-OWN", "product_id": self.door.id}
@@ -90,19 +112,6 @@ class TestDesignLotOnConfirm(TransactionCase):
 
     def test_the_lot_reaches_the_purchase_receipt(self):
         """Поръчка към доставчика: приемането взема партидата от продажбата."""
-        warehouse = self.env["stock.warehouse"].search(
-            [("company_id", "=", self.env.company.id)], limit=1
-        )
-        route_mto = warehouse.mto_pull_id.route_id
-        route_mto.active = True
-        self.door.write(
-            {
-                "route_ids": [
-                    Command.set((route_mto | warehouse.buy_pull_id.route_id).ids)
-                ],
-                "seller_ids": [Command.create({"partner_id": self.vendor.id})],
-            }
-        )
         order = self._order(self.door, qty=2.0)
         order.action_confirm()
         lot = order.order_line.design_lot_id

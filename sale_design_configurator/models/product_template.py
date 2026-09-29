@@ -20,5 +20,6 @@ class ProductTemplate(models.Model):
         help="Confirming a sales order gives the line a new lot, named by the "
         "product's lot sequence, unless the line already has a design lot. The "
         "lot travels with the procurement to the purchase receipt, the "
-        "manufacturing order and the delivery.",
+        "manufacturing order and the delivery. Only for lines procured to "
+        "order: a product sold from stock keeps the lot of its receipt.",
     )

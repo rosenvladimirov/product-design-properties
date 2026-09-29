@@ -220,12 +220,14 @@ msgid ""
 "Confirming a sales order gives the line a new lot, named by the product's "
 "lot sequence, unless the line already has a design lot. The lot travels "
 "with the procurement to the purchase receipt, the manufacturing order and "
-"the delivery."
+"the delivery. Only for lines procured to order: a product sold from stock "
+"keeps the lot of its receipt."
 msgstr ""
 "При потвърждаване на продажбата редът получава нова партида с номер от "
 "поредицата на продукта, освен ако вече има дизайн партида. Партидата "
 "минава по снабдяването до приемането от доставчика, производствената "
-"поръчка и доставката."
+"поръчка и доставката. Само за редове, снабдявани по поръчка: продукт от "
+"склад пази партидата от приемането си."
 
 #. module: sale_design_configurator
 #. odoo-python

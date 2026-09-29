@@ -4,6 +4,19 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.2.4.0] - 2026-09-29
+
+### Changed
+
+- "Lot at Sale Confirmation" creates the lot only when the line is
+  procured to order: a route of the line, the product or its category has
+  a make-to-order rule. A door sold from stock already has its lot from
+  the receipt; a new one at the sale would have no stock, and the
+  delivery takes the stocked lot anyway. Make-to-stock-else-order does
+  not count for the same reason.
+
+*Assisted by Claude Code*
+
 ## [19.0.2.3.1] - 2026-09-29
 
 ### Fixed

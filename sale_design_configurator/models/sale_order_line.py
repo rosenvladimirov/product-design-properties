@@ -326,6 +326,7 @@ class SaleOrderLine(models.Model):
                 or line.design_lot_id
                 or not product.design_lot_on_confirm
                 or product.tracking not in ("lot", "serial")
+                or not line._design_lot_to_order()
             ):
                 continue
             if product.tracking == "serial" and float_compare(
@@ -351,6 +352,19 @@ class SaleOrderLine(models.Model):
             if definition:
                 vals["design_param_definition_id"] = definition.id
             line.design_lot_id = Lot.create(vals).id
+
+    def _design_lot_to_order(self):
+        """Редът се снабдява по поръчка — само тогава партида при продажбата.
+
+        Вратата от склад има партида от приемането; нова при продажбата би
+        останала без наличност, а доставката изписва складовата (Солид, 29.09:
+        Adorabell, Scrigno Filo 44). „MTS, иначе MTO“ не се брои: при
+        наличност доставката пак взема складова партида.
+        """
+        self.ensure_one()
+        product = self.product_id
+        routes = self.route_ids | product.route_ids | product.categ_id.total_route_ids
+        return any(rule.procure_method == "make_to_order" for rule in routes.rule_ids)
 
     # -- Propagation to MO: pass design lot through procurement --------------
 
