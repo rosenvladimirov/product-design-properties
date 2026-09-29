@@ -50,6 +50,7 @@
                         <group>
                             <field name="code"/>
                             <field name="usage"/>
+                            <field name="without_lot" invisible="usage != 'main'"/>
                             <field name="allowed_aspect_ids" widget="many2many_tags"
                                    invisible="usage != 'main'"/>
                             <field name="default_aspect_ids" widget="many2many_tags"

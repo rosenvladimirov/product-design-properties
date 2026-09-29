@@ -61,6 +61,7 @@ class StockMove(models.Model):
         return bool(
             self.poc_lot_restrict
             and self.poc_id
+            and not self.poc_id.template_id.without_lot
             and self.product_id.tracking != "none"
             and self.location_id.usage in ("internal", "transit")
         )

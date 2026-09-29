@@ -1296,6 +1296,22 @@ msgid "Unit"
 msgstr "Мярка"
 
 #. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__without_lot
+msgid "Without Lot"
+msgstr "Без партида"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,help:sale_order_poc.field_sale_order_poc_template__without_lot
+msgid ""
+"The configuration neither creates nor restricts lots: the lot comes from "
+"elsewhere (a design lot, a purchase receipt). Deliveries reserve any lot, as "
+"in standard Odoo."
+msgstr ""
+"Конфигурацията нито ражда, нито ограничава партиди: партидата идва отвън "
+"(дизайн партида, приемане от покупка). Доставките резервират всяка партида, "
+"както в стандартния Odoo."
+
+#. module: sale_order_poc
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__usage
 msgid "Usage"
 msgstr "Предназначение"

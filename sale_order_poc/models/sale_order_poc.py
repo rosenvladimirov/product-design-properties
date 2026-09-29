@@ -780,9 +780,14 @@ class SaleOrderPoc(models.Model):
         голям номер или ражда следващата. Името идва от куката
         ``_poc_lot_name``; без нея — от поредността на продукта (префиксът
         му), а продукт без поредност взима стандартната на Odoo „Serial
-        Numbers“ (ADR sale-order-poc/0013).
+        Numbers“ (ADR sale-order-poc/0013). Шаблон „без партида“ не ражда
+        нищо — връща лота на POC или празно (ADR sale-order-poc/0020).
         """
         self.ensure_one()
+        if self.template_id.without_lot:
+            # POC без партида не ражда: връща само лота, който вече носи
+            # (например осиновен дизайн лот) — ADR sale-order-poc/0020
+            return self.lot_id.with_env(self.env)
         Lot = self.env["stock.lot"].sudo()
         last = Lot.search(
             [("poc_id", "=", self.id), ("product_id", "=", product.id)],

@@ -156,13 +156,18 @@ class MrpProduction(models.Model):
         if self.poc_id and self.product_tracking == "lot" and not self.lot_producing_ids:
             # лотът на POC, не нов от поредността (ADR sale-order-poc/0007)
             lot = self.poc_id.sudo()._poc_lot(self.product_id)
-            self.lot_producing_ids = [Command.set(lot.ids)]
-            return True
+            if lot:
+                self.lot_producing_ids = [Command.set(lot.ids)]
+                return True
         return super().action_generate_serial(workorder=workorder)
 
     def _prepare_stock_lot_values(self):
         vals = super()._prepare_stock_lot_values()
-        if self.poc_id and self.product_tracking == "serial":
+        if (
+            self.poc_id
+            and self.product_tracking == "serial"
+            and not self.poc_id.template_id.without_lot
+        ):
             # серийният номер влиза в семейството; номерът на партидата е
             # поредният, защото (poc, продукт, партида) е уникално
             last = (
@@ -189,10 +194,11 @@ class MrpProduction(models.Model):
         if self.poc_id and self.product_tracking == "lot" and self.lot_producing_ids:
             # ядрото чисти лота на бекордера; той остава на POC — същият или,
             # по флага на шаблона, следващата партида (ADR sale-order-poc/0007)
+            lot = self.lot_producing_ids
             if self.poc_id.template_id.lot_batches:
-                lot = self.poc_id.sudo()._poc_lot(self.product_id, new_batch=True)
-            else:
-                lot = self.lot_producing_ids
+                # без партида _poc_lot не ражда — остава лотът на MO
+                poc = self.poc_id.sudo()
+                lot = poc._poc_lot(self.product_id, new_batch=True) or lot
             vals["lot_producing_ids"] = [Command.set(lot.ids)]
         return vals
 
@@ -240,7 +246,8 @@ class MrpProduction(models.Model):
             vals = {"poc_id": poc.id}
             if merged.product_tracking == "lot":
                 lot = poc.sudo()._poc_lot(merged.product_id)
-                vals["lot_producing_ids"] = [Command.set(lot.ids)]
+                if lot:
+                    vals["lot_producing_ids"] = [Command.set(lot.ids)]
             merged.write(vals)
             merged._poc_refresh()
         return res

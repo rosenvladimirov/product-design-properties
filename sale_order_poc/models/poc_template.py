@@ -55,6 +55,13 @@ class SaleOrderPocTemplate(models.Model):
         required=True,
         default="main",
     )
+    # POC без партида: лотът идва отвън (дизайн лот, покупка) — ADR sale-order-poc/0020
+    without_lot = fields.Boolean(
+        string="Without Lot",
+        help="The configuration neither creates nor restricts lots: the lot comes "
+        "from elsewhere (a design lot, a purchase receipt). Deliveries reserve "
+        "any lot, as in standard Odoo.",
+    )
     line_ids = fields.One2many(
         "sale.order.poc.template.line", "template_id", string="Lines", copy=True
     )

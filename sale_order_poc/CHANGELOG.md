@@ -4,6 +4,19 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.5.0] - 2026-09-29
+
+### Added
+
+- "Without Lot" on the template (ADR sale-order-poc/0020). The
+  configuration neither creates nor restricts lots: the lot comes from
+  elsewhere — a design lot, a purchase receipt. A traded product with a
+  configuration could not be delivered: the delivery reserved only from the
+  configuration's lots, and nobody creates one for a purchase. Off by
+  default; nothing changes for existing templates.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.4.0] - 2026-09-21
 
 ### Fixed

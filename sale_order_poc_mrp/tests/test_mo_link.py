@@ -179,6 +179,37 @@ class TestMoLink(PocMrpCommon):
         self.assertEqual(vals["poc_id"], poc.id)
         self.assertEqual(vals["poc_batch"], 1)
 
+    # ── Шаблон без партида (ADR sale-order-poc/0020) ─────────────────
+
+    def test_without_lot_mo_takes_no_configuration_lot(self):
+        """MO носи POC, но лот от него няма; „Generate“ дава лот от ядрото."""
+        self.template.without_lot = True
+        order, poc = self._confirmed_order(qty=10.0)
+        production = poc.production_ids
+        self.assertEqual(production.poc_id, poc)
+        self.assertFalse(poc.lot_id)
+        self.assertFalse(production.lot_producing_ids)
+        production.action_generate_serial()
+        self.assertTrue(production.lot_producing_ids)
+        self.assertFalse(production.lot_producing_ids.poc_id)
+
+    def test_without_lot_components_are_free(self):
+        """Ограничение на полуфабриката без семейство би го спряло."""
+        self.template.without_lot = True
+        self._make_film_manufactured()
+        order, poc = self._confirmed_order(qty=10.0)
+        main = poc.production_ids.filtered(lambda p: p.product_id == self.product)
+        sub = poc.production_ids - main
+        self.assertFalse(self._raw(main, self.film).poc_lot_restrict)
+        self.assertFalse(sub.lot_producing_ids.poc_id)
+
+    def test_without_lot_serial_stays_outside_the_family(self):
+        self.template.without_lot = True
+        self.product.tracking = "serial"
+        order, poc = self._confirmed_order(qty=2.0)
+        vals = poc.production_ids._prepare_stock_lot_values()
+        self.assertNotIn("poc_id", vals)
+
     def test_mo_without_configuration_is_standard(self):
         with self._engine() as seen:
             production = self.env["mrp.production"].create(

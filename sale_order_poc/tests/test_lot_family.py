@@ -104,3 +104,33 @@ class TestLotFamily(PocCommon):
         moves = self._picking(order).move_ids
         self.assertEqual(len(moves), 2)
         self.assertEqual(len(moves.poc_id), 2)
+
+    # ── Шаблон без партида (ADR sale-order-poc/0020) ─────────────────
+
+    def test_without_lot_creates_no_lot(self):
+        """POC без партида не ражда лот нито при потвърждаване, нито на ръка."""
+        self.template.without_lot = True
+        _order, poc = self._confirmed(qty=100.0)
+        self.assertFalse(poc.lot_id)
+        self.assertFalse(poc._poc_lot(self.product, new_batch=True))
+        self.assertFalse(self.env["stock.lot"].search([("poc_id", "=", poc.id)]))
+
+    def test_without_lot_delivery_takes_any_lot(self):
+        """Търгуваният продукт: наличността е с лота от покупката.
+
+        С ограничението по семейство доставката не резервира нищо, защото
+        семейството е празно (мутацията пада); без него взема лота като
+        ядрото и се валидира.
+        """
+        self.template.without_lot = True
+        order, _poc = self._confirmed(qty=100.0)
+        purchased = self.env["stock.lot"].create(
+            {"name": "PURCHASED-1", "product_id": self.product.id}
+        )
+        self._stock(purchased, 100.0)
+        picking = self._picking(order)
+        picking.action_assign()
+        self.assertEqual(picking.move_ids.move_line_ids.lot_id, purchased)
+        self.assertAlmostEqual(picking.move_ids.quantity, 100.0)
+        picking.button_validate()
+        self.assertEqual(picking.state, "done")

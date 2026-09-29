@@ -4,6 +4,17 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.3.0] - 2026-09-29
+
+### Changed
+
+- With "Without Lot" on the template the manufacturing order keeps the
+  configuration but takes no lot from it: the lot comes from the design or
+  from the standard "Generate". Serial numbers stay outside the
+  configuration's family and components are not restricted to it.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.2.0] - 2026-09-22
 
 ### Added

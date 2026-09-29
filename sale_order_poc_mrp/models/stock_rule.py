@@ -50,14 +50,21 @@ class StockRule(models.Model):
         vals["poc_id"] = poc.id
         if product_id.tracking == "lot":
             # за крайния продукт това е лотът на POC; за полуфабриката — лотът
-            # на компонента, роден тук, където е сигурно, че се произвежда
-            vals["lot_producing_ids"] = [Command.set(poc._poc_lot(product_id).ids)]
+            # на компонента, роден тук, където е сигурно, че се произвежда.
+            # POC без партида може да няма лот — тогава лотът идва отвън
+            lot = poc._poc_lot(product_id)
+            if lot:
+                vals["lot_producing_ids"] = [Command.set(lot.ids)]
         if poc.summary:
             description = vals.get("product_description_variants") or ""
             vals["product_description_variants"] = " · ".join(
                 filter(None, [description, poc.summary])
             )
-        if product_id != poc.product_id and poc.template_id.restrict_component_lots:
+        if (
+            product_id != poc.product_id
+            and poc.template_id.restrict_component_lots
+            and not poc.template_id.without_lot
+        ):
             self._poc_restrict_dest_chain(values.get("move_dest_ids"), poc)
         return vals
 
