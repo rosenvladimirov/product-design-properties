@@ -4,6 +4,19 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.2.0] - 2026-09-29
+
+### Added
+
+- The manufacturing order of the producing company gets the configuration
+  of the selling one. The mirrored sale there has no configuration, but its
+  procurement carries the design lot, and the adopted lot knows its
+  configuration. Full link: lot, summary, parameters and recomputation, as
+  for an order of the selling company. A production user without access to
+  the configuration still opens and finishes the order.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.1.0] - 2026-09-22
 
 ### Added

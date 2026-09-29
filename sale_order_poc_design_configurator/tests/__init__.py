@@ -12,3 +12,4 @@ from . import test_lot_adoption
 from . import test_matrix_price
 from . import test_param_overlay
 from . import test_ui_icons
+from . import test_production_company
