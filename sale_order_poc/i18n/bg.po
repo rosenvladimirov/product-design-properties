@@ -1304,8 +1304,8 @@ msgstr "Без партида"
 #: model:ir.model.fields,help:sale_order_poc.field_sale_order_poc_template__without_lot
 msgid ""
 "The configuration neither creates nor restricts lots: the lot comes from "
-"elsewhere (a design lot, a purchase receipt). Deliveries reserve any lot, as "
-"in standard Odoo."
+"elsewhere (a design lot, a purchase receipt). Deliveries reserve any lot, as"
+" in standard Odoo."
 msgstr ""
 "Конфигурацията нито ражда, нито ограничава партиди: партидата идва отвън "
 "(дизайн партида, приемане от покупка). Доставките резервират всяка партида, "
@@ -1419,3 +1419,23 @@ msgstr ""
 #: code:addons/sale_order_poc/models/sale_order_poc.py:0
 msgid "Yes"
 msgstr "Да"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_line__poc_companion_of_id
+msgid "Added by Configuration"
+msgstr "Добавен от конфигурация"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__companion_line_ids
+msgid "Companion Lines"
+msgstr "Съпътстващи редове"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_line__poc_companion_key
+msgid "Poc Companion Key"
+msgstr "Ключ на съпътстващ ред"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_line__poc_companion_price_written
+msgid "Poc Companion Price Written"
+msgstr "Вписана цена на съпътстващ ред"

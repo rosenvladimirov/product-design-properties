@@ -4,6 +4,20 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.6.0] - 2026-09-29
+
+### Added
+
+- Companion lines (ADR sale-order-poc/0022). A configuration can add its own
+  lines to the quotation — a screen setup fee, a Pantone mixing fee — through
+  `_poc_companion_lines()`; the base adds none. The lines follow the
+  configuration while the quotation is a draft, keep a price changed by hand,
+  go away with it, and are not duplicated when the order is copied.
+- `_poc_design_lot_ordered()`: whether another confirmed order already uses
+  the design lot of this configuration.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.5.0] - 2026-09-29
 
 ### Added

@@ -28,6 +28,21 @@ class SaleOrderLine(models.Model):
     )
     poc_summary = fields.Char(related="poc_id.summary", string="Configuration")
     poc_lot_id = fields.Many2one(related="poc_id.lot_id", string="Configuration Lot")
+    # Ред, добавен от конфигурация на ДРУГ ред (сито, Пантон…) — ADR
+    # sale-order-poc/0022. Маха се заедно с конфигурацията.
+    poc_companion_of_id = fields.Many2one(
+        "sale.order.poc",
+        string="Added by Configuration",
+        ondelete="cascade",
+        index="btree_not_null",
+        copy=False,
+        readonly=True,
+    )
+    poc_companion_key = fields.Char(copy=False, readonly=True)
+    # последно вписаната цена: разминаване значи ръчна цена
+    poc_companion_price_written = fields.Float(
+        digits="Product Price", copy=False, readonly=True
+    )
 
     @api.depends("poc_ids")
     def _compute_poc_id(self):

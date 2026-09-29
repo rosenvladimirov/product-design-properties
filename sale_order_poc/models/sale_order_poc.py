@@ -16,6 +16,7 @@ from markupsafe import Markup, escape
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError
+from odoo.tools import float_compare
 
 from .poc_template import formula_names
 
@@ -129,6 +130,10 @@ class SaleOrderPoc(models.Model):
     )
     lot_id = fields.Many2one("stock.lot", string="Lot", readonly=True, copy=False)
     lot_ids = fields.One2many("stock.lot", "poc_id", string="Lots")
+    # допълнителните редове на офертата от тази конфигурация (ADR 0022)
+    companion_line_ids = fields.One2many(
+        "sale.order.line", "poc_companion_of_id", string="Companion Lines"
+    )
     lot_count = fields.Integer(compute="_compute_lot_count")
     summary = fields.Char(readonly=True, copy=False, index="trigram")
     # последно вписаният блок в описанието на реда (ADR sale-order-poc/0017)
@@ -513,6 +518,101 @@ class SaleOrderPoc(models.Model):
                 )
         # извън цикъла: шаблон без формули също има текст за офертата
         self._poc_apply_sale_description()
+        self._poc_sync_companion_lines()
+
+    # ── Съпътстващите редове (ADR sale-order-poc/0022) ────────────────
+
+    def _poc_companion_lines(self):
+        """Кои допълнителни редове иска тази конфигурация в офертата.
+
+        Връща списък от речници::
+
+            {"key": str, "product": product.product, "qty": float,
+             "price_unit": float}
+
+        ``key`` е постоянното име на реда (напр. „screen“): по него редът се
+        намира при следващо преизчисляване. Базата не иска нищо — фирменият
+        слой казва КАКВО (сито, Пантон, настройка…), тук е само КАК.
+        """
+        self.ensure_one()
+        return []
+
+    def _poc_sync_companion_lines(self):
+        """Създава, обновява и маха съпътстващите редове на офертата.
+
+        Само докато офертата е чернова или изпратена — потвърдената не се
+        пипа (там редовете вече са договорени). Ред, чиято цена е сменена на
+        ръка, пази цената си: разпознава се по разминаване с последно
+        вписаната, както цената от матрицата. Ред, чийто ключ конфигурацията
+        вече не иска, се маха.
+        """
+        Line = self.env["sale.order.line"].sudo()
+        precision = self.env["decimal.precision"].precision_get("Product Price")
+        for poc in self:
+            main = poc.sudo().sale_line_id
+            if not main or main.order_id.state not in ("draft", "sent"):
+                continue
+            wanted = {vals["key"]: vals for vals in poc._poc_companion_lines()}
+            existing = {
+                line.poc_companion_key: line for line in poc.sudo().companion_line_ids
+            }
+            Line.browse(
+                [line.id for key, line in existing.items() if key not in wanted]
+            ).unlink()
+            for key, vals in wanted.items():
+                line = existing.get(key)
+                price = vals["price_unit"]
+                if not line:
+                    Line.create({
+                        "order_id": main.order_id.id,
+                        "sequence": main.sequence,
+                        "product_id": vals["product"].id,
+                        "product_uom_qty": vals["qty"],
+                        "price_unit": price,
+                        "poc_companion_of_id": poc.id,
+                        "poc_companion_key": key,
+                        "poc_companion_price_written": price,
+                    })
+                    continue
+                update = {}
+                if line.product_id != vals["product"]:
+                    update["product_id"] = vals["product"].id
+                if float_compare(line.product_uom_qty, vals["qty"],
+                                 precision_digits=precision):
+                    update["product_uom_qty"] = vals["qty"]
+                manual = float_compare(
+                    line.price_unit, line.poc_companion_price_written,
+                    precision_digits=precision)
+                if not manual:
+                    update["price_unit"] = price
+                    update["poc_companion_price_written"] = price
+                if update:
+                    line.write(update)
+
+    def _poc_design_lot_ordered(self):
+        """Потвърдена ли е вече поръчка с дизайн лота на тази конфигурация.
+
+        Повторната поръчка се познава по дизайн лота (ADR
+        packit-corrugated-matrix/0006). Истината е ``design_lot_id`` на реда
+        — той е попълнен и при шаблон без партида (ADR sale-order-poc/0020),
+        когато ``poc.lot_id`` е празен; затова се гледат и двете.
+        """
+        self.ensure_one()
+        main = self.sudo().sale_line_id
+        lots = self.sudo().lot_id
+        if "design_lot_id" in main._fields:
+            lots |= main.design_lot_id
+        if not lots:
+            return False
+        Line = self.env["sale.order.line"].sudo()
+        domain = [
+            ("state", "=", "sale"),
+            ("order_id", "!=", main.order_id.id),
+        ]
+        lot_domain = [("poc_lot_id", "in", lots.ids)]
+        if "design_lot_id" in Line._fields:
+            lot_domain = ["|", ("design_lot_id", "in", lots.ids)] + lot_domain
+        return bool(Line.search_count(domain + lot_domain, limit=1))
 
     # ── Текстът в офертата ───────────────────────────────────────────
 
