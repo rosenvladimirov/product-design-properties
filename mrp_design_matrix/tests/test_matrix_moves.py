@@ -26,6 +26,7 @@ Each test covers a distinct code path:
 """
 
 import unittest
+from unittest.mock import patch
 
 from odoo.exceptions import UserError
 from odoo.tests import tagged
@@ -444,5 +445,10 @@ class TestMatrixMoves(TransactionCase):
                 "bom_id": bom.id,
             }
         )
-        # Should not raise even without a lot
-        mo._generate_design_matrix_moves()
+        # Should not raise even without a lot. Нивото се фиксира на базовото
+        # „warn“: вертикал до двигателя (напр. Солид) може да го е вдигнал до
+        # „raise“, а тук се проверява поведението на самия двигател.
+        with patch.object(
+            type(mo), "_missing_design_context_level", return_value="warn"
+        ):
+            mo._generate_design_matrix_moves()

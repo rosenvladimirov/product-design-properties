@@ -4,6 +4,15 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.3.15.2] - 2026-10-03
+
+### Fixed
+
+- Two engine tests measured whichever vertical sat next to the engine: with
+  a vertical that raises the missing-configuration level (Solid), the default
+  `warn` test and the no-lot no-op test failed. They now pin the base level
+  themselves.
+
 ## [19.0.3.15.1] - 2026-10-03
 
 ### Fixed

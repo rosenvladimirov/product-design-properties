@@ -62,8 +62,15 @@ class TestDesignContextGuard(TransactionCase):
         Ако базата гърми по подразбиране, MO-тата на вертикал, който законно
         ражда поръчки без конфигурация, спират да се потвърждават.
         """
-        self.assertEqual(self.mo._missing_design_context_level(), "warn")
-        self.mo._generate_design_matrix_moves()  # без изключение
+        # базовият метод, не текущият: вертикал до двигателя може да го е
+        # вдигнал до „raise“ (Солид) и тогава тестът би мерил вертикала
+        from ..models.mrp_production import MrpProduction as Base
+
+        self.assertEqual(Base._missing_design_context_level(self.mo), "warn")
+        with patch.object(
+            type(self.mo), "_missing_design_context_level", return_value="warn"
+        ):
+            self.mo._generate_design_matrix_moves()  # без изключение
 
     def test_bez_kontekst_gyrmi(self):
         """Вертикал с `raise`: MO без нито един източник НЕ минава тихо."""
