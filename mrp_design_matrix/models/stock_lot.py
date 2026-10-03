@@ -144,7 +144,11 @@ class StockLot(models.Model):
         # се ражда още една.
         # Затова, преди да се създава: питаме съществуващите какво биха дали
         # ДНЕС и приемаме онази, чийто интерполиран префикс съвпада.
-        for kandidat in self.env["ir.sequence"].search([("prefix", "like", prefix[:1])]):
+        # sudo: поредиците са служебни — създава ги всеки, който записва нова
+        # комбинация (търговец, склад), а ir.sequence се пише само от системния
+        # администратор. Без него първата партида на комбинацията гърмеше.
+        Sequence = self.env["ir.sequence"].sudo()
+        for kandidat in Sequence.search([("prefix", "like", prefix[:1])]):
             if kandidat.prefix == prefix:
                 return kandidat
             try:
@@ -160,7 +164,7 @@ class StockLot(models.Model):
                     kandidat.prefix,
                 )
                 return kandidat
-        return self.env["ir.sequence"].create(
+        return Sequence.create(
             {
                 "name": f"{prefix} Lot Sequence",
                 "code": "stock.lot.serial",
@@ -221,17 +225,28 @@ class StockLot(models.Model):
         return super().create(vals_list)
 
     @api.model
-    def _create_child_lot(self, parent_lot, bom_line, product):
+    def _create_child_lot(
+        self, parent_lot, bom_line, product, child_params=None, name_base=None
+    ):
         """
         Create a child lot for a semi-finished product by extracting
         parameters from *parent_lot* according to *bom_line.param_extraction_map*.
 
-        :param parent_lot:  ``stock.lot`` of the parent MO product.
+        :param parent_lot:  ``stock.lot`` of the parent MO product (може да е
+                            празен, когато конфигурацията е върху MO).
         :param bom_line:    ``mrp.bom.line`` with ``param_extraction_map``
                             and ``child_definition_id`` set.
         :param product:     ``product.product`` for the child lot.
+        :param child_params: готовите параметри на детето — подават се, когато
+                            партида-родител няма и няма от какво да се извлекат.
+        :param name_base:   основа на резервното име без партида-родител (името
+                            на MO).
         :returns:           Newly created ``stock.lot``.
         """
+        if child_params is not None:
+            return self._create_child_lot_vals(
+                parent_lot, bom_line, product, child_params, name_base
+            )
         param_map = bom_line.param_extraction_map or {}
         parent_ctx = parent_lot._get_design_context()
         child_params = {}
@@ -253,8 +268,18 @@ class StockLot(models.Model):
                     )
                     child_params[child_key] = None
 
+        return self._create_child_lot_vals(
+            parent_lot, bom_line, product, child_params, name_base
+        )
+
+    def _create_child_lot_vals(
+        self, parent_lot, bom_line, product, child_params, name_base
+    ):
+        """Създава детската партида от готовите параметри."""
         child_vals = {
             "product_id": product.id,
+            # без партида-родител — без фирма, както дизайн партидата, която
+            # минава границата между фирмите
             "company_id": parent_lot.company_id.id,
             "design_param_definition_id": (
                 bom_line.child_definition_id.id
@@ -268,19 +293,25 @@ class StockLot(models.Model):
         # НИКАКВА последователност: тогава core-ският compute би оставил
         # задължителното поле празно.
         if not product.lot_sequence_id:
-            child_vals["name"] = self._generate_child_lot_name(parent_lot, product)
+            child_vals["name"] = self._generate_child_lot_name(
+                parent_lot, product, name_base
+            )
         return self.create(child_vals)
 
     @api.model
-    def _generate_child_lot_name(self, parent_lot, product):
+    def _generate_child_lot_name(self, parent_lot, product, name_base=None):
         """Last-resort name for a child lot of a product with no sequence.
 
         🚨 The previous ``next_by_code("stock.lot.serial")`` is deliberately
         gone: the core inverse of ``serial_prefix_format`` creates one record
         with that very code per prefix, so a lookup by code alone got less
         predictable with every prefix anyone added.
+
+        Без партида-родител основата е ``name_base`` (името на MO) — иначе
+        името ставаше „False-<код>“.
         """
-        return f"{parent_lot.name}-{product.default_code or product.id}"
+        base = parent_lot.name or name_base or "LOT"
+        return f"{base}-{product.default_code or product.id}"
 
     def _find_matching_stock_lot(self, product, required_params: dict):
         """

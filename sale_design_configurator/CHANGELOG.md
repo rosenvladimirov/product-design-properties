@@ -4,6 +4,18 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.2.4.1] - 2026-10-03
+
+### Fixed
+
+Carried over from the Solid tree:
+
+- One manufacturing order per design lot: two lines with different lots are
+  no longer merged into one order (Solid 22.09).
+- A salesperson without stock rights can create and confirm a configured
+  door; record rules on design lots let them read only what they need
+  (Solid 24.09).
+
 ## [19.0.2.4.0] - 2026-09-29
 
 ### Changed

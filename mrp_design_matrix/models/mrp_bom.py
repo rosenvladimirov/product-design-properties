@@ -207,9 +207,12 @@ class MrpBom(models.Model):
             return []
         defs = bom.operation_choices_def or []
         if defs:
+            # sudo: търговецът няма право да чете работните центрове (само
+            # групите на Производство), а тук излизат само id и име. Без него
+            # изборът на операции ставаше ТИХО празен — JS-ът е в try/catch.
             wc_names = {
                 wc.id: wc.name
-                for wc in self.env["mrp.workcenter"].browse(
+                for wc in self.env["mrp.workcenter"].sudo().browse(
                     [d.get("wc") for d in defs if d.get("wc")]
                 ).exists()
             }
@@ -226,7 +229,7 @@ class MrpBom(models.Model):
         return [
             {"opKey": "wc_%d" % wc.id, "name": wc.name,
              "wcId": wc.id, "wcName": wc.name}
-            for wc in bom.operation_choice_ids
+            for wc in bom.operation_choice_ids.sudo()
         ]
 
     @api.model

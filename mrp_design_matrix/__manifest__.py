@@ -14,7 +14,7 @@
         "Parametric BoM driven by lot-level design parameters "
         "and a DMN rule matrix. Universal for make-to-order industries."
     ),
-    "version": "19.0.3.15.0",
+    "version": "19.0.3.15.1",
     "category": "Manufacturing",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "Rosen Vladimirov",
@@ -42,6 +42,9 @@
     "assets": {
         "web.assets_backend": [
             "mrp_design_matrix/static/src/components/**/*",
+        ],
+        "web.assets_unit_tests": [
+            "mrp_design_matrix/static/tests/**/*",
         ],
     },
     "demo": [],

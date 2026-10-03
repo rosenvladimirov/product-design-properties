@@ -9,3 +9,4 @@
 # Unless you hold a valid commercial license, your use of this file is governed
 # by the AGPL-3.0-or-later.
 from . import test_mo_config
+from . import test_parent_chain

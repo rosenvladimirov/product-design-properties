@@ -20,3 +20,4 @@ from . import test_shop_context
 from . import test_context_guard
 from . import test_lot_sequence_adoption
 from . import test_variant_context
+from . import test_semifinished_without_lot

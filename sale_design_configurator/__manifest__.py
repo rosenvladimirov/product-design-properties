@@ -13,7 +13,7 @@
     "summary": (
         "SO line design configurator with 3D preview " "for parametric manufacturing"
     ),
-    "version": "19.0.2.4.0",
+    "version": "19.0.2.4.1",
     "category": "Sales",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "Rosen Vladimirov",
@@ -35,6 +35,7 @@
     "data": [
         "security/design_groups.xml",
         "security/ir.model.access.csv",
+        "security/design_lot_rules.xml",
         "views/res_config_settings_views.xml",
         "views/stock_lot_views.xml",
         "views/sale_order_views.xml",

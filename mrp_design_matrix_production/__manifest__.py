@@ -16,7 +16,7 @@
         "and down into semi-finished child MOs, controls the produced lot and "
         "stamps a data fingerprint into the lot description."
     ),
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "category": "Manufacturing",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "Rosen Vladimirov",

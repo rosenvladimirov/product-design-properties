@@ -575,8 +575,16 @@ class MrpProduction(models.Model):
                 # else: procurement will handle the PO with child_params
             else:
                 parent_lot = self.lot_producing_ids[:1]
+                # конфигурация върху самото MO: партида-родител няма, а
+                # параметрите на детето вече са сметнати от пълния контекст.
+                # Иначе _create_child_lot вика ensure_one() върху празна
+                # партида — Expected singleton (Атанас, 20.09.2026)
                 child_lot = self.env["stock.lot"]._create_child_lot(
-                    parent_lot, line, move.product_id
+                    parent_lot,
+                    line,
+                    move.product_id,
+                    child_params=None if parent_lot else child_params,
+                    name_base=self.name,
                 )
                 move.forced_lot_ids = [(4, child_lot.id)]
 

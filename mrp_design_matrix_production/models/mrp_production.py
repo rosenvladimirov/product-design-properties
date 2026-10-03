@@ -140,6 +140,32 @@ class MrpProduction(models.Model):
                 )
         return res
 
+    def _design_parent_raw_move(self):
+        """Суровото движение на родителското MO, което това MO захранва.
+
+        При производство в 1 стъпка готовото движение на child-а сочи
+        директно суровото движение на родителя. При 2/3 стъпки (Pick
+        Components, Store Finished Product) между тях стоят складови
+        движения — затова се върви по ``move_dest_ids`` до първото движение
+        с ``raw_material_production_id`` (02.10.2026: на 3 стъпки child-ът
+        губеше родителя и гардът на матрицата спираше потвърждаването).
+        """
+        self.ensure_one()
+        Move = self.env["stock.move"]
+        frontier = self.move_dest_ids | self.move_finished_ids.move_dest_ids
+        seen = Move.browse()
+        # таван срещу цикли и патологични вериги; 3 стъпки дават 2–3 скока
+        for _hop in range(10):
+            frontier -= seen
+            if not frontier:
+                break
+            raw = frontier.filtered("raw_material_production_id")
+            if raw:
+                return raw[:1]
+            seen |= frontier
+            frontier = frontier.move_dest_ids
+        return Move
+
     def _inherit_design_config_from_parent(self):
         """Наследи design конфиг от родителското MO при полуфабрикат.
 
@@ -153,7 +179,7 @@ class MrpProduction(models.Model):
         self.ensure_one()
         if self.design_param_definition_id:
             return  # вече конфигурирано (напр. през procurement values)
-        dest = self.move_finished_ids.move_dest_ids[:1]
+        dest = self._design_parent_raw_move()
         if not dest:
             return
         parent = dest.raw_material_production_id[:1]

@@ -4,6 +4,20 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.3.15.1] - 2026-10-03
+
+### Fixed
+
+Carried over from the Solid tree, where they were live but had never reached
+upstream:
+
+- The T0 check in the browser read the wrong node of the constraint table
+  (`nodes[0]`), so the configurator showed a dead check (Solid 22.09).
+- A semi-finished product without lot tracking no longer stops the matrix
+  pass looking for a lot it cannot have.
+- A salesperson without stock rights can configure a door: the lot and bill
+  of materials reads run with the rights they need (Solid 24.09).
+
 ## [19.0.3.15.0] - 2026-09-21
 
 ### Changed

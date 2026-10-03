@@ -5,6 +5,7 @@
 import { Component, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
+import { findDecisionNode } from "../rule_matrix_preview/t0_evaluate";
 
 /**
  * DMN decision table widget for GoRules JDM JSON fields.
@@ -47,12 +48,13 @@ export class DesignMatrixField extends Component {
         return this.props.record.data[this.props.name];
     }
 
-    /** Extract the first decision table node from the JDM structure. */
+    /** Extract the decision table node from the JDM structure. */
     get table() {
         const raw = this.rawValue;
         if (!raw) return null;
         if (raw.nodes && raw.nodes.length) {
-            return raw.nodes[0];
+            // по тип, не nodes[0]: нормализираният граф започва с inputNode
+            return findDecisionNode(raw);
         }
         if (raw.content) {
             return raw;
@@ -331,7 +333,8 @@ export class DesignMatrixField extends Component {
     /** Get mutable content from a cloned JDM. */
     _getContent(jdm) {
         if (jdm.nodes && jdm.nodes.length) {
-            return jdm.nodes[0].content;
+            // редакторът пише в същия възел, който показва
+            return findDecisionNode(jdm)?.content;
         }
         if (jdm.content) {
             return jdm.content;

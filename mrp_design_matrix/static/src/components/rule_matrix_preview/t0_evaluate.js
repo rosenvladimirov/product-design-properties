@@ -29,13 +29,31 @@ export function coerceTable(raw) {
 }
 
 /**
- * Extract the first decision table content from a JDM structure.
+ * Възелът с таблицата в JDM граф — по тип, не по позиция.
+ *
+ * normalize_jdm_graph (base_zen_decision) опакова плоската таблица в три
+ * възела и слага inputNode на индекс 0; миграцията 19.0.3.9.1 нормализира
+ * всички записани таблици. Четенето на nodes[0] връщаше входния възел, без
+ * content — T0 в конфигуратора и прегледът на T1–T3 не виждаха нищо, без
+ * грешка (Атанас, 19.09.2026). Заварен плосък граф има един възел и пак се чете.
+ */
+export function findDecisionNode(obj) {
+    const nodes = (obj && obj.nodes) || [];
+    return (
+        nodes.find((n) => n.type === "decisionTableNode" || n.type === "decisionTable") ||
+        nodes.find((n) => n.content) ||
+        null
+    );
+}
+
+/**
+ * Extract the decision table content from a JDM structure.
  */
 export function getTableContent(table) {
     const obj = coerceTable(table);
     if (!obj) return null;
     if (obj.nodes && obj.nodes.length) {
-        return obj.nodes[0].content || null;
+        return findDecisionNode(obj)?.content || null;
     }
     if (obj.content) {
         return obj.content;

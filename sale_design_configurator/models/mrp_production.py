@@ -138,6 +138,15 @@ class MrpProduction(models.Model):
 class StockRule(models.Model):
     _inherit = "stock.rule"
 
+    def _make_mo_get_domain(self, procurement, bom):
+        # ядрото търси съществуващо MO по продукт, рецепта и референцията на
+        # поръчката: по-късно снабдяване от същата поръчка (нов ред, друга
+        # врата) увеличаваше чуждото MO и партидата на новия ред се губеше.
+        # Същото правило като poc_id в sale_order_poc_mrp.
+        return super()._make_mo_get_domain(procurement, bom) + (
+            ("design_lot_id", "=", procurement.values.get("design_lot_id") or False),
+        )
+
     def _get_stock_move_values(
         self,
         product_id,

@@ -1,1 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_design_param_def_salesman,design.param.definition.salesman,design_param_base.model_design_param_definition,sales_team.group_sale_salesman,1,0,0,0
+access_design_param_profile_salesman,design.param.profile.salesman,design_param_base.model_design_param_profile,sales_team.group_sale_salesman,1,0,0,0
+access_design_industry_salesman,design.industry.salesman,design_param_base.model_design_industry,sales_team.group_sale_salesman,1,0,0,0
+access_stock_lot_design_sales,stock.lot.design.sales,stock.model_stock_lot,group_design_sales,1,1,1,0
