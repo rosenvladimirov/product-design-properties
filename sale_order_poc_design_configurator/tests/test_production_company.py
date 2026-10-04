@@ -129,3 +129,24 @@ class TestProductionCompany(MatrixPocCommon):
             poc._poc_set_params({"t_width_mm": 400.0})
             poc._poc_compute_derived()
         self.assertIn(production.id, seen)
+
+    def test_mirror_line_with_the_adopted_lot_passes_the_guard(self):
+        """Огледалната продажба: шаблон за POC, без POC, партидата го носи."""
+        _poc, lot = self._adopted()
+        self.product.product_tmpl_id.poc_template_id = self.template
+        mirror = self._make_order(qty=2.0)
+        line = mirror.order_line
+        line.design_lot_id = lot.id
+        self.assertFalse(line.poc_id)
+        self.assertTrue(line._poc_is_configured())
+        mirror.action_confirm()
+        self.assertEqual(mirror.state, "sale")
+
+    def test_line_without_poc_and_without_lot_is_still_stopped(self):
+        """Без POC и без партида с POC пазачът спира, както досега."""
+        from odoo.exceptions import UserError
+
+        self.product.product_tmpl_id.poc_template_id = self.template
+        order = self._make_order(qty=2.0)
+        with self.assertRaises(UserError):
+            order.action_confirm()

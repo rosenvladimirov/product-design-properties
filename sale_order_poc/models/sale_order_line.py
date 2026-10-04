@@ -86,6 +86,16 @@ class SaleOrderLine(models.Model):
             values["poc_lot_restrict"] = self.product_id.tracking != "none"
         return values
 
+    def _poc_is_configured(self):
+        """Конфигуриран ли е редът за пазача преди процюърмънта.
+
+        Тук — щом има POC. Модул, който пренася конфигурацията по друг път
+        (например чрез партидата към друга фирма), казва „да“ и без POC на
+        самия ред.
+        """
+        self.ensure_one()
+        return bool(self.poc_id)
+
     def _action_launch_stock_rule(self, *, previous_product_uom_qty=False):
         """Пазачът и Stage 1 — точно преди процюърмънта.
 
@@ -102,7 +112,7 @@ class SaleOrderLine(models.Model):
             lambda line: line.state == "sale"
             and (line.poc_id or line.poc_template_id)
         )
-        missing = lines.filtered(lambda line: not line.poc_id)
+        missing = lines.filtered(lambda line: not line._poc_is_configured())
         if missing and self.env.context.get("poc_defer_launch"):
             self -= missing
             lines -= missing
