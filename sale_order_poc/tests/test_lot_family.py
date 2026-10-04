@@ -115,6 +115,20 @@ class TestLotFamily(PocCommon):
         self.assertFalse(poc._poc_lot(self.product, new_batch=True))
         self.assertFalse(self.env["stock.lot"].search([("poc_id", "=", poc.id)]))
 
+    def test_without_lot_gives_its_lot_only_to_its_product(self):
+        """Носеният лот е за изделието; полуфабрикатът не го получава."""
+        self.template.without_lot = True
+        _order, poc = self._confirmed(qty=100.0)
+        lot = self.env["stock.lot"].create(
+            {"name": "DESIGN-NOLOT-1", "product_id": self.product.id}
+        )
+        poc.lot_id = lot
+        component = self.env["product.product"].create(
+            {"name": "Semi-finished (test)", "is_storable": True, "tracking": "lot"}
+        )
+        self.assertEqual(poc._poc_lot(self.product), lot)
+        self.assertFalse(poc._poc_lot(component))
+
     def test_without_lot_delivery_takes_any_lot(self):
         """Търгуваният продукт: наличността е с лота от покупката.
 

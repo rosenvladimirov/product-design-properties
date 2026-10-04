@@ -786,8 +786,14 @@ class SaleOrderPoc(models.Model):
         self.ensure_one()
         if self.template_id.without_lot:
             # POC без партида не ражда: връща само лота, който вече носи
-            # (например осиновен дизайн лот) — ADR sale-order-poc/0020
-            return self.lot_id.with_env(self.env)
+            # (например осиновен дизайн лот) — ADR sale-order-poc/0020.
+            # Само за неговия продукт: полуфабрикатът на същата поръчка иначе
+            # получаваше лота на изделието и ядрото го отказваше (Солид,
+            # 04.10.2026 — металната каса с партидата на вратата).
+            lot = self.lot_id
+            if lot and lot.product_id != product:
+                return self.env["stock.lot"]
+            return lot.with_env(self.env)
         Lot = self.env["stock.lot"].sudo()
         last = Lot.search(
             [("poc_id", "=", self.id), ("product_id", "=", product.id)],
