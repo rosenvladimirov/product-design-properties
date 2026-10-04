@@ -14,7 +14,7 @@
         "Polymorphic physical access control: subjects, perimeters, "
         "control points, ZEN-driven decision flow with offline sync."
     ),
-    "version": "19.0.1.12.1",
+    "version": "19.0.1.12.2",
     "category": "Security",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "Rosen Vladimirov",

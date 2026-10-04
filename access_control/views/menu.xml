@@ -92,12 +92,8 @@
               action="action_access_passage_event"
               sequence="30"/>
 
-    <!-- Full-page HTML dashboard (SVG inline) -->
-    <record id="action_access_dashboard_url" model="ir.actions.act_url">
-        <field name="name">Open Dashboard (full-page)</field>
-        <field name="url">/access_control/dashboard</field>
-        <field name="target">new</field>
-    </record>
+    <!-- Full-page HTML dashboard (SVG inline); действието е в
+         access_facility_dashboard_views.xml — зарежда се преди менюто -->
     <menuitem id="menu_dashboard_url"
               name="📊 Open Full Dashboard"
               parent="menu_dashboards_section"

@@ -12,6 +12,15 @@
      governed by the AGPL-3.0-or-later.
 -->
 <odoo>
+    <!-- Full-page HTML dashboard (SVG inline). Стои ТУК, а не в menu.xml:
+         бутонът по-долу го сочи с %(...)d, а този файл се зарежда преди
+         менюто — при чиста инсталация препратката гърмеше. -->
+    <record id="action_access_dashboard_url" model="ir.actions.act_url">
+        <field name="name">Open Dashboard (full-page)</field>
+        <field name="url">/access_control/dashboard</field>
+        <field name="target">new</field>
+    </record>
+
     <!-- access.facility smart buttons + extra dashboard buttons -->
     <record id="view_access_facility_form_smart_buttons" model="ir.ui.view">
         <field name="name">access.facility.form.smart.buttons</field>
