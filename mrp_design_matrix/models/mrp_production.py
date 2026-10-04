@@ -25,11 +25,20 @@ class MrpProduction(models.Model):
     # ── Public entry point ────────────────────────────────────────────────
 
     def action_confirm(self):
-        res = super().action_confirm()
+        # Пасът тече върху ЧЕРНОВАТА, преди стандартното потвърждаване (ADR
+        # mrp-design-matrix/0001). След него процюърмънтът и пикингите (2/3
+        # стъпки) вече са създадени за скелета на рецептата: вързан ход не се
+        # трие, а сменен оставя веригата с грешните продукти. Мерено на Солид
+        # 02–04.10: 3 стъпки, 2 стъпки и условен MTO полуфабрикат падат еднакво.
         for production in self:
-            if production.bom_id and production.bom_id.constraint_table:
+            if production.state == "draft" and production._design_matrix_applies():
                 production._generate_design_matrix_moves()
-        return res
+        return super().action_confirm()
+
+    def _design_matrix_applies(self):
+        """Минава ли MO-то през матричния пас. Вертикалът го разширява."""
+        self.ensure_one()
+        return bool(self.bom_id and self.bom_id.constraint_table)
 
     def _formula_expand_add_products(self, bom_line):
         # Матричен BoM добавя ``add_products`` сам при потвърждаване

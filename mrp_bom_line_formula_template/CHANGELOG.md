@@ -4,6 +4,15 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.2.3.1] - 2026-10-04
+
+### Fixed
+
+- `design_context` is always available to a quantity formula (an empty
+  dict without a context): formulas are evaluated when the draft is
+  exploded, before the matrix pass, and `design_context.get(...)` failed
+  with a NameError there.
+
 ## [19.0.2.3.0] - 2026-09-19
 
 ### Added

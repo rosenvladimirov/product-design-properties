@@ -4,6 +4,18 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.3.16.0] - 2026-10-04
+
+### Changed
+
+- The matrix pass runs on the draft manufacturing order, before the standard
+  confirmation (ADR mrp-design-matrix/0001). After confirmation the
+  procurement and the 2/3-step pickings already existed for the skeleton of
+  the bill of materials: a deactivated make-to-order component had spawned
+  its own order, Pick Components carried the placeholder, and a linked move
+  cannot be deleted. Which orders go through the pass is decided by
+  `_design_matrix_applies()`, which a vertical extends.
+
 ## [19.0.3.15.2] - 2026-10-03
 
 ### Fixed

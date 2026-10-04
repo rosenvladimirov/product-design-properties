@@ -60,9 +60,13 @@ class MRPBomLine(models.Model):
             # Allow formulas to use env.ref(), env['model'].search(), etc.
             "env": self.env,
         }
-        # Inject design matrix context (width, height, T1 outputs, etc.)
+        # Inject design matrix context (width, height, T1 outputs, etc.).
+        # Името е винаги налично (празен речник без контекст): формулата се
+        # смята и при разгъването на черновата, преди матричния пас, и
+        # ``design_context.get(...)`` иначе падаше с NameError (ADR
+        # mrp-design-matrix/0001).
+        values["design_context"] = design_context or {}
         if design_context:
-            values["design_context"] = design_context
             # Also inject as flat keys for convenience: width, height, etc.
             values.update(design_context)
         return values
