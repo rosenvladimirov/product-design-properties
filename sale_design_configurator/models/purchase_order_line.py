@@ -47,3 +47,21 @@ class PurchaseOrderLine(models.Model):
         if values.get("design_lot_id"):
             vals["design_lot_id"] = values["design_lot_id"]
         return vals
+
+    def _find_candidate(
+        self, product_id, product_qty, product_uom, location_id, name, origin,
+        company_id, values,
+    ):
+        """Ред на покупката се слива само със своята дизайн партида.
+
+        Ядрото слива по продукт и мярка: две врати с различни партиди
+        ставаха един ред и при получаване вторият брой взимаше партидата на
+        първия (Солид, 05.10.2026 — PD00026: Б260047 и Б260048 на един ред
+        за 3 бр.). Същата партида, повече бройки — остава в своя ред.
+        """
+        lot_id = values.get("design_lot_id") or False
+        same_lot = self.filtered(lambda line: line.design_lot_id.id == lot_id)
+        return super(PurchaseOrderLine, same_lot)._find_candidate(
+            product_id, product_qty, product_uom, location_id, name, origin,
+            company_id, values,
+        )

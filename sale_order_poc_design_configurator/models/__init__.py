@@ -9,6 +9,7 @@
 # Unless you hold a valid commercial license, your use of this file is governed
 # by the AGPL-3.0-or-later.
 from . import design_param_definition
+from . import product_template
 from . import sale_order_line
 from . import sale_order_poc
 from . import sale_order_poc_price

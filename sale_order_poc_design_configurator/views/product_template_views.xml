@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2024-2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)
+          https://www.gnu.org/licenses/agpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the AGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the AGPL-3.0-or-later.
+-->
+<odoo>
+    <record id="product_template_form_view_poc_one_unit" model="ir.ui.view">
+        <field name="name">product.template.form.poc.one.unit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="sale_order_poc.product_template_form_view_inherit_sale_order_poc"/>
+        <field name="arch" type="xml">
+            <field name="poc_template_id" position="after">
+                <field name="poc_one_unit_per_line" invisible="not poc_template_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>

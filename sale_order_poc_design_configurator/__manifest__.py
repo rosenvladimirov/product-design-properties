@@ -12,7 +12,7 @@
     "name": "Sale Order Production Configuration - Design Configurator",
     "summary": "One order, one lot: the design configurator of the sale order "
     "line shows the configuration and prices the quotation from the matrix",
-    "version": "19.0.1.2.1",
+    "version": "19.0.1.3.0",
     "category": "Manufacturing/Manufacturing",
     "author": "Rosen Vladimirov",
     "maintainers": ["rosen-vladimirov"],
@@ -32,6 +32,7 @@
     "data": [
         "views/sale_order_poc_views.xml",
         "views/sale_order_views.xml",
+        "views/product_template_views.xml",
     ],
     "assets": {
         "web.assets_tests": [
