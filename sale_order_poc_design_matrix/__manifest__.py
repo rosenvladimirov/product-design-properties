@@ -12,7 +12,7 @@
     "name": "Sale Order Production Configuration - Design Matrix",
     "summary": "The configuration of the sale order line feeds the design "
     "matrix by name, one to one, until the design lot is fixed",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "category": "Manufacturing/Manufacturing",
     "author": "Rosen Vladimirov",
     "maintainers": ["rosen-vladimirov"],
@@ -26,6 +26,9 @@
     "depends": [
         "sale_order_poc_mrp",
         "mrp_design_matrix",
+    ],
+    "data": [
+        "views/mrp_production_views.xml",
     ],
     "auto_install": True,
     "installable": True,
