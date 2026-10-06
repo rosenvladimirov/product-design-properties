@@ -57,6 +57,7 @@
                             <field name="key"/>
                             <field name="name"/>
                             <field name="color" widget="color_picker"/>
+                            <field name="active" widget="boolean_toggle"/>
                         </list>
                     </field>
                 </sheet>

@@ -342,6 +342,11 @@ class SaleOrderPocParamOption(models.Model):
     key = fields.Char(required=True)
     name = fields.Char(string="Label", required=True, translate=True)
     color = fields.Integer(default=0)
+    # архивираната опция излиза от схемата: не се предлага и формулата не я
+    # дава. Стойност, която я носи, Properties чете като празна
+    # (ORM/fields_properties.py, _parse_json_types) — архивът пази опцията
+    # с ключа и превода ѝ, за да може да се върне, не етикета в старите POC
+    active = fields.Boolean(default=True)
 
     _key_uniq = models.Constraint(
         "unique(param_id, key)", "The option key must be unique per parameter."

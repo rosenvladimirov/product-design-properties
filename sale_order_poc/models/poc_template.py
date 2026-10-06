@@ -128,6 +128,7 @@ class SaleOrderPocTemplate(models.Model):
         "line_ids.param_id.option_ids.key",
         "line_ids.param_id.option_ids.name",
         "line_ids.param_id.option_ids.color",
+        "line_ids.param_id.option_ids.active",
     )
     def _compute_param_definition(self):
         # зависимостите са по релационни пътища: depends по съдържанието на

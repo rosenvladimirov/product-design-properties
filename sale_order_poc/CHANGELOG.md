@@ -4,6 +4,18 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.6.0] - 2026-10-06
+
+### Added
+
+- An option of a Selection or Tags parameter can be archived. An archived
+  option is no longer offered for a new choice and a formula cannot set it.
+  Unlike deleting, the option keeps its key and translations and can be
+  restored. A configuration that holds an archived option reads it as
+  empty, as Odoo does for any option missing from the definition.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.5.0] - 2026-09-29
 
 ### Added

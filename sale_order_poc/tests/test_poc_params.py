@@ -138,3 +138,19 @@ class TestPocParams(PocCommon):
         self.product.product_tmpl_id.poc_default_params = {"t_thickness_um": 35.0}
         poc = self._make_poc()
         self.assertEqual(poc._poc_values()["t_thickness_um"], 35.0)
+
+    def test_archived_option_is_not_offered(self):
+        """Архивираната опция излиза от схемата и формулата не може да я даде.
+
+        Мутация: без ``active`` на опцията схемата пак носи „HDPE“.
+        """
+        option = self.p_material.option_ids.filtered(lambda o: o.key == "hdpe")
+        option.active = False
+        selection = {
+            entry["name"]: entry.get("selection")
+            for entry in self.template.param_definition
+        }["t_material"]
+        self.assertEqual([key for key, _name in selection], ["ldpe"])
+        with self.assertRaises(ValueError):
+            self.p_material._poc_coerce("hdpe")
+

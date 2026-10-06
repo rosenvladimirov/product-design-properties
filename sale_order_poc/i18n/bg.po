@@ -128,6 +128,7 @@ msgstr "Необходимо Действие"
 
 #. module: sale_order_poc
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_param__active
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_param_option__active
 #: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__active
 msgid "Active"
 msgstr "Активно"
