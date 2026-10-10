@@ -160,3 +160,37 @@ class TestPocKitOption(PocMrpCommon):
         poc._poc_set_params({"kit_led": False})
         order.action_confirm()
         self.assertFalse(self._raw(poc.production_ids, self.led))
+
+    def test_generator_keeps_twin_kits_apart(self):
+        """``A#`` е друг кит от ``A``: две отметки, не една (uat-mec, 10.10)."""
+        self.kit.default_code = "KIT-Piezo_PIC"
+        twin = self.env["product.product"].create(
+            {"name": "POC LED Kit twin", "type": "consu", "default_code": "KIT-Piezo_PIC#"}
+        )
+        self.env["mrp.bom"].create(
+            {
+                "product_tmpl_id": twin.product_tmpl_id.id,
+                "product_qty": 1.0,
+                "type": "phantom",
+                "bom_line_ids": [
+                    Command.create({"product_id": self.led.id, "product_qty": 1.0})
+                ],
+            }
+        )
+        self.bom.bom_line_ids = [Command.create({"product_id": twin.id, "product_qty": 1.0})]
+        line_twin = self.bom.bom_line_ids.filtered(lambda l: l.product_id == twin)
+        self.bom.action_poc_kit_options()
+        self.assertEqual(self.line_kit.quantity_formula, "skip = not kit_piezo_pic")
+        self.assertEqual(line_twin.quantity_formula, "skip = not kit_piezo_pic_alt")
+
+    def test_generator_code_clash_gets_the_product_id(self):
+        """Две референции, които се изчистват до един код, не делят отметка."""
+        self.kit.default_code = "LED.1"
+        other = self.env["sale.order.poc.param"].create(
+            {"code": "kit_led_1", "name": "Some other kit", "param_type": "boolean"}
+        )
+        self.bom.action_poc_kit_options()
+        self.assertEqual(
+            self.line_kit.quantity_formula, "skip = not kit_led_1_%s" % self.kit.id
+        )
+        self.assertEqual(other.name, "Some other kit")

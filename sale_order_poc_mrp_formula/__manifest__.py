@@ -12,7 +12,7 @@
     "name": "Sale Order Production Configuration - Formulas",
     "summary": "The configuration of the sale order line feeds the BoM line "
     "quantity formulas of the manufacturing order",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.1.1",
     "category": "Manufacturing/Manufacturing",
     "author": "Rosen Vladimirov",
     "maintainers": ["rosen-vladimirov"],

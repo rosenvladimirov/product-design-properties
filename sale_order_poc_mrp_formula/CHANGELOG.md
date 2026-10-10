@@ -4,6 +4,18 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.1.1] - 2026-10-10
+
+### Fixed
+
+- Twin kits shared one checkbox: `Piezo_PIC` and `Piezo_PIC#` are different
+  kits, but the code of the checkbox dropped the `#`. Now `#` becomes `_alt`,
+  the `KIT-` prefix of imported kits is dropped, and a code already taken by
+  the checkbox of another kit gets the product id. Found on uat-mec with the
+  kits of DM1ALM_V3.3.1_td.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.1.0] - 2026-10-10
 
 ### Added

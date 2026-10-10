@@ -140,11 +140,27 @@ class MrpBom(models.Model):
         return bool("pcb_kit_default_on" in kit._fields and kit.pcb_kit_default_on)
 
     def _poc_kit_option_code(self, line):
-        """Кодът на отметката: ``kit_`` + вътрешната референция на кита."""
+        """Кодът на отметката: ``kit_`` + вътрешната референция на кита.
+
+        ``#`` в референцията означава ДРУГ кит (``Piezo_PIC#`` до
+        ``Piezo_PIC``), затова не се трие, а става ``_alt``; префиксът
+        ``KIT-`` на китовете от импорта пада. Кодът е зает от отметка на
+        друг кит (сблъсък след изчистването) — добавя се id на продукта.
+        """
         product = line.product_id
-        base = re.sub(r"[^a-z0-9]+", "_", (product.default_code or "").lower())
-        base = base.strip("_") or str(product.id)
-        return "kit_%s" % base
+        ref = (product.default_code or "").lower().replace("#", "_alt")
+        ref = re.sub(r"^kit[-_]", "", ref)
+        base = re.sub(r"[^a-z0-9]+", "_", ref).strip("_") or str(product.id)
+        code = "kit_%s" % base
+        taken = (
+            self.env["sale.order.poc.param"]
+            .sudo()
+            .with_context(active_test=False)
+            .search([("code", "=", code)], limit=1)
+        )
+        if taken and taken.name != product.display_name:
+            code = "%s_%s" % (code, product.id)
+        return code
 
     def action_poc_kit_options(self):
         """По една отметка в конфигурацията за всеки опционен кит.
