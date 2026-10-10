@@ -84,3 +84,36 @@ msgid ""
 msgstr ""
 "mrp_bom_line_formula_template %(version)s е твърде стар; за add_products "
 "трябва 19.0.2.3.0 или по-нов."
+
+#. module: sale_order_poc_mrp_formula
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_mrp_formula.mrp_bom_form_view_poc_formula
+msgid "Kit Options to Configuration"
+msgstr "Опциите на китовете в конфигурацията"
+
+#. module: sale_order_poc_mrp_formula
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_mrp_formula.mrp_bom_form_view_poc_formula
+msgid ""
+"One checkbox in the production configuration for each optional phantom kit; "
+"the kit line gets the formula that drops the kit when it is not checked."
+msgstr ""
+"По една отметка в конфигурацията на производството за всеки опционен "
+"фантомен кит; редът на кита получава формулата, която маха кита, когато не е"
+" отметнат."
+
+#. module: sale_order_poc_mrp_formula
+#. odoo-python
+#: code:addons/sale_order_poc_mrp_formula/models/mrp_bom.py:0
+msgid "%(bom)s has no optional phantom kits."
+msgstr "%(bom)s няма опционни фантомни китове."
+
+#. module: sale_order_poc_mrp_formula
+#. odoo-python
+#: code:addons/sale_order_poc_mrp_formula/models/mrp_bom.py:0
+msgid "%(count)s kit options are in the configuration."
+msgstr "%(count)s опции на китове са в конфигурацията."
+
+#. module: sale_order_poc_mrp_formula
+#. odoo-python
+#: code:addons/sale_order_poc_mrp_formula/models/mrp_bom.py:0
+msgid "Not touched, they have another formula: %(kits)s"
+msgstr "Непипнати, защото имат друга формула: %(kits)s"

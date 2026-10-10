@@ -21,6 +21,9 @@
                 <header>
                     <button name="action_check_poc_formulas" type="object"
                             string="Check Configuration Formulas"/>
+                    <button name="action_poc_kit_options" type="object"
+                            string="Kit Options to Configuration"
+                            help="One checkbox in the production configuration for each optional phantom kit; the kit line gets the formula that drops the kit when it is not checked."/>
                 </header>
             </xpath>
         </field>

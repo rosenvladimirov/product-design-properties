@@ -61,3 +61,61 @@ class MrpBomLine(models.Model):
             {code: value for code, value in contract.items() if code not in values}
         )
         return values
+
+    def _skip_bom_line(self, product, never_attribute_values=False):
+        """Редът на фантомен кит отпада, когато формулата му го каже.
+
+        Ядрото не прави движение за реда на кита, а разгръща компонентите
+        му, затова формулата на такъв ред иначе не се изпълнява никога.
+        Тук тя решава дали китът влиза: ``skip`` или количество до нула
+        махат кита с всичките му компоненти; всяко положително количество
+        го оставя такъв, какъвто е в BoM (опцията е 1 или 0, не множител).
+
+        Действа само в разгръщането на MO с конфигурация (контекстът го
+        слага ``_get_moves_raw_values``): справките и доставката на кит
+        остават стандартни. Грешка във формулата оставя кита (ADR
+        sale-order-poc/0006).
+        """
+        if super()._skip_bom_line(product, never_attribute_values):
+            return True
+        production_id = self.env.context.get("poc_kit_production_id")
+        if not (
+            production_id
+            and self.quantity_formula
+            and self.child_bom_id.type == "phantom"
+        ):
+            return False
+        production = self.env["mrp.production"].browse(production_id)
+        if not production.poc_id:
+            return False
+        try:
+            result = self._eval_quantity_formula(
+                self.product_id,
+                self.product_uom_id,
+                self.product_qty,
+                production,
+                operation_id=self.operation_id.id,
+            )
+        except Exception:
+            _logger.warning(
+                "Kit formula of BoM line %s (product %s) failed; the kit "
+                "stays in the manufacturing order.",
+                self.id,
+                self.product_id.display_name,
+                exc_info=True,
+            )
+            return False
+        if isinstance(result, dict):
+            if result.get("skip"):
+                return True
+            result = result.get("quantity")
+        try:
+            return float(result or 0.0) <= 0.0
+        except (TypeError, ValueError):
+            _logger.warning(
+                "Kit formula of BoM line %s gave a non-numeric result (%r); "
+                "the kit stays in the manufacturing order.",
+                self.id,
+                result,
+            )
+            return False

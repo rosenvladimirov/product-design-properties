@@ -10,3 +10,4 @@
 # by the AGPL-3.0-or-later.
 from . import mrp_bom
 from . import mrp_bom_line
+from . import mrp_production
