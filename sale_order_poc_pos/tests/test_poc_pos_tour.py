@@ -70,6 +70,9 @@ class TestPocPosTour(TestPointOfSaleHttpCommon):
             "type": "consu",
             "list_price": 2.0,
             "available_in_pos": True,
+            # с партида: касата НЕ пита за нея — идва от конфигурацията
+            "is_storable": True,
+            "tracking": "lot",
         })
         cls.configured.product_tmpl_id.sudo().poc_template_id = template
 

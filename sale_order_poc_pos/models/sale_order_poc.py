@@ -15,6 +15,8 @@ from odoo.tools.safe_eval import safe_eval
 
 # Колко записа най-много се предлагат за избор в касата (many2one/many2many)
 L10N_BG_POS_OPTIONS_LIMIT = 80
+# Ключът в промените от касата за „Цената тръгва от“ (не е параметър на POC)
+L10N_BG_POS_PRICE_BASE_KEY = "__price_base"
 
 
 class SaleOrderPoc(models.Model):
@@ -70,6 +72,20 @@ class SaleOrderPoc(models.Model):
         ]
         so_line = self.sale_line_id
         state_labels = dict(self._fields["state"]._description_selection(self.env))
+        # Цената от матрицата (ако е инсталиран sale_order_poc_design_configurator):
+        # от какво тръгва и защо я няма — касиерът трябва да го вижда
+        price_base = None
+        if "matrix_price_base" in self._fields:
+            field = self._fields["matrix_price_base"]
+            price_base = {
+                "value": self.matrix_price_base,
+                "label": field._description_string(self.env),
+                "options": [
+                    {"key": key, "label": label}
+                    for key, label in field._description_selection(self.env)
+                ],
+            }
+        price_note = self["matrix_price_note"] if "matrix_price_note" in self._fields else False
         return {
             "id": self.id,
             "name": self.name,
@@ -80,6 +96,8 @@ class SaleOrderPoc(models.Model):
             "summary": self.summary or "",
             "sections": [section for section in sections if section["params"]],
             "tables": tables,
+            "price_base": price_base,
+            "price_note": price_note or "",
             "line": {
                 "id": so_line.id,
                 "uuid": so_line.l10n_bg_pos_line_uuid,
@@ -153,6 +171,12 @@ class SaleOrderPoc(models.Model):
                 types[entry["name"]] = entry.get("type")
                 comodels[entry["name"]] = entry.get("comodel")
         clean = {}
+        # не е параметър: от какво тръгва цената (sale_order_poc_design_configurator)
+        price_base = updates.pop(L10N_BG_POS_PRICE_BASE_KEY, None) if isinstance(updates, dict) else None
+        if price_base and "matrix_price_base" in self._fields:
+            keys = [key for key, _label in self._fields["matrix_price_base"]._description_selection(self.env)]
+            if price_base in keys:
+                self.matrix_price_base = price_base
         for code, value in updates.items():
             ptype = types.get(code)
             if not ptype or ptype in ("separator", "table"):

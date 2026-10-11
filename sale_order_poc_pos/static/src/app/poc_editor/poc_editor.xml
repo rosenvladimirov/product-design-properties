@@ -104,8 +104,20 @@
                 </div>
             </div>
             <div t-if="state.data" class="d-flex align-items-center gap-3 p-2 border-top">
+                <div t-if="state.data.price_base" class="o_l10n_bg_poc_price_base">
+                    <div class="text-muted small" t-esc="state.data.price_base.label"/>
+                    <div class="btn-group">
+                        <t t-foreach="state.data.price_base.options" t-as="option" t-key="option.key">
+                            <button class="btn" t-att-data-key="option.key"
+                                    t-att-class="priceBase === option.key ? 'btn-primary' : 'btn-outline-secondary'"
+                                    t-att-disabled="!state.data.editable"
+                                    t-on-click="() => this.setPriceBase(option.key)" t-esc="option.label"/>
+                        </t>
+                    </div>
+                </div>
                 <div class="lh-sm">
                     <div class="text-muted small" t-esc="state.data.summary"/>
+                    <div t-if="state.data.price_note" class="text-danger small o_l10n_bg_poc_price_note" t-esc="state.data.price_note"/>
                     <div>Unit price: <span class="fw-bold o_l10n_bg_poc_price" t-esc="formatCurrency(state.data.line.price_unit)"/>
                         · Subtotal: <span class="fw-bold" t-esc="formatCurrency(state.data.line.price_subtotal)"/></div>
                 </div>

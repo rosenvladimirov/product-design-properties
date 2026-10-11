@@ -158,6 +158,15 @@ export class L10nBgPocEditor extends Component {
         this.set(param, parseInt(ev.target.value) || false);
     }
 
+    /** „Цената тръгва от“ — не е параметър; пътува със същото „Запази“. */
+    get priceBase() {
+        return this.state.updates.__price_base || this.state.data?.price_base?.value;
+    }
+
+    setPriceBase(key) {
+        this.state.updates.__price_base = key;
+    }
+
     toggleTag(param, key) {
         const current = [...(this.value(param) || [])];
         const index = current.indexOf(key);
