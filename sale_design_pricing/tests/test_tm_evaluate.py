@@ -11,9 +11,6 @@ from odoo.addons.base_zen_decision.models.zen_engine import ZenWrapper
 @tagged("post_install", "-at_install")
 class TestTmEvaluate(TransactionCase):
     def test_failing_tables_are_logged_not_raised(self):
-        # Таблиците са на mrp_design_matrix (не е в depends): без него няма какво да се пуска.
-        if "constraint_table" not in self.env["mrp.bom"]._fields:
-            self.skipTest("mrp_design_matrix is not installed")
         product = self.env["product.product"].create({"name": "Priced item"})
         table = {"nodes": [], "edges": []}
         bom = self.env["mrp.bom"].create(
