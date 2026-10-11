@@ -10,7 +10,7 @@
 # by the AGPL-3.0-or-later.
 {
     "name": "Sale Design Pricing — cost+ markup для design products",
-    "version": "18.0.1.3.3",
+    "version": "18.0.1.3.4",
     "summary": "Cost-plus pricing for parametric design products (separate material/labor markups)",
     "author": "Rosen Vladimirov",
     "website": "https://github.com/rosenvladimirov/product-design-properties",

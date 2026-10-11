@@ -8,7 +8,11 @@
 #
 # Unless you hold a valid commercial license, your use of this file is governed
 # by the AGPL-3.0-or-later.
+import logging
+
 from odoo import models
+
+_logger = logging.getLogger(__name__)
 
 
 class MrpBom(models.Model):
