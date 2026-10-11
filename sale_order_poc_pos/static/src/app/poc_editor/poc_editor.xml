@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Тъч редакторът на конфигурацията (POC) в десния екран -->
+    <t t-name="sale_order_poc_pos.PocEditor">
+        <div t-if="visible" class="o_l10n_bg_poc_editor top-0 start-0 w-100 h-100 d-flex flex-column bg-view"
+             t-att-class="props.fullscreen ? 'position-fixed' : 'position-absolute'"
+             t-attf-style="z-index: {{ props.fullscreen ? 1050 : 5 }};">
+            <div class="d-flex align-items-center gap-2 p-2 border-bottom">
+                <i class="fa fa-sliders fa-lg"/>
+                <span class="fw-bold text-truncate fs-5 o_l10n_bg_poc_title" t-esc="title"/>
+                <span t-if="state.data" class="badge text-bg-info" t-esc="state.data.state_label"/>
+                <button class="btn btn-lg btn-secondary ms-auto o_l10n_bg_poc_close" t-on-click="close">
+                    <i class="fa fa-times me-1"/>Close
+                </button>
+            </div>
+            <div t-if="!state.data" class="flex-grow-1 d-flex align-items-center justify-content-center text-muted">
+                <i class="fa fa-spinner fa-spin fa-2x me-2"/>Loading the configuration…
+            </div>
+            <div t-else="" class="flex-grow-1 overflow-auto p-2 o_l10n_bg_poc_body">
+                <t t-foreach="state.data.sections" t-as="section" t-key="section_index">
+                    <div class="card mb-2">
+                        <button class="card-header btn btn-light text-start fw-bold d-flex align-items-center o_l10n_bg_poc_section"
+                                t-on-click="() => this.toggleSection(section, section_index)">
+                            <span t-esc="section.title"/>
+                            <i t-attf-class="fa ms-auto {{ isSectionOpen(section, section_index) ? 'fa-chevron-up' : 'fa-chevron-down' }}"/>
+                        </button>
+                        <div t-if="isSectionOpen(section, section_index)" class="card-body row g-3">
+                            <t t-foreach="section.params" t-as="param" t-key="param.code">
+                                <div t-attf-class="{{ ['selection', 'tags', 'many2many', 'text'].includes(param.type) ? 'col-12' : 'col-md-6' }} o_l10n_bg_poc_param" t-att-data-code="param.code">
+                                    <div class="o_l10n_bg_poc_label text-muted mb-1">
+                                        <t t-esc="param.label"/>
+                                        <span t-if="param.origin === 'formula'" class="badge text-bg-light ms-1" title="Computed by a formula">ƒ</span>
+                                        <span t-if="param.code in state.updates" class="badge text-bg-warning ms-1">changed</span>
+                                    </div>
+                                    <t t-set="val" t-value="value(param)"/>
+                                    <div t-if="param.type === 'float' or param.type === 'integer'" class="input-group">
+                                        <input type="number" class="form-control" t-att-step="param.type === 'integer' ? 1 : 'any'"
+                                               t-att-value="val === null or val === undefined or val === false ? '' : val"
+                                               t-att-disabled="!state.data.editable"
+                                               t-on-change="(ev) => this.onNumber(param, ev)"/>
+                                        <span t-if="param.suffix" class="input-group-text" t-esc="param.suffix"/>
+                                    </div>
+                                    <div t-elif="param.type === 'boolean'" class="btn-group w-100">
+                                        <button class="btn" t-att-class="val ? 'btn-primary' : 'btn-outline-secondary'"
+                                                t-att-disabled="!state.data.editable" t-on-click="() => this.set(param, true)">Yes</button>
+                                        <button class="btn" t-att-class="!val ? 'btn-primary' : 'btn-outline-secondary'"
+                                                t-att-disabled="!state.data.editable" t-on-click="() => this.set(param, false)">No</button>
+                                    </div>
+                                    <div t-elif="param.type === 'selection' and param.options.length &lt;= 8" class="d-flex flex-wrap gap-2">
+                                        <t t-foreach="param.options" t-as="option" t-key="option.key">
+                                            <button class="btn o_l10n_bg_poc_option" t-att-class="val === option.key ? 'btn-primary' : 'btn-outline-secondary'"
+                                                    t-att-data-key="option.key"
+                                                    t-att-disabled="!state.data.editable" t-on-click="() => this.set(param, option.key)" t-esc="option.label"/>
+                                        </t>
+                                    </div>
+                                    <select t-elif="param.type === 'selection'" class="form-select"
+                                            t-att-disabled="!state.data.editable" t-on-change="(ev) => this.set(param, ev.target.value || false)">
+                                        <option value=""/>
+                                        <t t-foreach="param.options" t-as="option" t-key="option.key">
+                                            <option t-att-value="option.key" t-att-selected="val === option.key" t-esc="option.label"/>
+                                        </t>
+                                    </select>
+                                    <div t-elif="param.type === 'tags'" class="d-flex flex-wrap gap-2">
+                                        <t t-foreach="param.options" t-as="option" t-key="option.key">
+                                            <button class="btn" t-att-class="(val or []).includes(option.key) ? 'btn-primary' : 'btn-outline-secondary'"
+                                                    t-att-disabled="!state.data.editable" t-on-click="() => this.toggleTag(param, option.key)" t-esc="option.label"/>
+                                        </t>
+                                    </div>
+                                    <select t-elif="param.type === 'many2one'" class="form-select"
+                                            t-att-disabled="!state.data.editable" t-on-change="(ev) => this.onRecord(param, ev)">
+                                        <option value=""/>
+                                        <t t-foreach="param.options" t-as="option" t-key="option.id">
+                                            <option t-att-value="option.id" t-att-selected="val === option.id" t-esc="option.name"/>
+                                        </t>
+                                    </select>
+                                    <div t-elif="param.type === 'many2many'" class="d-flex flex-wrap gap-2">
+                                        <t t-foreach="param.options" t-as="option" t-key="option.id">
+                                            <button class="btn" t-att-class="(val or []).includes(option.id) ? 'btn-primary' : 'btn-outline-secondary'"
+                                                    t-att-disabled="!state.data.editable" t-on-click="() => this.toggleTag(param, option.id)" t-esc="option.name"/>
+                                        </t>
+                                    </div>
+                                    <input t-elif="param.type === 'date'" type="date" class="form-control"
+                                           t-att-value="val or ''" t-att-disabled="!state.data.editable"
+                                           t-on-change="(ev) => this.onText(param, ev)"/>
+                                    <textarea t-elif="param.type === 'text'" rows="2" class="form-control"
+                                              t-att-value="val or ''" t-att-disabled="!state.data.editable"
+                                              t-on-change="(ev) => this.onText(param, ev)"/>
+                                    <input t-else="" type="text" class="form-control"
+                                           t-att-value="val or ''" t-att-disabled="!state.data.editable"
+                                           t-on-change="(ev) => this.onText(param, ev)"/>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+                <div t-foreach="state.data.tables" t-as="table" t-key="table.code" class="card mb-2">
+                    <div class="card-header fw-bold" t-esc="table.code"/>
+                    <table class="table table-sm mb-0">
+                        <tr t-foreach="table.rows" t-as="row" t-key="row_index">
+                            <td t-esc="row.key"/><td t-esc="row.product"/>
+                            <td class="text-end"><t t-esc="row.value"/> <t t-esc="row.uom"/></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div t-if="state.data" class="d-flex align-items-center gap-3 p-2 border-top">
+                <div class="lh-sm">
+                    <div class="text-muted small" t-esc="state.data.summary"/>
+                    <div>Unit price: <span class="fw-bold o_l10n_bg_poc_price" t-esc="formatCurrency(state.data.line.price_unit)"/>
+                        · Subtotal: <span class="fw-bold" t-esc="formatCurrency(state.data.line.price_subtotal)"/></div>
+                </div>
+                <button class="btn btn-lg btn-primary ms-auto o_l10n_bg_poc_compute"
+                        t-att-disabled="state.loading or !state.data.editable" t-on-click="compute">
+                    <i t-attf-class="fa {{ state.loading ? 'fa-spinner fa-spin' : 'fa-calculator' }} me-1"/>
+                    <t t-if="dirty">Save and compute</t><t t-else="">Compute</t>
+                </button>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="sale_order_poc_pos.ProductScreen" t-inherit="point_of_sale.ProductScreen" t-inherit-mode="extension">
+        <!-- голям екран: в десния екран, над продуктите -->
+        <xpath expr="//div[hasclass('rightpane')]/div[hasclass('position-relative')]" position="inside">
+            <L10nBgPocEditor t-if="currentOrder?.l10n_bg_wholesale and !pos.isSmallProductScreen"/>
+        </xpath>
+        <!-- малък екран (таблет/телефон): редовете и продуктите не се виждат
+             едновременно — редакторът е на целия екран -->
+        <xpath expr="//div[hasclass('product-screen')]" position="inside">
+            <L10nBgPocEditor t-if="currentOrder?.l10n_bg_wholesale and pos.isSmallProductScreen" fullscreen="true"/>
+        </xpath>
+    </t>
+</templates>

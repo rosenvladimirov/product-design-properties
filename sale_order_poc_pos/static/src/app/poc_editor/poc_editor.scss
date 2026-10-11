@@ -1,0 +1,18 @@
+// Тъч редакторът на конфигурацията — контроли поне 3.25rem
+.o_l10n_bg_poc_editor {
+    .form-control,
+    .form-select,
+    .input-group-text,
+    .card-body .btn {
+        min-height: 3.25rem;
+        font-size: 1.05rem;
+    }
+    .o_l10n_bg_poc_section,
+    .o_l10n_bg_poc_close,
+    .o_l10n_bg_poc_compute {
+        min-height: 3.5rem;
+    }
+    .o_l10n_bg_poc_label {
+        font-size: 0.85rem;
+    }
+}
