@@ -85,17 +85,26 @@ class MrpRoutingWorkcenter(models.Model):
         # T3 интеграция: design контекстът на произвеждания лот (когато
         # mrp_design_matrix е инсталиран) влиза като плоски променливи
         # v18: lot_producing_id (M2o); v19+: lot_producing_ids (M2m)
-        lot = False
-        if production:
-            if "lot_producing_ids" in production._fields:
-                lot = production.lot_producing_ids[:1]
-            elif "lot_producing_id" in production._fields:
-                lot = production.lot_producing_id
-        if lot and hasattr(lot, "_get_design_context"):
-            ctx = lot._get_design_context()
-            if ctx:
-                values["design_context"] = ctx
-                values.update(ctx)
+        ctx = None
+        # Контекстът на поръчката, когато матрицата го дава: конфигът на MO,
+        # лотът и — за полуфабрикат по MTO — лотът на вратата. Иначе касата и
+        # крилото не виждат H, стъклопакета и модела (Атанас 171862, 14.10.2026:
+        # заваряване на крило 13 вместо 16 мин). Мека проверка: модулът не
+        # зависи от матрицата.
+        if production and hasattr(production, "_resolve_design_context"):
+            ctx = production._resolve_design_context()
+        if ctx is None:
+            lot = False
+            if production:
+                if "lot_producing_ids" in production._fields:
+                    lot = production.lot_producing_ids[:1]
+                elif "lot_producing_id" in production._fields:
+                    lot = production.lot_producing_id
+            if lot and hasattr(lot, "_get_design_context"):
+                ctx = lot._get_design_context()
+        if ctx:
+            values["design_context"] = ctx
+            values.update(ctx)
         return values
 
     def _eval_operation_formula(

@@ -13,6 +13,8 @@ E2E тестове за операционните формули: продъл�
 закачане на консумирания материал към workorder-а.
 """
 
+from unittest.mock import patch
+
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
@@ -182,3 +184,19 @@ class TestOperationFormula(TransactionCase):
         )
         self.assertEqual(len(wo), 1)
         self.assertGreater(wo.duration_expected, 0.0)
+
+    def test_kontekstat_ot_porachkata(self):
+        """Формулата вижда контекста на поръчката (_resolve_design_context).
+
+        Полуфабрикатът по MTO взима H от лота на вратата през поръчката, не
+        от собствения си лот (Атанас 171862, 14.10.2026).
+        """
+        Production = type(self.env["mrp.production"])
+        operation = self.env["mrp.routing.workcenter"].create({
+            "name": "Ctx op", "workcenter_id": self.workcenter.id, "bom_id": self.bom.id,
+            "formula_template_id": self.env["mrp.bom.line.formula.template"].create(
+                {"name": "ctx", "quantity_formula": "result = 13 + (3 if H >= 2200 else 0)"}).id,
+        })
+        mo = self.env["mrp.production"].create({"product_id": self.parent.id, "bom_id": self.bom.id})
+        with patch.object(Production, "_resolve_design_context", lambda s: {"H": 2250.0}, create=True):
+            self.assertEqual(operation._eval_operation_formula(mo)["duration"], 16.0)
