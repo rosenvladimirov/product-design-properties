@@ -214,6 +214,32 @@ class TestMatrixMoves(TransactionCase):
         slab_moves = mo.move_raw_ids.filtered(lambda m: m.product_id == self.slab)
         self.assertTrue(slab_moves, "slab move should have been created")
 
+    def test_bom_line_bez_formula_po_kolichestvoto(self):
+        """Ред без формула е за една рецепта: MO за 15 взема 15 × количеството."""
+        bom = self._build_bom(
+            constraint_table=_jdm(["material"], ["x"], []),
+            lines=[{"product_id": self.slab.id, "product_qty": 2.0, "coeff_default": 1.0}],
+        )
+        mo, _ = self._build_mo_with_lot(bom, {"material": "wood"})
+        mo.product_qty = 15.0
+        mo._generate_design_matrix_moves()
+        slab = mo.move_raw_ids.filtered(lambda m: m.product_id == self.slab)
+        self.assertEqual(sum(slab.mapped("product_uom_qty")), 30.0)
+
+    def test_bom_line_formulata_e_za_cyalata_porachka(self):
+        """Формулата връща количеството за цялата поръчка — не се умножава втори път."""
+        bom = self._build_bom(
+            constraint_table=_jdm(["material"], ["x"], []),
+            lines=[{"product_id": self.slab.id, "product_qty": 1.0, "coeff_default": 1.0}],
+        )
+        # формулата се пише след create: при create тя се смята от шаблона
+        bom.bom_line_ids.quantity_formula = "quantity = 0.5 * product_uom_qty"
+        mo, _ = self._build_mo_with_lot(bom, {"material": "wood"})
+        mo.product_qty = 15.0
+        mo._generate_design_matrix_moves()
+        slab = mo.move_raw_ids.filtered(lambda m: m.product_id == self.slab)
+        self.assertEqual(sum(slab.mapped("product_uom_qty")), 7.5)
+
     def test_bom_line_o_variant_skipped(self):
         """coeff_default = 0 and no matrix rule → no move."""
         bom = self._build_bom(

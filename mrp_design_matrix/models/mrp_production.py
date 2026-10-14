@@ -642,8 +642,14 @@ class MrpProduction(models.Model):
         Evaluate the quantity_formula of a BoM line against ctx.
 
         Returns float (quantity) or dict {quantity, product, uom} when
-        the formula overrides product/uom.  Falls back to product_qty
-        if no formula is set.
+        the formula overrides product/uom.  Falls back to the line quantity
+        scaled to the order if no formula is set.
+
+        Договорът (14.10.2026, Солид 171943): формулата връща количеството
+        за ЦЯЛАТА поръчка — получава ``product_uom_qty`` и сама умножава
+        (виж щорите на Теолино). Редът БЕЗ формула обаче е за една рецепта,
+        както в ядрото, затова се мащабира по количеството на поръчката;
+        преди това MO за 15 каси получаваше материала за една.
         """
         if hasattr(line, "_eval_quantity_formula") and line.quantity_formula:
             result = line._eval_quantity_formula(
@@ -654,11 +660,17 @@ class MrpProduction(models.Model):
                 design_context=ctx,
             )
             if result is None:
-                return line.product_qty
+                return line.product_qty * self._matrix_bom_factor(line.bom_id)
             if isinstance(result, dict):
                 return result
             return result or 0.0
-        return line.product_qty
+        return line.product_qty * self._matrix_bom_factor(line.bom_id)
+
+    def _matrix_bom_factor(self, bom):
+        """Колко рецепти прави поръчката (количеството ѝ в мярката на рецептата)."""
+        self.ensure_one()
+        qty = self.product_uom_id._compute_quantity(self.product_qty, bom.product_uom_id)
+        return qty / (bom.product_qty or 1.0)
 
     def _eval_matrix_coeff_cached(self, line, t2_coeff_by_key: dict) -> float:
         """
