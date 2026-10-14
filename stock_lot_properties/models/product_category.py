@@ -27,8 +27,9 @@ class ProductCategory(models.Model):
 
     def _lot_param_definition(self):
         """Наборът за партидата: собственият или най-близкият на родител."""
-        self.ensure_one()
-        category = self
+        # продукт без категория също стига дотук — празният набор, не грешка
+        # (14.10.2026: ensure_one() спираше създаването на всяка такава партида)
+        category = self[:1]
         while category:
             if category.lot_param_definition_id:
                 return category.lot_param_definition_id

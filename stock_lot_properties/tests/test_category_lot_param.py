@@ -37,3 +37,11 @@ class TestCategoryLotParam(TransactionCase):
     def test_izrichniyat_nabor_ne_se_pipa(self):
         other = self.env["design.param.definition"].create({"code": "test_other", "name": "Other (test)"})
         self.assertEqual(self._lot(self.parent, design_param_definition_id=other.id).design_param_definition_id, other)
+
+    def test_produkt_bez_kategoriya(self):
+        """Продукт без категория: партидата се създава, без набор."""
+        product = self.env["product.product"].create(
+            {"name": "No categ (test)", "is_storable": True, "tracking": "lot"})
+        product.categ_id = False
+        lot = self.env["stock.lot"].create({"name": "L-NOCAT", "product_id": product.id})
+        self.assertFalse(lot.design_param_definition_id)
