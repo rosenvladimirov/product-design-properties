@@ -40,3 +40,13 @@ msgstr "Номер (ID)"
 #: model:ir.model,name:stock_lot_properties.model_stock_lot
 msgid "Lot/Serial"
 msgstr "Партиден/сериен"
+
+#. module: stock_lot_properties
+#: model:ir.model.fields,field_description:stock_lot_properties.field_product_category__lot_param_definition_id
+msgid "Lot Parameter Set"
+msgstr "Набор за партидата"
+
+#. module: stock_lot_properties
+#: model:ir.model.fields,help:stock_lot_properties.field_product_category__lot_param_definition_id
+msgid "Parameter set that every new lot of a product in this category receives, e.g. net weight, heat number and 3.1 certificate for sheet metal. Subcategories without their own set inherit it."
+msgstr "Наборът параметри, който получава всяка нова партида на продукт от тази категория — напр. нето тегло, номер на плавка и сертификат 3.1 за ламарина. Подкатегориите без свой набор го наследяват."
