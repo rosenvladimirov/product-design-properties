@@ -176,3 +176,40 @@ class TestPocPos(B2bPosCommon):
             data = self.config.l10n_bg_poc_save(poc.id, {})
             self.assertEqual(data["companions"], [])
             self.assertFalse(order.order_line.filtered(lambda l: l.product_id == fee))
+
+    def _switch_template(self):
+        """Шаблон със секция „Print“, превключвана от „pos_print“."""
+        Param = self.env["sale.order.poc.param"].sudo()
+        switch = Param.create({"code": "pos_print", "name": "With print", "param_type": "boolean"})
+        colours = Param.create({"code": "pos_colours", "name": "Colours", "param_type": "integer"})
+        self.template.sudo().write({"line_ids": [
+            (0, 0, {"sequence": 10, "display_type": "line_section", "name": "Print"}),
+            (0, 0, {"sequence": 11, "param_id": switch.id, "section_switch": True}),
+            (0, 0, {"sequence": 12, "param_id": colours.id}),
+        ]})
+
+    def test_switch_and_optional_reach_the_register(self):
+        """Превключвателят е в заглавието на секцията, не сред параметрите;
+        изключен и записан — секцията губи данните си. Опционалните продукти
+        на артикула се избират и пишат.
+
+        МУТАЦИЯ: `_l10n_bg_pos_data` оставя превключвателя сред параметрите.
+        """
+        Line = self.env["sale.order.poc.template.line"]
+        if "section_switch" not in Line._fields:
+            self.skipTest("sale_order_poc без превключватели на секции")
+        self._switch_template()
+        fee = self.create_product("Ribbon", self.categ_basic, 0.5, 1)
+        self.configured.product_tmpl_id.sudo().optional_product_ids = fee.product_tmpl_id
+        self.open_new_session()
+        result = self.config.l10n_bg_poc_open(self._payload(self.configured), "line-1")
+        section = next(s for s in result["poc"]["sections"] if s["title"] == "Print")
+        self.assertEqual(section["switch"]["code"], "pos_print")
+        self.assertEqual([p["code"] for p in section["params"]], ["pos_colours"])
+        self.assertEqual([o["id"] for o in result["poc"]["optional"]["options"]], [fee.id])
+        data = self.config.l10n_bg_poc_save(
+            result["poc"]["id"], {"pos_print": True, "pos_colours": 2, "__optional": [fee.id]})
+        self.assertEqual(self._params(data)["pos_colours"]["value"], 2)
+        self.assertEqual(data["optional"]["value"], [fee.id])
+        data = self.config.l10n_bg_poc_save(result["poc"]["id"], {"pos_print": False})
+        self.assertIn(self._params(data)["pos_colours"]["value"], (None, False))

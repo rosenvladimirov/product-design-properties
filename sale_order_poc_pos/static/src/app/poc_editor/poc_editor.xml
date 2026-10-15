@@ -9,7 +9,22 @@
                 <i class="fa fa-sliders fa-lg"/>
                 <span class="fw-bold text-truncate fs-5 o_l10n_bg_poc_title" t-esc="title"/>
                 <span t-if="state.data" class="badge text-bg-info" t-esc="state.data.state_label"/>
-                <button class="btn btn-lg btn-secondary ms-auto o_l10n_bg_poc_close" t-on-click="close">
+                <!-- превключвателите на секциите („С печат“): изключен — секцията
+                     не се вижда, а данните ѝ се губят при запис -->
+                <div t-if="switches.length" class="ms-auto d-flex gap-2">
+                <label t-foreach="switches" t-as="section" t-key="section.switch.code"
+                       class="btn btn-lg o_l10n_bg_poc_switch"
+                       t-att-class="isSwitchedOn(section) ? 'btn-primary' : 'btn-outline-secondary'"
+                       t-att-data-code="section.switch.code">
+                    <input type="checkbox" class="form-check-input me-2"
+                           t-att-checked="isSwitchedOn(section)"
+                           t-att-disabled="!state.data.editable"
+                           t-on-change="() => this.toggleSwitch(section)"/>
+                    <t t-esc="section.switch.label"/>
+                </label>
+                </div>
+                <button class="btn btn-lg btn-secondary o_l10n_bg_poc_close"
+                        t-att-class="switches.length ? '' : 'ms-auto'" t-on-click="close">
                     <i class="fa fa-times me-1"/>Close
                 </button>
             </div>
@@ -18,7 +33,7 @@
             </div>
             <div t-else="" class="flex-grow-1 overflow-auto p-2 o_l10n_bg_poc_body">
                 <t t-foreach="state.data.sections" t-as="section" t-key="section_index">
-                    <div class="card mb-2">
+                    <div t-if="isSwitchedOn(section)" class="card mb-2 o_l10n_bg_poc_card" t-att-data-section="section.title">
                         <button class="card-header btn btn-light text-start fw-bold d-flex align-items-center o_l10n_bg_poc_section"
                                 t-on-click="() => this.toggleSection(section, section_index)">
                             <span t-esc="section.title"/>
@@ -93,6 +108,18 @@
                         </div>
                     </div>
                 </t>
+                <div t-if="state.data.optional" class="card mb-2 o_l10n_bg_poc_optional">
+                    <div class="card-header fw-bold">Optional Products</div>
+                    <div class="card-body d-flex flex-wrap gap-2">
+                        <t t-foreach="state.data.optional.options" t-as="option" t-key="option.id">
+                            <button class="btn o_l10n_bg_poc_optional_option"
+                                    t-att-class="optionalValue.includes(option.id) ? 'btn-primary' : 'btn-outline-secondary'"
+                                    t-att-data-id="option.id"
+                                    t-att-disabled="!state.data.editable"
+                                    t-on-click="() => this.toggleOptional(option.id)" t-esc="option.name"/>
+                        </t>
+                    </div>
+                </div>
                 <div t-foreach="state.data.tables" t-as="table" t-key="table.code" class="card mb-2">
                     <div class="card-header fw-bold" t-esc="table.code"/>
                     <table class="table table-sm mb-0">

@@ -108,3 +108,52 @@ registry.category("web_tour.tours").add("sale_order_poc_pos_companion", {
             },
         ].flat(),
 });
+
+// Превключвателят на секцията горе и опционалните продукти (Росен, 15.10.2026)
+registry.category("web_tour.tours").add("sale_order_poc_pos_switch", {
+    steps: () =>
+        [
+            Chrome.startPoS(),
+            Dialog.confirm("Open Register"),
+            {
+                content: "switch to Wholesale",
+                trigger: ".control-buttons .o_l10n_bg_wholesale_button",
+                run: "click",
+            },
+            ProductScreen.clickPartnerButton(),
+            ProductScreen.clickCustomer("ET Petrov Trade"),
+            ProductScreen.clickDisplayedProduct("Configured Bag"),
+            {
+                content: "the switch is in the header",
+                trigger: ".o_l10n_bg_poc_editor .o_l10n_bg_poc_switch[data-code='pos_print']",
+            },
+            {
+                content: "the switched section is hidden",
+                trigger: ".o_l10n_bg_poc_editor:not(:has(.o_l10n_bg_poc_card[data-section='Print']))",
+            },
+            {
+                content: "switch the print on",
+                trigger: ".o_l10n_bg_poc_switch[data-code='pos_print'] input",
+                run: "click",
+            },
+            {
+                content: "the section shows",
+                trigger: ".o_l10n_bg_poc_card[data-section='Print'] " + PARAM("pos_colours").replace(".o_l10n_bg_poc_editor ", "") + " input",
+                run: "edit 2",
+            },
+            {
+                content: "choose the optional product",
+                trigger: ".o_l10n_bg_poc_optional_option:contains('Ribbon (test)')",
+                run: "click",
+            },
+            {
+                content: "save and compute",
+                trigger: ".o_l10n_bg_poc_compute:enabled",
+                run: "click",
+            },
+            {
+                content: "the optional product is a line in the order",
+                trigger: ".orderline:contains('Ribbon (test)')",
+            },
+        ].flat(),
+});

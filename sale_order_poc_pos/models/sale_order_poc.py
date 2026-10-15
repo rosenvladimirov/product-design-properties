@@ -17,6 +17,8 @@ from odoo.tools.safe_eval import safe_eval
 L10N_BG_POS_OPTIONS_LIMIT = 80
 # Ключът в промените от касата за „Цената тръгва от“ (не е параметър на POC)
 L10N_BG_POS_PRICE_BASE_KEY = "__price_base"
+# Ключът за опционалните продукти (не е параметър на POC)
+L10N_BG_POS_OPTIONAL_KEY = "__optional"
 
 
 class SaleOrderPoc(models.Model):
@@ -34,8 +36,20 @@ class SaleOrderPoc(models.Model):
         sections = []
         for container in self._poc_containers():
             origins.update(container.param_origins or {})
+            # превключвателят на секцията (sale_order_poc с `section_switch`)
+            # отива в заглавието ѝ, не в параметрите
+            lines = container.template_id.line_ids
+            switches = {
+                line.param_id.code
+                for line in lines
+                if "section_switch" in line._fields and line.section_switch
+            }
             current = None
             for entry in container.template_id.param_definition or []:
+                if entry["name"] in switches and current is not None:
+                    current["switch"] = self._l10n_bg_pos_param(
+                        entry, values.get(entry["name"]), origins)
+                    continue
                 if entry.get("type") == "separator":
                     current = {
                         "title": entry.get("string") or "",
@@ -96,7 +110,10 @@ class SaleOrderPoc(models.Model):
             "editable": self.state == "draft"
             or self.env.user.has_group("sale_order_poc.group_poc_manager"),
             "summary": self.summary or "",
-            "sections": [section for section in sections if section["params"]],
+            "sections": [
+                section for section in sections if section["params"] or section.get("switch")
+            ],
+            "optional": self._l10n_bg_pos_optional(),
             "tables": tables,
             "price_base": price_base,
             "price_note": price_note or "",
@@ -109,6 +126,19 @@ class SaleOrderPoc(models.Model):
                 "discount": so_line.discount,
                 "price_subtotal": so_line.price_subtotal,
             },
+        }
+
+    def _l10n_bg_pos_optional(self):
+        """Опционалните продукти на артикула — избраните и възможните."""
+        self.ensure_one()
+        if "optional_product_ids" not in self._fields:
+            return None
+        allowed = self.allowed_optional_product_ids
+        if not allowed:
+            return None
+        return {
+            "value": self.optional_product_ids.ids,
+            "options": [{"id": p.id, "name": p.display_name} for p in allowed],
         }
 
     def _l10n_bg_pos_companion_prefix(self):
@@ -208,6 +238,11 @@ class SaleOrderPoc(models.Model):
         clean = {}
         # не е параметър: от какво тръгва цената (sale_order_poc_design_configurator)
         price_base = updates.pop(L10N_BG_POS_PRICE_BASE_KEY, None) if isinstance(updates, dict) else None
+        optional = updates.pop(L10N_BG_POS_OPTIONAL_KEY, None) if isinstance(updates, dict) else None
+        if optional is not None and "optional_product_ids" in self._fields:
+            ids = [i for i in optional if isinstance(i, int)]
+            self.optional_product_ids = self.allowed_optional_product_ids.filtered(
+                lambda p: p.id in ids)
         if price_base and "matrix_price_base" in self._fields:
             keys = [key for key, _label in self._fields["matrix_price_base"]._description_selection(self.env)]
             if price_base in keys:

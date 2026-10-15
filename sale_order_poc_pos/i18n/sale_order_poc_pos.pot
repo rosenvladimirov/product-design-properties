@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-11 07:59+0000\n"
-"PO-Revision-Date: 2026-10-11 07:59+0000\n"
+"POT-Creation-Date: 2026-10-15 18:50+0000\n"
+"PO-Revision-Date: 2026-10-15 18:50+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -47,16 +47,16 @@ msgid "Display Name"
 msgstr ""
 
 #. module: sale_order_poc_pos
+#: model:ir.model.fields,field_description:sale_order_poc_pos.field_product_product__l10n_bg_pos_has_poc
+#: model:ir.model.fields,field_description:sale_order_poc_pos.field_product_template__l10n_bg_pos_has_poc
+msgid "Has Production Configuration"
+msgstr ""
+
+#. module: sale_order_poc_pos
 #: model:ir.model.fields,field_description:sale_order_poc_pos.field_pos_config__id
 #: model:ir.model.fields,field_description:sale_order_poc_pos.field_product_template__id
 #: model:ir.model.fields,field_description:sale_order_poc_pos.field_sale_order_poc__id
 msgid "ID"
-msgstr ""
-
-#. module: sale_order_poc_pos
-#: model:ir.model.fields,field_description:sale_order_poc_pos.field_product_product__l10n_bg_pos_has_poc
-#: model:ir.model.fields,field_description:sale_order_poc_pos.field_product_template__l10n_bg_pos_has_poc
-msgid "Has Production Configuration"
 msgstr ""
 
 #. module: sale_order_poc_pos
@@ -69,6 +69,12 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/sale_order_poc_pos/static/src/app/poc_editor/poc_editor.xml:0
 msgid "No"
+msgstr ""
+
+#. module: sale_order_poc_pos
+#. odoo-javascript
+#: code:addons/sale_order_poc_pos/static/src/app/poc_editor/poc_editor.xml:0
+msgid "Optional Products"
 msgstr ""
 
 #. module: sale_order_poc_pos

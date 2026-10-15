@@ -219,6 +219,39 @@ export class L10nBgPocEditor extends Component {
         this.set(param, parseInt(ev.target.value) || false);
     }
 
+    // ── превключвателите на секциите (напр. „С печат“) ──────────────
+
+    /** Превключвателите — горе, до „Close“. */
+    get switches() {
+        return (this.state.data?.sections || []).filter((section) => section.switch);
+    }
+
+    /** Секция без превключвател се вижда винаги; с — само когато е „да“. */
+    isSwitchedOn(section) {
+        return !section.switch || Boolean(this.value(section.switch));
+    }
+
+    toggleSwitch(section) {
+        this.set(section.switch, !this.isSwitchedOn(section));
+    }
+
+    // ── опционалните продукти на артикула ──────────────────────────
+
+    get optionalValue() {
+        return this.state.updates.__optional || this.state.data?.optional?.value || [];
+    }
+
+    toggleOptional(id) {
+        const current = [...this.optionalValue];
+        const index = current.indexOf(id);
+        if (index >= 0) {
+            current.splice(index, 1);
+        } else {
+            current.push(id);
+        }
+        this.state.updates.__optional = current;
+    }
+
     /** „Цената тръгва от“ — не е параметър; пътува със същото „Запази“. */
     get priceBase() {
         return this.state.updates.__price_base || this.state.data?.price_base?.value;

@@ -147,3 +147,9 @@ msgstr "· Междинна сума:"
 #: code:addons/sale_order_poc_pos/static/src/app/poc_editor/poc_editor.xml:0
 msgid "ƒ"
 msgstr "ƒ"
+
+#. module: sale_order_poc_pos
+#. odoo-javascript
+#: code:addons/sale_order_poc_pos/static/src/app/poc_editor/poc_editor.xml:0
+msgid "Optional Products"
+msgstr "Опционални продукти"

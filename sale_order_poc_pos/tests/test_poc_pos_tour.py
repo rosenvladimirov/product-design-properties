@@ -114,3 +114,31 @@ class TestPocPosTour(TestPointOfSaleHttpCommon):
         fee_lines = poc.sale_line_id.order_id.order_line.filtered(lambda l: l.product_id == fee)
         self.assertEqual(len(fee_lines), 1)
         self.assertEqual(fee_lines.l10n_bg_pos_line_uuid, "poc%d-fee" % poc.id)
+
+    # Т-POC-3: превключвателят горе и опционалният продукт като ред
+    def test_tour_poc_switch(self):
+        env = self.env
+        Line = env["sale.order.poc.template.line"]
+        if "section_switch" not in Line._fields:
+            self.skipTest("sale_order_poc без превключватели на секции")
+        Param = env["sale.order.poc.param"].sudo()
+        switch = Param.create({"code": "pos_print", "name": "With print", "param_type": "boolean"})
+        colours = Param.create({"code": "pos_colours", "name": "Colours", "param_type": "integer"})
+        template = self.configured.product_tmpl_id.poc_template_id.sudo()
+        template.write({"line_ids": [
+            (0, 0, {"sequence": 10, "display_type": "line_section", "name": "Print"}),
+            (0, 0, {"sequence": 11, "param_id": switch.id, "section_switch": True}),
+            (0, 0, {"sequence": 12, "param_id": colours.id}),
+        ]})
+        ribbon = env["product.product"].create({
+            "name": "Ribbon (test)", "type": "consu", "list_price": 0.5,
+            "available_in_pos": False,
+        })
+        self.configured.product_tmpl_id.sudo().optional_product_ids = ribbon.product_tmpl_id
+        self.main_pos_config.with_user(self.pos_user).open_ui()
+        self.start_pos_tour("sale_order_poc_pos_switch")
+        poc = env["sale.order.poc"].search([("partner_id", "=", self.buyer.id)])
+        values = poc._poc_values()
+        self.assertIs(values["pos_print"], True)
+        self.assertEqual(values["pos_colours"], 2)
+        self.assertEqual(poc.optional_product_ids, ribbon)
