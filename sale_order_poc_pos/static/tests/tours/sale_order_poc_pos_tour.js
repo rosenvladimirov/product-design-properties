@@ -133,7 +133,7 @@ registry.category("web_tour.tours").add("sale_order_poc_pos_switch", {
             },
             {
                 content: "switch the print on",
-                trigger: ".o_l10n_bg_poc_switch[data-code='pos_print'] input",
+                trigger: ".o_l10n_bg_poc_switch[data-code='pos_print']",
                 run: "click",
             },
             {

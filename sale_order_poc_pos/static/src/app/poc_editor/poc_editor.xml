@@ -12,16 +12,17 @@
                 <!-- превключвателите на секциите („С печат“): изключен — секцията
                      не се вижда, а данните ѝ се губят при запис -->
                 <div t-if="switches.length" class="ms-auto d-flex gap-2">
-                <label t-foreach="switches" t-as="section" t-key="section.switch.code"
-                       class="btn btn-lg o_l10n_bg_poc_switch"
-                       t-att-class="isSwitchedOn(section) ? 'btn-primary' : 'btn-outline-secondary'"
-                       t-att-data-code="section.switch.code">
-                    <input type="checkbox" class="form-check-input me-2"
-                           t-att-checked="isSwitchedOn(section)"
-                           t-att-disabled="!state.data.editable"
-                           t-on-change="() => this.toggleSwitch(section)"/>
+                <!-- бутон, не label: същата височина като „Close“ (стиловете на
+                     касата за голям бутон хващат само <button>) -->
+                <button t-foreach="switches" t-as="section" t-key="section.switch.code"
+                        class="btn btn-lg o_l10n_bg_poc_switch"
+                        t-att-class="isSwitchedOn(section) ? 'btn-primary' : 'btn-outline-secondary'"
+                        t-att-data-code="section.switch.code"
+                        t-att-disabled="!state.data.editable"
+                        t-on-click="() => this.toggleSwitch(section)">
+                    <i t-attf-class="fa {{ isSwitchedOn(section) ? 'fa-check-square-o' : 'fa-square-o' }} me-1"/>
                     <t t-esc="section.switch.label"/>
-                </label>
+                </button>
                 </div>
                 <button class="btn btn-lg btn-secondary o_l10n_bg_poc_close"
                         t-att-class="switches.length ? '' : 'ms-auto'" t-on-click="close">

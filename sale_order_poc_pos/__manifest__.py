@@ -12,7 +12,7 @@
     "name": "Sale Order Production Configuration in the Point of Sale",
     "summary": "Touch editor of the production configuration of a wholesale "
     "line in the Point of Sale",
-    "version": "19.0.1.3.0",
+    "version": "19.0.1.3.1",
     "category": "Sales/Point of Sale",
     "author": "Rosen Vladimirov",
     "maintainers": ["rosen-vladimirov"],
