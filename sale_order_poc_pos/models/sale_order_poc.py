@@ -87,6 +87,8 @@ class SaleOrderPoc(models.Model):
             }
         price_note = self["matrix_price_note"] if "matrix_price_note" in self._fields else False
         return {
+            "companions": self._l10n_bg_pos_companions(),
+            "companion_prefix": self._l10n_bg_pos_companion_prefix(),
             "id": self.id,
             "name": self.name,
             "state": self.state,
@@ -108,6 +110,39 @@ class SaleOrderPoc(models.Model):
                 "price_subtotal": so_line.price_subtotal,
             },
         }
+
+    def _l10n_bg_pos_companion_prefix(self):
+        """Началото на ключа на допълнителните редове на тази конфигурация."""
+        self.ensure_one()
+        return "poc%d-" % self.id
+
+    def _l10n_bg_pos_companions(self):
+        """Допълнителните редове на офертата (сито, дръжки…) — за касата.
+
+        Конфигурацията ги добавя в офертата (`sale_order_poc`,
+        `companion_line_ids`), но касата не ги знае: без тях сумата в касата
+        е по-малка от офертата. Всеки ред получава постоянен ключ
+        ``poc<id>-<ключ>`` в `l10n_bg_pos_line_uuid`: касата го ползва като
+        свой uuid, така че запазването на офертата обновява СЪЩИЯ ред, а
+        махнатият ред се познава по началото на ключа.
+        """
+        self.ensure_one()
+        if "companion_line_ids" not in self._fields:
+            return []
+        prefix = self._l10n_bg_pos_companion_prefix()
+        out = []
+        for line in self.sudo().companion_line_ids:
+            uuid = prefix + (line.poc_companion_key or str(line.id))
+            if line.l10n_bg_pos_line_uuid != uuid:
+                line.l10n_bg_pos_line_uuid = uuid
+            out.append({
+                "uuid": uuid,
+                "product_id": line.product_id.id,
+                "product_tmpl_id": line.product_id.product_tmpl_id.id,
+                "qty": line.product_uom_qty,
+                "price_unit": line.price_unit,
+            })
+        return out
 
     def _l10n_bg_pos_param(self, entry, value, origins):
         ptype = entry.get("type")

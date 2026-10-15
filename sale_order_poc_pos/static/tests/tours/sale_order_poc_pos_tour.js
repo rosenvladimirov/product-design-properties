@@ -61,3 +61,50 @@ registry.category("web_tour.tours").add("sale_order_poc_pos_editor", {
             },
         ].flat(),
 });
+
+// Допълнителният ред на конфигурацията (сито, дръжки…) се появява в касата
+registry.category("web_tour.tours").add("sale_order_poc_pos_companion", {
+    steps: () =>
+        [
+            Chrome.startPoS(),
+            Dialog.confirm("Open Register"),
+            {
+                content: "switch to Wholesale",
+                trigger: ".control-buttons .o_l10n_bg_wholesale_button",
+                run: "click",
+            },
+            ProductScreen.clickPartnerButton(),
+            ProductScreen.clickCustomer("ET Petrov Trade"),
+            ProductScreen.clickDisplayedProduct("Configured Bag"),
+            {
+                content: "the editor opens",
+                trigger: ".o_l10n_bg_poc_editor .o_l10n_bg_poc_title:contains('Configured Bag')",
+            },
+            {
+                content: "no fee before Compute",
+                trigger: "body:not(:has(.orderline:contains('Setup Fee (test)')))",
+            },
+            {
+                content: "width 350 — the configuration now wants the fee",
+                trigger: `${PARAM("pos_width_mm")} input`,
+                run: "edit 350",
+            },
+            {
+                content: "save and compute",
+                trigger: ".o_l10n_bg_poc_compute:enabled",
+                run: "click",
+            },
+            {
+                content: "the fee line is in the order",
+                trigger: ".orderline:contains('Setup Fee (test)')",
+            },
+            {
+                content: "the configured line stays selected — the editor is still open",
+                trigger: ".orderline.selected:contains('Configured Bag')",
+            },
+            {
+                content: "the editor did not close",
+                trigger: ".o_l10n_bg_poc_editor .o_l10n_bg_poc_title:contains('Configured Bag')",
+            },
+        ].flat(),
+});

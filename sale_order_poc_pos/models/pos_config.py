@@ -34,6 +34,11 @@ class PosConfig(models.Model):
                 product=so_line.product_id.display_name,
             ))
         poc = so_line.poc_id or self.env["sale.order.poc"].create({"sale_line_id": so_line.id})
+        # запазването трие редовете, които касата не носи — допълнителните
+        # редове на конфигурацията (сито, дръжки) се връщат, преди касата
+        # да ги получи
+        if hasattr(poc, "_poc_sync_companion_lines"):
+            poc._poc_sync_companion_lines()
         return {"quotation": quotation, "poc": poc._l10n_bg_pos_data()}
 
     def l10n_bg_poc_save(self, poc_id, updates):

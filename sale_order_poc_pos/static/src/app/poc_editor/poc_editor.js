@@ -86,6 +86,7 @@ export class L10nBgPocEditor extends Component {
             if (this.state.uuid === uuid) {
                 this.state.data = result.poc;
                 this._applyPrice(result.poc);
+                await this._applyCompanions(result.poc);
             }
         } catch (error) {
             this.notification.add(error?.data?.message || error?.message || String(error), {
@@ -112,6 +113,7 @@ export class L10nBgPocEditor extends Component {
             this.state.data = result;
             this.state.updates = {};
             this._applyPrice(result);
+            await this._applyCompanions(result);
         } catch (error) {
             this.notification.add(error?.data?.message || error?.message || String(error), {
                 type: "danger",
@@ -127,6 +129,65 @@ export class L10nBgPocEditor extends Component {
         if (line && data.line.price_unit) {
             line.setUnitPrice(data.line.price_unit);
             line.price_type = "manual";
+        }
+    }
+
+    /**
+     * Допълнителните редове на офертата (сито, дръжки…) → редове в касата.
+     *
+     * Ключът на реда в офертата е и uuid-ът му в касата: запазването на
+     * офертата обновява СЪЩИЯ ред. Ред с началото на ключа на тази
+     * конфигурация, който сървърът вече не връща, се маха. Артикул, който
+     * касата не е заредила (не е „в касата“), се зарежда.
+     */
+    async _applyCompanions(data) {
+        const order = this.order;
+        if (!order || !data?.companions || !data.companion_prefix) {
+            return;
+        }
+        const wanted = new Map(data.companions.map((c) => [c.uuid, c]));
+        for (const line of [...order.lines]) {
+            if (line.uuid?.startsWith(data.companion_prefix) && !wanted.has(line.uuid)) {
+                order.removeOrderline(line);
+            }
+        }
+        const Product = this.pos.models["product.product"];
+        const missing = data.companions
+            .filter((c) => !Product.get(c.product_id))
+            .map((c) => c.product_tmpl_id);
+        if (missing.length) {
+            await this.pos.loadNewProducts([["id", "in", missing]]);
+        }
+        for (const companion of data.companions) {
+            const line = order.lines.find((l) => l.uuid === companion.uuid);
+            if (line) {
+                line.setQuantity(companion.qty, true);
+                line.setUnitPrice(companion.price_unit);
+                line.price_type = "manual";
+                continue;
+            }
+            const product = Product.get(companion.product_id);
+            if (!product) {
+                continue;
+            }
+            await this.pos.addLineToOrder(
+                {
+                    product_tmpl_id: product.product_tmpl_id,
+                    product_id: product,
+                    qty: companion.qty,
+                    price_unit: companion.price_unit,
+                    uuid: companion.uuid,
+                },
+                order,
+                { merge: false },
+                false
+            );
+        }
+        // новият ред се избира сам — изборът се връща на реда с
+        // конфигурацията, иначе редакторът би се затворил
+        const main = order.lines.find((l) => l.uuid === data.line.uuid);
+        if (main && order.getSelectedOrderline() !== main) {
+            order.selectOrderline(main);
         }
     }
 

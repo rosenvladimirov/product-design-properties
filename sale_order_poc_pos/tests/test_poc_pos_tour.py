@@ -87,3 +87,30 @@ class TestPocPosTour(TestPointOfSaleHttpCommon):
         self.assertEqual(values["pos_width_mm"], 350)
         self.assertEqual(values["pos_material"], "hdpe")
         self.assertEqual(values["pos_double_mm"], 700)
+
+    # Т-POC-2: допълнителният ред на конфигурацията идва в касата
+    def test_tour_poc_companion(self):
+        from unittest.mock import patch
+
+        Poc = self.env["sale.order.poc"]
+        if "companion_line_ids" not in Poc._fields:
+            self.skipTest("sale_order_poc без допълнителни редове (ADR sale-order-poc/0022)")
+        # НЕ е в касата: касата го зарежда сама
+        fee = self.env["product.product"].create({
+            "name": "Setup Fee (test)", "type": "service", "list_price": 5.0,
+            "available_in_pos": False,
+        })
+
+        def companions(poc):
+            # идва чак след промяна + Compute — проверява пътя на „Compute“
+            if poc._poc_values().get("pos_width_mm") != 350:
+                return []
+            return [{"key": "fee", "product": fee, "qty": 1.0, "price_unit": 5.0}]
+
+        with patch.object(type(Poc), "_poc_companion_lines", companions):
+            self.main_pos_config.with_user(self.pos_user).open_ui()
+            self.start_pos_tour("sale_order_poc_pos_companion")
+        poc = Poc.search([("partner_id", "=", self.buyer.id)])
+        fee_lines = poc.sale_line_id.order_id.order_line.filtered(lambda l: l.product_id == fee)
+        self.assertEqual(len(fee_lines), 1)
+        self.assertEqual(fee_lines.l10n_bg_pos_line_uuid, "poc%d-fee" % poc.id)
