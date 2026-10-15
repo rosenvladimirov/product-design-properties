@@ -11,11 +11,11 @@
                 <span t-if="state.data" class="badge text-bg-info" t-esc="state.data.state_label"/>
                 <!-- превключвателите на секциите („С печат“): изключен — секцията
                      не се вижда, а данните ѝ се губят при запис -->
-                <div t-if="switches.length" class="ms-auto d-flex gap-2">
-                <!-- бутон, не label: същата височина като „Close“ (стиловете на
-                     касата за голям бутон хващат само <button>) -->
+                <!-- разтегнато до височината на реда — колкото „Close“ (касата дава
+                     min-height само на btn-secondary) -->
+                <div t-if="switches.length" class="ms-auto d-flex gap-2 align-self-stretch">
                 <button t-foreach="switches" t-as="section" t-key="section.switch.code"
-                        class="btn btn-lg o_l10n_bg_poc_switch"
+                        class="btn btn-lg h-100 o_l10n_bg_poc_switch"
                         t-att-class="isSwitchedOn(section) ? 'btn-primary' : 'btn-outline-secondary'"
                         t-att-data-code="section.switch.code"
                         t-att-disabled="!state.data.editable"
