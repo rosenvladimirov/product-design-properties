@@ -64,12 +64,6 @@ msgid "Loading the configuration…"
 msgstr "Зареждане на конфигурацията…"
 
 #. module: sale_order_poc_pos
-#. odoo-javascript
-#: code:addons/sale_order_poc_pos/static/src/app/poc_editor/poc_editor.xml:0
-msgid "No"
-msgstr "Не"
-
-#. module: sale_order_poc_pos
 #: model:ir.model,name:sale_order_poc_pos.model_pos_config
 msgid "Point of Sale Configuration"
 msgstr "Настройки на касата"
@@ -123,12 +117,6 @@ msgstr ""
 #: code:addons/sale_order_poc_pos/static/src/app/poc_editor/poc_editor.xml:0
 msgid "Unit price:"
 msgstr "Единична цена:"
-
-#. module: sale_order_poc_pos
-#. odoo-javascript
-#: code:addons/sale_order_poc_pos/static/src/app/poc_editor/poc_editor.xml:0
-msgid "Yes"
-msgstr "Да"
 
 #. module: sale_order_poc_pos
 #. odoo-javascript

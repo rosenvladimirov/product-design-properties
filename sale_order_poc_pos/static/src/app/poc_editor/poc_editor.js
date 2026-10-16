@@ -1,4 +1,4 @@
-import { Component, useEffect, useState } from "@odoo/owl";
+import { Component, markup, useEffect, useState } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
 import { patch } from "@web/core/utils/patch";
@@ -252,6 +252,66 @@ export class L10nBgPocEditor extends Component {
         this.state.updates.__optional = current;
     }
 
+    // ── групите полета извън параметрите (тиражи, сравнение…) ──────
+
+    fieldValue(field) {
+        const updates = this.state.updates.__fields || {};
+        return field.name in updates ? updates[field.name] : field.value;
+    }
+
+    setField(field, value) {
+        this.state.updates.__fields = { ...(this.state.updates.__fields || {}), [field.name]: value };
+    }
+
+    onFieldNumber(field, ev) {
+        const raw = ev.target.value;
+        const value = raw === "" ? 0 : field.type === "integer" ? parseInt(raw) : parseFloat(raw);
+        this.setField(field, Number.isNaN(value) ? 0 : value);
+    }
+
+    /** Групите, които стоят в секцията под параметъра ``code``. */
+    anchoredGroups(code) {
+        return (this.state.data?.field_groups || []).filter((group) => group.anchor === code);
+    }
+
+    /**
+     * Картите в реда на екрана, с номер: секциите (без изключените с
+     * превключвател) и групите-карти — преди секцията на своя ``before``
+     * или накрая. Номерът е на видимите карти, както в макета.
+     */
+    get cards() {
+        const data = this.state.data;
+        if (!data) {
+            return [];
+        }
+        // група с котва, чийто параметър го няма в шаблона — своя карта
+        const shown = new Set(data.sections.flatMap((section) => section.params.map((param) => param.code)));
+        const own = (data.field_groups || []).filter((group) => !group.anchor || !shown.has(group.anchor));
+        const placed = new Set();
+        const cards = [];
+        data.sections.forEach((section, index) => {
+            const codes = new Set(section.params.map((param) => param.code));
+            if (section.switch) {
+                codes.add(section.switch.code);
+            }
+            for (const group of own) {
+                if (!placed.has(group.key) && codes.has(group.before)) {
+                    placed.add(group.key);
+                    cards.push({ key: `group-${group.key}`, group });
+                }
+            }
+            if (this.isSwitchedOn(section)) {
+                cards.push({ key: `section-${index}`, section, index });
+            }
+        });
+        for (const group of own) {
+            if (!placed.has(group.key)) {
+                cards.push({ key: `group-${group.key}`, group });
+            }
+        }
+        return cards.map((card, position) => ({ ...card, number: position + 1 }));
+    }
+
     /** „Цената тръгва от“ — не е параметър; пътува със същото „Запази“. */
     get priceBase() {
         return this.state.updates.__price_base || this.state.data?.price_base?.value;
@@ -278,6 +338,11 @@ export class L10nBgPocEditor extends Component {
 
     toggleSection(section, index) {
         this.state.open[index] = !this.isSectionOpen(section, index);
+    }
+
+    /** Картинката като SVG — от сървъра (схемата на вида изделие). */
+    get pictureMarkup() {
+        return markup(this.state.data?.picture?.svg || "");
     }
 
     formatCurrency(amount) {

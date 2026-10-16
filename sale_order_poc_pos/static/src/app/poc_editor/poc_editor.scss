@@ -15,4 +15,21 @@
     .o_l10n_bg_poc_label {
         font-size: 0.85rem;
     }
+    // номерът на картата — като в макета „Изделие по поръчка“
+    .o_l10n_bg_poc_number {
+        min-width: 1.75rem;
+        font-size: 0.95rem;
+    }
+    .o_l10n_bg_poc_picture {
+        width: 18rem;
+        max-width: 40%;
+        img,
+        svg {
+            max-width: 100%;
+            height: auto;
+        }
+    }
+    .o_l10n_bg_poc_field_number {
+        width: 9rem;
+    }
 }

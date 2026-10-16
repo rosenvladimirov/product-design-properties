@@ -19,6 +19,10 @@ L10N_BG_POS_OPTIONS_LIMIT = 80
 L10N_BG_POS_PRICE_BASE_KEY = "__price_base"
 # Ключът за опционалните продукти (не е параметър на POC)
 L10N_BG_POS_OPTIONAL_KEY = "__optional"
+# Ключът за полетата от групите извън параметрите (`_l10n_bg_pos_field_groups`)
+L10N_BG_POS_FIELDS_KEY = "__fields"
+# Видовете полета, които групите могат да носят
+L10N_BG_POS_FIELD_TYPES = ("float", "integer", "boolean")
 
 
 class SaleOrderPoc(models.Model):
@@ -114,6 +118,8 @@ class SaleOrderPoc(models.Model):
                 section for section in sections if section["params"] or section.get("switch")
             ],
             "optional": self._l10n_bg_pos_optional(),
+            "picture": self._l10n_bg_pos_picture() or False,
+            "field_groups": self._l10n_bg_pos_field_groups_data(),
             "tables": tables,
             "price_base": price_base,
             "price_note": price_note or "",
@@ -127,6 +133,73 @@ class SaleOrderPoc(models.Model):
                 "price_subtotal": so_line.price_subtotal,
             },
         }
+
+    def _l10n_bg_pos_picture(self):
+        """Картинката до първата секция (видът изделие): ``{"svg": html}``
+        или ``{"url": адрес}``. Кука за вертикала — тук няма."""
+        return False
+
+    def _l10n_bg_pos_field_groups(self):
+        """Групи полета на POC извън параметрите — кука за вертикала.
+
+        Всяка група е ``{"key", "title", "fields": [имена], "anchor",
+        "before"}``: с ``anchor`` (код на параметър) се показва в секцията
+        му, точно под него; с ``before`` (код на параметър или на
+        превключвател) е своя карта преди секцията му; без двете — карта
+        накрая. Полетата са само float, integer и boolean.
+        """
+        return []
+
+    def _l10n_bg_pos_field_groups_data(self):
+        self.ensure_one()
+        out = []
+        for group in self._l10n_bg_pos_field_groups():
+            fields_data = []
+            for name in group["fields"]:
+                field = self._fields.get(name)
+                if not field or field.type not in L10N_BG_POS_FIELD_TYPES:
+                    continue
+                fields_data.append({
+                    "name": name,
+                    "label": field._description_string(self.env),
+                    "type": field.type,
+                    "value": self[name],
+                })
+            if fields_data:
+                out.append({
+                    "key": group["key"],
+                    "title": group.get("title") or "",
+                    "anchor": group.get("anchor") or False,
+                    "before": group.get("before") or False,
+                    "fields": fields_data,
+                })
+        return out
+
+    def _l10n_bg_pos_write_fields(self, values):
+        """Полетата от групите: само обявените, по вида им."""
+        self.ensure_one()
+        allowed = {
+            name
+            for group in self._l10n_bg_pos_field_groups()
+            for name in group["fields"]
+            if name in self._fields and self._fields[name].type in L10N_BG_POS_FIELD_TYPES
+        }
+        clean = {}
+        for name, value in (values or {}).items():
+            if name not in allowed:
+                continue
+            ftype = self._fields[name].type
+            if ftype == "boolean":
+                clean[name] = bool(value)
+            elif value in (None, False, ""):
+                clean[name] = 0
+            else:
+                try:
+                    clean[name] = int(value) if ftype == "integer" else float(value)
+                except (TypeError, ValueError):
+                    continue
+        if clean:
+            self.write(clean)
 
     def _l10n_bg_pos_optional(self):
         """Опционалните продукти на артикула — избраните и възможните."""
@@ -239,6 +312,9 @@ class SaleOrderPoc(models.Model):
         # не е параметър: от какво тръгва цената (sale_order_poc_design_configurator)
         price_base = updates.pop(L10N_BG_POS_PRICE_BASE_KEY, None) if isinstance(updates, dict) else None
         optional = updates.pop(L10N_BG_POS_OPTIONAL_KEY, None) if isinstance(updates, dict) else None
+        group_fields = updates.pop(L10N_BG_POS_FIELDS_KEY, None) if isinstance(updates, dict) else None
+        if isinstance(group_fields, dict):
+            self._l10n_bg_pos_write_fields(group_fields)
         if optional is not None and "optional_product_ids" in self._fields:
             ids = [i for i in optional if isinstance(i, int)]
             self.optional_product_ids = self.allowed_optional_product_ids.filtered(
