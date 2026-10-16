@@ -119,6 +119,7 @@ class SaleOrderPoc(models.Model):
             ],
             "optional": self._l10n_bg_pos_optional(),
             "picture": self._l10n_bg_pos_picture() or False,
+            "reports": self._l10n_bg_pos_reports(),
             "field_groups": self._l10n_bg_pos_field_groups_data(),
             "tables": tables,
             "price_base": price_base,
@@ -149,6 +150,21 @@ class SaleOrderPoc(models.Model):
         накрая. Полетата са само float, integer и boolean.
         """
         return []
+
+    def _l10n_bg_pos_reports(self):
+        """Справки в края на редактора — кука за вертикала.
+
+        ``[{"key", "title", "button"}]``: касата показва картата с бутон и
+        вика `_l10n_bg_pos_report(key)` чак при натискането — справката може
+        да е бавна (напр. сух пробег на матрицата за всяка клетка).
+        """
+        return []
+
+    def _l10n_bg_pos_report(self, key):
+        """Справката: ``{"columns": [{"label", "numeric"}], "groups":
+        [{"title", "rows": [{"cells": [...], "strong": [индекси]}]}],
+        "notes": [...]}``. Клетките са вече форматиран текст."""
+        raise NotImplementedError(key)
 
     def _l10n_bg_pos_field_groups_data(self):
         self.ensure_one()

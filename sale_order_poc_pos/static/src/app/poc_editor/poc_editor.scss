@@ -1,35 +1,152 @@
-// Тъч редакторът на конфигурацията — контроли поне 3.25rem
+// Тъч редакторът на конфигурацията — изгледът на макета „Изделие по поръчка“
+// (Пакит, 16.10.2026): сив фон, бели карти, малък квадратен номер, плочки с
+// отметка/радио. Контролите са поне 3.25rem — пипат се с пръст.
+$o-poc-accent: #714b67;
+$o-poc-accent-soft: #f3eaf1;
+$o-poc-border: #d8dce3;
+$o-poc-muted: #6b7280;
+$o-poc-bg: #f3f4f8;
+
 .o_l10n_bg_poc_editor {
+    .o_l10n_bg_poc_body {
+        background: $o-poc-bg;
+        padding: 0.75rem !important;
+    }
+    .o_l10n_bg_poc_card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1rem 1.25rem;
+        margin-bottom: 0.75rem;
+        &.o_l10n_bg_poc_off {
+            padding-bottom: 0.75rem;
+        }
+    }
+    .o_l10n_bg_poc_head {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 0.9rem;
+        .o_l10n_bg_poc_off & {
+            margin-bottom: 0;
+        }
+    }
+    .o_l10n_bg_poc_head_title {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #1f2937;
+        background: none;
+        border: 0;
+        padding: 0;
+        text-align: start;
+    }
+    // номерът на картата — квадратче в лилаво
+    .o_l10n_bg_poc_number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.6rem;
+        height: 1.6rem;
+        border-radius: 0.3rem;
+        background: $o-poc-accent-soft;
+        color: $o-poc-accent;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+    // „☑ Печат“ в заглавието на картата
+    .o_l10n_bg_poc_switch {
+        background: none;
+        border: 0;
+        padding: 0;
+        min-height: 2.5rem;
+        min-width: 2.5rem;
+        font-size: 1.5rem;
+        color: $o-poc-accent;
+        &:disabled {
+            opacity: 0.6;
+        }
+    }
+    .o_l10n_bg_poc_label {
+        font-size: 0.8rem;
+        color: $o-poc-muted;
+    }
     .form-control,
     .form-select,
-    .input-group-text,
-    .card-body .btn {
+    .o_l10n_bg_poc_chip {
         min-height: 3.25rem;
         font-size: 1.05rem;
+        border-color: $o-poc-border;
     }
-    .o_l10n_bg_poc_section,
+    .o_l10n_bg_poc_half {
+        max-width: 32rem;
+    }
+    // плочката: отметка или радио + надпис, рамка; избраната — в лилаво
+    .o_l10n_bg_poc_chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.5rem 1rem;
+        background: #fff;
+        border: 1px solid $o-poc-border;
+        border-radius: 0.4rem;
+        color: #1f2937;
+        text-align: start;
+        .fa {
+            font-size: 1.25rem;
+            color: #9ca3af;
+        }
+        &.active {
+            border-color: $o-poc-accent;
+            background: $o-poc-accent-soft;
+            .fa {
+                color: $o-poc-accent;
+            }
+        }
+        &:disabled {
+            opacity: 0.6;
+        }
+    }
+    .o_l10n_bg_poc_field_number {
+        width: 8.5rem;
+    }
+    .o_l10n_bg_poc_picture {
+        width: 22rem;
+        max-width: 45%;
+    }
+    .o_l10n_bg_poc_picture_box {
+        border: 1px solid #e5e7eb;
+        border-radius: 0.4rem;
+        background: #f9fafb;
+        padding: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 12rem;
+        img,
+        svg {
+            max-width: 100%;
+            max-height: 18rem;
+            height: auto;
+        }
+    }
+    .o_l10n_bg_poc_table {
+        th {
+            background: $o-poc-bg;
+            color: $o-poc-muted;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .o_l10n_bg_poc_strong {
+            color: $o-poc-accent;
+            font-weight: 700;
+        }
+    }
     .o_l10n_bg_poc_close,
     .o_l10n_bg_poc_compute {
         min-height: 3.5rem;
     }
-    .o_l10n_bg_poc_label {
-        font-size: 0.85rem;
-    }
-    // номерът на картата — като в макета „Изделие по поръчка“
-    .o_l10n_bg_poc_number {
-        min-width: 1.75rem;
-        font-size: 0.95rem;
-    }
-    .o_l10n_bg_poc_picture {
-        width: 18rem;
-        max-width: 40%;
-        img,
-        svg {
-            max-width: 100%;
-            height: auto;
-        }
-    }
-    .o_l10n_bg_poc_field_number {
-        width: 9rem;
+    .o_l10n_bg_poc_compute {
+        background: $o-poc-accent;
+        border-color: $o-poc-accent;
     }
 }

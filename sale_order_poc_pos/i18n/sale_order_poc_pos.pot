@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-16 16:54+0000\n"
-"PO-Revision-Date: 2026-10-16 16:54+0000\n"
+"POT-Creation-Date: 2026-10-16 19:10+0000\n"
+"PO-Revision-Date: 2026-10-16 19:10+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -77,6 +77,12 @@ msgid "Point of Sale Configuration"
 msgstr ""
 
 #. module: sale_order_poc_pos
+#. odoo-javascript
+#: code:addons/sale_order_poc_pos/static/src/app/poc_editor/poc_editor.xml:0
+msgid "Preview"
+msgstr ""
+
+#. module: sale_order_poc_pos
 #: model:ir.model,name:sale_order_poc_pos.model_product_template
 msgid "Product"
 msgstr ""
@@ -96,6 +102,12 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/sale_order_poc_pos/static/src/app/poc_editor/poc_editor.xml:0
 msgid "Save and compute"
+msgstr ""
+
+#. module: sale_order_poc_pos
+#. odoo-javascript
+#: code:addons/sale_order_poc_pos/static/src/app/poc_editor/poc_editor.xml:0
+msgid "Save and compute first."
 msgstr ""
 
 #. module: sale_order_poc_pos
@@ -122,6 +134,12 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/sale_order_poc_pos/static/src/app/poc_editor/poc_editor.xml:0
 msgid "Unit price:"
+msgstr ""
+
+#. module: sale_order_poc_pos
+#. odoo-python
+#: code:addons/sale_order_poc_pos/models/pos_config.py:0
+msgid "Unknown report."
 msgstr ""
 
 #. module: sale_order_poc_pos

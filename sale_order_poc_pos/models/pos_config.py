@@ -51,6 +51,16 @@ class PosConfig(models.Model):
         poc.action_compute()
         return poc._l10n_bg_pos_data()
 
+    def l10n_bg_poc_report(self, poc_id, key):
+        """Справка на конфигурацията, смятана при поискване (бавна е)."""
+        self.ensure_one()
+        poc = self.env["sale.order.poc"].browse(poc_id).exists()
+        if not poc or poc.company_id != self.company_id:
+            raise UserError(self.env._("The configuration does not exist."))
+        if key not in {report["key"] for report in poc._l10n_bg_pos_reports()}:
+            raise UserError(self.env._("Unknown report."))
+        return poc._l10n_bg_pos_report(key)
+
     def _l10n_bg_b2b_quotation_line(self, line, so_line=None):
         # Ред с конфигурация: цената идва от конфигурацията (Compute), не
         # от касата — касата я взема обратно след пресмятането.

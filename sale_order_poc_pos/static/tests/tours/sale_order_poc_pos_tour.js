@@ -124,12 +124,12 @@ registry.category("web_tour.tours").add("sale_order_poc_pos_switch", {
             ProductScreen.clickCustomer("ET Petrov Trade"),
             ProductScreen.clickDisplayedProduct("Configured Bag"),
             {
-                content: "the switch is in the header",
-                trigger: ".o_l10n_bg_poc_editor .o_l10n_bg_poc_switch[data-code='pos_print']",
+                content: "the switch is in the header of its card",
+                trigger: ".o_l10n_bg_poc_editor .o_l10n_bg_poc_card[data-section='Print'] .o_l10n_bg_poc_switch[data-code='pos_print']",
             },
             {
-                content: "the switched section is hidden",
-                trigger: ".o_l10n_bg_poc_editor:not(:has(.o_l10n_bg_poc_card[data-section='Print']))",
+                content: "the switched-off section is only its header",
+                trigger: ".o_l10n_bg_poc_card[data-section='Print']:not(:has(.o_l10n_bg_poc_param))",
             },
             {
                 content: "switch the print on",

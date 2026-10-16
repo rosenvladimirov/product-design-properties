@@ -25,6 +25,7 @@ export class L10nBgPocEditor extends Component {
             data: null,
             updates: {},
             open: {},
+            reports: {},
         });
         useEffect(
             (uuid, eligible) => {
@@ -33,6 +34,7 @@ export class L10nBgPocEditor extends Component {
                     this.state.dismissed = false;
                     this.state.data = null;
                     this.state.updates = {};
+                    this.state.reports = {};
                     if (uuid && eligible) {
                         this.load();
                     }
@@ -112,6 +114,8 @@ export class L10nBgPocEditor extends Component {
             ]);
             this.state.data = result;
             this.state.updates = {};
+            // справките са по старите стойности — смятат се отново при поискване
+            this.state.reports = {};
             this._applyPrice(result);
             await this._applyCompanions(result);
         } catch (error) {
@@ -275,8 +279,8 @@ export class L10nBgPocEditor extends Component {
     }
 
     /**
-     * Картите в реда на екрана, с номер: секциите (без изключените с
-     * превключвател) и групите-карти — преди секцията на своя ``before``
+     * Картите в реда на екрана, с номер: секциите (изключената — само със
+     * заглавието) и групите-карти — преди секцията на своя ``before``
      * или накрая. Номерът е на видимите карти, както в макета.
      */
     get cards() {
@@ -300,9 +304,8 @@ export class L10nBgPocEditor extends Component {
                     cards.push({ key: `group-${group.key}`, group });
                 }
             }
-            if (this.isSwitchedOn(section)) {
-                cards.push({ key: `section-${index}`, section, index });
-            }
+            // изключената секция остава като заглавие с отметката си
+            cards.push({ key: `section-${index}`, section, index });
         });
         for (const group of own) {
             if (!placed.has(group.key)) {
@@ -338,6 +341,25 @@ export class L10nBgPocEditor extends Component {
 
     toggleSection(section, index) {
         this.state.open[index] = !this.isSectionOpen(section, index);
+    }
+
+    /** Справката (напр. „Офертни варианти“) — при натискане, бавна е. */
+    async loadReport(report) {
+        const data = this.state.data;
+        this.state.reports[report.key] = { loading: true };
+        try {
+            const result = await this.pos.data.call("pos.config", "l10n_bg_poc_report", [
+                [this.pos.config.id],
+                data.id,
+                report.key,
+            ]);
+            this.state.reports[report.key] = { result };
+        } catch (error) {
+            this.state.reports[report.key] = {};
+            this.notification.add(error?.data?.message || error?.message || String(error), {
+                type: "danger",
+            });
+        }
     }
 
     /** Картинката като SVG — от сървъра (схемата на вида изделие). */
