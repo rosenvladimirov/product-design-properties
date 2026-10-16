@@ -206,7 +206,45 @@ export class L10nBgPocEditor extends Component {
     }
 
     set(param, value) {
+        if (param.readonly) {
+            return;
+        }
         this.state.updates[param.code] = value;
+        this.schedulePicture();
+    }
+
+    /**
+     * Визуализацията следва въвежданото веднага (Росен, 16.10.2026: „не
+     * сменя картинката“): 0,4 s след последната промяна сървърът я рисува
+     * с незаписаните стойности, без да пише нищо.
+     */
+    schedulePicture() {
+        if (!this.state.data?.picture) {
+            return;
+        }
+        clearTimeout(this._pictureTimer);
+        this._pictureTimer = setTimeout(() => this.refreshPicture(), 400);
+    }
+
+    async refreshPicture() {
+        const data = this.state.data;
+        if (!data) {
+            return;
+        }
+        const updates = { ...this.state.updates };
+        delete updates.__fields;
+        try {
+            const picture = await this.pos.data.call("pos.config", "l10n_bg_poc_picture", [
+                [this.pos.config.id],
+                data.id,
+                updates,
+            ]);
+            if (this.state.data === data && picture) {
+                data.picture = picture;
+            }
+        } catch {
+            // рисунката е помощ, не пречи на въвеждането
+        }
     }
 
     onNumber(param, ev) {

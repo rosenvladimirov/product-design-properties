@@ -77,6 +77,11 @@ $o-poc-bg: #f3f4f8;
         font-size: 1.05rem;
         border-color: $o-poc-border;
     }
+    // изчислено от шаблона — само за четене
+    .o_l10n_bg_poc_readonly {
+        background: #f3f4f6;
+        color: #374151;
+    }
     .o_l10n_bg_poc_half {
         max-width: 32rem;
     }

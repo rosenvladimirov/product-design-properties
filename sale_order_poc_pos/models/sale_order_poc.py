@@ -43,6 +43,13 @@ class SaleOrderPoc(models.Model):
             # превключвателят на секцията (sale_order_poc с `section_switch`)
             # отива в заглавието ѝ, не в параметрите
             lines = container.template_id.line_ids
+            # изчислените без „може ръчно“ — касата ги показва само за четене
+            # (иначе записът гърми в `_poc_mark_manual`)
+            locked = {
+                line.param_id.code
+                for line in lines
+                if line.param_id and line.formula and not line.allow_manual
+            }
             switches = {
                 line.param_id.code
                 for line in lines
@@ -70,7 +77,8 @@ class SaleOrderPoc(models.Model):
                     }
                     sections.append(current)
                 current["params"].append(
-                    self._l10n_bg_pos_param(entry, values.get(entry["name"]), origins)
+                    dict(self._l10n_bg_pos_param(entry, values.get(entry["name"]), origins),
+                         readonly=entry["name"] in locked)
                 )
         tables = [
             {
@@ -139,6 +147,13 @@ class SaleOrderPoc(models.Model):
         """Картинката до първата секция (видът изделие): ``{"svg": html}``
         или ``{"url": адрес}``. Кука за вертикала — тук няма."""
         return False
+
+    def _l10n_bg_pos_picture_preview(self, updates):
+        """Картинката с още незаписаните промени от касата — без запис.
+
+        Кука за вертикала (рисунка по размерите); тук — записаната.
+        """
+        return self._l10n_bg_pos_picture()
 
     def _l10n_bg_pos_field_groups(self):
         """Групи полета на POC извън параметрите — кука за вертикала.

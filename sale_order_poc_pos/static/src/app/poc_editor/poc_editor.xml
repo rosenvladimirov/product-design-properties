@@ -175,27 +175,29 @@
             <input t-if="param.type === 'float' or param.type === 'integer'" type="number"
                    class="form-control" t-att-step="param.type === 'integer' ? 1 : 'any'"
                    t-att-value="val === null or val === undefined or val === false ? '' : val"
-                   t-att-disabled="!state.data.editable"
+                   t-att-disabled="!state.data.editable or param.readonly"
                    t-on-input="(ev) => this.onNumber(param, ev)"/>
             <button t-elif="param.type === 'boolean'" class="o_l10n_bg_poc_chip w-100 o_l10n_bg_poc_toggle"
                     t-att-class="{'active': val}"
-                    t-att-disabled="!state.data.editable" t-on-click="() => this.set(param, !val)">
+                    t-att-disabled="!state.data.editable or param.readonly" t-on-click="() => this.set(param, !val)">
                 <i t-attf-class="fa {{ val ? 'fa-check-square' : 'fa-square-o' }}"/>
                 <span t-esc="param.label"/>
                 <span t-if="param.origin === 'formula'" class="ms-1" title="Computed by a formula">ƒ</span>
             </button>
-            <div t-elif="param.type === 'selection' and param.options.length &lt;= 8 and !section.stacked" class="d-flex flex-wrap gap-2">
+            <div t-elif="param.type === 'selection' and param.options.length &lt;= 8 and !section.stacked and !param.readonly" class="d-flex flex-wrap gap-2">
                 <t t-foreach="param.options" t-as="option" t-key="option.key">
                     <button class="o_l10n_bg_poc_chip o_l10n_bg_poc_option" t-att-class="{'active': val === option.key}"
                             t-att-data-key="option.key"
-                            t-att-disabled="!state.data.editable" t-on-click="() => this.set(param, option.key)">
+                            t-att-disabled="!state.data.editable or param.readonly" t-on-click="() => this.set(param, option.key)">
                         <i t-attf-class="fa {{ val === option.key ? 'fa-dot-circle-o' : 'fa-circle-o' }}"/>
                         <t t-esc="option.label"/>
                     </button>
                 </t>
             </div>
+            <div t-elif="param.type === 'selection' and param.readonly" class="form-control o_l10n_bg_poc_readonly d-flex align-items-center"
+                 t-esc="(param.options.find((option) => option.key === val) or {}).label or '—'"/>
             <select t-elif="param.type === 'selection'" class="form-select"
-                    t-att-disabled="!state.data.editable" t-on-change="(ev) => this.set(param, ev.target.value || false)">
+                    t-att-disabled="!state.data.editable or param.readonly" t-on-change="(ev) => this.set(param, ev.target.value || false)">
                 <option value=""/>
                 <t t-foreach="param.options" t-as="option" t-key="option.key">
                     <option t-att-value="option.key" t-att-selected="val === option.key" t-esc="option.label"/>
@@ -204,14 +206,14 @@
             <div t-elif="param.type === 'tags'" class="d-flex flex-wrap gap-2">
                 <t t-foreach="param.options" t-as="option" t-key="option.key">
                     <button class="o_l10n_bg_poc_chip" t-att-class="{'active': (val or []).includes(option.key)}"
-                            t-att-disabled="!state.data.editable" t-on-click="() => this.toggleTag(param, option.key)">
+                            t-att-disabled="!state.data.editable or param.readonly" t-on-click="() => this.toggleTag(param, option.key)">
                         <i t-attf-class="fa {{ (val or []).includes(option.key) ? 'fa-check-square' : 'fa-square-o' }}"/>
                         <t t-esc="option.label"/>
                     </button>
                 </t>
             </div>
             <select t-elif="param.type === 'many2one'" class="form-select o_l10n_bg_poc_half"
-                    t-att-disabled="!state.data.editable" t-on-change="(ev) => this.onRecord(param, ev)">
+                    t-att-disabled="!state.data.editable or param.readonly" t-on-change="(ev) => this.onRecord(param, ev)">
                 <option value=""/>
                 <t t-foreach="param.options" t-as="option" t-key="option.id">
                     <option t-att-value="option.id" t-att-selected="val === option.id" t-esc="option.name"/>
@@ -220,20 +222,20 @@
             <div t-elif="param.type === 'many2many'" class="d-flex flex-wrap gap-2">
                 <t t-foreach="param.options" t-as="option" t-key="option.id">
                     <button class="o_l10n_bg_poc_chip" t-att-class="{'active': (val or []).includes(option.id)}"
-                            t-att-disabled="!state.data.editable" t-on-click="() => this.toggleTag(param, option.id)">
+                            t-att-disabled="!state.data.editable or param.readonly" t-on-click="() => this.toggleTag(param, option.id)">
                         <i t-attf-class="fa {{ (val or []).includes(option.id) ? 'fa-check-square' : 'fa-square-o' }}"/>
                         <t t-esc="option.name"/>
                     </button>
                 </t>
             </div>
             <input t-elif="param.type === 'date'" type="date" class="form-control"
-                   t-att-value="val or ''" t-att-disabled="!state.data.editable"
+                   t-att-value="val or ''" t-att-disabled="!state.data.editable or param.readonly"
                    t-on-change="(ev) => this.onText(param, ev)"/>
             <textarea t-elif="param.type === 'text'" rows="2" class="form-control"
-                      t-att-value="val or ''" t-att-disabled="!state.data.editable"
+                      t-att-value="val or ''" t-att-disabled="!state.data.editable or param.readonly"
                       t-on-input="(ev) => this.onText(param, ev)"/>
             <input t-else="" type="text" class="form-control"
-                   t-att-value="val or ''" t-att-disabled="!state.data.editable"
+                   t-att-value="val or ''" t-att-disabled="!state.data.editable or param.readonly"
                    t-on-input="(ev) => this.onText(param, ev)"/>
         </div>
     </t>

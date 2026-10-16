@@ -51,6 +51,14 @@ class PosConfig(models.Model):
         poc.action_compute()
         return poc._l10n_bg_pos_data()
 
+    def l10n_bg_poc_picture(self, poc_id, updates):
+        """Визуализацията с незаписаните промени — нищо не се пише."""
+        self.ensure_one()
+        poc = self.env["sale.order.poc"].browse(poc_id).exists()
+        if not poc or poc.company_id != self.company_id:
+            raise UserError(self.env._("The configuration does not exist."))
+        return poc._l10n_bg_pos_picture_preview(updates or {}) or False
+
     def l10n_bg_poc_report(self, poc_id, key):
         """Справка на конфигурацията, смятана при поискване (бавна е)."""
         self.ensure_one()
