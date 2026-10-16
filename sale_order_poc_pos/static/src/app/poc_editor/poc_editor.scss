@@ -113,6 +113,24 @@ $o-poc-bg: #f3f4f8;
         width: 22rem;
         max-width: 45%;
     }
+    .o_l10n_bg_poc_stack {
+        flex: 1 1 0;
+        min-width: 16rem;
+    }
+    // до полетата едно под друго визуализацията взема по-голямата част
+    .o_l10n_bg_poc_picture.o_l10n_bg_poc_picture_wide {
+        width: auto;
+        max-width: none;
+        flex: 1.4 1 0;
+        .o_l10n_bg_poc_picture_box {
+            min-height: 22rem;
+            img,
+            svg {
+                max-height: 26rem;
+                width: 100%;
+            }
+        }
+    }
     .o_l10n_bg_poc_picture_box {
         border: 1px solid #e5e7eb;
         border-radius: 0.4rem;

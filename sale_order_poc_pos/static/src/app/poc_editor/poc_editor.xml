@@ -49,7 +49,7 @@
                                t-on-click="() => this.toggleSection(section, card.index)"/>
                         </div>
                         <div t-if="isSwitchedOn(section) and isSectionOpen(section, card.index)" class="d-flex gap-4">
-                            <div class="row g-3 flex-grow-1 align-content-start">
+                            <div t-attf-class="row g-3 align-content-start {{ section.stacked and state.data.picture ? 'o_l10n_bg_poc_stack' : 'flex-grow-1' }}">
                                 <t t-foreach="section.params" t-as="param" t-key="param.code">
                                     <t t-call="sale_order_poc_pos.PocParam"/>
                                     <div t-foreach="anchoredGroups(param.code)" t-as="group" t-key="group.key"
@@ -60,12 +60,14 @@
                                 </t>
                             </div>
                             <!-- картинката на вида изделие — вдясно в първата карта -->
-                            <div t-if="card.number === 1 and state.data.picture" class="o_l10n_bg_poc_picture flex-shrink-0">
+                            <div t-if="card.number === 1 and state.data.picture"
+                                 t-attf-class="o_l10n_bg_poc_picture {{ section.stacked ? 'o_l10n_bg_poc_picture_wide' : 'flex-shrink-0' }}">
                                 <div class="o_l10n_bg_poc_label mb-1">Preview</div>
                                 <div class="o_l10n_bg_poc_picture_box">
                                     <img t-if="state.data.picture.url" t-att-src="state.data.picture.url" alt=""/>
                                     <div t-else="" t-out="pictureMarkup"/>
                                 </div>
+                                <div t-if="state.data.picture.caption" class="o_l10n_bg_poc_label mt-1" t-esc="state.data.picture.caption"/>
                             </div>
                         </div>
                     </section>
@@ -161,7 +163,8 @@
     <!-- един параметър от секция: числата по три на ред, изборите — плочки с
          радио, отметките — плочки с отметка (макет „Изделие по поръчка“) -->
     <t t-name="sale_order_poc_pos.PocParam">
-        <div t-attf-class="{{ param.type === 'boolean' ? 'col-6 col-xl-3' : ['selection', 'tags', 'many2many', 'text', 'many2one'].includes(param.type) ? 'col-12' : 'col-6 col-lg-4' }} o_l10n_bg_poc_param" t-att-data-code="param.code">
+        <!-- секция „stacked“ (до голямата визуализация): полетата едно под друго -->
+        <div t-attf-class="{{ section.stacked ? (param.type === 'boolean' ? 'col-12 col-xl-6' : 'col-12') : param.type === 'boolean' ? 'col-6 col-xl-3' : ['selection', 'tags', 'many2many', 'text', 'many2one'].includes(param.type) ? 'col-12' : 'col-6 col-lg-4' }} o_l10n_bg_poc_param" t-att-data-code="param.code">
             <div t-if="param.type !== 'boolean'" class="o_l10n_bg_poc_label mb-1">
                 <t t-esc="param.label"/>
                 <span t-if="param.suffix and (param.type === 'float' or param.type === 'integer')" class="ms-1">(<t t-esc="param.suffix"/>)</span>
@@ -181,7 +184,7 @@
                 <span t-esc="param.label"/>
                 <span t-if="param.origin === 'formula'" class="ms-1" title="Computed by a formula">ƒ</span>
             </button>
-            <div t-elif="param.type === 'selection' and param.options.length &lt;= 8" class="d-flex flex-wrap gap-2">
+            <div t-elif="param.type === 'selection' and param.options.length &lt;= 8 and !section.stacked" class="d-flex flex-wrap gap-2">
                 <t t-foreach="param.options" t-as="option" t-key="option.key">
                     <button class="o_l10n_bg_poc_chip o_l10n_bg_poc_option" t-att-class="{'active': val === option.key}"
                             t-att-data-key="option.key"
