@@ -12,7 +12,7 @@
     "name": "Sale Order Production Configuration in the Point of Sale",
     "summary": "Touch editor of the production configuration of a wholesale "
     "line in the Point of Sale",
-    "version": "19.0.1.7.0",
+    "version": "19.0.1.8.0",
     "category": "Sales/Point of Sale",
     "author": "Rosen Vladimirov",
     "maintainers": ["rosen-vladimirov"],
@@ -20,7 +20,9 @@
     "license": "LGPL-3",
     # Лепило: продажбата на едро в касата като оферта (l10n_bg_pos_b2b_sale)
     # + конфигурацията на реда (sale_order_poc). ADR pos-b2b-wholesale/0004.
-    "depends": ["l10n_bg_pos_b2b_sale", "sale_order_poc"],
+    # Картинката в редактора е общата рисунка на шаблона
+    # (sale_order_poc_drawing, О5 — Росен, 17.10.2026, ADR sale-order-poc/0025).
+    "depends": ["l10n_bg_pos_b2b_sale", "sale_order_poc", "sale_order_poc_drawing"],
     "auto_install": True,
     "assets": {
         "point_of_sale._assets_pos": [

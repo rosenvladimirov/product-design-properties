@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_poc_drawing_user,sale.order.poc.drawing user,model_sale_order_poc_drawing,sale_order_poc.group_poc_user,1,0,0,0
+access_poc_drawing_designer,sale.order.poc.drawing designer,model_sale_order_poc_drawing,group_drawing_designer,1,1,1,1

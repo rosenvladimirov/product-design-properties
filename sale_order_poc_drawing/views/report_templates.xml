@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+          https://www.gnu.org/licenses/lgpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the LGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the LGPL-3.0-or-later.
+-->
+<odoo>
+    <!-- Рисунката за PDF-ите: t-call с `poc`. wkhtmltopdf свива SVG без
+         височина до 0 — затова фиксиран размер (SPEC § 3.4). -->
+    <template id="poc_drawing_block">
+        <t t-set="poc_drawing" t-value="poc._poc_drawing()"/>
+        <div t-if="poc_drawing" class="o_poc_drawing_block">
+            <style>.o_poc_drawing_block svg { width: 90mm; height: 55mm; }</style>
+            <img t-if="poc_drawing.get('url')" t-att-src="poc_drawing['url']"
+                 style="max-width: 90mm; max-height: 55mm;" alt=""/>
+            <t t-else="" t-out="poc_drawing.get('svg')"/>
+            <div t-if="poc_drawing.get('caption')" class="o_poc_drawing_caption small text-muted"
+                 t-out="poc_drawing['caption']"/>
+        </div>
+    </template>
+</odoo>

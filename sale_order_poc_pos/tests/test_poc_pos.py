@@ -213,3 +213,68 @@ class TestPocPos(B2bPosCommon):
         self.assertEqual(data["optional"]["value"], [fee.id])
         data = self.config.l10n_bg_poc_save(result["poc"]["id"], {"pos_print": False})
         self.assertIn(self._params(data)["pos_colours"]["value"], (None, False))
+
+    # ── Рисунката (sale_order_poc_drawing, О5) ──────────────────────
+
+    def _drawing_template(self, svg=None):
+        drawing = self.env["sale.order.poc.drawing"].sudo().create({
+            "name": "POS rectangle",
+            "code": "pos_rect",
+            "svg": svg or (
+                '<svg xmlns="http://www.w3.org/2000/svg">'
+                '<polygon class="body" t-att-points="d.pts(d.rect(0, 0, '
+                "d.num(v.get('pos_width_mm')), 100))\"/>"
+                "<text class=\"material\" t-out=\"v.get('pos_material')\"/>"
+                "<text class=\"printer\" t-out=\"v.get('pos_printer')\"/>"
+                "</svg>"
+            ),
+        })
+        self.template.sudo().write({
+            "drawing_template_id": drawing.id,
+            "drawing_defaults": "pos_width_mm=300",
+            "drawing_caption": "Width {{ pos_width_mm }}",
+        })
+        return drawing
+
+    def test_picture_preview_follows_unsaved_values(self):
+        """Касата: `l10n_bg_poc_picture(poc_id, {размер: X})` рисува с X, без запис;
+        many2one идва като id, селекцията — като ключ (SPEC § 4, т. 8).
+
+        МУТАЦИЯ: прегледът вика `_poc_drawing()` без `values`.
+        """
+        self._drawing_template()
+        self.open_new_session()
+        result = self.config.l10n_bg_poc_open(self._payload(self.configured), "line-1")
+        poc = self.env["sale.order.poc"].browse(result["poc"]["id"])
+        # отварянето — с подразбирането
+        self.assertIn("300.0,0.0", str(result["poc"]["picture"]["svg"]))
+        self.assertEqual(result["poc"]["picture"]["caption"], "Width 300 mm")
+        picture = self.config.l10n_bg_poc_picture(poc.id, {
+            "pos_width_mm": 640,
+            "pos_material": "hdpe",
+            "pos_printer": self.b2b_company.id,
+            "unknown_code": 5,
+        })
+        svg = str(picture["svg"])
+        self.assertIn("640.0,0.0", svg)
+        self.assertIn('<text class="material">hdpe</text>', svg)
+        self.assertIn(self.b2b_company.name, svg)
+        self.assertEqual(picture["caption"], "Width 640 mm")
+        # нищо не е записано
+        self.assertIsNone(poc._poc_values()["pos_width_mm"])
+        self.assertEqual(poc._poc_values()["pos_material"], "ldpe")
+
+    def test_broken_drawing_does_not_break_the_register(self):
+        """Счупеният шаблон: касата отваря и прерисува без картинка, не пада
+        (SPEC § 4, т. 5).
+
+        МУТАЦИЯ: махни try/except в `_render_svg`.
+        """
+        self._drawing_template('<svg xmlns="http://www.w3.org/2000/svg"><t t-out="d.nope()"/></svg>')
+        self.open_new_session()
+        logger = "odoo.addons.sale_order_poc_drawing.models.sale_order_poc_drawing"
+        with self.assertLogs(logger, "WARNING"):
+            result = self.config.l10n_bg_poc_open(self._payload(self.configured), "line-1")
+        self.assertFalse(result["poc"]["picture"])
+        with self.assertLogs(logger, "WARNING"):
+            self.assertFalse(self.config.l10n_bg_poc_picture(result["poc"]["id"], {"pos_width_mm": 5}))

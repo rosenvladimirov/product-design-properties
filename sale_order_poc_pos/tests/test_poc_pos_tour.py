@@ -142,3 +142,27 @@ class TestPocPosTour(TestPointOfSaleHttpCommon):
         self.assertIs(values["pos_print"], True)
         self.assertEqual(values["pos_colours"], 2)
         self.assertEqual(poc.optional_product_ids, ribbon)
+
+    # Т-POC-4: рисунката на шаблона следва въвеждането без Compute (SPEC
+    # sale-order-poc/drawing § 4, т. 9). МУТАЦИЯ: прегледът вика `_poc_drawing()`
+    # без `values` — надписът остава 300.
+    def test_tour_poc_drawing(self):
+        drawing = self.env["sale.order.poc.drawing"].sudo().create({
+            "name": "POS rectangle",
+            "code": "pos_rect_tour",
+            "svg": (
+                '<svg xmlns="http://www.w3.org/2000/svg">'
+                '<polygon t-att-points="d.pts(d.rect(0, 0, '
+                "d.num(v.get('pos_width_mm')), 100))\"/></svg>"
+            ),
+        })
+        self.configured.product_tmpl_id.poc_template_id.sudo().write({
+            "drawing_template_id": drawing.id,
+            "drawing_defaults": "pos_width_mm=300",
+            "drawing_caption": "Width {{ pos_width_mm }}",
+        })
+        self.main_pos_config.with_user(self.pos_user).open_ui()
+        self.start_pos_tour("sale_order_poc_pos_drawing")
+        poc = self.env["sale.order.poc"].search([("partner_id", "=", self.buyer.id)])
+        # прегледът не пише
+        self.assertIsNone(poc._poc_values()["pos_width_mm"])

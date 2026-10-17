@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+          https://www.gnu.org/licenses/lgpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the LGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the LGPL-3.0-or-later.
+-->
+<odoo noupdate="1">
+    <!-- Образец за библиотеката: врата, изглед отпред (SPEC § 3.7 като посока).
+         Каса и крило по width/height, посока на отваряне opening (left/right):
+         дръжката е от другата страна на пантите, дъгата под прага показва
+         отварянето. Размерни линии отгоре и вляво. Цветът на крилото —
+         d.color('color', …), т.е. v['color__color'] от опцията или продукта. -->
+    <record id="drawing_door_front" model="sale.order.poc.drawing">
+        <field name="name">Door — front view</field>
+        <field name="code">door_front</field>
+        <field name="parameter_codes">width, height, opening, color</field>
+        <field name="sample_values" eval="{'width': 900, 'height': 2000, 'opening': 'left'}"/>
+        <field name="svg"><![CDATA[<t>
+    <t t-set="W" t-value="d.num(v.get('width'), 900) or 900"/>
+    <t t-set="H" t-value="d.num(v.get('height'), 2000) or 2000"/>
+    <t t-set="f" t-value="(W if W &lt; H else H) * 0.06"/>
+    <t t-set="lw" t-value="W - 2 * f"/>
+    <t t-set="left" t-value="v.get('opening') != 'right'"/>
+    <t t-set="xh" t-value="f if left else W - f"/>
+    <t t-set="hx" t-value="W - f - lw * 0.08 if left else f + lw * 0.08"/>
+    <t t-set="hy" t-value="H - 1050 if H &gt; 1600 else H * 0.55"/>
+    <t t-set="off" t-value="(W if W &gt; H else H) * 0.06"/>
+    <t t-set="vb" t-value="d.viewbox([(-2 * off, -2 * off), (W + off * 0.5, H + lw)], 0.04)"/>
+    <t t-set="sw" t-value="d.stroke_width(vb, 250)"/>
+    <t t-set="leaf" t-value="d.color('color', '#e9dcc9')"/>
+    <t t-set="wd" t-value="d.dim_line((0, 0), (W, 0), '%g' % W, -off)"/>
+    <t t-set="hd" t-value="d.dim_line((0, 0), (0, H), '%g' % H, off)"/>
+    <svg xmlns="http://www.w3.org/2000/svg" width="100%" preserveAspectRatio="xMidYMid meet"
+         t-att-viewBox="vb" t-att-stroke-width="sw" stroke="#111111" stroke-linejoin="round">
+        <polygon class="o_poc_door_frame" t-att-points="d.pts(d.rect(0, 0, W, H))" t-att-fill="d.shade(leaf, 0.8)"/>
+        <polygon class="o_poc_door_leaf" t-att-points="d.pts(d.rect(f, f, lw, H - f))" t-att-fill="leaf"/>
+        <line class="o_poc_door_handle" t-att-x1="hx" t-att-y1="hy"
+              t-att-x2="hx + lw * 0.12 if not left else hx - lw * 0.12" t-att-y2="hy"
+              t-att-stroke-width="lw * 0.025" stroke-linecap="round"/>
+        <path class="o_poc_door_swing" fill="none" t-att-stroke-dasharray="'%s %s' % (lw * 0.03, lw * 0.02)"
+              t-att-d="'M%.1f %.1f A%.1f %.1f 0 0 %d %.1f %.1f' % (xh + lw if left else xh - lw, H, lw, lw, 1 if left else 0, xh, H + lw)"/>
+        <path class="o_poc_door_open_leaf" fill="none" t-att-d="d.line((xh, H), (xh, H + lw))"/>
+        <path class="o_poc_dim" fill="none" t-att-d="wd['d']"/>
+        <path class="o_poc_dim" fill="none" t-att-d="hd['d']"/>
+        <text stroke="none" fill="#111111" text-anchor="middle" t-att-font-size="off * 0.6"
+              t-att-x="wd['x']" t-att-y="wd['y']" t-att-transform="wd['transform']" t-out="wd['text']"/>
+        <text stroke="none" fill="#111111" text-anchor="middle" t-att-font-size="off * 0.6"
+              t-att-x="hd['x']" t-att-y="hd['y']" t-att-transform="hd['transform']" t-out="hd['text']"/>
+    </svg>
+</t>]]></field>
+    </record>
+</odoo>

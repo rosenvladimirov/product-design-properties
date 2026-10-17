@@ -1,0 +1,327 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sale_order_poc_drawing
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-17 10:53+0000\n"
+"PO-Revision-Date: 2026-10-17 10:53+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__active
+msgid "Active"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_drawing.sale_order_poc_drawing_view_form
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_drawing.sale_order_poc_drawing_view_search
+msgid "Archived"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__drawing_can_edit
+msgid "Can Edit the Drawing"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_template__drawing_caption
+msgid ""
+"Caption under the drawing, with {{ code }} placeholders, e.g. {{ box_l }} × "
+"{{ box_w }} × {{ box_d }} mm."
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__code
+msgid "Code"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__drawing_missing_codes
+msgid "Codes Not in the Template"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_drawing__parameter_codes
+msgid ""
+"Codes of the parameters the drawing reads, separated by commas. For "
+"documentation and checks only."
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_template__drawing_missing_codes
+msgid ""
+"Codes the drawing expects that neither the parameters of the template nor "
+"the drawing defaults provide."
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_param_option__drawing_color
+msgid "Colour of this option in the product drawing, as #rrggbb."
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_product_product__drawing_color
+msgid ""
+"Colour of this product in the product drawing, as #rrggbb, e.g. the colour "
+"of a board or a decor."
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__company_id
+msgid "Company"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_product_product__display_name
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc__display_name
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__display_name
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_param_option__display_name
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:sale.order.poc.drawing,name:sale_order_poc_drawing.drawing_door_front
+msgid "Door — front view"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc__drawing_svg
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_drawing.sale_order_poc_template_view_form_drawing
+msgid "Drawing"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__drawing_caption
+msgid "Drawing Caption"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_product_product__drawing_color
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_param_option__drawing_color
+msgid "Drawing Color"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__drawing_defaults
+msgid "Drawing Defaults"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__drawing_picture
+msgid "Drawing Picture"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc__drawing_url
+msgid "Drawing Picture URL"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__drawing_preview
+msgid "Drawing Preview"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__drawing_template_id
+msgid "Drawing Template"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__parameter_codes
+msgid "Expected Parameters"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_product_product__id
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc__id
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__id
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_param_option__id
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__id
+msgid "ID"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__name
+msgid "Name"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#. odoo-python
+#: code:addons/sale_order_poc_drawing/models/poc_template.py:0
+msgid ""
+"Only a Drawing Designer can change the drawing of a configuration template."
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__preview
+msgid "Preview"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.actions.act_window,name:sale_order_poc_drawing.sale_order_poc_drawing_action
+#: model:ir.ui.menu,name:sale_order_poc_drawing.menu_sale_order_poc_drawing
+msgid "Product Drawings"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model,name:sale_order_poc_drawing.model_product_product
+msgid "Product Variant"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model,name:sale_order_poc_drawing.model_sale_order_poc
+msgid "Production Configuration"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model,name:sale_order_poc_drawing.model_sale_order_poc_drawing
+msgid "Production Configuration Drawing"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model,name:sale_order_poc_drawing.model_sale_order_poc_param_option
+msgid "Production Configuration Parameter Option"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model,name:sale_order_poc_drawing.model_sale_order_poc_template
+msgid "Production Configuration Template"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:res.groups,name:sale_order_poc_drawing.group_drawing_designer
+msgid "Production Configuration: Drawing Designer"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_drawing__svg
+msgid ""
+"QWeb template of the drawing. It sees only `v` (the values of the parameters"
+" by code: numbers, texts, selection keys, record names and "
+"`v['<code>__color']`) and `d` (pure drawing helpers: iso, pts, box, face, "
+"flap, rect, line, dim_line, viewbox, stroke_width, shade, color, num). It "
+"must return a whole <svg> element."
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__svg
+msgid "SVG Template"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_template__drawing_template_id
+msgid ""
+"SVG template from the drawing library, drawn with the values of the "
+"configuration."
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__sample_values_text
+msgid "Sample Values"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__sample_values
+msgid "Sample Values (JSON)"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.constraint,message:sale_order_poc_drawing.constraint_sale_order_poc_drawing_code_uniq
+msgid "The code of the drawing must be unique."
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#. odoo-python
+#: code:addons/sale_order_poc_drawing/models/poc_param.py:0
+msgid "The drawing colour %(color)s must be #rrggbb."
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#. odoo-python
+#: code:addons/sale_order_poc_drawing/models/sale_order_poc_drawing.py:0
+msgid "The sample values are not valid JSON: %(error)s"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#. odoo-python
+#: code:addons/sale_order_poc_drawing/models/sale_order_poc_drawing.py:0
+msgid "The sample values must be a JSON object: {\"code\": value}."
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_template__drawing_picture
+msgid "Uploaded picture of the product. It always wins over the SVG template."
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_template__drawing_defaults
+msgid ""
+"Values for an empty configuration, as code=value separated by commas or new "
+"lines, e.g. box_l=300, box_w=200, box_d=150."
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_drawing__sample_values_text
+msgid ""
+"Values the preview is drawn with, as JSON, e.g. {\"width\": 900, \"height\":"
+" 2000}."
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_drawing__sample_values
+msgid "Values the preview is drawn with, by parameter code."
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_drawing.sale_order_poc_template_view_form_drawing
+msgid "box_l=300, box_w=200, box_d=150"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_drawing.sale_order_poc_drawing_view_form
+msgid "e.g. Door — front view"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_drawing.sale_order_poc_drawing_view_form
+msgid "width, height, opening"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_drawing.sale_order_poc_drawing_view_form
+msgid "{\"width\": 900, \"height\": 2000}"
+msgstr ""
+
+#. module: sale_order_poc_drawing
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_drawing.sale_order_poc_template_view_form_drawing
+msgid "{{ box_l }} × {{ box_w }} × {{ box_d }} mm"
+msgstr ""

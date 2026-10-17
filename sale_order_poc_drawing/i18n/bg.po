@@ -1,0 +1,349 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sale_order_poc_drawing
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-17 10:53+0000\n"
+"PO-Revision-Date: 2026-10-17 10:53+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: bg\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__active
+msgid "Active"
+msgstr "Активен"
+
+#. module: sale_order_poc_drawing
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_drawing.sale_order_poc_drawing_view_form
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_drawing.sale_order_poc_drawing_view_search
+msgid "Archived"
+msgstr "Архивиран"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__drawing_can_edit
+msgid "Can Edit the Drawing"
+msgstr "Може да редактира рисунката"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_template__drawing_caption
+msgid ""
+"Caption under the drawing, with {{ code }} placeholders, e.g. {{ box_l }} × "
+"{{ box_w }} × {{ box_d }} mm."
+msgstr ""
+"Надпис под рисунката със заместители {{ код }}, например {{ box_l }} × {{ "
+"box_w }} × {{ box_d }} mm."
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__code
+msgid "Code"
+msgstr "Код"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__drawing_missing_codes
+msgid "Codes Not in the Template"
+msgstr "Кодове извън шаблона"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_drawing__parameter_codes
+msgid ""
+"Codes of the parameters the drawing reads, separated by commas. For "
+"documentation and checks only."
+msgstr ""
+"Кодовете на параметрите, които рисунката чете, разделени със запетая. Само "
+"за документация и проверка."
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_template__drawing_missing_codes
+msgid ""
+"Codes the drawing expects that neither the parameters of the template nor "
+"the drawing defaults provide."
+msgstr ""
+"Кодове, които рисунката очаква, но ги няма нито в параметрите на шаблона, "
+"нито в подразбирането на рисунката."
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_param_option__drawing_color
+msgid "Colour of this option in the product drawing, as #rrggbb."
+msgstr "Цветът на тази опция в рисунката на изделието, като #rrggbb."
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_product_product__drawing_color
+msgid ""
+"Colour of this product in the product drawing, as #rrggbb, e.g. the colour "
+"of a board or a decor."
+msgstr ""
+"Цветът на този продукт в рисунката на изделието, като #rrggbb, например "
+"цветът на картон или на декор."
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__company_id
+msgid "Company"
+msgstr "Фирма"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__create_uid
+msgid "Created by"
+msgstr "Създадено от"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__create_date
+msgid "Created on"
+msgstr "Създадено на"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_product_product__display_name
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc__display_name
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__display_name
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_param_option__display_name
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__display_name
+msgid "Display Name"
+msgstr "Име за показване"
+
+#. module: sale_order_poc_drawing
+#: model:sale.order.poc.drawing,name:sale_order_poc_drawing.drawing_door_front
+msgid "Door — front view"
+msgstr "Врата — изглед отпред"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc__drawing_svg
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_drawing.sale_order_poc_template_view_form_drawing
+msgid "Drawing"
+msgstr "Рисунка"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__drawing_caption
+msgid "Drawing Caption"
+msgstr "Надпис на рисунката"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_product_product__drawing_color
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_param_option__drawing_color
+msgid "Drawing Color"
+msgstr "Цвят в рисунката"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__drawing_defaults
+msgid "Drawing Defaults"
+msgstr "Подразбиране на рисунката"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__drawing_picture
+msgid "Drawing Picture"
+msgstr "Картинка на изделието"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc__drawing_url
+msgid "Drawing Picture URL"
+msgstr "Адрес на картинката"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__drawing_preview
+msgid "Drawing Preview"
+msgstr "Преглед на рисунката"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__drawing_template_id
+msgid "Drawing Template"
+msgstr "Шаблон на рисунката"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__parameter_codes
+msgid "Expected Parameters"
+msgstr "Очаквани параметри"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_product_product__id
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc__id
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__id
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_param_option__id
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_template__id
+msgid "ID"
+msgstr "ID"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__write_uid
+msgid "Last Updated by"
+msgstr "Последно обновено от"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__write_date
+msgid "Last Updated on"
+msgstr "Последно обновено на"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__name
+msgid "Name"
+msgstr "Име"
+
+#. module: sale_order_poc_drawing
+#. odoo-python
+#: code:addons/sale_order_poc_drawing/models/poc_template.py:0
+msgid ""
+"Only a Drawing Designer can change the drawing of a configuration template."
+msgstr ""
+"Само дизайнер на рисунки може да променя рисунката на шаблон за "
+"конфигурация."
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__preview
+msgid "Preview"
+msgstr "Преглед"
+
+#. module: sale_order_poc_drawing
+#: model:ir.actions.act_window,name:sale_order_poc_drawing.sale_order_poc_drawing_action
+#: model:ir.ui.menu,name:sale_order_poc_drawing.menu_sale_order_poc_drawing
+msgid "Product Drawings"
+msgstr "Рисунки на изделия"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model,name:sale_order_poc_drawing.model_product_product
+msgid "Product Variant"
+msgstr "Продуктов вариант"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model,name:sale_order_poc_drawing.model_sale_order_poc
+msgid "Production Configuration"
+msgstr "Производствена конфигурация"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model,name:sale_order_poc_drawing.model_sale_order_poc_drawing
+msgid "Production Configuration Drawing"
+msgstr "Рисунка на производствена конфигурация"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model,name:sale_order_poc_drawing.model_sale_order_poc_param_option
+msgid "Production Configuration Parameter Option"
+msgstr "Опция на параметър на производствена конфигурация"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model,name:sale_order_poc_drawing.model_sale_order_poc_template
+msgid "Production Configuration Template"
+msgstr "Шаблон на производствена конфигурация"
+
+#. module: sale_order_poc_drawing
+#: model:res.groups,name:sale_order_poc_drawing.group_drawing_designer
+msgid "Production Configuration: Drawing Designer"
+msgstr "Производствена конфигурация: дизайнер на рисунки"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_drawing__svg
+msgid ""
+"QWeb template of the drawing. It sees only `v` (the values of the parameters"
+" by code: numbers, texts, selection keys, record names and "
+"`v['<code>__color']`) and `d` (pure drawing helpers: iso, pts, box, face, "
+"flap, rect, line, dim_line, viewbox, stroke_width, shade, color, num). It "
+"must return a whole <svg> element."
+msgstr ""
+"QWeb шаблонът на рисунката. Вижда само `v` (стойностите на параметрите по "
+"код: числа, текстове, ключове на селекции, имена на записи и "
+"`v['<код>__color']`) и `d` (чисти помощници за рисуване: iso, pts, box, "
+"face, flap, rect, line, dim_line, viewbox, stroke_width, shade, color, num)."
+" Трябва да връща цял елемент <svg>."
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__svg
+msgid "SVG Template"
+msgstr "SVG шаблон"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_template__drawing_template_id
+msgid ""
+"SVG template from the drawing library, drawn with the values of the "
+"configuration."
+msgstr ""
+"SVG шаблон от библиотеката с рисунки, рисуван със стойностите на "
+"конфигурацията."
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__sample_values_text
+msgid "Sample Values"
+msgstr "Примерни стойности"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,field_description:sale_order_poc_drawing.field_sale_order_poc_drawing__sample_values
+msgid "Sample Values (JSON)"
+msgstr "Примерни стойности (JSON)"
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.constraint,message:sale_order_poc_drawing.constraint_sale_order_poc_drawing_code_uniq
+msgid "The code of the drawing must be unique."
+msgstr "Кодът на рисунката трябва да е уникален."
+
+#. module: sale_order_poc_drawing
+#. odoo-python
+#: code:addons/sale_order_poc_drawing/models/poc_param.py:0
+msgid "The drawing colour %(color)s must be #rrggbb."
+msgstr "Цветът на рисунката %(color)s трябва да е #rrggbb."
+
+#. module: sale_order_poc_drawing
+#. odoo-python
+#: code:addons/sale_order_poc_drawing/models/sale_order_poc_drawing.py:0
+msgid "The sample values are not valid JSON: %(error)s"
+msgstr "Примерните стойности не са валиден JSON: %(error)s"
+
+#. module: sale_order_poc_drawing
+#. odoo-python
+#: code:addons/sale_order_poc_drawing/models/sale_order_poc_drawing.py:0
+msgid "The sample values must be a JSON object: {\"code\": value}."
+msgstr "Примерните стойности трябва да са JSON обект: {\"код\": стойност}."
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_template__drawing_picture
+msgid "Uploaded picture of the product. It always wins over the SVG template."
+msgstr "Качена картинка на изделието. Винаги печели пред SVG шаблона."
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_template__drawing_defaults
+msgid ""
+"Values for an empty configuration, as code=value separated by commas or new "
+"lines, e.g. box_l=300, box_w=200, box_d=150."
+msgstr ""
+"Стойности за празна конфигурация, като код=стойност, разделени със запетая "
+"или нов ред, например box_l=300, box_w=200, box_d=150."
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_drawing__sample_values_text
+msgid ""
+"Values the preview is drawn with, as JSON, e.g. {\"width\": 900, \"height\":"
+" 2000}."
+msgstr ""
+"Стойностите, с които се рисува прегледът, като JSON, например {\"width\": "
+"900, \"height\": 2000}."
+
+#. module: sale_order_poc_drawing
+#: model:ir.model.fields,help:sale_order_poc_drawing.field_sale_order_poc_drawing__sample_values
+msgid "Values the preview is drawn with, by parameter code."
+msgstr "Стойностите, с които се рисува прегледът, по код на параметър."
+
+#. module: sale_order_poc_drawing
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_drawing.sale_order_poc_template_view_form_drawing
+msgid "box_l=300, box_w=200, box_d=150"
+msgstr "box_l=300, box_w=200, box_d=150"
+
+#. module: sale_order_poc_drawing
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_drawing.sale_order_poc_drawing_view_form
+msgid "e.g. Door — front view"
+msgstr "напр. Врата — изглед отпред"
+
+#. module: sale_order_poc_drawing
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_drawing.sale_order_poc_drawing_view_form
+msgid "width, height, opening"
+msgstr "width, height, opening"
+
+#. module: sale_order_poc_drawing
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_drawing.sale_order_poc_drawing_view_form
+msgid "{\"width\": 900, \"height\": 2000}"
+msgstr "{\"width\": 900, \"height\": 2000}"
+
+#. module: sale_order_poc_drawing
+#: model_terms:ir.ui.view,arch_db:sale_order_poc_drawing.sale_order_poc_template_view_form_drawing
+msgid "{{ box_l }} × {{ box_w }} × {{ box_d }} mm"
+msgstr "{{ box_l }} × {{ box_w }} × {{ box_d }} mm"

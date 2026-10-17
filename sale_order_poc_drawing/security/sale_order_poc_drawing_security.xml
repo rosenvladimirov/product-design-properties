@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+          https://www.gnu.org/licenses/lgpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the LGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the LGPL-3.0-or-later.
+-->
+<odoo>
+    <!-- О1 (Росен, 17.10.2026): SVG шаблоните са QWeb в базата, т.е. код —
+         пише ги само „Drawing Designer“. Системният администратор я има
+         (base.group_system я включва); другите — не. Полетата на рисунката
+         в шаблона пак искат и правото да се пише шаблонът (мениджър). -->
+    <record id="group_drawing_designer" model="res.groups">
+        <field name="name">Production Configuration: Drawing Designer</field>
+        <field name="implied_ids" eval="[(4, ref('sale_order_poc.group_poc_user'))]"/>
+    </record>
+    <record id="base.group_system" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('group_drawing_designer'))]"/>
+    </record>
+
+    <record id="sale_order_poc_drawing_company_rule" model="ir.rule">
+        <field name="name">Production Configuration Drawing: multi-company</field>
+        <field name="model_id" ref="model_sale_order_poc_drawing"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

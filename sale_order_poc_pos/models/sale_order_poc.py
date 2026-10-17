@@ -145,15 +145,60 @@ class SaleOrderPoc(models.Model):
 
     def _l10n_bg_pos_picture(self):
         """Картинката до първата секция (видът изделие): ``{"svg": html}``
-        или ``{"url": адрес}``. Кука за вертикала — тук няма."""
-        return False
+        или ``{"url": адрес}``, по желание с ``"caption"``.
+
+        Общата рисунка на шаблона (`sale_order_poc_drawing`, О5 — Росен,
+        17.10.2026); вертикалът я допълва през `_poc_drawing_fallback` или
+        като пренапише тази кука.
+        """
+        return self._poc_drawing() or False
 
     def _l10n_bg_pos_picture_preview(self, updates):
         """Картинката с още незаписаните промени от касата — без запис.
 
-        Кука за вертикала (рисунка по размерите); тук — записаната.
+        Рисунката на шаблона със стойностите от касата; без нея —
+        записаната картинка (куката на вертикала).
         """
-        return self._l10n_bg_pos_picture()
+        drawing = self._poc_drawing(self._l10n_bg_pos_drawing_values(updates))
+        return drawing or self._l10n_bg_pos_picture()
+
+    def _l10n_bg_pos_drawing_values(self, updates):
+        """Незаписаните стойности от касата във вида на `_poc_values()`.
+
+        Както в касата на Пакит: числата като float, many2one през browse на
+        id-то, селекцията — ключът. Празното е None (рисунката взема
+        подразбирането). Кодовете извън схемата и служебните ключове изпадат.
+        """
+        self.ensure_one()
+        types = {}
+        comodels = {}
+        for container in self._poc_containers():
+            for entry in container.template_id.param_definition or []:
+                types[entry["name"]] = entry.get("type")
+                comodels[entry["name"]] = entry.get("comodel")
+        values = {}
+        for code, value in (updates or {}).items():
+            ptype = types.get(code)
+            if not ptype or ptype in ("separator", "table"):
+                continue
+            if ptype in ("float", "integer"):
+                try:
+                    values[code] = None if value in (None, False, "") else float(value)
+                except (TypeError, ValueError):
+                    values[code] = None
+            elif ptype in ("many2one", "many2many"):
+                comodel = comodels.get(code)
+                if not comodel or comodel not in self.env:
+                    continue
+                ids = value if isinstance(value, list) else [value]
+                ids = [i for i in ids if isinstance(i, int) and not isinstance(i, bool)]
+                records = self.env[comodel].browse(ids).exists()
+                values[code] = records[:1] if ptype == "many2one" else records
+            elif ptype == "boolean":
+                values[code] = bool(value)
+            else:
+                values[code] = value if value not in (False, "") else None
+        return values
 
     def _l10n_bg_pos_field_groups(self):
         """Групи полета на POC извън параметрите — кука за вертикала.

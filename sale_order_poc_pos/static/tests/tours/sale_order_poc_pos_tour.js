@@ -157,3 +157,37 @@ registry.category("web_tour.tours").add("sale_order_poc_pos_switch", {
             },
         ].flat(),
 });
+
+// Рисунката на шаблона следва въвеждането без „Compute“ (SPEC sale-order-poc/drawing § 4, т. 9)
+registry.category("web_tour.tours").add("sale_order_poc_pos_drawing", {
+    steps: () =>
+        [
+            Chrome.startPoS(),
+            Dialog.confirm("Open Register"),
+            {
+                content: "switch to Wholesale",
+                trigger: ".control-buttons .o_l10n_bg_wholesale_button",
+                run: "click",
+            },
+            ProductScreen.clickPartnerButton(),
+            ProductScreen.clickCustomer("ET Petrov Trade"),
+            ProductScreen.clickDisplayedProduct("Configured Bag"),
+            {
+                content: "the drawing is drawn with the defaults",
+                trigger: ".o_l10n_bg_poc_editor .o_l10n_bg_poc_picture:contains('Width 300 mm')",
+            },
+            {
+                content: "width 640",
+                trigger: `${PARAM("pos_width_mm")} input`,
+                run: "edit 640",
+            },
+            {
+                content: "the caption follows without Compute",
+                trigger: ".o_l10n_bg_poc_editor .o_l10n_bg_poc_picture:contains('Width 640 mm')",
+            },
+            {
+                content: "the drawing follows too",
+                trigger: ".o_l10n_bg_poc_editor .o_l10n_bg_poc_picture polygon[points*='640.0,0.0']",
+            },
+        ].flat(),
+});

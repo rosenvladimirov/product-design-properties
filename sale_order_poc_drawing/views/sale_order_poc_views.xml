@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+          https://www.gnu.org/licenses/lgpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the LGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the LGPL-3.0-or-later.
+-->
+<odoo>
+    <!-- рисунката горе вдясно във формата на POC; изпада, когато е празна -->
+    <record id="sale_order_poc_view_form_drawing" model="ir.ui.view">
+        <field name="name">sale.order.poc.form.drawing</field>
+        <field name="model">sale.order.poc</field>
+        <field name="inherit_id" ref="sale_order_poc.sale_order_poc_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_title')]" position="before">
+                <div class="float-end ms-3 o_poc_drawing" style="width: 18rem;"
+                     invisible="not drawing_url and not drawing_svg">
+                    <field name="drawing_url" widget="image_url" readonly="1" nolabel="1"
+                           options="{'size': [0, 200]}" invisible="not drawing_url"/>
+                    <field name="drawing_svg" readonly="1" nolabel="1"
+                           invisible="drawing_url or not drawing_svg"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

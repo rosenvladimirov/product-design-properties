@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)
+          https://www.gnu.org/licenses/lgpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the LGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the LGPL-3.0-or-later.
+-->
+<odoo>
+    <!-- страницата „Drawing“: картинка, шаблон, подразбиране, надпис и преглед на живо -->
+    <record id="sale_order_poc_template_view_form_drawing" model="ir.ui.view">
+        <field name="name">sale.order.poc.template.form.drawing</field>
+        <field name="model">sale.order.poc.template</field>
+        <field name="inherit_id" ref="sale_order_poc.sale_order_poc_template_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Drawing" name="drawing">
+                    <field name="drawing_can_edit" invisible="1"/>
+                    <group>
+                        <group>
+                            <field name="drawing_picture" widget="image"
+                                   options="{'size': [0, 160]}" readonly="not drawing_can_edit"/>
+                            <field name="drawing_template_id" readonly="not drawing_can_edit"/>
+                            <field name="drawing_defaults" readonly="not drawing_can_edit"
+                                   placeholder="box_l=300, box_w=200, box_d=150"/>
+                            <field name="drawing_caption" readonly="not drawing_can_edit"
+                                   placeholder="{{ box_l }} × {{ box_w }} × {{ box_d }} mm"/>
+                            <field name="drawing_missing_codes" invisible="not drawing_missing_codes"
+                                   decoration-warning="drawing_missing_codes"/>
+                        </group>
+                        <group>
+                            <field name="drawing_preview" readonly="1" nolabel="1" colspan="2"
+                                   invisible="drawing_picture or not drawing_preview"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
