@@ -4,6 +4,22 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.7.0] - 2026-10-18
+
+### Added
+
+- Merged from the Packit copy of this module, so that every vertical uses
+  one module instead of its own copy (ADR sale-order-poc/0026):
+  - companion lines (ADR sale-order-poc/0022): the configuration adds,
+    updates and removes extra lines of the quotation through the
+    `_poc_companion_lines()` hook; a price changed by hand is kept;
+  - optional products of the product, chosen in the configuration, each
+    as its own line, per unit or once per order;
+  - a section switch on the template: a switched-off section clears its
+    values and its formulas are not computed.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.6.0] - 2026-10-06
 
 ### Added

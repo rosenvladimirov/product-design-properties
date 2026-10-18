@@ -23,6 +23,14 @@ class ProductTemplate(models.Model):
     )
     # константите на продукта в същото пространство от имена; копират се в
     # конфигурацията при раждането ѝ, формулите виждат само нея
+    # Като опционален продукт в конфигурацията: на брой изделие (по
+    # подразбиране) или веднъж за поръчката — напр. проектиране, клише.
+    poc_optional_per_order = fields.Boolean(
+        string="Once per Order as Optional Product",
+        help="When chosen as an optional product in a production "
+        "configuration, the quantity of its line is 1 instead of the "
+        "quantity of the configured product.",
+    )
     poc_default_params = fields.Properties(
         string="Configuration Defaults",
         definition="poc_template_id.param_definition",

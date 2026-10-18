@@ -21,6 +21,8 @@
                 <page string="Production Configuration" name="sale_order_poc" invisible="not sale_ok">
                     <group>
                         <field name="poc_template_id" options="{'no_create': True}"/>
+                        <field name="optional_product_ids" widget="many2many_tags"/>
+                        <field name="poc_optional_per_order"/>
                     </group>
                     <field name="poc_default_params" nolabel="1" colspan="2" columns="2"
                            invisible="not poc_template_id"/>

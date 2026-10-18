@@ -1420,3 +1420,89 @@ msgstr ""
 #: code:addons/sale_order_poc/models/sale_order_poc.py:0
 msgid "Yes"
 msgstr "Да"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_line__poc_companion_of_id
+msgid "Added by Configuration"
+msgstr "Добавен от конфигурация"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__companion_line_ids
+msgid "Companion Lines"
+msgstr "Съпътстващи редове"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_line__poc_companion_key
+msgid "Poc Companion Key"
+msgstr "Ключ на съпътстващ ред"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_line__poc_companion_price_written
+msgid "Poc Companion Price Written"
+msgstr "Вписана цена на съпътстващ ред"
+
+#. module: sale_order_poc
+#. odoo-python
+#: code:addons/sale_order_poc/models/sale_order_poc.py:0
+msgid "%(products)s are not optional products of %(product)s."
+msgstr "%(products)s не са опционални продукти на %(product)s."
+
+#. module: sale_order_poc
+#: model:ir.model.fields,help:sale_order_poc.field_sale_order_poc_template_line__section_switch
+msgid ""
+"A yes/no parameter that switches its section: when it is off the section is "
+"hidden in the Point of Sale and the other parameters of the section are "
+"cleared on save."
+msgstr ""
+"Параметър да/не, който превключва секцията си: когато е изключен, секцията "
+"не се вижда в касата, а другите ѝ параметри се изчистват при запис."
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__allowed_optional_product_ids
+msgid "Allowed Optional Product"
+msgstr "Разрешен опционален продукт"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_product_product__poc_optional_per_order
+#: model:ir.model.fields,field_description:sale_order_poc.field_product_template__poc_optional_per_order
+msgid "Once per Order as Optional Product"
+msgstr "Веднъж за поръчката като опционален продукт"
+
+#. module: sale_order_poc
+#. odoo-python
+#: code:addons/sale_order_poc/models/poc_template.py:0
+msgid ""
+"Only a yes/no parameter entered by hand can switch a section (%(code)s)."
+msgstr ""
+"Само параметър да/не, въвеждан на ръка, може да превключва секция "
+"(%(code)s)."
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__optional_product_ids
+#: model_terms:ir.ui.view,arch_db:sale_order_poc.sale_order_poc_view_form
+msgid "Optional Products"
+msgstr "Опционални продукти"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,help:sale_order_poc.field_sale_order_poc__optional_product_ids
+msgid ""
+"Optional products of the configured product chosen for this order. Each "
+"becomes its own line in the quotation."
+msgstr ""
+"Опционалните продукти на артикула, избрани за тази поръчка. Всеки става "
+"отделен ред в офертата."
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template_line__section_switch
+msgid "Switches the Section"
+msgstr "Превключва секцията"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,help:sale_order_poc.field_product_product__poc_optional_per_order
+#: model:ir.model.fields,help:sale_order_poc.field_product_template__poc_optional_per_order
+msgid ""
+"When chosen as an optional product in a production configuration, the "
+"quantity of its line is 1 instead of the quantity of the configured product."
+msgstr ""
+"Избран като опционален продукт в конфигурацията, редът му е с количество 1, "
+"а не с количеството на артикула."

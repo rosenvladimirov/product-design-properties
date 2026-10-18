@@ -15,7 +15,8 @@ import re
 from markupsafe import Markup, escape
 
 from odoo import api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
+from odoo.tools import float_compare
 
 from .poc_template import formula_names
 
@@ -31,7 +32,7 @@ PLACEHOLDER = re.compile(r"\{\{\s*([a-z][a-z0-9_]*)\s*\}\}")
 # потребителските полета; системните (лот, произход, резюме) минават с
 # контекст poc_system (ADR sale-order-poc/0009)
 USER_FIELDS = frozenset(
-    {"params", "template_id", "note", "aspect_ids", "line_ids"}
+    {"params", "template_id", "note", "aspect_ids", "line_ids", "optional_product_ids"}
 )
 
 
@@ -129,6 +130,27 @@ class SaleOrderPoc(models.Model):
     )
     lot_id = fields.Many2one("stock.lot", string="Lot", readonly=True, copy=False)
     lot_ids = fields.One2many("stock.lot", "poc_id", string="Lots")
+    # допълнителните редове на офертата от тази конфигурация (ADR 0022)
+    companion_line_ids = fields.One2many(
+        "sale.order.line", "poc_companion_of_id", string="Companion Lines"
+    )
+    # Опционалните продукти на артикула (раздел „Продажби“, както в
+    # е-магазина), избрани за тази поръчка: всеки е свой ред в офертата, не
+    # част от рецептата (Росен, 15.10.2026 — дръжки, фолио, панделка).
+    optional_product_ids = fields.Many2many(
+        "product.product",
+        "sale_order_poc_optional_product_rel",
+        "poc_id",
+        "product_id",
+        string="Optional Products",
+        copy=True,
+        domain="[('id', 'in', allowed_optional_product_ids)]",
+        help="Optional products of the configured product chosen for this "
+        "order. Each becomes its own line in the quotation.",
+    )
+    allowed_optional_product_ids = fields.Many2many(
+        "product.product", compute="_compute_allowed_optional_product_ids"
+    )
     lot_count = fields.Integer(compute="_compute_lot_count")
     summary = fields.Char(readonly=True, copy=False, index="trigram")
     # последно вписаният блок в описанието на реда (ADR sale-order-poc/0017)
@@ -167,6 +189,24 @@ class SaleOrderPoc(models.Model):
                     if line.param_id and origins.get(line.param_id.code) == "manual"
                 ]
             poc.manual_params = ", ".join(names) or False
+
+    @api.depends("product_id")
+    def _compute_allowed_optional_product_ids(self):
+        for poc in self:
+            templates = poc.product_id.product_tmpl_id.optional_product_ids
+            poc.allowed_optional_product_ids = templates.filtered(
+                "sale_ok").product_variant_ids
+
+    @api.constrains("optional_product_ids", "sale_line_id")
+    def _check_optional_products(self):
+        for poc in self:
+            foreign = poc.optional_product_ids - poc.allowed_optional_product_ids
+            if foreign:
+                raise ValidationError(self.env._(
+                    "%(products)s are not optional products of %(product)s.",
+                    products=", ".join(foreign.mapped("display_name")),
+                    product=poc.product_id.display_name,
+                ))
 
     def _compute_table_count(self):
         for poc in self:
@@ -429,6 +469,15 @@ class SaleOrderPoc(models.Model):
             container_by_template = {
                 container.template_id: container for container in containers
             }
+            # изключена секция (превключвателят ѝ е „не“) губи стойностите
+            # си, изчислените също не се смятат
+            switched_off = poc._poc_switched_off_codes()
+            current = poc._poc_values()
+            to_clear = {
+                code: None for code in switched_off if not _is_empty(current.get(code))
+            }
+            if to_clear:
+                poc.with_context(poc_system=True)._poc_set_params(to_clear)
             values = poc._poc_values()
             origins = {
                 container: dict(container.param_origins or {})
@@ -440,6 +489,9 @@ class SaleOrderPoc(models.Model):
             for line in lines:
                 code = line.param_id.code
                 container = container_by_template[line.template_id]
+                if code in switched_off:
+                    origins[container].pop(code, None)
+                    continue
                 if line.allow_manual and origins[container].get(code) == "manual":
                     continue
                 if poc._poc_inputs_missing(line.formula, values):
@@ -513,6 +565,139 @@ class SaleOrderPoc(models.Model):
                 )
         # извън цикъла: шаблон без формули също има текст за офертата
         self._poc_apply_sale_description()
+        self._poc_sync_companion_lines()
+
+    # ── Съпътстващите редове (ADR sale-order-poc/0022) ────────────────
+
+    def _poc_companion_lines(self):
+        """Кои допълнителни редове иска тази конфигурация в офертата.
+
+        Връща списък от речници::
+
+            {"key": str, "product": product.product, "qty": float,
+             "price_unit": float}
+
+        ``key`` е постоянното име на реда (напр. „screen“): по него редът се
+        намира при следващо преизчисляване. Базата добавя избраните
+        опционални продукти — на брой изделие или веднъж за поръчката, според
+        артикула; фирменият слой добавя своите (сито, Пантон, настройка…).
+        """
+        self.ensure_one()
+        lines = []
+        for product in self.optional_product_ids:
+            qty = 1.0 if product.poc_optional_per_order else (self.product_uom_qty or 0.0)
+            lines.append({
+                "key": "optional_%d" % product.id,
+                "product": product,
+                "qty": qty,
+                "price_unit": self._poc_companion_price(product, qty),
+            })
+        return lines
+
+    def _poc_companion_price(self, product, qty):
+        """Цената на допълнителен ред — по ценовата листа на офертата."""
+        self.ensure_one()
+        pricelist = self.sudo().order_id.pricelist_id
+        return pricelist._get_product_price(product, qty) if pricelist else product.lst_price
+
+    def _poc_switched_off_codes(self):
+        """Кодовете в секции, чийто превключвател е „не“ (без самия превключвател)."""
+        self.ensure_one()
+        values = self._poc_values()
+        off = set()
+        for container in self._poc_containers():
+            section, switch = [], None
+            lines = container.template_id.line_ids.sorted(
+                lambda line: (line.sequence, line.id))
+            for line in list(lines) + [None]:
+                if line is None or line.display_type == "line_section":
+                    if switch and not values.get(switch):
+                        off.update(code for code in section if code != switch)
+                    section, switch = [], None
+                    continue
+                if not line.param_id:
+                    continue
+                section.append(line.param_id.code)
+                if line.section_switch:
+                    switch = line.param_id.code
+        return off
+
+    def _poc_sync_companion_lines(self):
+        """Създава, обновява и маха съпътстващите редове на офертата.
+
+        Само докато офертата е чернова или изпратена — потвърдената не се
+        пипа (там редовете вече са договорени). Ред, чиято цена е сменена на
+        ръка, пази цената си: разпознава се по разминаване с последно
+        вписаната, както цената от матрицата. Ред, чийто ключ конфигурацията
+        вече не иска, се маха.
+        """
+        Line = self.env["sale.order.line"].sudo()
+        precision = self.env["decimal.precision"].precision_get("Product Price")
+        for poc in self:
+            main = poc.sudo().sale_line_id
+            if not main or main.order_id.state not in ("draft", "sent"):
+                continue
+            wanted = {vals["key"]: vals for vals in poc._poc_companion_lines()}
+            existing = {
+                line.poc_companion_key: line for line in poc.sudo().companion_line_ids
+            }
+            Line.browse(
+                [line.id for key, line in existing.items() if key not in wanted]
+            ).unlink()
+            for key, vals in wanted.items():
+                line = existing.get(key)
+                price = vals["price_unit"]
+                if not line:
+                    Line.create({
+                        "order_id": main.order_id.id,
+                        "sequence": main.sequence,
+                        "product_id": vals["product"].id,
+                        "product_uom_qty": vals["qty"],
+                        "price_unit": price,
+                        "poc_companion_of_id": poc.id,
+                        "poc_companion_key": key,
+                        "poc_companion_price_written": price,
+                    })
+                    continue
+                update = {}
+                if line.product_id != vals["product"]:
+                    update["product_id"] = vals["product"].id
+                if float_compare(line.product_uom_qty, vals["qty"],
+                                 precision_digits=precision):
+                    update["product_uom_qty"] = vals["qty"]
+                manual = float_compare(
+                    line.price_unit, line.poc_companion_price_written,
+                    precision_digits=precision)
+                if not manual:
+                    update["price_unit"] = price
+                    update["poc_companion_price_written"] = price
+                if update:
+                    line.write(update)
+
+    def _poc_design_lot_ordered(self):
+        """Потвърдена ли е вече поръчка с дизайн лота на тази конфигурация.
+
+        Повторната поръчка се познава по дизайн лота (ADR
+        packit-corrugated-matrix/0006). Истината е ``design_lot_id`` на реда
+        — той е попълнен и при шаблон без партида (ADR sale-order-poc/0020),
+        когато ``poc.lot_id`` е празен; затова се гледат и двете.
+        """
+        self.ensure_one()
+        main = self.sudo().sale_line_id
+        lots = self.sudo().lot_id
+        if "design_lot_id" in main._fields:
+            lots |= main.design_lot_id
+        if not lots:
+            return False
+        Line = self.env["sale.order.line"].sudo()
+        domain = [
+            ("state", "=", "sale"),
+            ("order_id", "!=", main.order_id.id),
+        ]
+        lot_domain = [("poc_lot_id", "in", lots.ids)]
+        if "design_lot_id" in Line._fields:
+            lot_domain = ["|", ("design_lot_id", "in", lots.ids)] + lot_domain
+        return bool(Line.search_count(domain + lot_domain, limit=1))
 
     # ── Текстът в офертата ───────────────────────────────────────────
 
@@ -631,7 +816,7 @@ class SaleOrderPoc(models.Model):
             return super().write(vals)
         if USER_FIELDS & vals.keys():
             self._poc_check_can_edit(vals)
-        watch = "params" in vals or "template_id" in vals
+        watch = bool({"params", "template_id", "optional_product_ids"} & vals.keys())
         before = {poc.id: poc._poc_values() for poc in self} if watch else {}
         confirmed = self.filtered(lambda p: p.state != "draft") if watch else self
         res = super().write(vals)

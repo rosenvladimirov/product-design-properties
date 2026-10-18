@@ -76,6 +76,7 @@
                                     <field name="formula"/>
                                     <field name="allow_manual"/>
                                     <field name="allow_fallback"/>
+                                    <field name="section_switch" optional="show"/>
                                 </list>
                             </field>
                         </page>
