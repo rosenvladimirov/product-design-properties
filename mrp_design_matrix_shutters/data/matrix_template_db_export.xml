@@ -1,0 +1,1095 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2024-2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)
+          https://www.gnu.org/licenses/agpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the AGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the AGPL-3.0-or-later.
+-->
+<!-- AUTO-GENERATED от dev-teo-2305 mrp_matrix_template id=2 на 2026-05-28.
+     Source of truth за shutter параметричната матрица — пълни 8 DMN таблици. -->
+<odoo>
+  <data>
+    <record id="matrix_template_shutters" model="mrp.matrix.template">
+      <field name="name">Roller Shutters — 5 models</field>
+      <field name="industry_id" ref="design_param_base.industry_doors"/>
+      <field name="description">T0: global L/H limits, per-model box family, Built-In no-box, feather-guide only Thermo, per-model shutter_count, H>2800 warning.
+T1: per-model slat/terminal/axis/box offsets + slat-count mode + caps mode + guide mode (keyed on shutter_model + slat_size).
+T2: O-variant kits — rope / shirit / motor (standard) / motor_safety (Thermo with safety profile) / feather guide.
+T3: motor install workorder (standard 45 min; safety variant 60 min).</field>
+      <field name="constraint_table" eval='            {
+                "nodes": [
+                    {
+                        "id": "t0-teo",
+                        "name": "T0 Constraints",
+                        "type": "decisionTable",
+                        "content": {
+                            "rules": [
+                                {
+                                    "level": "\"error\"",
+                                    "width": "&lt; 300",
+                                    "height": "",
+                                    "message": "\"Minimum L (width) is 300 mm.\"",
+                                    "box_size": "",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "&gt; 4000",
+                                    "height": "",
+                                    "message": "\"Maximum L (width) is 4000 mm (L_MAX global).\"",
+                                    "box_size": "",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&lt; 300",
+                                    "message": "\"Minimum H (height) is 300 mm.\"",
+                                    "box_size": "",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 3500",
+                                    "message": "\"Maximum H (height) is 3500 mm.\"",
+                                    "box_size": "",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"Built-In has no box — set Box to none.\"",
+                                    "box_size": "!= \"none\"",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"built_in\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"This model requires a box (137/165/180/205).\"",
+                                    "box_size": "\"none\"",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"standard\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"This model requires a box (137/165/180/205).\"",
+                                    "box_size": "\"none\"",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"round\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"This model requires a box (170/210).\"",
+                                    "box_size": "\"none\"",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"t_roll\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"This model requires a box (170/210).\"",
+                                    "box_size": "\"none\"",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"thermo_comfort\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"Standard uses box 137/165/180/205.\"",
+                                    "box_size": "\"170\", \"210\"",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"standard\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"Round uses box 137/165/180/205.\"",
+                                    "box_size": "\"170\", \"210\"",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"round\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"T-Roll uses box 170/210.\"",
+                                    "box_size": "\"137\", \"165\", \"180\", \"205\"",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"t_roll\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"Thermo Comfort uses box 170/210.\"",
+                                    "box_size": "\"137\", \"165\", \"180\", \"205\"",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"thermo_comfort\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"Feather guide is only available on Thermo Comfort.\"",
+                                    "box_size": "",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "\"feather\"",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"standard\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"Feather guide is only available on Thermo Comfort.\"",
+                                    "box_size": "",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "\"feather\"",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"round\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"Feather guide is only available on Thermo Comfort.\"",
+                                    "box_size": "",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "\"feather\"",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"t_roll\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"Feather guide is only available on Thermo Comfort.\"",
+                                    "box_size": "",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "\"feather\"",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"built_in\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"Round supports a single shutter only.\"",
+                                    "box_size": "",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "!= \"1\"",
+                                    "shutter_model": "\"round\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"Thermo Comfort supports a single shutter only.\"",
+                                    "box_size": "",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "!= \"1\"",
+                                    "shutter_model": "\"thermo_comfort\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"Built-In supports a single shutter only.\"",
+                                    "box_size": "",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "!= \"1\"",
+                                    "shutter_model": "\"built_in\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"T-Roll supports a maximum of 2 shutters.\"",
+                                    "box_size": "",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "\"3\", \"4\"",
+                                    "shutter_model": "\"t_roll\""
+                                },
+                                {
+                                    "level": "\"warning\"",
+                                    "width": "",
+                                    "height": "&gt; 2800",
+                                    "message": "\"H &gt; 2800 mm is outside the validated range — verify H_MAX for this (model, box, slat, axis).\"",
+                                    "box_size": "",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"warning\"",
+                                    "width": "",
+                                    "height": "",
+                                    "message": "\"Built-In is weight-driven (catalogue zones ≤11 / ≤18 / ≤28 / &gt;28 kg) — verify load class.\"",
+                                    "box_size": "",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"built_in\""
+                                },
+                                {
+                                    "level": "\"warning\"",
+                                    "width": "&gt; 2000",
+                                    "height": "",
+                                    "message": "\"L &gt; 2000 mm with cord — electric motor recommended.\"",
+                                    "box_size": "",
+                                    "axis_size": "",
+                                    "slat_size": "",
+                                    "guide_type": "",
+                                    "control_type": "\"rope\"",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 1500",
+                                    "message": "\"За кутия 137 / ламел 40 / ос 40 макс. височина 1500 mm — избери по-голяма кутия.\"",
+                                    "box_size": "\"137\"",
+                                    "axis_size": "\"40\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 1400",
+                                    "message": "\"За кутия 137 / ламел 40 / ос 60 макс. височина 1400 mm — избери по-голяма кутия.\"",
+                                    "box_size": "\"137\"",
+                                    "axis_size": "\"60\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 900",
+                                    "message": "\"За кутия 137 / ламел 50 / ос 40 макс. височина 900 mm — избери по-голяма кутия.\"",
+                                    "box_size": "\"137\"",
+                                    "axis_size": "\"40\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 800",
+                                    "message": "\"За кутия 137 / ламел 50 / ос 60 макс. височина 800 mm — избери по-голяма кутия.\"",
+                                    "box_size": "\"137\"",
+                                    "axis_size": "\"60\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2400",
+                                    "message": "\"За кутия 165 / ламел 40 / ос 40 макс. височина 2400 mm — избери по-голяма кутия.\"",
+                                    "box_size": "\"165\"",
+                                    "axis_size": "\"40\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2300",
+                                    "message": "\"За кутия 165 / ламел 40 / ос 60 макс. височина 2300 mm — избери по-голяма кутия.\"",
+                                    "box_size": "\"165\"",
+                                    "axis_size": "\"60\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 1500",
+                                    "message": "\"За кутия 165 / ламел 50 / ос 40 макс. височина 1500 mm — избери по-голяма кутия.\"",
+                                    "box_size": "\"165\"",
+                                    "axis_size": "\"40\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 1400",
+                                    "message": "\"За кутия 165 / ламел 50 / ос 60 макс. височина 1400 mm — избери по-голяма кутия.\"",
+                                    "box_size": "\"165\"",
+                                    "axis_size": "\"60\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2800",
+                                    "message": "\"За кутия 180 / ламел 40 / ос 40 макс. височина 2800 mm — избери по-голяма кутия.\"",
+                                    "box_size": "\"180\"",
+                                    "axis_size": "\"40\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2700",
+                                    "message": "\"За кутия 180 / ламел 40 / ос 60 макс. височина 2700 mm — избери по-голяма кутия.\"",
+                                    "box_size": "\"180\"",
+                                    "axis_size": "\"60\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2100",
+                                    "message": "\"За кутия 180 / ламел 50 / ос 40 макс. височина 2100 mm — избери по-голяма кутия.\"",
+                                    "box_size": "\"180\"",
+                                    "axis_size": "\"40\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2000",
+                                    "message": "\"За кутия 180 / ламел 50 / ос 60 макс. височина 2000 mm — избери по-голяма кутия.\"",
+                                    "box_size": "\"180\"",
+                                    "axis_size": "\"60\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2800",
+                                    "message": "\"За кутия 205 / ламел 40 / ос 40 макс. височина 2800 mm — избери по-голяма кутия.\"",
+                                    "box_size": "\"205\"",
+                                    "axis_size": "\"40\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2800",
+                                    "message": "\"За кутия 205 / ламел 40 / ос 60 макс. височина 2800 mm — избери по-голяма кутия.\"",
+                                    "box_size": "\"205\"",
+                                    "axis_size": "\"60\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2700",
+                                    "message": "\"За кутия 205 / ламел 50 / ос 40 макс. височина 2700 mm — избери по-голяма кутия.\"",
+                                    "box_size": "\"205\"",
+                                    "axis_size": "\"40\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2600",
+                                    "message": "\"За кутия 205 / ламел 50 / ос 60 макс. височина 2600 mm — избери по-голяма кутия.\"",
+                                    "box_size": "\"205\"",
+                                    "axis_size": "\"60\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": ""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2400",
+                                    "message": "\"Thermo: за кутия 170 / ламел 40 / ос 40 макс. височина 2400 mm.\"",
+                                    "box_size": "\"170\"",
+                                    "axis_size": "\"40\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"thermo_comfort\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2300",
+                                    "message": "\"Thermo: за кутия 170 / ламел 40 / ос 60 макс. височина 2300 mm.\"",
+                                    "box_size": "\"170\"",
+                                    "axis_size": "\"60\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"thermo_comfort\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 1500",
+                                    "message": "\"Thermo: за кутия 170 / ламел 50 / ос 40 макс. височина 1500 mm.\"",
+                                    "box_size": "\"170\"",
+                                    "axis_size": "\"40\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"thermo_comfort\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 1400",
+                                    "message": "\"Thermo: за кутия 170 / ламел 50 / ос 60 макс. височина 1400 mm.\"",
+                                    "box_size": "\"170\"",
+                                    "axis_size": "\"60\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"thermo_comfort\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2800",
+                                    "message": "\"Thermo: за кутия 210 / ламел 40 / ос 40 макс. височина 2800 mm.\"",
+                                    "box_size": "\"210\"",
+                                    "axis_size": "\"40\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"thermo_comfort\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2800",
+                                    "message": "\"Thermo: за кутия 210 / ламел 40 / ос 60 макс. височина 2800 mm.\"",
+                                    "box_size": "\"210\"",
+                                    "axis_size": "\"60\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"thermo_comfort\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2700",
+                                    "message": "\"Thermo: за кутия 210 / ламел 50 / ос 40 макс. височина 2700 mm.\"",
+                                    "box_size": "\"210\"",
+                                    "axis_size": "\"40\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"thermo_comfort\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2600",
+                                    "message": "\"Thermo: за кутия 210 / ламел 50 / ос 60 макс. височина 2600 mm.\"",
+                                    "box_size": "\"210\"",
+                                    "axis_size": "\"60\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"thermo_comfort\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 1600",
+                                    "message": "\"T-Roll: за кутия 170 / ламел 40 / ос 40 макс. височина 1600 mm.\"",
+                                    "box_size": "\"170\"",
+                                    "axis_size": "\"40\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"t_roll\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 1600",
+                                    "message": "\"T-Roll: за кутия 170 / ламел 40 / ос 60 макс. височина 1600 mm.\"",
+                                    "box_size": "\"170\"",
+                                    "axis_size": "\"60\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"t_roll\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2700",
+                                    "message": "\"T-Roll: за кутия 210 / ламел 40 / ос 40 макс. височина 2700 mm.\"",
+                                    "box_size": "\"210\"",
+                                    "axis_size": "\"40\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"t_roll\""
+                                },
+                                {
+                                    "level": "\"error\"",
+                                    "width": "",
+                                    "height": "&gt; 2700",
+                                    "message": "\"T-Roll: за кутия 210 / ламел 40 / ос 60 макс. височина 2700 mm.\"",
+                                    "box_size": "\"210\"",
+                                    "axis_size": "\"60\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_type": "",
+                                    "control_type": "",
+                                    "shutter_count": "",
+                                    "shutter_model": "\"t_roll\""
+                                }
+                            ],
+                            "inputs": [
+                                {
+                                    "id": "shutter_model",
+                                    "name": "shutter_model"
+                                },
+                                {
+                                    "id": "box_size",
+                                    "name": "box_size"
+                                },
+                                {
+                                    "id": "slat_size",
+                                    "name": "slat_size"
+                                },
+                                {
+                                    "id": "axis_size",
+                                    "name": "axis_size"
+                                },
+                                {
+                                    "id": "width",
+                                    "name": "width"
+                                },
+                                {
+                                    "id": "height",
+                                    "name": "height"
+                                },
+                                {
+                                    "id": "control_type",
+                                    "name": "control_type"
+                                },
+                                {
+                                    "id": "guide_type",
+                                    "name": "guide_type"
+                                },
+                                {
+                                    "id": "shutter_count",
+                                    "name": "shutter_count"
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "id": "level",
+                                    "name": "level"
+                                },
+                                {
+                                    "id": "message",
+                                    "name": "message"
+                                }
+                            ],
+                            "hitPolicy": "collect"
+                        }
+                    }
+                ]
+            }'/>
+      <field name="geometry_table" eval='            {
+                "nodes": [
+                    {
+                        "id": "t1-teo",
+                        "name": "T1 Geometry",
+                        "type": "decisionTable",
+                        "content": {
+                            "rules": [
+                                {
+                                    "caps_mode": "\"n1\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_mode": "\"h_minus_box\"",
+                                    "axis_off_40": "55",
+                                    "axis_off_60": "70",
+                                    "shutter_model": "\"standard\"",
+                                    "box_form_offset": "10",
+                                    "slat_count_mode": "\"std\"",
+                                    "slat_len_offset": "70",
+                                    "terminal_offset": "72"
+                                },
+                                {
+                                    "caps_mode": "\"n1\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_mode": "\"h_minus_box\"",
+                                    "axis_off_40": "55",
+                                    "axis_off_60": "70",
+                                    "shutter_model": "\"standard\"",
+                                    "box_form_offset": "10",
+                                    "slat_count_mode": "\"std\"",
+                                    "slat_len_offset": "76",
+                                    "terminal_offset": "72"
+                                },
+                                {
+                                    "caps_mode": "\"n1\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_mode": "\"h_minus_box\"",
+                                    "axis_off_40": "55",
+                                    "axis_off_60": "70",
+                                    "shutter_model": "\"round\"",
+                                    "box_form_offset": "10",
+                                    "slat_count_mode": "\"std\"",
+                                    "slat_len_offset": "70",
+                                    "terminal_offset": "72"
+                                },
+                                {
+                                    "caps_mode": "\"n1\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_mode": "\"h_minus_box\"",
+                                    "axis_off_40": "55",
+                                    "axis_off_60": "70",
+                                    "shutter_model": "\"round\"",
+                                    "box_form_offset": "10",
+                                    "slat_count_mode": "\"std\"",
+                                    "slat_len_offset": "76",
+                                    "terminal_offset": "72"
+                                },
+                                {
+                                    "caps_mode": "\"n1\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_mode": "\"fixed_pvc\"",
+                                    "axis_off_40": "90",
+                                    "axis_off_60": "90",
+                                    "shutter_model": "\"t_roll\"",
+                                    "box_form_offset": "10",
+                                    "slat_count_mode": "\"std\"",
+                                    "slat_len_offset": "90",
+                                    "terminal_offset": "92"
+                                },
+                                {
+                                    "caps_mode": "\"n1\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_mode": "\"fixed_pvc\"",
+                                    "axis_off_40": "90",
+                                    "axis_off_60": "90",
+                                    "shutter_model": "\"t_roll\"",
+                                    "box_form_offset": "10",
+                                    "slat_count_mode": "\"std\"",
+                                    "slat_len_offset": "90",
+                                    "terminal_offset": "92"
+                                },
+                                {
+                                    "caps_mode": "\"equal\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_mode": "\"h_minus_1\"",
+                                    "axis_off_40": "70",
+                                    "axis_off_60": "70",
+                                    "shutter_model": "\"built_in\"",
+                                    "box_form_offset": "0",
+                                    "slat_count_mode": "\"builtin\"",
+                                    "slat_len_offset": "18",
+                                    "terminal_offset": "20"
+                                },
+                                {
+                                    "caps_mode": "\"equal\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_mode": "\"h_minus_1\"",
+                                    "axis_off_40": "70",
+                                    "axis_off_60": "70",
+                                    "shutter_model": "\"built_in\"",
+                                    "box_form_offset": "0",
+                                    "slat_count_mode": "\"builtin\"",
+                                    "slat_len_offset": "18",
+                                    "terminal_offset": "20"
+                                },
+                                {
+                                    "caps_mode": "\"direct\"",
+                                    "slat_size": "\"40\"",
+                                    "guide_mode": "\"thermo_sel\"",
+                                    "axis_off_40": "55",
+                                    "axis_off_60": "70",
+                                    "shutter_model": "\"thermo_comfort\"",
+                                    "box_form_offset": "15",
+                                    "slat_count_mode": "\"thermo\"",
+                                    "slat_len_offset": "70",
+                                    "terminal_offset": "72"
+                                },
+                                {
+                                    "caps_mode": "\"direct\"",
+                                    "slat_size": "\"50\"",
+                                    "guide_mode": "\"thermo_sel\"",
+                                    "axis_off_40": "55",
+                                    "axis_off_60": "70",
+                                    "shutter_model": "\"thermo_comfort\"",
+                                    "box_form_offset": "15",
+                                    "slat_count_mode": "\"thermo\"",
+                                    "slat_len_offset": "76",
+                                    "terminal_offset": "72"
+                                }
+                            ],
+                            "inputs": [
+                                {
+                                    "id": "shutter_model",
+                                    "name": "shutter_model"
+                                },
+                                {
+                                    "id": "slat_size",
+                                    "name": "slat_size"
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "id": "slat_len_offset",
+                                    "name": "slat_len_offset"
+                                },
+                                {
+                                    "id": "terminal_offset",
+                                    "name": "terminal_offset"
+                                },
+                                {
+                                    "id": "axis_off_40",
+                                    "name": "axis_off_40"
+                                },
+                                {
+                                    "id": "axis_off_60",
+                                    "name": "axis_off_60"
+                                },
+                                {
+                                    "id": "box_form_offset",
+                                    "name": "box_form_offset"
+                                },
+                                {
+                                    "id": "slat_count_mode",
+                                    "name": "slat_count_mode"
+                                },
+                                {
+                                    "id": "caps_mode",
+                                    "name": "caps_mode"
+                                },
+                                {
+                                    "id": "guide_mode",
+                                    "name": "guide_mode"
+                                }
+                            ],
+                            "hitPolicy": "first"
+                        }
+                    }
+                ]
+            }'/>
+      <field name="material_table" eval='            {
+                "nodes": [
+                    {
+                        "id": "t2-teo",
+                        "name": "T2 Materials",
+                        "type": "decisionTable",
+                        "content": {
+                            "rules": [
+                                {
+                                    "guide_type": "",
+                                    "coefficient": "1.0",
+                                    "control_type": "\"rope\"",
+                                    "shutter_model": "",
+                                    "bom_line_coeff_key": "\"rope-o\""
+                                },
+                                {
+                                    "guide_type": "",
+                                    "coefficient": "1.0",
+                                    "control_type": "\"shirit\"",
+                                    "shutter_model": "",
+                                    "bom_line_coeff_key": "\"shirit-o\""
+                                },
+                                {
+                                    "guide_type": "",
+                                    "coefficient": "1.0",
+                                    "control_type": "\"motor\"",
+                                    "shutter_model": "!= \"thermo_comfort\"",
+                                    "bom_line_coeff_key": "\"motor-o\""
+                                },
+                                {
+                                    "guide_type": "",
+                                    "coefficient": "1.0",
+                                    "control_type": "\"motor\"",
+                                    "shutter_model": "\"thermo_comfort\"",
+                                    "bom_line_coeff_key": "\"motor_safety-o\""
+                                },
+                                {
+                                    "guide_type": "\"feather\"",
+                                    "coefficient": "1.0",
+                                    "control_type": "",
+                                    "shutter_model": "\"thermo_comfort\"",
+                                    "bom_line_coeff_key": "\"guide_feather-o\""
+                                }
+                            ],
+                            "inputs": [
+                                {
+                                    "id": "control_type",
+                                    "name": "control_type"
+                                },
+                                {
+                                    "id": "shutter_model",
+                                    "name": "shutter_model"
+                                },
+                                {
+                                    "id": "guide_type",
+                                    "name": "guide_type"
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "id": "bom_line_coeff_key",
+                                    "name": "bom_line_coeff_key"
+                                },
+                                {
+                                    "id": "coefficient",
+                                    "name": "coefficient"
+                                }
+                            ],
+                            "hitPolicy": "collect"
+                        }
+                    }
+                ]
+            }'/>
+      <field name="operation_table" eval='            {
+                "nodes": [
+                    {
+                        "id": "t3-teo",
+                        "name": "T3 Operations",
+                        "type": "decisionTable",
+                        "content": {
+                            "rules": [
+                                {
+                                    "name": "\"Сглобяване на щора\"",
+                                    "install": "",
+                                    "control_type": "",
+                                    "shutter_model": "",
+                                    "workcenter_ref": "\"mrp_design_matrix_shutters.wc_teo_assembly\"",
+                                    "duration_formula": "\"20 * (width / 1000.0) * (height / 1000.0) * int(shutter_count or 1)\""
+                                },
+                                {
+                                    "name": "\"Motor Install &amp; Programming\"",
+                                    "install": "",
+                                    "control_type": "\"motor\"",
+                                    "shutter_model": "!= \"thermo_comfort\"",
+                                    "workcenter_ref": "\"mrp_design_matrix_shutters.wc_motor\"",
+                                    "duration_formula": "\"45\""
+                                },
+                                {
+                                    "name": "\"Safety Motor Install, Programming &amp; Test\"",
+                                    "control_type": "\"motor\"",
+                                    "shutter_model": "\"thermo_comfort\"",
+                                    "install": "",
+                                    "workcenter_ref": "\"mrp_design_matrix_shutters.wc_motor\"",
+                                    "duration_formula": "\"60\""
+                                },
+                                {
+                                    "name": "\"Монтаж\"",
+                                    "control_type": "",
+                                    "shutter_model": "",
+                                    "install": "true",
+                                    "workcenter_ref": "\"mrp_design_matrix_shutters.wc_teo_install\"",
+                                    "duration_formula": "\"30 * (width / 1000.0) * (height / 1000.0) * int(shutter_count or 1)\""
+                                }
+                            ],
+                            "inputs": [
+                                {
+                                    "id": "control_type",
+                                    "name": "control_type"
+                                },
+                                {
+                                    "id": "shutter_model",
+                                    "name": "shutter_model"
+                                },
+                                {
+                                    "id": "install",
+                                    "name": "install"
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "id": "workcenter_ref",
+                                    "name": "workcenter_ref"
+                                },
+                                {
+                                    "id": "name",
+                                    "name": "name"
+                                },
+                                {
+                                    "id": "duration_formula",
+                                    "name": "duration_formula"
+                                }
+                            ],
+                            "hitPolicy": "collect"
+                        }
+                    }
+                ]
+            }'/>
+      <field name="availability_table" eval='{"nodes": [{"id": "tpi-teo", "name": "TPi Availability", "type": "decisionTable", "content": {"rules": [{"shutter_model": "\"standard\"", "slat_size": "\"40\"", "axis_size": "\"40\"", "height": "> 1500", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"165\", \"180\", \"205\"]", "default_override": "\"165\""}, {"shutter_model": "\"standard\"", "slat_size": "\"40\"", "axis_size": "\"40\"", "height": "> 2400", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"180\", \"205\"]", "default_override": "\"180\""}, {"shutter_model": "\"standard\"", "slat_size": "\"40\"", "axis_size": "\"60\"", "height": "> 1400", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"165\", \"180\", \"205\"]", "default_override": "\"165\""}, {"shutter_model": "\"standard\"", "slat_size": "\"40\"", "axis_size": "\"60\"", "height": "> 2300", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"180\", \"205\"]", "default_override": "\"180\""}, {"shutter_model": "\"standard\"", "slat_size": "\"40\"", "axis_size": "\"60\"", "height": "> 2700", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"205\"]", "default_override": "\"205\""}, {"shutter_model": "\"standard\"", "slat_size": "\"50\"", "axis_size": "\"40\"", "height": "> 900", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"165\", \"180\", \"205\"]", "default_override": "\"165\""}, {"shutter_model": "\"standard\"", "slat_size": "\"50\"", "axis_size": "\"40\"", "height": "> 1500", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"180\", \"205\"]", "default_override": "\"180\""}, {"shutter_model": "\"standard\"", "slat_size": "\"50\"", "axis_size": "\"40\"", "height": "> 2100", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"205\"]", "default_override": "\"205\""}, {"shutter_model": "\"standard\"", "slat_size": "\"50\"", "axis_size": "\"60\"", "height": "> 800", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"165\", \"180\", \"205\"]", "default_override": "\"165\""}, {"shutter_model": "\"standard\"", "slat_size": "\"50\"", "axis_size": "\"60\"", "height": "> 1400", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"180\", \"205\"]", "default_override": "\"180\""}, {"shutter_model": "\"standard\"", "slat_size": "\"50\"", "axis_size": "\"60\"", "height": "> 2000", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"205\"]", "default_override": "\"205\""}, {"shutter_model": "\"round\"", "slat_size": "\"40\"", "axis_size": "\"40\"", "height": "> 1500", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"165\", \"180\", \"205\"]", "default_override": "\"165\""}, {"shutter_model": "\"round\"", "slat_size": "\"40\"", "axis_size": "\"40\"", "height": "> 2400", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"180\", \"205\"]", "default_override": "\"180\""}, {"shutter_model": "\"round\"", "slat_size": "\"40\"", "axis_size": "\"60\"", "height": "> 1400", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"165\", \"180\", \"205\"]", "default_override": "\"165\""}, {"shutter_model": "\"round\"", "slat_size": "\"40\"", "axis_size": "\"60\"", "height": "> 2300", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"180\", \"205\"]", "default_override": "\"180\""}, {"shutter_model": "\"round\"", "slat_size": "\"40\"", "axis_size": "\"60\"", "height": "> 2700", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"205\"]", "default_override": "\"205\""}, {"shutter_model": "\"round\"", "slat_size": "\"50\"", "axis_size": "\"40\"", "height": "> 900", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"165\", \"180\", \"205\"]", "default_override": "\"165\""}, {"shutter_model": "\"round\"", "slat_size": "\"50\"", "axis_size": "\"40\"", "height": "> 1500", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"180\", \"205\"]", "default_override": "\"180\""}, {"shutter_model": "\"round\"", "slat_size": "\"50\"", "axis_size": "\"40\"", "height": "> 2100", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"205\"]", "default_override": "\"205\""}, {"shutter_model": "\"round\"", "slat_size": "\"50\"", "axis_size": "\"60\"", "height": "> 800", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"165\", \"180\", \"205\"]", "default_override": "\"165\""}, {"shutter_model": "\"round\"", "slat_size": "\"50\"", "axis_size": "\"60\"", "height": "> 1400", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"180\", \"205\"]", "default_override": "\"180\""}, {"shutter_model": "\"round\"", "slat_size": "\"50\"", "axis_size": "\"60\"", "height": "> 2000", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"205\"]", "default_override": "\"205\""}, {"shutter_model": "\"thermo_comfort\"", "slat_size": "\"40\"", "axis_size": "\"40\"", "height": "> 2400", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"210\"]", "default_override": "\"210\""}, {"shutter_model": "\"thermo_comfort\"", "slat_size": "\"40\"", "axis_size": "\"60\"", "height": "> 2300", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"210\"]", "default_override": "\"210\""}, {"shutter_model": "\"thermo_comfort\"", "slat_size": "\"50\"", "axis_size": "\"40\"", "height": "> 1500", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"210\"]", "default_override": "\"210\""}, {"shutter_model": "\"thermo_comfort\"", "slat_size": "\"50\"", "axis_size": "\"60\"", "height": "> 1400", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"210\"]", "default_override": "\"210\""}, {"shutter_model": "\"t_roll\"", "slat_size": "\"40\"", "axis_size": "\"40\"", "height": "> 1600", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"210\"]", "default_override": "\"210\""}, {"shutter_model": "\"t_roll\"", "slat_size": "\"40\"", "axis_size": "\"60\"", "height": "> 1600", "control_type": "", "param": "\"box_size\"", "allowed_values": "[\"210\"]", "default_override": "\"210\""}, {"shutter_model": "", "slat_size": "", "axis_size": "", "height": "", "control_type": "\"motor\"", "param": "\"axis_size\"", "allowed_values": "[\"60\"]", "default_override": "\"60\""}, {"shutter_model": "\"thermo_comfort\"", "slat_size": "", "axis_size": "", "height": "", "control_type": "", "param": "\"main_color\"", "allowed_values": "[\"001\", \"002\", \"005\", \"006\", \"007\", \"008\", \"009\", \"010\", \"013\"]", "default_override": "\"001\""}, {"shutter_model": "\"thermo_comfort\"", "slat_size": "", "axis_size": "", "height": "", "control_type": "", "param": "\"color_slat\"", "allowed_values": "[\"001\", \"002\", \"005\", \"006\", \"007\", \"008\", \"009\", \"010\", \"013\"]", "default_override": "\"001\""}, {"shutter_model": "\"thermo_comfort\"", "slat_size": "", "axis_size": "", "height": "", "control_type": "", "param": "\"color_caps\"", "allowed_values": "[\"001\", \"002\", \"005\", \"006\", \"007\", \"008\", \"009\", \"010\", \"013\"]", "default_override": "\"001\""}, {"shutter_model": "\"thermo_comfort\"", "slat_size": "", "axis_size": "", "height": "", "control_type": "", "param": "\"color_box\"", "allowed_values": "[\"001\", \"002\", \"005\", \"006\", \"007\", \"008\", \"009\", \"010\", \"013\"]", "default_override": "\"001\""}, {"shutter_model": "\"thermo_comfort\"", "slat_size": "", "axis_size": "", "height": "", "control_type": "", "param": "\"color_endcap\"", "allowed_values": "[\"001\", \"002\", \"005\", \"006\", \"007\", \"008\", \"009\", \"010\", \"013\"]", "default_override": "\"001\""}, {"shutter_model": "\"thermo_comfort\"", "slat_size": "", "axis_size": "", "height": "", "control_type": "", "param": "\"color_terminal\"", "allowed_values": "[\"001\", \"002\", \"005\", \"006\", \"007\", \"008\", \"009\", \"010\", \"013\"]", "default_override": "\"001\""}, {"shutter_model": "\"thermo_comfort\"", "slat_size": "", "axis_size": "", "height": "", "control_type": "", "param": "\"color_guide\"", "allowed_values": "[\"001\", \"002\", \"005\", \"006\", \"007\", \"008\", \"009\", \"010\", \"013\"]", "default_override": "\"001\""}, {"shutter_model": "\"t_roll\"", "slat_size": "", "axis_size": "", "height": "", "control_type": "", "param": "\"color_box\"", "allowed_values": "[\"001\", \"003\", \"004\", \"005\"]", "default_override": "\"001\""}, {"shutter_model": "\"t_roll\"", "slat_size": "", "axis_size": "", "height": "", "control_type": "", "param": "\"main_color\"", "allowed_values": "[\"001\", \"003\", \"004\", \"005\"]", "default_override": "\"001\""}], "inputs": [{"id": "shutter_model", "name": "shutter_model"}, {"id": "slat_size", "name": "slat_size"}, {"id": "axis_size", "name": "axis_size"}, {"id": "height", "name": "height"}, {"id": "control_type", "name": "control_type"}], "outputs": [{"id": "param", "name": "param"}, {"id": "allowed_values", "name": "allowed_values"}, {"id": "default_override", "name": "default_override"}], "hitPolicy": "collect"}}]}'/>
+      <field name="cascade_table" eval='None'/>
+      <field name="layout_table" eval='None'/>
+      <field name="multiplicity_table" eval='None'/>
+      <field name="lookup_tables" eval='None'/>
+    </record>
+  </data>
+</odoo>

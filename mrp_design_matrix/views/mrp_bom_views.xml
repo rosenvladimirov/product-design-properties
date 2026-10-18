@@ -63,6 +63,28 @@
                            widget="design_matrix"
                            options="{'table_type': 't3'}"
                            nolabel="1"/>
+
+                    <!-- Слоевете на конфигуратора (порт от 18.0, фазите A–E).
+                         При празна таблица се чете тази на шаблона. -->
+                    <field name="availability_table"
+                           widget="design_matrix"
+                           options="{'table_type': 'tpi'}"
+                           nolabel="1"/>
+
+                    <field name="cascade_table"
+                           widget="design_matrix"
+                           options="{'table_type': 'tphi'}"
+                           nolabel="1"/>
+
+                    <field name="multiplicity_table"
+                           widget="design_matrix"
+                           options="{'table_type': 'tomega'}"
+                           nolabel="1"/>
+
+                    <field name="layout_table"
+                           widget="design_matrix"
+                           options="{'table_type': 'tlambda'}"
+                           nolabel="1"/>
                 </page>
             </notebook>
 

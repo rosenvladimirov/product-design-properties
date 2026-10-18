@@ -10,6 +10,8 @@
 # by the AGPL-3.0-or-later.
 from odoo import api, fields, models
 
+from ..tools import stored_properties
+
 
 class StockLot(models.Model):
     _inherit = "stock.lot"
@@ -23,6 +25,17 @@ class StockLot(models.Model):
         definition="design_param_definition_id.full_design_params_definition",
         copy=True,
     )
+
+    def _get_stored_properties(self, field_name="design_params"):
+        """Суровият записан речник на поле Properties на партидата.
+
+        Общият помощник за всеки, който СРАВНЯВА, СЪВПАДА или КОПИРА
+        параметрите на партида: дава ключа на избора (не етикета) и
+        ``0``/``""`` такива, каквито са записани — както ``lot.design_params``
+        в 18.0. Подробности в ``stock_lot_properties.tools.stored_properties``.
+        """
+        self.ensure_one()
+        return stored_properties(self, field_name)
 
     @api.model_create_multi
     def create(self, vals_list):

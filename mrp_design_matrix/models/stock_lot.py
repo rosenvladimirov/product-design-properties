@@ -32,6 +32,56 @@ class StockLot(models.Model):
     # Матрицата суапва placeholder-компонента към конкретния вариант.
     matrix_component_attrs = fields.Json("Component Attributes")
 
+    # ── TΩ: стойностите по инстанция (порт от 18.0) ─────────────────────
+    # Когато TΩ на рецептата каже „разгъни по shutter_count, по инстанция
+    # се менят [width, height]“, тук стоят N записа
+    # ``[{width: L1, height: H1, ...}, ...]``. Структурата е обща — за
+    # няколко щори, врати или рафтове в едно изделие.
+    multi_instance_data = fields.Json(
+        "Multi-Instance Data",
+        help=(
+            "Per-instance parameter values for multi-instance products: a "
+            "list of dicts such as [{\"width\": 1200, \"height\": 1500}, ...]. "
+            "Used only when the product's BoM has a TΩ multiplicity table; "
+            "consumers extract the values they need per the rule's "
+            "per_instance_params."
+        ),
+    )
+
+    def multi_get_per_instance_pairs(self, per_instance_params):
+        """Подредени кортежи от ``multi_instance_data`` по списъка
+        ``per_instance_params`` (напр. ``["width", "height"]``).
+
+        Запис без някой от ключовете се пропуска; ключът се търси и с
+        малки букви. Обратна съвместимост: при празно поле и наличен
+        клиентски помощник ``teolino_get_per_shutter_pairs`` (от
+        teolino_mrp_design_recompute), когато параметрите са размерите,
+        се връща неговият резултат.
+        """
+        self.ensure_one()
+        data = self.multi_instance_data
+        if not data and hasattr(self, "teolino_get_per_shutter_pairs"):
+            legacy = self.teolino_get_per_shutter_pairs() or []
+            if legacy and set(per_instance_params) <= {"width", "height", "L", "H", "l", "h"}:
+                return list(legacy)
+        if not isinstance(data, list):
+            return []
+        out = []
+        for entry in data:
+            if not isinstance(entry, dict):
+                continue
+            tup = []
+            for key in per_instance_params:
+                if key in entry:
+                    tup.append(entry[key])
+                elif key.lower() in entry:
+                    tup.append(entry[key.lower()])
+                else:
+                    break
+            else:
+                out.append(tuple(tup))
+        return out
+
     # ── helpers ──────────────────────────────────────────────────────────
 
     def _get_design_context(self) -> dict:
@@ -55,8 +105,10 @@ class StockLot(models.Model):
         """
         self.ensure_one()
         # Един резолвер за lot и MO — виж design.param.definition._build_context.
+        # Суровият речник (както в 18.0): Property в 19.0 дава етикета на
+        # избора, ``False`` вместо 0/"" и записи вместо id.
         return self.design_param_definition_id._build_context(
-            self.design_params,
+            self._get_stored_properties(),
             {
                 "width": getattr(self, "width", 0.0),
                 "height": getattr(self, "height", 0.0),
@@ -329,7 +381,9 @@ class StockLot(models.Model):
             ]
         )
         for lot in candidates:
-            lot_params = dict(lot.design_params or {})
+            # Суровият речник: през Property изборът идва като етикет и 0 като
+            # False — нищо не съвпада и се ражда нов лот (поведение на 18.0).
+            lot_params = lot._get_stored_properties()
             if all(lot_params.get(k) == v for k, v in required_params.items()):
                 return lot
         return self.browse()

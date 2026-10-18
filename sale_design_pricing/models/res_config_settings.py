@@ -1,0 +1,24 @@
+# Copyright 2024-2026 Rosen Vladimirov
+#
+# This file is available under a DUAL LICENSE:
+#   1. GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)
+#      https://www.gnu.org/licenses/agpl-3.0.html
+#   2. A commercial license from Rosen Vladimirov, for use without the obligations
+#      of the AGPL. See LICENSE-COMMERCIAL.md. Contact: vladimirov.rosen@gmail.com
+#
+# Unless you hold a valid commercial license, your use of this file is governed
+# by the AGPL-3.0-or-later.
+from odoo import fields, models
+
+
+class ResConfigSettings(models.TransientModel):
+    _inherit = "res.config.settings"
+
+    design_material_markup_percent = fields.Float(
+        related="company_id.design_material_markup_percent",
+        readonly=False,
+    )
+    design_labor_markup_percent = fields.Float(
+        related="company_id.design_labor_markup_percent",
+        readonly=False,
+    )

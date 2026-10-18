@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2024-2026 Rosen Vladimirov
+
+     This file is available under a DUAL LICENSE:
+       1. GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)
+          https://www.gnu.org/licenses/agpl-3.0.html
+       2. A commercial license from Rosen Vladimirov, for use without the
+          obligations of the AGPL. See LICENSE-COMMERCIAL.md.
+          Contact: vladimirov.rosen@gmail.com
+
+     Unless you hold a valid commercial license, your use of this file is
+     governed by the AGPL-3.0-or-later.
+-->
+<odoo>
+    <record id="res_config_settings_view_form_design_pricing" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.design.pricing</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Блокът трябва да е ВЪТРЕ в Sales app-а (name=sale_management),
+                 иначе отделна <app notApp="1"> секция не се показва под Sales
+                 (виж screenshot 2026-06-08 — секцията липсваше). -->
+            <xpath expr="//app[@name='sale_management']" position="inside">
+                <block title="Design Pricing — Markups" name="design_pricing_block" groups="base.group_system">
+                    <setting id="design_material_markup" string="Material Markup (%)"
+                             help="Default markup applied on top of material cost. Can be overridden per category or product.">
+                        <field name="design_material_markup_percent"/>
+                    </setting>
+                    <setting id="design_labor_markup" string="Labor Markup (%)"
+                             help="Default markup applied on top of labor cost (workcenter time × hourly rate).">
+                        <field name="design_labor_markup_percent"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **stock_lot_properties** (19.0.1.2.0) — `stock.lot._get_stored_properties()`
+  returns the stored Properties dict as 18.0 did (selection key, `0` and
+  `""` as stored); in 19.0 the field value gives labels and `False`
+- **mrp_design_matrix** (19.0.3.17.0), **sale_design_configurator**
+  (19.0.2.5.0), **sale_design_pricing** (19.0.1.3.5),
+  **mrp_design_matrix_production** (19.0.1.1.1) — lot matching, design
+  context, merge key, fingerprint and line summary read the stored
+  parameters; before, an `mto_stop` lot never matched and a new lot was born
+
+### Added
+- **mrp_design_matrix** (19.0.3.17.0) — phases A–E from the 18.0
+  production line: TΠ, TΦ (+ lookup tables), TΩ, TΛ tables on the template
+  and the BoM, configurator entry points, `simulate_with_params`,
+  `stock.lot.multi_instance_data`, T3 `duration_formula`
+- **sale_design_configurator** (19.0.2.5.0) — TΠ/TΦ in the configurator,
+  portal TΠ, `use_main`, shutter 3D builder, line description from the lot
+- **sale_design_pricing** (19.0.1.3.5) — ported from the 18.0 production line:
+  cost-plus list price (material/labor markups by company, category and
+  product), cost breakdown on the order line, per-shutter dimensions on the lot
+
 ### Added
 - **sale_order_poc** (19.0.1.2.0) — `_poc_render()`: `{{ code }}` becomes the
   value without eval, an empty line falls out, `html` escapes; the work

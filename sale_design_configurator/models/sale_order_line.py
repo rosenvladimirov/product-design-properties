@@ -149,11 +149,19 @@ class SaleOrderLine(models.Model):
             labels, choices, order = ({}, {}, {})
             if lot.design_param_definition_id:
                 labels, choices, order = schema_for(lot.design_param_definition_id)
+            # Суровият речник (както в 18.0): ключът на избора се превежда
+            # през ``choices`` по-долу; през Property щеше да дойде етикетът.
+            params = lot._get_stored_properties()
+            main_color = next(
+                (v for k, v in params.items()
+                 if "main_color" in (k, labels.get(k))), None)
             parts = []
-            for key, value in (lot.design_params or {}).items():
+            for key, value in params.items():
                 if value in (None, False, ""):
                     continue
                 name = labels.get(key, key)
+                if self._design_param_hidden(key, name, value, main_color):
+                    continue
                 shown = choices.get(key, {}).get(str(value), value)
                 # \u0420\u0435\u0434\u044a\u0442 \u0435 \u0442\u043e\u0437\u0438 \u043e\u0442 \u0434\u0435\u0444\u0438\u043d\u0438\u0446\u0438\u044f\u0442\u0430, \u043d\u0435 \u0430\u0437\u0431\u0443\u0447\u0435\u043d: \u0441\u043f\u0435\u0446\u0438\u0444\u0438\u0447\u043d\u0438\u0442\u0435 \u0437\u0430
                 # \u0438\u0437\u0434\u0435\u043b\u0438\u0435\u0442\u043e \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u0438 \u0441\u0442\u043e\u044f\u0442 \u043f\u0440\u0435\u0434 \u043d\u0430\u0441\u043b\u0435\u0434\u0435\u043d\u0438\u0442\u0435 \u043e\u0442 \u0440\u043e\u0434\u0438\u0442\u0435\u043b\u044f,
@@ -161,6 +169,120 @@ class SaleOrderLine(models.Model):
                 parts.append((order.get(key, 10 ** 6), f"{name}: {shown}"))
             line.design_params_summary = "  \u00b7  ".join(
                 text for _, text in sorted(parts, key=lambda p: p[0])[:6])
+
+    # -- Описанието на реда от дизайн параметрите (порт от 18.0) -------------
+
+    @api.model
+    def _design_param_hidden(self, name, label, value, main_color):
+        """Параметър, който не влиза в описанието на реда.
+
+        - сентинелът ``"use_main"`` (UI заместител за „като основния“ —
+          конфигураторът го разрешава преди запис, но заварени партиди го
+          носят);
+        - ``color_X`` със същата стойност като ``main_color`` — иначе
+          каскадата на цветовете дава десетина еднакви реда.
+        Ключът се гледа и по име, и по етикет: в 19.0 името е UUID.
+        """
+        if value == "use_main":
+            return True
+        is_color = (name or "").startswith("color_") or (label or "").startswith("color_")
+        return bool(is_color and main_color and value == main_color)
+
+    def _build_design_param_bullets(self):
+        """``["етикет: стойност", ...]`` за попълнените параметри на партидата.
+
+        Един източник за описанието на реда (``_regenerate_design_description``)
+        и за многоредовото описание в офертата/фактурата. Чете богатия
+        формат на Properties (етикет, тип, избор), за да покаже етикета на
+        избора вместо машинния код.
+        """
+        self.ensure_one()
+        if not self.design_lot_id:
+            return []
+        rich = self.design_lot_id.read(["design_params"])[0].get("design_params") or []
+        main_color = next(
+            (prop.get("value") for prop in rich
+             if isinstance(prop, dict)
+             and "main_color" in (prop.get("name"), prop.get("string"))),
+            None,
+        )
+        bullets = []
+        for prop in rich:
+            if not isinstance(prop, dict):
+                continue
+            value = prop.get("value")
+            if value in (None, False, ""):
+                continue
+            name = prop.get("name") or ""
+            label = prop.get("string") or name
+            if not label or self._design_param_hidden(name, label, value, main_color):
+                continue
+            if prop.get("type") == "selection":
+                for code, human in prop.get("selection") or []:
+                    if code == value:
+                        value = human
+                        break
+            bullets.append(f"{label}: {value}")
+        return bullets
+
+    def _get_sale_order_line_multiline_description_sale(self):
+        """Описанието в офертата/фактурата носи и параметрите на партидата
+        като списък под името на продукта (запазва добавките на другите
+        модули през super())."""
+        desc = super()._get_sale_order_line_multiline_description_sale()
+        if self.design_lot_id:
+            bullets = self._build_design_param_bullets()
+            if bullets:
+                desc = "%s\n%s" % (desc, "\n".join(f"• {b}" for b in bullets))
+        return desc
+
+    def _design_description_editable(self):
+        """Описанието се преписва само на ред от чернова/изпратена оферта.
+
+        В 18.0 всяка смяна на партидата преписваше описанието. В 19.0
+        партидата се връзва и системно при потвърждаване (продукт с
+        партида при продажба, партидата на POC) — там описанието на
+        потвърдения ред не бива да се мени.
+        """
+        self.ensure_one()
+        return bool(
+            self.design_lot_id
+            and self.product_id
+            and self.order_id.state in ("draft", "sent")
+        )
+
+    def _regenerate_design_description(self):
+        """Описанието на реда = името на продукта + списък с параметрите.
+
+        Наследниците могат да добавят свое съдържание, като викат super().
+        Партида без попълнени параметри не пипа описанието.
+        """
+        for line in self:
+            if not line.design_lot_id or not line.product_id:
+                continue
+            bullets = line._build_design_param_bullets()
+            if not bullets:
+                continue
+            parts = [line.product_id.display_name]
+            parts.extend(f"• {b}" for b in bullets)
+            line.name = "\n".join(parts)
+
+    def write(self, vals):
+        """Смяна на партидата през ORM (не само от конфигуратора) опреснява
+        описанието на реда — само за редовете от чернова/изпратена оферта."""
+        res = super().write(vals)
+        if "design_lot_id" in vals and not self.env.context.get("skip_design_description"):
+            lines = self.filtered(lambda line: line._design_description_editable())
+            if lines:
+                lines.with_context(skip_design_description=True)._regenerate_design_description()
+        return res
+
+    @api.onchange("design_lot_id")
+    def _onchange_design_lot_refresh_name(self):
+        """Опреснява описанието в UI при смяна на партидата."""
+        for line in self:
+            if line._design_description_editable():
+                line._regenerate_design_description()
 
     # -- Onchange: reset design lot when product changes ---------------------
 
@@ -222,7 +344,7 @@ class SaleOrderLine(models.Model):
         if hasattr(lot, "_get_design_context"):
             params = lot._get_design_context()
         else:
-            params = dict(lot.design_params or {})
+            params = lot._get_stored_properties()
         # Find BoM with constraint_table
         bom_fields = self.env["mrp.bom"]._fields
         if "constraint_table" not in bom_fields:
@@ -259,6 +381,7 @@ class SaleOrderLine(models.Model):
         Writes design_lot_id on this line.
         """
         self.ensure_one()
+        # write() опреснява описанието на реда (порт от 18.0)
         self.design_lot_id = lot_id
         return True
 

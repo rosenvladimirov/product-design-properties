@@ -4,6 +4,48 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.3.17.0] - 2026-10-18
+
+### Added
+
+Carried over from the 18.0 line that runs in production (phases A–E,
+18.0.1.10.0–18.0.2.5.0), so the shutter and window layers can move to 19.0:
+
+- TΠ Param Availability, TΦ Cascade Resolutions with `derive_expression`
+  and named Lookup Tables, TΩ Multiplicity and TΛ Layout as optional tables
+  on the matrix template and on the BoM (the BoM copy wins, otherwise the
+  template is read). "Load from Template" copies them too. They are
+  normalised on write like T0–T3 but not validated, so tables imported from
+  18.0 never block the import.
+- Configurator entry points on `mrp.bom`: `configurator_evaluate_availability`,
+  `configurator_evaluate_cascade`, `configurator_evaluate_layout`,
+  `configurator_evaluate_multiplicity`, `configurator_get_bom_meta` (sudo,
+  for portal users) and `configurator_validate_availability`. The private
+  `_configurator_evaluate_*` methods stay for Python callers; in 18.0 the
+  configurator called the private cascade method over RPC, which Odoo
+  refuses, so the cascade never ran from the dialog.
+- `mrp.bom.simulate_with_params` / `simulate_for_product` /
+  `simulate_for_variant`: the live BoM simulation (cost and cutting list)
+  that client layers build on, including the `pieces` contract of a formula
+  (mixed lengths, one-dimensional). Formulas run through `safe_eval` as in
+  the manufacturing order, not through `exec` as in 18.0.
+- `stock.lot.multi_instance_data` and `multi_get_per_instance_pairs()` for
+  multi-instance products.
+- T3: `duration_formula` may be an expression over the matrix context; when
+  the order has no routing operations, the first T3 work order collects the
+  raw materials not yet linked to an operation.
+- `_check_t2_wiring` logs T2 coefficient keys that no BoM line declares.
+
+### Fixed
+
+- Matching a stock lot (`mto_stop`) and the lot design context read the
+  stored parameters through `stock.lot._get_stored_properties()`. In 19.0
+  the Properties value returns the selection label instead of the key and
+  `False` instead of `0`/`""`, so no lot matched and a new one was born on
+  every order; the context now gets the same values as in 18.0.
+
+*Assisted by Claude Code*
+
 ## [19.0.3.16.0] - 2026-10-04
 
 ### Changed

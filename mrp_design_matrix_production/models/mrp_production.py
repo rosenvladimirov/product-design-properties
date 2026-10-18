@@ -17,6 +17,8 @@ from markupsafe import Markup
 from odoo import _, fields, models
 from odoo.exceptions import UserError
 
+from odoo.addons.stock_lot_properties.tools import stored_properties
+
 _logger = logging.getLogger(__name__)
 
 
@@ -55,8 +57,10 @@ class MrpProduction(models.Model):
         покрива вариантните параметри, изборите остават на партидата.
         """
         self.ensure_one()
+        # Суровият речник (както в 18.0): Property в 19.0 дава етикета на
+        # избора, ``False`` вместо 0/"" и записи вместо id.
         ctx = self.design_param_definition_id._build_context(
-            self.design_params, {}
+            stored_properties(self, "design_params"), {}
         )
         lot = self._design_producing_lot()
         # matrix_material_choices съществува само на 19.0 lot (18/20 нямат полето)
@@ -79,15 +83,18 @@ class MrpProduction(models.Model):
     def _design_config_key(self):
         """Стабилен ключ (definition, params) за сравнение при merge.
 
-        ``design_params`` е Properties proxy — ``dict(...)`` преди сериализация,
-        иначе json.dumps сериализира repr-а на обекта (адрес в паметта) →
-        всеки запис изглежда различен.
+        ``design_params`` в 19.0 е обект ``Property`` — сериализира се
+        суровият записан речник (``stored_properties``), както ``dict`` в
+        18.0; ``dict(Property)`` би дал етикетите на изборите и ``False``
+        вместо 0/"" и би слял различни конфигурации.
         """
         self.ensure_one()
         return (
             self.design_param_definition_id.id,
             json.dumps(
-                dict(self.design_params or {}), sort_keys=True, default=str
+                stored_properties(self, "design_params"),
+                sort_keys=True,
+                default=str,
             ),
         )
 
@@ -232,7 +239,11 @@ class MrpProduction(models.Model):
         # selection, които са невалидни raw стойности при обратен запис).
         if lot.design_param_definition_id != self.design_param_definition_id:
             lot.design_param_definition_id = self.design_param_definition_id
-        if dict(lot.design_params or {}) != dict(self.design_params or {}):
+        # Сравняват се суровите речници (както в 18.0) — през Property 0 и ""
+        # са еднакво ``False`` и разлика би се изгубила.
+        if stored_properties(lot, "design_params") != stored_properties(
+            self, "design_params"
+        ):
             lot.design_params = self.design_params
 
         # 2) Отпечатък: четим блок + къс хеш (идемпотентно по ВИДИМ маркер —
@@ -249,7 +260,9 @@ class MrpProduction(models.Model):
     def _design_fingerprint_render(self):
         """Върни (html_block, short_hash) на конфига, с който е произведено."""
         self.ensure_one()
-        raw = dict(self.design_params or {})
+        # Суровият речник (както в 18.0): хешът и списъкът носят ключа на
+        # избора, не етикета — иначе отпечатъкът на 19.0 се разминава с 18.0.
+        raw = stored_properties(self, "design_params")
         canonical = json.dumps(raw, sort_keys=True, ensure_ascii=False, default=str)
         short = hashlib.sha1(canonical.encode("utf-8")).hexdigest()[:10]
 

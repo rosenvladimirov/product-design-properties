@@ -506,6 +506,11 @@ export class DesignMatrixField extends Component {
             t1: "T1 Geometry",
             t2: "T2 Materials",
             t3: "T3 Operations",
+            // Слоевете на конфигуратора (порт от 18.0, фазите A–E)
+            tpi: "TΠ Availability",
+            tphi: "TΦ Cascade",
+            tomega: "TΩ Multiplicity",
+            tlambda: "TΛ Layout",
         };
         return {
             nodes: [

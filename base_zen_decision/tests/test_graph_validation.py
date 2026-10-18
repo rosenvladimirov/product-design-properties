@@ -87,9 +87,38 @@ class TestValidateGraph(BaseCase):
         g["nodes"][1]["content"]["rules"] = []
         self.assertEqual(validate_graph(g), [])
 
-    def test_rules_without_columns_rejected(self):
+    def test_rules_without_outputs_rejected(self):
+        # правила без ИЗХОДИ = тиха отрова: zen ги компилира и връща по
+        # празен обект за всеки ред ([{}, {}]) — валидаторът ТРЯБВА да спре.
         g = _full_graph()
-        g["nodes"][1]["content"]["inputs"] = []
+        g["nodes"][1]["content"]["outputs"] = []
+        errs = validate_graph(g)
+        self.assertTrue(any("outputs" in e for e in errs), errs)
+        del g["nodes"][1]["content"]["outputs"]
+        errs = validate_graph(g)
+        self.assertTrue(any("outputs" in e for e in errs), errs)
+
+    def test_rules_without_inputs_allowed(self):
+        # правила без ВХОДОВЕ = безусловни правила, валиден JDM (hitPolicy
+        # collect → всички редове). На това стъпва fen S9 („s9_ops“). Ако
+        # zen-engine е наличен, validate_graph го и компилира — значи
+        # празният списък потвърждава и семантичната проверка.
+        g = _full_graph()
+        content = g["nodes"][1]["content"]
+        content["inputs"] = []
+        content["rules"] = [{"_id": "r1", "b": "1"}, {"_id": "r2", "b": "2"}]
+        self.assertEqual(validate_graph(g), [])
+
+    def test_rules_with_missing_or_malformed_inputs_rejected(self):
+        # 'inputs' е задължителен списък (може []): zen-engine отказва
+        # таблица без ключа („missing field `inputs`“) — структурата трябва
+        # да го хване и когато zen не е инсталиран.
+        g = _full_graph()
+        content = g["nodes"][1]["content"]
+        content["inputs"] = {"a": "a"}
+        errs = validate_graph(g)
+        self.assertTrue(any("inputs" in e for e in errs), errs)
+        del content["inputs"]
         errs = validate_graph(g)
         self.assertTrue(any("inputs" in e for e in errs), errs)
 

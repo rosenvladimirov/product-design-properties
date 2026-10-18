@@ -4,6 +4,37 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.2.5.0] - 2026-10-18
+
+### Added
+
+Carried over from the 18.0 line that runs in production:
+
+- The configurator applies TΠ (hidden, locked and restricted parameters,
+  `default_override` snaps) and TΦ (value cascade, also from numeric
+  fields, debounced) from the BoM or its matrix template, and exposes the
+  TΩ and TΛ helpers (`multiplicityMetadata`, `multiplicityCount`,
+  `getLayoutForParam`, `isCustomerVisibleParam`) to client views.
+- A portal user (or a salesperson without BoM access) still gets real-time
+  TΠ through `configurator_get_bom_meta`.
+- The `use_main` sentinel is resolved before the lot is saved.
+- 3D builder for roller shutters (`shutters` definition code), which no
+  longer falls back to the rule preview.
+- The configurator dialog takes almost the whole screen.
+- The line description is rebuilt from the design lot ("label: value"
+  bullets, selection labels, no `use_main`, no colour equal to the main
+  colour) when the lot changes on a draft or sent quotation, and the
+  quotation/invoice description lists the parameters. Confirmed orders keep
+  their description.
+
+### Fixed
+
+- A portal user can generate a lot name: the sequence is read with sudo.
+- The line summary and the T0 widget read the stored lot parameters
+  (selection key, `0`) instead of the 19.0 Properties labels, as in 18.0.
+
+*Assisted by Claude Code*
+
 ## [19.0.2.4.1] - 2026-10-03
 
 ### Fixed

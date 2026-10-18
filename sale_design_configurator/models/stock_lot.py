@@ -85,7 +85,10 @@ class StockLot(models.Model):
         # че търсенето само по код ставаше по-непредсказуемо с всеки префикс.
         if not sequence:
             sequence = product.lot_sequence_id
-        name = sequence.next_by_id() if sequence else False
+        # sudo: порталните (share) потребители нямат достъп до ir.sequence —
+        # без него конфигураторът в дилърския портал гърми при запис
+        # (поправка от 18.0, 08239c3).
+        name = sequence.sudo().next_by_id() if sequence else False
         if not name:
             name = (
                 f"DL-{product.default_code or product.id}"

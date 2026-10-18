@@ -189,7 +189,7 @@ class MrpProduction(models.Model):
                 if isinstance(t3, dict):
                     t3 = [t3]
             for op in t3 if isinstance(t3, list) else []:
-                self._create_matrix_workorder(op)
+                self._create_matrix_workorder(op, full_ctx)
 
         # 7b. Избрани операции (configurator): остави само избраните work orders.
         self._filter_chosen_operation_workorders(lot)
@@ -775,8 +775,15 @@ class MrpProduction(models.Model):
         else:
             self.env["stock.move"].create(vals)
 
-    def _create_matrix_workorder(self, op: dict):
+    def _create_matrix_workorder(self, op: dict, ctx=None):
         """Create a workorder from a T3 output row.
+
+        Продължителността (минути) идва от ``duration_formula`` — число,
+        изчислено от двигателя, или израз върху контекста на матрицата
+        ``ctx`` (порт от 18.0) — иначе от ``duration_min``/``duration``/
+        ``minutes``. Когато MO няма маршрутни операции, първата T3 операция
+        събира и още невързаните суровини (18.0: материалите се изписват
+        там).
 
         Толерантен reader за ДВЕТЕ T3 схеми (изравнено с cost engine-а):
         - нова: ``workcenter_code`` (+ ``duration_min``) → search по code; ZEN връща
@@ -840,11 +847,12 @@ class MrpProduction(models.Model):
                 workcenter.display_name, self.name,
                 pokrit_ot_marshruta[:1].operation_id.display_name)
             return
-        try:
-            minutes = float(op.get("duration_min") or op.get("duration")
-                            or op.get("minutes") or 0.0)
-        except (TypeError, ValueError):
-            minutes = 0.0
+        minutes = self._eval_matrix_duration(
+            op.get("duration_formula")
+            or op.get("duration_min") or op.get("duration")
+            or op.get("minutes") or 0.0,
+            ctx,
+        )
         vals = {
             "name": op.get("name", workcenter.name),
             "production_id": self.id,
@@ -855,8 +863,61 @@ class MrpProduction(models.Model):
         if minutes > 0:
             vals["duration_expected"] = minutes
         try:
-            self.env["mrp.workorder"].create(vals)
+            workorder = self.env["mrp.workorder"].create(vals)
         except Exception as exc:  # noqa: BLE001 — T3 ред не бива да събаря confirm
             _logger.warning(
                 "T3 workorder create failed for %s (wc=%s): %s — skipped.",
                 self.name, workcenter.display_name, exc)
+            return
+        self._link_raw_moves_to_matrix_workorder(workorder)
+
+    def _link_raw_moves_to_matrix_workorder(self, workorder):
+        """Невързаните суровини се изписват на T3 операцията (порт от 18.0).
+
+        В 18.0 първата T3 операция събираше всички суровини без операция.
+        В 19.0 маршрутът е канонът (решение Атанас, 31.08.2026) и
+        суровините следват ``operation_id`` на реда, затова връзката се
+        прави САМО за MO без маршрутни операции — изделията, чиито операции
+        идват изцяло от T3. Всяка следваща T3 операция намира суровините
+        вече вързани и не ги пипа.
+        """
+        self.ensure_one()
+        if "workorder_id" not in self.env["stock.move"]._fields:
+            return
+        if self.workorder_ids.filtered("operation_id"):
+            return
+        moves = self.move_raw_ids.filtered(lambda m: not m.workorder_id)
+        if not moves:
+            return
+        try:
+            moves.write({"workorder_id": workorder.id})
+        except Exception as exc:  # noqa: BLE001 — връзката е удобство, не условие
+            _logger.debug("Raw moves → workorder link skipped: %s", exc)
+
+    @staticmethod
+    def _eval_matrix_duration(raw, ctx):
+        """Продължителност на T3 операция в минути: число, числов низ или
+        израз върху контекста на матрицата (порт от 18.0).
+
+        В 18.0 изразът минаваше през ``exec`` с ограничени builtins; тук —
+        през safe_eval, както формулите на редовете в 19.0. Грешен израз
+        дава 0 и запис в лога, не събаря потвърждаването.
+        """
+        if isinstance(raw, bool):
+            return 0.0
+        if isinstance(raw, (int, float)):
+            return float(raw)
+        expr = str(raw or "").strip()
+        if len(expr) >= 2 and expr[0] == '"' and expr[-1] == '"':
+            expr = expr[1:-1].strip()
+        if not expr:
+            return 0.0
+        try:
+            return float(expr)
+        except ValueError:
+            pass
+        try:
+            return float(safe_eval(expr, dict(ctx or {})) or 0.0)
+        except Exception as exc:  # noqa: BLE001
+            _logger.warning("T3 duration eval failed (%s): %s", expr, exc)
+            return 0.0

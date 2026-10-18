@@ -59,6 +59,13 @@ export class DesignConfiguratorWidget extends Component {
         geometryTable: { type: [Object, { value: false }], optional: true },
         materialTable: { type: [Object, { value: false }], optional: true },
         operationTable: { type: [Object, { value: false }], optional: true },
+        // Слоевете на конфигуратора (порт от 18.0, фазите A–E)
+        availabilityTable: { type: [Object, { value: false }], optional: true },
+        cascadeTable: { type: [Object, { value: false }], optional: true },
+        multiplicityTable: { type: [Object, { value: false }], optional: true },
+        layoutTable: { type: [Object, { value: false }], optional: true },
+        bomId: { type: [Number, { value: false }], optional: true },
+        hasAvailability: { type: Boolean, optional: true },
         bomLines: { type: Array, optional: true },
         existingLotId: { type: [Number, Boolean], optional: true },
         solId: { type: [Number, Boolean], optional: true },
@@ -101,9 +108,19 @@ export class DesignConfiguratorWidget extends Component {
             // Параметри, заключени от вертикала (get_param_patch) — напр.
             // вълната на кашона следва материала и не се пипа на ръка.
             lockedParams: [],
+            // TΠ — състояние по параметър от сървъра:
+            // {param: {visible?, enabled?, allowed_values?, default_override?}}.
+            // Празно ⇒ всичко е видимо и достъпно.
+            availability: {},
         });
         this._refreshPreviewDebounced = debounce(
             this._refreshPreview.bind(this), 300
+        );
+        // TΠ се оценява с debounce, за да не бомбардира сървъра при бързо
+        // въвеждане; TΦ от числово поле — също (всеки клавиш е промяна).
+        this._availabilityTimer = null;
+        this._applyCascadeDebounced = debounce(
+            this._applyCascade.bind(this), 300
         );
 
         this._three = {
@@ -160,6 +177,8 @@ export class DesignConfiguratorWidget extends Component {
             }
             this._validate();
             this._updateDescription();
+            // Първоначален TΠ пас — началните ограничения.
+            this._scheduleAvailabilityEval(0);
             // Първоначална калкулация по живите параметри (sales + cost).
             if (this.props.level !== "technical" && this.props.level !== "production") {
                 this._recomputeCost();
@@ -177,7 +196,13 @@ export class DesignConfiguratorWidget extends Component {
             }
         });
 
-        onWillUnmount(() => this._destroyThree());
+        onWillUnmount(() => {
+            if (this._availabilityTimer) {
+                clearTimeout(this._availabilityTimer);
+                this._availabilityTimer = null;
+            }
+            this._destroyThree();
+        });
     }
 
     // ── Param initialisation ────────────────────────────────────────────
@@ -360,6 +385,317 @@ export class DesignConfiguratorWidget extends Component {
         return this.ui.validErrors.length > 0;
     }
 
+    // ── TΩ Multiplicity + TΛ Layout — помощници за UI (порт от 18.0) ─────
+
+    /** TΩ метаданните на рецептата: ``{count_param?, per_instance_params?,
+     *  aggregator?}`` или празно. Клиентските изгледи ги ползват вместо
+     *  твърдо зададени брой/индекси на инстанциите. */
+    get multiplicityMetadata() {
+        const t = this.props.multiplicityTable;
+        if (!t || !t.nodes) return {};
+        const dt = t.nodes.find(n => n && (n.type === "decisionTableNode" || n.type === "decisionTable"));
+        if (!dt || !dt.content || !dt.content.rules || !dt.content.rules.length) return {};
+        const rule = dt.content.rules[0];
+        const out = {};
+        for (const key of ["count_param", "per_instance_params", "aggregator"]) {
+            const raw = rule[key];
+            if (!raw) continue;
+            // JDM пази низовите литерали в кавички
+            if (typeof raw === "string" && raw.startsWith('"') && raw.endsWith('"')) {
+                out[key] = raw.slice(1, -1);
+            } else if (typeof raw === "string" && raw.startsWith("[")) {
+                try { out[key] = JSON.parse(raw); } catch { out[key] = raw; }
+            } else {
+                out[key] = raw;
+            }
+        }
+        return out;
+    }
+
+    /** Текущият брой инстанции (по подразбиране 1). */
+    get multiplicityCount() {
+        const meta = this.multiplicityMetadata;
+        if (!meta.count_param) return 1;
+        const def = this._resolveParamDef(meta.count_param);
+        const cur = def ? this.params[def.name] : this.params[meta.count_param];
+        const n = parseInt(cur, 10);
+        return Number.isFinite(n) && n > 0 ? n : 1;
+    }
+
+    /** TΛ подсказките за параметър (етикетът му): ``{section?, widget_hint?,
+     *  customer_visible?, submodal?}``. Правилата тук са плоски; условните
+     *  се оценяват на сървъра (``configurator_evaluate_layout``). */
+    getLayoutForParam(paramKey) {
+        const t = this.props.layoutTable;
+        if (!t || !t.nodes) return {};
+        const dt = t.nodes.find(n => n && (n.type === "decisionTableNode" || n.type === "decisionTable"));
+        if (!dt || !dt.content || !dt.content.rules) return {};
+        const target = `"${paramKey}"`;
+        const rule = dt.content.rules.find(r => r && r.param === target);
+        if (!rule) return {};
+        const out = {};
+        for (const key of ["section", "widget_hint", "submodal"]) {
+            const raw = rule[key];
+            if (!raw || raw === '""') continue;
+            if (typeof raw === "string" && raw.startsWith('"') && raw.endsWith('"')) {
+                out[key] = raw.slice(1, -1);
+            } else {
+                out[key] = raw;
+            }
+        }
+        if (rule.customer_visible !== undefined && rule.customer_visible !== "") {
+            out.customer_visible = rule.customer_visible === "true" || rule.customer_visible === true;
+        }
+        return out;
+    }
+
+    /** Видим ли е параметърът за клиента? Без TΛ правило — да. */
+    isCustomerVisibleParam(paramKey) {
+        return this.getLayoutForParam(paramKey).customer_visible !== false;
+    }
+
+    // ── TΦ — каскада на стойностите (порт от 18.0) ───────────────────────
+
+    /** Оценява TΦ на сървъра и прилага каскадата върху params.
+     *
+     *  - ``changed_param`` е етикетът на параметъра (``string``), не UUID;
+     *  - ``only_if_empty`` (по подразбиране да) не пипа изричен избор —
+     *    празно е и сентинелът ``"use_main"``;
+     *  - ``copy_from`` чете текущата стойност на източника.
+     *  Защита от повторно влизане: стойностите от каскадата не пускат нова
+     *  каскада (един пас; веригите се решават от следващите промени). */
+    async _applyCascade(changedKey) {
+        if (!this.props.bomId || !this.props.cascadeTable) return;
+        if (this._cascadeInProgress) return;
+        this._cascadeInProgress = true;
+        try {
+            const def = this._resolveParamDef(changedKey);
+            const changedParam = def && def.string ? def.string : changedKey;
+            let cascade = {};
+            try {
+                cascade = await this.orm.call(
+                    "mrp.bom",
+                    // публичната обвивка: методите с долна черта не минават
+                    // през call_kw
+                    "configurator_evaluate_cascade",
+                    [this.props.bomId, changedParam, this._buildAvailabilityContext()],
+                );
+            } catch (e) {
+                console.warn("TΦ cascade eval failed:", e.message);
+                return;
+            }
+            let touched = false;
+            for (const [targetParam, spec] of Object.entries(cascade || {})) {
+                const targetDef = this._resolveParamDef(targetParam);
+                const targetName = targetDef ? targetDef.name : targetParam;
+                const cur = this.params[targetName];
+                const isEmpty = cur === undefined || cur === null
+                    || cur === "" || cur === false || cur === "use_main";
+                const onlyIfEmpty = spec.only_if_empty !== false;
+                if (onlyIfEmpty && !isEmpty) continue;
+                let nextVal;
+                if (spec.derive_value !== undefined && spec.derive_value !== "") {
+                    nextVal = spec.derive_value;
+                } else if (spec.copy_from) {
+                    const sourceDef = this._resolveParamDef(spec.copy_from);
+                    nextVal = this.params[sourceDef ? sourceDef.name : spec.copy_from];
+                }
+                if (nextVal !== undefined && nextVal !== this.params[targetName]) {
+                    this.params[targetName] = nextVal;
+                    touched = true;
+                }
+            }
+            if (touched) {
+                this._validate();
+                this._updateDescription();
+                this._recomputeCostDebounced();
+                this._refreshPreviewDebounced();
+                this._scheduleAvailabilityEval();
+            }
+        } finally {
+            this._cascadeInProgress = false;
+        }
+    }
+
+    // ── TΠ — достъпност на параметрите (порт от 18.0) ────────────────────
+
+    /** Оценка на TΠ с debounce; ``delay=0`` за началния пас.
+     *  ``hasAvailability`` — портален режим: таблицата не се чете, но
+     *  сървърът потвърди, че съществува; оценката там е sudo. */
+    _scheduleAvailabilityEval(delay = 150) {
+        if (!this.props.bomId) return;
+        if (!this.props.availabilityTable && !this.props.hasAvailability) return;
+        if (this._availabilityTimer) {
+            clearTimeout(this._availabilityTimer);
+        }
+        this._availabilityTimer = setTimeout(() => {
+            this._availabilityTimer = null;
+            this._evaluateAvailability();
+        }, delay);
+    }
+
+    async _evaluateAvailability() {
+        let result = {};
+        try {
+            result = await this.orm.call(
+                "mrp.bom",
+                "configurator_evaluate_availability",
+                [this.props.bomId, this._buildAvailabilityContext()],
+            );
+        } catch (e) {
+            console.warn("TΠ availability eval failed:", e.message);
+            return;
+        }
+        // Неподвижна точка: същият резултат като последно приложения не
+        // пипа състоянието — спира всяка верига от пререндер/преоценка.
+        const resultJson = JSON.stringify(result || {});
+        if (resultJson === this._lastAvailabilityJson) {
+            this._enforceChain = 0;
+            return;
+        }
+        this._lastAvailabilityJson = resultJson;
+        this.ui.availability = result || {};
+        this._enforceAvailability();
+    }
+
+    /** Плосък контекст за правилата: UUID ключовете, етикетите (``string``)
+     *  и псевдонимите на размерите (``width``/``height``/``thickness``), за
+     *  да могат изразите да пишат ``lookup('box_by_height', shutter_model,
+     *  slat_size, height)``. */
+    _buildAvailabilityContext() {
+        const ctx = { ...this.params };
+        const dimAliases = {
+            "Width (mm)": "width",
+            "Height (mm)": "height",
+            "Thickness (mm)": "thickness",
+        };
+        const defs = [
+            ...(this.props.paramDefinition || []),
+            ...((this.props.childComponents || []).flatMap(c => c.paramDefinition || [])),
+        ];
+        for (const def of defs) {
+            if (def.string && def.name in this.params) {
+                ctx[def.string] = this.params[def.name];
+                const alias = dimAliases[def.string];
+                if (alias) ctx[alias] = this.params[def.name];
+            }
+        }
+        return ctx;
+    }
+
+    /** Стойност извън ``allowed_values`` с ``default_override`` се заменя
+     *  с него. Снапът сменя контекста ⇒ още една оценка, но най-много три
+     *  поредни (защита от правила, които се гонят). */
+    _enforceAvailability() {
+        const av = this.ui.availability || {};
+        let changed = false;
+        for (const [paramKey, state] of Object.entries(av)) {
+            if (!state || typeof state !== "object") continue;
+            const def = this._resolveParamDef(paramKey);
+            const name = def ? def.name : paramKey;
+            const allowed = state.allowed_values;
+            const isInAllowed = Array.isArray(allowed)
+                ? allowed.includes(this.params[name])
+                : true;
+            if (state.default_override !== undefined
+                && state.default_override !== ""
+                && !isInAllowed) {
+                this.params[name] = state.default_override;
+                changed = true;
+            }
+        }
+        if (changed) {
+            this._validate();
+            this._updateDescription();
+            this._recomputeCostDebounced();
+            this._enforceChain = (this._enforceChain || 0) + 1;
+            if (this._enforceChain <= 3) {
+                this._scheduleAvailabilityEval();
+            } else {
+                console.warn("TΠ enforce: rules keep flipping — auto re-eval stopped");
+            }
+        } else {
+            this._enforceChain = 0;
+        }
+    }
+
+    _resolveParamDef(key) {
+        const defs = [
+            ...(this.props.paramDefinition || []),
+            ...((this.props.childComponents || []).flatMap(c => c.paramDefinition || [])),
+        ];
+        return defs.find(d => d.name === key || d.string === key);
+    }
+
+    /** TΠ състоянието на параметър — правилото може да го адресира по UUID
+     *  или по етикет. */
+    _availabilityFor(def) {
+        const av = this.ui.availability || {};
+        const state = av[def.name] || av[def.string] || {};
+        return {
+            visible: state.visible !== false,
+            enabled: state.enabled !== false,
+            allowedValues: Array.isArray(state.allowed_values)
+                ? state.allowed_values
+                : null,
+        };
+    }
+
+    /** Смесва TΠ в дефиницията за шаблона: ``tpiVisible`` (скрит ли е),
+     *  ``tpiEnabled`` (заключен ли е) и ``selection``, филтриран до
+     *  ``allowed_values``. */
+    _decorateParam(def) {
+        const state = this._availabilityFor(def);
+        let selection = def.selection;
+        if (state.allowedValues && Array.isArray(def.selection)) {
+            selection = def.selection.filter(
+                opt => state.allowedValues.includes(opt[0])
+            );
+        }
+        return {
+            ...def,
+            selection,
+            tpiVisible: state.visible,
+            tpiEnabled: state.enabled,
+        };
+    }
+
+    /** Разрешава UI сентинела ``"use_main"`` преди запис: параметър ``X_Y``
+     *  със стойност ``"use_main"`` взима стойността на ``main_X`` (напр.
+     *  ``color_slat`` → ``main_color``). Резолюцията на вариантите по
+     *  атрибути иска конкретни стойности. */
+    _resolveUseMainSentinels() {
+        const allDefs = [
+            ...(this.props.paramDefinition || []),
+            ...((this.props.childComponents || []).flatMap(c => c.paramDefinition || [])),
+        ];
+        const byName = {};
+        for (const d of allDefs) {
+            if (d && d.name) byName[d.name] = d;
+        }
+        for (const [key, val] of Object.entries(this.params)) {
+            if (val !== "use_main") continue;
+            const def = byName[key];
+            const parts = ((def && def.string) || key).split("_");
+            if (parts.length < 2) continue;
+            const mainKey = `main_${parts[0]}`;
+            const mainDef = byName[mainKey]
+                || allDefs.find(d => d && d.string === mainKey);
+            if (!mainDef) continue;
+            const mainVal = this.params[mainDef.name];
+            if (mainVal && mainVal !== "use_main") {
+                this.params[key] = mainVal;
+            }
+        }
+    }
+
+    /** Определения с вграден 3D строител, които не бива да падат на
+     *  RuleMatrixPreview само защото нямат GLB/SVG. От 18.0 тук е само
+     *  щората: другите кодове в 19.0 имат свои активи или жив чертеж. */
+    _hasLegacyShape() {
+        return ["shutters"].includes(this.props.definitionCode);
+    }
+
     /**
      * Show RuleMatrixPreview instead of 3D canvas when:
      * - No 3D models (GLB) — neither on main product nor in BoM components
@@ -381,7 +717,7 @@ export class DesignConfiguratorWidget extends Component {
             this.props.materialTable ||
             this.props.operationTable
         );
-        return !has3D && !hasSVG && hasMatrix;
+        return !has3D && !hasSVG && !this._hasLegacyShape() && hasMatrix;
     }
 
     // ── Жив чертеж от вертикала ─────────────────────────────────────────
@@ -468,8 +804,12 @@ export class DesignConfiguratorWidget extends Component {
 
     onParamChange(key, value) {
         this.params[key] = value;
+        // TΦ преди TΠ: каскадните стойности са новата база, върху която TΠ
+        // проверява allowed_values (порт от 18.0).
+        this._applyCascade(key);
         this._validate();
         this._updateDescription();
+        this._scheduleAvailabilityEval();
 
         // Преизчисли калкулацията при смяна на параметър (debounced) —
         // и на sales (жива калкулация), и на cost ниво.
@@ -540,6 +880,9 @@ export class DesignConfiguratorWidget extends Component {
         this._validate();
         this._recomputeCostDebounced();
         this._refreshPreviewDebounced();
+        // Размерът може да води каскада (кутия по височина) и ограничения.
+        this._applyCascadeDebounced(key);
+        this._scheduleAvailabilityEval();
     }
 
     onSegmentClick(ev) {
@@ -632,6 +975,7 @@ export class DesignConfiguratorWidget extends Component {
         }
         this.ui.saving = true;
         try {
+            this._resolveUseMainSentinels();
             const lotId = await this._saveDesignLot();
             this.notification.add(_t("Design lot created successfully."), { type: "success" });
             // onLotCreated in dialog already calls close() — don't call onClose again
@@ -1457,6 +1801,7 @@ export class DesignConfiguratorWidget extends Component {
         else if (code === "roller_door") this._buildRollerDoor();
         else if (code === "interior_door") this._buildInteriorDoor();
         else if (code === "corrugated") this._buildBox();
+        else if (code === "shutters") this._buildShutter();
         else this._buildGenericBox();
     }
 
@@ -1554,6 +1899,125 @@ export class DesignConfiguratorWidget extends Component {
                 new THREE.LineBasicMaterial({ color: 0x888888, opacity: 0.4, transparent: true })));
         }
         t.group.position.set(0, -H * 0.4, 0);
+    }
+
+    _buildShutter() {
+        // Ролетна щора (порт от 18.0, mrp_design_matrix_shutters). Отдолу
+        // нагоре: крайна ламела → ламели → четка → кутия. Имената на
+        // параметрите са от дефиницията на щорите.
+        this._clearModel();
+        const THREE = window.THREE; const t = this._three; const p = this.params;
+        const W = (p.width || 1000) / 3000;
+        const H = (p.height || 1500) / 3000;
+        const BH = (parseInt(p.box_size, 10) || 165) / 3000;
+        const SH = (parseInt(p.slat_size, 10) || 40) / 3000;
+        const GW = 0.022, capW = 0.005, boxDepth = BH * 1.1;
+        const toColor = (v, fb) => {
+            if (!v) return fb;
+            try { return new THREE.Color(v).getHex(); } catch { return fb; }
+        };
+        const cBox = toColor(p.color_box || p.main_color, 0xeeeeee);
+        const cSlat = toColor(p.color_slat || p.main_color, 0xdddddd);
+        const cTerminal = toColor(p.color_terminal || p.color_slat || p.main_color, 0xcccccc);
+        const cGuide = toColor(p.color_guide || p.main_color, 0x888888);
+        const cEndcap = toColor(p.color_endcap, 0x444444);
+        const cBrush = toColor(p.color_brush, 0x333333);
+        const cRope = toColor(p.color_rope, 0x555555);
+        const cShirit = toColor(p.color_shirit, 0x999999);
+        const cMotor = 0x224488;
+        const cSafety = toColor(p.color_safety, 0xff8800);
+
+        // кутия (горе)
+        const boxY = H / 2 - BH / 2;
+        const box = this._makeMesh(new THREE.BoxGeometry(W + GW * 2, BH, boxDepth), cBox);
+        box.position.set(0, boxY, 0);
+        t.group.add(box);
+        t.group.add(new THREE.LineSegments(
+            new THREE.EdgesGeometry(box.geometry),
+            new THREE.LineBasicMaterial({ color: 0x000000, opacity: 0.15, transparent: true })));
+
+        // капачки на кутията
+        const capL = this._makeMesh(new THREE.BoxGeometry(capW, BH, boxDepth + 0.002), cEndcap);
+        capL.position.set(-(W / 2 + GW + capW / 2), boxY, 0);
+        t.group.add(capL);
+        const capR = capL.clone(); capR.position.x = W / 2 + GW + capW / 2;
+        t.group.add(capR);
+
+        // водачи
+        const slatStartY = boxY - BH / 2;
+        const guideH = slatStartY - (-H / 2);
+        const guideY = (-H / 2 + slatStartY) / 2;
+        const guideL = this._makeMesh(new THREE.BoxGeometry(GW, guideH, 0.025), cGuide);
+        guideL.position.set(-(W / 2 + GW / 2), guideY, 0);
+        t.group.add(guideL);
+        const guideR = guideL.clone(); guideR.position.x = W / 2 + GW / 2;
+        t.group.add(guideR);
+
+        // четка под кутията
+        const brush = this._makeMesh(new THREE.BoxGeometry(W, 0.004, 0.018), cBrush);
+        brush.position.set(0, slatStartY - 0.002, 0);
+        t.group.add(brush);
+
+        // крайна ламела (по-дебела)
+        const terminalH = SH * 1.2;
+        const termY = -H / 2 + terminalH / 2;
+        const term = this._makeMesh(new THREE.BoxGeometry(W, terminalH, 0.018), cTerminal);
+        term.position.set(0, termY, 0);
+        t.group.add(term);
+
+        // ламелите между крайната и четката
+        const slatsAreaTop = slatStartY - 0.004;
+        const slatsAreaBot = termY + terminalH / 2;
+        const nSlats = Math.max(0, Math.floor((slatsAreaTop - slatsAreaBot) / SH));
+        for (let i = 0; i < nSlats; i++) {
+            const y = slatsAreaBot + i * SH + SH / 2;
+            const s = this._makeMesh(new THREE.BoxGeometry(W, SH * 0.92, 0.014), cSlat);
+            s.position.set(0, y, 0);
+            t.group.add(s);
+        }
+
+        // управление: мотор в кутията, въже или лента
+        if (p.control_type === "motor") {
+            const motor = this._makeMesh(
+                new THREE.CylinderGeometry(BH * 0.35, BH * 0.35, W * 0.15, 12),
+                cMotor);
+            motor.rotation.z = Math.PI / 2;
+            motor.position.set(W / 2 - W * 0.1, boxY, 0);
+            t.group.add(motor);
+            const safety = this._makeMesh(
+                new THREE.CylinderGeometry(BH * 0.12, BH * 0.12, 0.005, 16),
+                cSafety);
+            safety.rotation.x = Math.PI / 2;
+            safety.position.set(W / 2 - W * 0.1, boxY, boxDepth / 2 + 0.003);
+            t.group.add(safety);
+        } else if (p.control_type === "rope") {
+            const rope = this._makeMesh(
+                new THREE.BoxGeometry(0.006, H * 0.4, 0.006), cRope);
+            rope.position.set(W / 2 + GW + 0.012, 0, 0.015);
+            t.group.add(rope);
+        } else if (p.control_type === "shirit") {
+            const shirit = this._makeMesh(
+                new THREE.BoxGeometry(0.012, H * 0.4, 0.002), cShirit);
+            shirit.position.set(W / 2 + GW + 0.014, 0, 0.015);
+            t.group.add(shirit);
+        }
+
+        // няколко щори: централни капачки между съседните
+        const sc = parseInt(p.shutter_count, 10) || 1;
+        if (sc > 1) {
+            const cCentral = toColor(p.color_central_endcap, 0x666666);
+            const stepW = W / sc;
+            for (let i = 1; i < sc; i++) {
+                const x = -W / 2 + i * stepW;
+                const sep = this._makeMesh(
+                    new THREE.BoxGeometry(0.004, H * 0.95, 0.022),
+                    cCentral);
+                sep.position.set(x, 0, 0);
+                t.group.add(sep);
+            }
+        }
+
+        t.group.position.set(0, -H * 0.05, 0);
     }
 
     _buildBox() {
@@ -1978,12 +2442,17 @@ export class DesignConfiguratorWidget extends Component {
         return this.props.paramDefinition
             .filter(def => !childNames.has(def.name) && !childStrings.has(def.string))
             .filter(def => this._levelVisible(def, level, levels))
+            // TΠ: скритите излизат, заключените са само за четене, изборът
+            // се стеснява до allowed_values (порт от 18.0)
+            .map(def => this._decorateParam(def))
+            .filter(def => def.tpiVisible)
             .map(def => ({
                 ...def,
                 value: this.params[def.name],
                 label: this.paramLabels[def.name] || def.string,
                 _levelReadonly: this._levelReadonly(def, level, levels)
-                    || this.ui.lockedParams.includes(def.name),
+                    || this.ui.lockedParams.includes(def.name)
+                    || def.tpiEnabled === false,
             }));
     }
 
@@ -2011,14 +2480,15 @@ export class DesignConfiguratorWidget extends Component {
     get childDisplayParams() {
         // Returns child component params with current values for Fine Tuning
         const children = this.props.childComponents || [];
+        // Параметрите на детайлите също минават през TΠ.
         return children.map(child => ({
             ...child,
             params: (child.paramDefinition || []).map(def => ({
-                ...def,
+                ...this._decorateParam(def),
                 value: this.params[def.name] !== undefined
                     ? this.params[def.name]
                     : (def.type === 'float' ? (parseFloat(def.default) || 0) : (def.default || '')),
-            })),
+            })).filter(p => p.tpiVisible),
         }));
     }
 

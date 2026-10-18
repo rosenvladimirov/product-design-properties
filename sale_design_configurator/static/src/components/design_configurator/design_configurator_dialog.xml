@@ -14,7 +14,7 @@
 <templates xml:space="preserve">
 
 <t t-name="sale_design_configurator.DesignConfiguratorDialog">
-    <Dialog title="dialogTitle" size="'lg'" footer="false">
+    <Dialog title="dialogTitle" size="'xl'" footer="false" contentClass="'o_design_configurator_modal'">
         <t t-if="state.loading">
             <div class="text-center py-5">
                 <i class="fa fa-spinner fa-spin fa-2x text-muted"/>
@@ -44,6 +44,12 @@
                 geometryTable="state.geometryTable"
                 materialTable="state.materialTable"
                 operationTable="state.operationTable"
+                availabilityTable="state.availabilityTable"
+                cascadeTable="state.cascadeTable"
+                multiplicityTable="state.multiplicityTable"
+                layoutTable="state.layoutTable"
+                bomId="state.bomId"
+                hasAvailability="state.hasAvailability"
                 bomLines="state.bomLines"
                 existingLotId="props.existingLotId or false"
                 solId="props.solId or false"

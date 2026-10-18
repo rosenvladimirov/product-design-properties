@@ -14,7 +14,7 @@
         "Design parameter definitions and matrix templates "
         "for roller shutter manufacturers (Teolino)."
     ),
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.5.0",
     "category": "Manufacturing",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "Rosen Vladimirov",
@@ -22,6 +22,7 @@
     "license": "AGPL-3",
     "application": False,
     "installable": True,
+    "post_init_hook": "post_init_hook",
     "depends": ["mrp_design_matrix"],
     "data": [
         "data/install_design_params.xml",

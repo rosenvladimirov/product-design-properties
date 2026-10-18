@@ -1,0 +1,349 @@
+# Copyright 2024-2026 Rosen Vladimirov
+#
+# This file is available under a DUAL LICENSE:
+#   1. GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)
+#      https://www.gnu.org/licenses/agpl-3.0.html
+#   2. A commercial license from Rosen Vladimirov, for use without the obligations
+#      of the AGPL. See LICENSE-COMMERCIAL.md. Contact: vladimirov.rosen@gmail.com
+#
+# Unless you hold a valid commercial license, your use of this file is governed
+# by the AGPL-3.0-or-later.
+import logging
+
+from odoo import api, models
+from odoo.tools.safe_eval import safe_eval
+
+_logger = logging.getLogger(__name__)
+
+
+class MrpBom(models.Model):
+    _inherit = "mrp.bom"
+
+    def _evaluate_cost_with_params(self, params):
+        """Compute material + labor cost for this BoM given a parameter namespace.
+
+        Returns a dict::
+
+            {
+                "material_cost": float,
+                "labor_cost": float,
+                "lines": [{"product_id", "product_name", "qty", "unit_cost", "subtotal"}, ...],
+                "operations": [{"workcenter_id", "name", "minutes", "rate_per_hour", "subtotal"}, ...],
+            }
+
+        ``params`` is a flat dict of design parameters (lot.design_params merged
+        with template-level design properties).
+        """
+        self.ensure_one()
+        # Matrix activation (T0/T1/T2/T3) — defines full_ctx + t3_operations.
+        # Без този блок `t3_operations` по-долу е недефиниран (NameError при BoM
+        # без matrix template), а формулите по редовете не виждат T1 изходите
+        # (slat_len_offset, …) и количествата падат на 0.
+        full_ctx = dict(params or {})
+        t0_messages = []
+        t3_operations = None
+        if self.matrix_template_id:
+            t0_messages, full_ctx, _t2c, _t2a, t3_operations = self._tm_evaluate(full_ctx)
+        breakdown_lines = []
+        material_cost = 0.0
+        for bom_line in self.bom_line_ids:
+            qty = bom_line._evaluate_quantity(full_ctx)
+            # loss (фира) е ratio (0.05 = 5%), уеднаквено с mrp_bom_line_losses
+            # MO консумацията; без /100 — иначе 5% става 0.05%.
+            qty_with_loss = qty * (1.0 + (bom_line.loss or 0.0))
+            unit_cost = bom_line.product_id.standard_price
+            subtotal = qty_with_loss * unit_cost
+            material_cost += subtotal
+            breakdown_lines.append({
+                "product_id": bom_line.product_id.id,
+                "product_name": bom_line.product_id.display_name,
+                "qty": qty_with_loss,
+                "unit_cost": unit_cost,
+                "subtotal": subtotal,
+            })
+
+        breakdown_ops = []
+        labor_cost = 0.0
+
+        # ── Operations (TM-driven OR local) — единичен проход (без дубъл) ──
+        if t3_operations is not None:
+            for op_dict in t3_operations:
+                wc, minutes = self._resolve_t3_operation(op_dict, full_ctx)
+                if not wc:
+                    continue
+                # Часова ставка = работен център + работник (employee).
+                rate = self._workcenter_hour_rate(wc)
+                subtotal = (minutes / 60.0) * rate
+                labor_cost += subtotal
+                breakdown_ops.append({
+                    "workcenter_id": wc.id,
+                    "name": op_dict.get("name") or wc.display_name,
+                    "minutes": minutes,
+                    "rate_per_hour": rate,
+                    "subtotal": subtotal,
+                    "path": ["T3"],
+                })
+        else:
+            for op in self.operation_ids:
+                workcenter = op.workcenter_id
+                if not workcenter:
+                    continue
+                minutes = op.time_cycle or 0.0
+                rate = self._workcenter_hour_rate(workcenter)
+                subtotal = (minutes / 60.0) * rate
+                labor_cost += subtotal
+                breakdown_ops.append({
+                    "workcenter_id": workcenter.id,
+                    "name": op.name,
+                    "minutes": minutes,
+                    "rate_per_hour": rate,
+                    "subtotal": subtotal,
+                    "path": [],
+                })
+
+        return {
+            "material_cost": material_cost,
+            "labor_cost": labor_cost,
+            "lines": breakdown_lines,
+            "operations": breakdown_ops,
+            "t0_messages": t0_messages,
+            "context_used": full_ctx,
+        }
+
+    @api.model
+    def _workcenter_hour_rate(self, workcenter):
+        """Часова ставка = машината (``costs_hour``) + работникът.
+
+        В 19.0 ``employee_costs_hour`` идва от EE модула ``mrp_workorder``;
+        без него в ставката влиза само машината (вместо AttributeError).
+        """
+        rate = workcenter.costs_hour or 0.0
+        if "employee_costs_hour" in workcenter._fields:
+            rate += workcenter.employee_costs_hour or 0.0
+        return rate
+
+    # ── TM evaluation helpers ─────────────────────────────────────────────
+
+    def _tm_evaluate(self, ctx):
+        """Извика T0/T1/T2/T3 на matrix template-а (ако bom има такъв).
+
+        :returns: tuple (t0_messages, full_ctx, t2_coeff_by_key,
+                  t2_adhoc_rows, t3_operations_or_None).
+        """
+        from odoo.addons.base_zen_decision.models.zen_engine import ZenWrapper
+
+        # Таблиците живеят на matrix template-а; конкретният BoM обикновено ги
+        # има празни (matrix_template_id сочи към reusable engine-а, а самите
+        # decision tables НЕ се копират по BoM-а). Fallback към template-а,
+        # иначе T1 не се пуска → slat_len_offset/slat_count_mode липсват в
+        # namespace-а → всяка dimension-формула пада на 0 → цена 0.
+        tmpl = self.matrix_template_id
+        constraint_table = self.constraint_table or (tmpl.constraint_table if tmpl else False)
+        geometry_table = self.geometry_table or (tmpl.geometry_table if tmpl else False)
+        material_table = self.material_table or (tmpl.material_table if tmpl else False)
+        operation_table = self.operation_table or (tmpl.operation_table if tmpl else False)
+
+        t0_messages = []
+        # T0 constraints — за audit (warnings/errors), не break-ваме pricing
+        if constraint_table:
+            try:
+                t0 = ZenWrapper.evaluate(constraint_table, ctx)
+                rows = t0 if isinstance(t0, list) else (t0 or {}).get("result", [])
+                for r in rows:
+                    msg = r.get("message")
+                    lvl = r.get("level") or "warning"
+                    if msg:
+                        t0_messages.append({"level": lvl, "message": str(msg)})
+            except Exception as e:
+                _logger.warning("T0 eval failed on bom %s: %s", self.display_name, e)
+
+        # T1 geometry — derived context vars (slat_count_mode, etc.)
+        full_ctx = dict(ctx)
+        if geometry_table:
+            try:
+                t1 = ZenWrapper.evaluate(geometry_table, ctx)
+                rows = t1 if isinstance(t1, list) else (t1 or {}).get("result", [])
+                # T1 hitPolicy=first → typically a single row dict
+                if isinstance(rows, dict):
+                    full_ctx.update({k: v for k, v in rows.items() if v is not None})
+                elif rows and isinstance(rows[0], dict):
+                    full_ctx.update({k: v for k, v in rows[0].items() if v is not None})
+            except Exception as e:
+                _logger.warning("T1 eval failed on bom %s: %s", self.display_name, e)
+
+        # T2 materials — coefficient lookup + ad-hoc rows
+        t2_coeff_by_key = {}
+        t2_adhoc_rows = []
+        if material_table:
+            try:
+                t2 = ZenWrapper.evaluate(material_table, full_ctx)
+                rows = t2 if isinstance(t2, list) else (t2 or {}).get("result", [])
+                for r in rows:
+                    key = r.get("bom_line_coeff_key")
+                    if key:
+                        t2_coeff_by_key[key] = float(r.get("coefficient", 0.0))
+                    elif r.get("product_ref") or r.get("ptav_id") or r.get("product_id"):
+                        t2_adhoc_rows.append(r)
+            except Exception as e:
+                _logger.warning("T2 eval failed on bom %s: %s", self.display_name, e)
+
+        # T3 operations — conditional workorders
+        t3_operations = None
+        if operation_table:
+            try:
+                t3 = ZenWrapper.evaluate(operation_table, full_ctx)
+                t3_operations = t3 if isinstance(t3, list) else (t3 or {}).get("result", [])
+            except Exception as e:
+                _logger.warning("T3 eval failed on bom %s: %s", self.display_name, e)
+
+        return (t0_messages, full_ctx, t2_coeff_by_key, t2_adhoc_rows, t3_operations)
+
+    def _resolve_t2_adhoc_row(self, row, ctx):
+        """Resolve T2 ad-hoc row към (product, qty, uom).
+
+        Поддържани keys (priority order):
+        - ``product_ref`` (XMLID) → env.ref()
+        - ``ptav_id`` (int) → product.template.attribute.value → product.product
+        - ``product_id`` (int) → direct
+        Qty: ``quantity`` (default 1.0).
+        UoM: ``uom_ref`` (XMLID) → env.ref(), иначе product.uom_id.
+        """
+        product = False
+        qty = float(row.get("quantity", 1.0) or 1.0)
+        uom = False
+        # XMLID
+        if row.get("product_ref"):
+            try:
+                product = self.env.ref(str(row["product_ref"]).strip("'\""), raise_if_not_found=False)
+                if product and product._name == "product.template":
+                    product = product.product_variant_id
+            except Exception:
+                pass
+        # PTAV
+        if not product and row.get("ptav_id"):
+            ptav = self.env["product.template.attribute.value"].browse(int(row["ptav_id"]))
+            if ptav.exists():
+                # Find first variant съ този PTAV
+                product = ptav.product_attribute_value_id.product_ids[:1] or False
+        # Direct
+        if not product and row.get("product_id"):
+            product = self.env["product.product"].browse(int(row["product_id"]))
+            if not product.exists():
+                product = False
+        # UoM
+        if row.get("uom_ref"):
+            try:
+                uom = self.env.ref(str(row["uom_ref"]).strip("'\""), raise_if_not_found=False)
+            except Exception:
+                pass
+        if product and not uom:
+            uom = product.uom_id
+        return (product, qty, uom)
+
+    def _resolve_t3_operation(self, op_dict, ctx=None):
+        """Resolve T3 operation dict към (workcenter, minutes).
+
+        Supported keys:
+        - ``workcenter_ref`` (XMLID) → env.ref()
+        - ``workcenter_id`` (int) → direct
+        Duration: ``duration``/``minutes`` (number) или ``duration_formula``
+        (израз, оценен срещу ``ctx`` — напр. ``20 * width/1000 * height/1000``).
+        """
+        wc = False
+        if op_dict.get("workcenter_ref"):
+            try:
+                wc = self.env.ref(
+                    str(op_dict["workcenter_ref"]).strip("'\""),
+                    raise_if_not_found=False,
+                )
+            except Exception:
+                pass
+        if not wc and op_dict.get("workcenter_id"):
+            wc = self.env["mrp.workcenter"].browse(int(op_dict["workcenter_id"]))
+            if not wc.exists():
+                wc = False
+        minutes = float(op_dict.get("duration") or op_dict.get("minutes") or 0.0)
+        if not minutes and op_dict.get("duration_formula") is not None:
+            minutes = self._eval_t3_duration(op_dict["duration_formula"], ctx or {})
+        return (wc, minutes)
+
+    @staticmethod
+    def _eval_t3_duration(raw, ctx):
+        """T3 продължителност (минути): число, числов низ или израз върху ``ctx``.
+
+        В 18.0 изразът минаваше през ``exec`` с ограничени builtins; в 19.0 —
+        през safe_eval, както ``mrp.production._eval_matrix_duration`` при
+        потвърждаване на МП, за да дават цената и поръчката едно и също.
+        Грешен израз дава 0 и запис в лога.
+        """
+        if isinstance(raw, bool):
+            return 0.0
+        if isinstance(raw, (int, float)):
+            return float(raw)
+        expr = str(raw or "").strip()
+        if len(expr) >= 2 and expr[0] == '"' and expr[-1] == '"':
+            expr = expr[1:-1].strip()
+        if not expr:
+            return 0.0
+        try:
+            return float(expr)
+        except ValueError:
+            pass
+        try:
+            return float(safe_eval(expr, dict(ctx or {})) or 0.0)
+        except Exception as e:  # noqa: BLE001
+            _logger.warning("T3 duration eval failed (%s): %s", expr, e)
+            return 0.0
+
+    def _find_child_bom(self, product, company):
+        """Резолва child BoM за продукт (за recursion детекция)."""
+        boms = self.env["mrp.bom"]._bom_find(
+            products=product, company_id=company.id,
+        )
+        return boms.get(product) or self.env["mrp.bom"]
+
+    def _resolve_vendor_unit_cost(self, bom_line, qty_with_loss, today,
+                                    order_partner, currency, company):
+        """Find best vendor price for the given quantity, with UoM/currency
+        conversion. Falls back to standard_price.
+
+        :returns: tuple (unit_cost, seller_record_or_False, source_str)
+            where source_str is "vendor" or "standard".
+        """
+        product = bom_line.product_id
+        if not product:
+            return (0.0, False, "standard")
+
+        seller_kwargs = {
+            "quantity": qty_with_loss,
+            "uom_id": bom_line.product_uom_id,
+            "date": today,
+        }
+        if order_partner:
+            seller_kwargs["partner_id"] = order_partner
+        seller = product._select_seller(**seller_kwargs)
+
+        if seller:
+            line_uom = bom_line.product_uom_id or product.uom_id
+            if seller.product_uom_id and seller.product_uom_id != line_uom:
+                price = seller.product_uom_id._compute_price(seller.price, line_uom)
+            else:
+                price = seller.price
+            if seller.currency_id and seller.currency_id != currency:
+                price = seller.currency_id._convert(
+                    price, currency, company, today,
+                )
+            return (price, seller, "vendor")
+
+        return (product.standard_price, False, "standard")
+
+    @staticmethod
+    def _empty_cost_result():
+        return {
+            "material_cost": 0.0,
+            "labor_cost": 0.0,
+            "lines": [],
+            "operations": [],
+            "t0_messages": [],
+            "context_used": {},
+        }

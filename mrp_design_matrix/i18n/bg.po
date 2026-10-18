@@ -144,3 +144,86 @@ msgstr "Нарушено ограничение на дизайна: %s"
 msgid "Design warning: %s"
 msgstr "Предупреждение по дизайна: %s"
 
+
+#. module: mrp_design_matrix
+#: model:ir.model.fields,field_description:mrp_design_matrix.field_mrp_bom__cascade_table
+#: model:ir.model.fields,field_description:mrp_design_matrix.field_mrp_matrix_template__cascade_table
+msgid "TΦ — Cascade Resolutions"
+msgstr "TΦ — Каскада на стойностите"
+
+#. module: mrp_design_matrix
+#: model:ir.model.fields,field_description:mrp_design_matrix.field_mrp_bom__layout_table
+#: model:ir.model.fields,field_description:mrp_design_matrix.field_mrp_matrix_template__layout_table
+msgid "TΛ — Layout / UX Hints"
+msgstr "TΛ — Подредба / UX подсказки"
+
+#. module: mrp_design_matrix
+#: model:ir.model.fields,field_description:mrp_design_matrix.field_mrp_bom__multiplicity_table
+#: model:ir.model.fields,field_description:mrp_design_matrix.field_mrp_matrix_template__multiplicity_table
+#: model_terms:ir.ui.view,arch_db:mrp_design_matrix.mrp_matrix_template_view_form
+msgid "TΩ — Multiplicity"
+msgstr "TΩ — Многоинстанционност"
+
+#. module: mrp_design_matrix
+#: model:ir.model.fields,field_description:mrp_design_matrix.field_mrp_bom__lookup_tables
+#: model:ir.model.fields,field_description:mrp_design_matrix.field_mrp_matrix_template__lookup_tables
+#: model_terms:ir.ui.view,arch_db:mrp_design_matrix.mrp_matrix_template_view_form
+msgid "Lookup Tables"
+msgstr "Справочни таблици"
+
+#. module: mrp_design_matrix
+#: model:ir.model.fields,field_description:mrp_design_matrix.field_mrp_bom__availability_table
+#: model:ir.model.fields,field_description:mrp_design_matrix.field_mrp_matrix_template__availability_table
+msgid "TΠ — Param Availability"
+msgstr "TΠ — Достъпност на параметрите"
+
+#. module: mrp_design_matrix
+#: model:ir.model.fields,field_description:mrp_design_matrix.field_stock_lot__multi_instance_data
+msgid "Multi-Instance Data"
+msgstr "Данни по инстанции"
+
+#. module: mrp_design_matrix
+#: model_terms:ir.ui.view,arch_db:mrp_design_matrix.mrp_matrix_template_view_form
+msgid "TΠ — Availability"
+msgstr "TΠ — Достъпност"
+
+#. module: mrp_design_matrix
+#: model_terms:ir.ui.view,arch_db:mrp_design_matrix.mrp_matrix_template_view_form
+msgid "TΛ — Layout"
+msgstr "TΛ — Подредба"
+
+#. module: mrp_design_matrix
+#: model_terms:ir.ui.view,arch_db:mrp_design_matrix.mrp_matrix_template_view_form
+msgid "TΦ — Cascade"
+msgstr "TΦ — Каскада"
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/models/mrp_bom.py:0
+msgid ""
+"The selected colour is not valid for this shutter model (e.g. Thermo Comfort "
+"is RAL only — no wood texture)."
+msgstr ""
+"Избраният цвят не е валиден за този модел щора (напр. Thermo Comfort е само "
+"RAL — без дървесна текстура)."
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/models/mrp_bom.py:0
+msgid ""
+"The box is not valid for this height/axis/slat. Switch to box %(allowed)s "
+"(recommended: %(recommended)s)."
+msgstr ""
+"Кутията не е валидна за тази височина/ос/ламел. Минете на кутия %(allowed)s "
+"(препоръчана: %(recommended)s)."
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/models/mrp_bom.py:0
+msgid ""
+"This axis is not valid with the selected control — allowed axis: "
+"%(allowed)s."
+msgstr ""
+"Тази ос не е валидна с избраното управление — позволена ос: %(allowed)s."
+
+#. module: mrp_design_matrix
+#: code:addons/mrp_design_matrix/models/mrp_bom.py:0
+msgid "%(param)s: invalid value. Allowed: %(allowed)s."
+msgstr "%(param)s: невалидна стойност. Позволени: %(allowed)s."

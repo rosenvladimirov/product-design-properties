@@ -17,3 +17,4 @@ from . import test_cube_new_line
 from . import test_mo_per_design_lot
 from . import test_salesman_access
 from . import test_po_line_per_design_lot
+from . import test_design_description

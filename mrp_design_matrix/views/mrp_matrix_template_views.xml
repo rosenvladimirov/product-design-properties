@@ -64,6 +64,85 @@
                                    options="{'table_type': 't3'}"
                                    nolabel="1"/>
                         </page>
+                        <!-- Слоевете на конфигуратора (порт от 18.0, фазите A–E) -->
+                        <page string="TΠ — Availability" name="availability">
+                            <div class="alert alert-info" role="alert">
+                                <strong>Reactive UI control table.</strong>
+                                Evaluated by the design configurator on every
+                                parameter change. Outputs: <code>param</code>,
+                                <code>visible</code>, <code>enabled</code>,
+                                <code>allowed_values</code>,
+                                <code>default_override</code>.
+                            </div>
+                            <field name="availability_table"
+                                   widget="design_matrix"
+                                   options="{'table_type': 'tpi'}"
+                                   nolabel="1"/>
+                        </page>
+                        <page string="TΛ — Layout" name="layout">
+                            <div class="alert alert-info" role="alert">
+                                <strong>UX hints per parameter.</strong>
+                                Outputs: <code>param</code>, <code>section</code>
+                                (grouping in the UI), <code>widget_hint</code>
+                                (segment/spinner/slider/color_picker),
+                                <code>customer_visible</code> (customer-pickable
+                                or internal), <code>submodal</code> (sub-dialog id),
+                                <code>order</code> (ordering hint).
+                            </div>
+                            <field name="layout_table"
+                                   widget="design_matrix"
+                                   options="{'table_type': 'tlambda'}"
+                                   nolabel="1"/>
+                        </page>
+                        <page string="TΩ — Multiplicity" name="multiplicity">
+                            <div class="alert alert-info" role="alert">
+                                <strong>Multi-instance metadata.</strong>
+                                Describes products with several shutters, doors
+                                or shelves in one item. Outputs:
+                                <code>count_param</code> (the parameter with N),
+                                <code>per_instance_params</code> (the parameters
+                                that differ per instance), <code>aggregator</code>
+                                (sum/list/concat), <code>skip_when</code>
+                                (optional expression that skips the expansion).
+                            </div>
+                            <field name="multiplicity_table"
+                                   widget="design_matrix"
+                                   options="{'table_type': 'tomega'}"
+                                   nolabel="1"/>
+                        </page>
+                        <page string="TΦ — Cascade" name="cascade">
+                            <div class="alert alert-info" role="alert">
+                                <strong>Reactive value propagation.</strong>
+                                When <code>changed_param</code> changes, a value
+                                is derived for <code>target_param</code>.
+                                Outputs: <code>copy_from</code> (the parameter
+                                whose value is copied), <code>derive_value</code>
+                                (an explicit value), <code>derive_expression</code>
+                                (an expression over the current parameters with
+                                the <code>lookup()</code> helper),
+                                <code>only_if_empty</code> (do not overwrite the
+                                user's choice).
+                            </div>
+                            <field name="cascade_table"
+                                   widget="design_matrix"
+                                   options="{'table_type': 'tphi'}"
+                                   nolabel="1"/>
+                        </page>
+                        <page string="Lookup Tables" name="lookup_tables">
+                            <div class="alert alert-secondary" role="alert">
+                                Named lookup tables for TΦ
+                                <code>derive_expression</code> rules through
+                                <code>lookup(name, key1, key2, ...)</code>.
+                                Structure: <code>{table: {key1: {key2: [[threshold, result], ...]}}}</code>.
+                                For ordered numeric matching (e.g. box by height)
+                                the last level is a list of [threshold, result]
+                                in ascending order.
+                            </div>
+                            <field name="lookup_tables"
+                                   widget="ace"
+                                   options="{'mode': 'json'}"
+                                   nolabel="1"/>
+                        </page>
                     </notebook>
                 </sheet>
             </form>

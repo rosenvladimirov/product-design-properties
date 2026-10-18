@@ -74,13 +74,44 @@ class TestMoPerDesignLot(TransactionCase):
         self.assertEqual(by_lot[self.lot_b].product_qty, 2.0)
         self.assertEqual(by_lot[self.lot_b].lot_producing_ids, self.lot_b)
 
-    def test_more_of_the_same_lot_stays_in_its_order(self):
-        """Същата партида, повече бройки — остава в своето MO."""
+    def _grow(self, lot):
+        """Поръчка с една врата, потвърдена, после вратите стават три.
+
+        Връща MO-тата на поръчката (по референцията ѝ — чужди поръчки не влизат).
+        """
         order = self.env["sale.order"].create(
-            {"partner_id": self.partner.id, "order_line": [self._line(self.lot_a, 1.0)]}
+            {"partner_id": self.partner.id, "order_line": [self._line(lot, 1.0)]}
         )
         order.action_confirm()
         order.order_line.product_uom_qty = 3.0
-        productions = self._productions()
-        self.assertEqual(len(productions), 1)
-        self.assertEqual(productions.product_qty, 3.0)
+        return self.env["mrp.production"].search(
+            [
+                ("product_id", "=", self.door.id),
+                ("reference_ids", "in", order.stock_reference_ids.ids),
+            ]
+        )
+
+    def test_more_of_the_same_lot_stays_in_its_order(self):
+        """Същата партида, повече бройки — остава при своята партида.
+
+        Дали добавката влиза в ПОТВЪРДЕНОТО MO, решава стекът, не тази
+        партида: ядрото слива в draft и confirmed, а клиентски модул може да
+        замрази confirmed (Теолино, ``teolino_mrp_freeze_confirmed`` — сливане
+        само в draft, ново търсене ражда ново MO). Затова сравняваме с контрола
+        без партида в същия стек: терминът на партидата не бива да променя
+        сливането за същата партида. Различните партиди — в
+        ``test_later_line_gets_its_own_order``.
+        """
+        control = self._grow(self.env["stock.lot"])
+        productions = self._grow(self.lot_a)
+        self.assertEqual(
+            len(productions),
+            len(control),
+            "the design lot changed how more of the same is merged",
+        )
+        self.assertEqual(productions.design_lot_id, self.lot_a)
+        self.assertEqual(productions.lot_producing_ids, self.lot_a)
+        self.assertEqual(sum(productions.mapped("product_qty")), 3.0)
+        if len(control) == 1:
+            # стекът слива в потвърденото MO — ядрото
+            self.assertEqual(productions.product_qty, 3.0)

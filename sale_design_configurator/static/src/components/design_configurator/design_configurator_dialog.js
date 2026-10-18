@@ -60,6 +60,15 @@ export class DesignConfiguratorDialog extends Component {
             geometryTable: false,
             materialTable: false,
             operationTable: false,
+            // Слоевете на конфигуратора (порт от 18.0, фазите A–E)
+            availabilityTable: false,
+            cascadeTable: false,
+            multiplicityTable: false,
+            layoutTable: false,
+            bomId: false,
+            // Портален режим: таблицата не се чете, но сървърът потвърждава,
+            // че TΠ съществува (рецептата или шаблонът) — оценката е sudo.
+            hasAvailability: false,
             bomLines: [],
             costData: {},
         });
@@ -117,23 +126,65 @@ export class DesignConfiguratorDialog extends Component {
                 ["id"],
                 { limit: 1 }
             );
+            if (!boms.length) {
+                // Портален потребител (или продавач без права върху
+                // рецептите): правилата крият mrp.bom и търсенето е празно.
+                // Клиентският стек на рецептата не се зарежда; взима се само
+                // лекият sudo поглед — колкото за TΠ в реално време.
+                try {
+                    const meta = await this.orm.call(
+                        "mrp.bom", "configurator_get_bom_meta",
+                        [this.props.productId],
+                    );
+                    if (meta && meta.bom_id) {
+                        this.state.bomId = meta.bom_id;
+                        this.state.hasAvailability = !!meta.has_availability;
+                    }
+                } catch (e) {
+                    console.warn("BoM meta lookup failed:", e.message);
+                }
+            }
             if (boms.length) {
                 const bomAssets = await this.orm.call(
                     "mrp.bom", "get_bom_design_assets", [boms[0].id]
                 );
                 this.state.bomAssets = bomAssets;
 
-                // Load BoM matrix tables (T0-T3) for RuleMatrixPreview
+                // Таблиците на рецептата: T0–T3 за RuleMatrixPreview и
+                // слоевете TΠ/TΦ/TΩ/TΛ за реактивната оценка. Рецептата има
+                // предимство, иначе се взима таблицата на matrix_template_id —
+                // както при оценката на сървъра (порт от 18.0).
+                this.state.bomId = boms[0].id;
                 try {
+                    const TABLES = ["constraint_table", "geometry_table",
+                        "material_table", "operation_table", "availability_table",
+                        "cascade_table", "multiplicity_table", "layout_table"];
                     const [bomData] = await this.orm.read(
                         "mrp.bom", [boms[0].id],
-                        ["constraint_table", "geometry_table", "material_table", "operation_table"]
+                        ["matrix_template_id", ...TABLES]
                     );
                     if (bomData) {
-                        this.state.constraintTable = coerceTable(bomData.constraint_table);
-                        this.state.geometryTable = coerceTable(bomData.geometry_table);
-                        this.state.materialTable = coerceTable(bomData.material_table);
-                        this.state.operationTable = coerceTable(bomData.operation_table);
+                        let tpl = {};
+                        if (bomData.matrix_template_id && TABLES.some(f => !bomData[f])) {
+                            try {
+                                const [tplData] = await this.orm.read(
+                                    "mrp.matrix.template",
+                                    [bomData.matrix_template_id[0]], TABLES
+                                );
+                                tpl = tplData || {};
+                            } catch (e) {
+                                console.warn("Could not load template matrix tables:", e.message);
+                            }
+                        }
+                        const pick = (f) => coerceTable(bomData[f] || tpl[f] || false);
+                        this.state.constraintTable = pick("constraint_table");
+                        this.state.geometryTable = pick("geometry_table");
+                        this.state.materialTable = pick("material_table");
+                        this.state.operationTable = pick("operation_table");
+                        this.state.availabilityTable = pick("availability_table");
+                        this.state.cascadeTable = pick("cascade_table");
+                        this.state.multiplicityTable = pick("multiplicity_table");
+                        this.state.layoutTable = pick("layout_table");
                     }
                 } catch (e) {
                     console.warn("Could not load BoM matrix tables:", e.message);

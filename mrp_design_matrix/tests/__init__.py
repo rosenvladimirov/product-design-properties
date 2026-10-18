@@ -22,3 +22,7 @@ from . import test_lot_sequence_adoption
 from . import test_variant_context
 from . import test_semifinished_without_lot
 from . import test_pass_before_confirm
+# Порт от 18.0 (фазите A–E и договорът за парчетата)
+from . import test_design_pieces
+from . import test_configurator_layers
+from . import test_stored_params_match

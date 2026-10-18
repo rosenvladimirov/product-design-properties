@@ -14,7 +14,7 @@
         "Adds dynamic design parameters (Properties) "
         "to stock.lot linked to a definition model"
     ),
-    "version": "19.0.1.1.1",
+    "version": "19.0.1.2.0",
     "category": "Inventory",
     "website": "https://github.com/rosenvladimirov/product-design-properties",
     "author": "Rosen Vladimirov",

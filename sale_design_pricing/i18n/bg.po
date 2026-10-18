@@ -1,0 +1,227 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sale_design_pricing
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Language: bg\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,field_description:sale_design_pricing.field_product_category__design_material_markup_percent
+#: model:ir.model.fields,field_description:sale_design_pricing.field_product_template__design_material_markup_percent
+#: model_terms:ir.ui.view,arch_db:sale_design_pricing.res_config_settings_view_form_design_pricing
+msgid "Material Markup (%)"
+msgstr "Надценка материали (%)"
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,field_description:sale_design_pricing.field_product_category__design_labor_markup_percent
+#: model:ir.model.fields,field_description:sale_design_pricing.field_product_template__design_labor_markup_percent
+#: model_terms:ir.ui.view,arch_db:sale_design_pricing.res_config_settings_view_form_design_pricing
+msgid "Labor Markup (%)"
+msgstr "Надценка труд (%)"
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,help:sale_design_pricing.field_product_category__design_material_markup_percent
+#: model:ir.model.fields,help:sale_design_pricing.field_product_category__design_labor_markup_percent
+msgid "Override the company default. Inherited by products in this category unless they override it."
+msgstr "Заменя стойността по подразбиране на фирмата. Наследява се от продуктите в категорията, освен ако те не я заменят."
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,help:sale_design_pricing.field_product_template__design_material_markup_percent
+msgid "Override the category/company default markup applied to material cost."
+msgstr "Заменя надценката по подразбиране (от категорията/фирмата) върху себестойността на материалите."
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,help:sale_design_pricing.field_product_template__design_labor_markup_percent
+msgid "Override the category/company default markup applied to labor cost."
+msgstr "Заменя надценката по подразбиране (от категорията/фирмата) върху себестойността на труда."
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,field_description:sale_design_pricing.field_product_template__effective_material_markup_percent
+msgid "Effective Material Markup Percent"
+msgstr "Действаща надценка материали (%)"
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,field_description:sale_design_pricing.field_product_template__effective_labor_markup_percent
+msgid "Effective Labor Markup Percent"
+msgstr "Действаща надценка труд (%)"
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,field_description:sale_design_pricing.field_res_company__design_material_markup_percent
+#: model:ir.model.fields,field_description:sale_design_pricing.field_res_config_settings__design_material_markup_percent
+msgid "Default Material Markup (%)"
+msgstr "Надценка материали по подразбиране (%)"
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,field_description:sale_design_pricing.field_res_company__design_labor_markup_percent
+#: model:ir.model.fields,field_description:sale_design_pricing.field_res_config_settings__design_labor_markup_percent
+msgid "Default Labor Markup (%)"
+msgstr "Надценка труд по подразбиране (%)"
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,help:sale_design_pricing.field_res_company__design_material_markup_percent
+#: model:ir.model.fields,help:sale_design_pricing.field_res_config_settings__design_material_markup_percent
+msgid "Default markup applied to material cost when computing list price for design products."
+msgstr "Надценка по подразбиране върху себестойността на материалите при изчисляване на продажната цена на дизайн продуктите."
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,help:sale_design_pricing.field_res_company__design_labor_markup_percent
+#: model:ir.model.fields,help:sale_design_pricing.field_res_config_settings__design_labor_markup_percent
+msgid "Default markup applied to labor cost when computing list price for design products."
+msgstr "Надценка по подразбиране върху себестойността на труда при изчисляване на продажната цена на дизайн продуктите."
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,field_description:sale_design_pricing.field_sale_order_line__cost_material
+msgid "Cost Material"
+msgstr "Себестойност материали"
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,field_description:sale_design_pricing.field_sale_order_line__cost_labor
+msgid "Cost Labor"
+msgstr "Себестойност труд"
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,field_description:sale_design_pricing.field_sale_order_line__list_price_material
+msgid "List Price Material"
+msgstr "Продажна цена материали"
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,field_description:sale_design_pricing.field_sale_order_line__list_price_labor
+msgid "List Price Labor"
+msgstr "Продажна цена труд"
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,field_description:sale_design_pricing.field_sale_order_line__list_price_total
+msgid "List Price Total"
+msgstr "Продажна цена общо"
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,field_description:sale_design_pricing.field_sale_order_line__cost_breakdown_html
+msgid "Cost Breakdown Html"
+msgstr "Разбивка на себестойността"
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,field_description:sale_design_pricing.field_stock_lot__teolino_per_shutter_dims
+msgid "Per-shutter dimensions"
+msgstr "Размери по щора"
+
+#. module: sale_design_pricing
+#: model:ir.model.fields,help:sale_design_pricing.field_stock_lot__teolino_per_shutter_dims
+msgid "When shutter_count > 1, stores per-shutter L×H pairs as 'L1xH1,L2xH2,...' (e.g. '1000x2000,800x2500').  Read by mrp.bom.simulate_with_params to evaluate BoM formulas once per panel and sum the per-line quantities, so a 2-panel shutter produces two slat cuts in different lengths instead of one big cut at the total width."
+msgstr "При shutter_count > 1 пази двойките Д×В по щора като 'L1xH1,L2xH2,...' (напр. '1000x2000,800x2500'). Чете се от mrp.bom.simulate_with_params, за да се оценят формулите на рецептата веднъж за всеки панел и количествата по редове да се сумират — щора от 2 панела дава два разкроя на ламели с различна дължина вместо един по общата ширина."
+
+#. module: sale_design_pricing
+#: model_terms:ir.ui.view,arch_db:sale_design_pricing.product_category_form_view_design_markups
+msgid "Design Pricing Markups"
+msgstr "Надценки за дизайн ценообразуване"
+
+#. module: sale_design_pricing
+#: model_terms:ir.ui.view,arch_db:sale_design_pricing.product_template_form_view_design_markups
+msgid "Design Pricing"
+msgstr "Дизайн ценообразуване"
+
+#. module: sale_design_pricing
+#: model_terms:ir.ui.view,arch_db:sale_design_pricing.product_template_form_view_design_markups
+msgid "Markups (override; 0 = inherit)"
+msgstr "Надценки (заменят; 0 = наследи)"
+
+#. module: sale_design_pricing
+#: model_terms:ir.ui.view,arch_db:sale_design_pricing.product_template_form_view_design_markups
+msgid "Effective Markups"
+msgstr "Действащи надценки"
+
+#. module: sale_design_pricing
+#: model_terms:ir.ui.view,arch_db:sale_design_pricing.res_config_settings_view_form_design_pricing
+msgid "Design Pricing — Markups"
+msgstr "Дизайн ценообразуване — надценки"
+
+#. module: sale_design_pricing
+#: model_terms:ir.ui.view,arch_db:sale_design_pricing.res_config_settings_view_form_design_pricing
+msgid "Default markup applied on top of material cost. Can be overridden per category or product."
+msgstr "Надценка по подразбиране върху себестойността на материалите. Може да се замени по категория или продукт."
+
+#. module: sale_design_pricing
+#: model_terms:ir.ui.view,arch_db:sale_design_pricing.res_config_settings_view_form_design_pricing
+msgid "Default markup applied on top of labor cost (workcenter time × hourly rate)."
+msgstr "Надценка по подразбиране върху себестойността на труда (време в работния център × часова ставка)."
+
+#. module: sale_design_pricing
+#: model_terms:ir.ui.view,arch_db:sale_design_pricing.sale_order_form_design_pricing_breakdown
+msgid "List Price"
+msgstr "Продажна цена"
+
+#. module: sale_design_pricing
+#: model_terms:ir.ui.view,arch_db:sale_design_pricing.sale_order_form_design_pricing_breakdown
+msgid "Cost Breakdown (admin)"
+msgstr "Калкулация (admin)"
+
+#. module: sale_design_pricing
+#: code:addons/sale_design_pricing/models/sale_order_line.py:0
+#, python-format
+msgid "%(minutes)s min"
+msgstr "%(minutes)s мин"
+
+#. module: sale_design_pricing
+#: code:addons/sale_design_pricing/models/sale_order_line.py:0
+#, python-format
+msgid "%(rate)s/h"
+msgstr "%(rate)s/ч"
+
+#. module: sale_design_pricing
+#: code:addons/sale_design_pricing/models/sale_order_line.py:0
+msgid "Item"
+msgstr "Позиция"
+
+#. module: sale_design_pricing
+#: code:addons/sale_design_pricing/models/sale_order_line.py:0
+msgid "Qty"
+msgstr "К-во"
+
+#. module: sale_design_pricing
+#: code:addons/sale_design_pricing/models/sale_order_line.py:0
+msgid "Unit"
+msgstr "Ед. цена"
+
+#. module: sale_design_pricing
+#: code:addons/sale_design_pricing/models/sale_order_line.py:0
+msgid "Subtotal"
+msgstr "Сума"
+
+#. module: sale_design_pricing
+#: code:addons/sale_design_pricing/models/sale_order_line.py:0
+msgid "Material cost"
+msgstr "Себестойност материали"
+
+#. module: sale_design_pricing
+#: code:addons/sale_design_pricing/models/sale_order_line.py:0
+#, python-format
+msgid "+ %(percent)s%% markup"
+msgstr "+ %(percent)s%% надценка"
+
+#. module: sale_design_pricing
+#: code:addons/sale_design_pricing/models/sale_order_line.py:0
+msgid "Labor cost"
+msgstr "Себестойност труд"
+
+#. module: sale_design_pricing
+#: code:addons/sale_design_pricing/models/sale_order_line.py:0
+msgid "List price"
+msgstr "Продажна цена"
+
+#. module: sale_design_pricing
+#: code:addons/sale_design_pricing/models/sale_order_line.py:0
+#, python-format
+msgid "Sh.%(index)s %(length)s×%(height)s"
+msgstr "Щ.%(index)s %(length)s×%(height)s"
+
+#. module: sale_design_pricing
+#: code:addons/sale_design_pricing/models/sale_order_line.py:0
+#, python-format
+msgid "Dimensions: %(pairs)s"
+msgstr "Размери: %(pairs)s"

@@ -123,7 +123,9 @@ def validate_graph(graph):
     Хваща класа „счупен граф" дефекти (T3=[] инцидентът на прод: таблица,
     която тихо връща празно за всеки контекст): edge към несъществуващ
     node, откачен decision table (без входящ/изходящ edge), липсващ
-    input/output node, decision table без rules/inputs/outputs.
+    input/output node, decision table без rules list, или с rules, но без
+    outputs (или без списък 'inputs'). Таблица с празни входове ([]) е
+    валидна — безусловни правила (fen S9).
     """
     errs = []
     if not graph:
@@ -187,12 +189,24 @@ def validate_graph(graph):
             if not isinstance(rules, list):
                 errs.append("decision table %r has no rules list" % nid)
             elif rules:
-                for key in ("inputs", "outputs"):
-                    val = content.get(key)
-                    if not isinstance(val, list) or not val:
-                        errs.append(
-                            "decision table %r has rules but empty/missing %r"
-                            % (nid, key))
+                # Без изходи таблицата не дава нищо — това е счупено. Без
+                # ВХОДОВЕ обаче е валидна JDM таблица: правилата са безусловни
+                # и винаги съвпадат (hitPolicy collect → всички редове). На това
+                # стъпват стъпките на прозореца (fen S9 „s9_ops“); в 18 тази
+                # проверка я нямаше и данните минаваха. Семантичната проверка
+                # по-долу (zen компилира графа) пак хваща истински грешки.
+                # Ключът 'inputs' обаче е ЗАДЪЛЖИТЕЛЕН (празен списък []):
+                # zen-engine 0.53 отказва таблица без него („missing field
+                # `inputs`“), а без zen структурата трябва да го хване сама.
+                if not isinstance(content.get("inputs"), list):
+                    errs.append(
+                        "decision table %r has a missing or malformed "
+                        "'inputs' list (use [] for unconditional rules)" % nid)
+                val = content.get("outputs")
+                if not isinstance(val, list) or not val:
+                    errs.append(
+                        "decision table %r has rules but empty/missing %r"
+                        % (nid, "outputs"))
         elif ntype == "inputNode" and nid not in has_out:
             errs.append("inputNode %r has no outgoing edge" % nid)
         elif ntype == "outputNode" and nid not in has_in:
