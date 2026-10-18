@@ -18,3 +18,4 @@ from . import test_aspects_tables
 from . import test_render
 from . import test_sale_description
 from . import test_companion_lines
+from . import test_optional_switch
