@@ -126,3 +126,35 @@ class TestSectionSwitch(PocCommon):
                              t_width_mm=300.0, t_length_mm=500.0, t_thickness_um=20.0)
         poc._poc_compute_derived()
         self.assertEqual(poc._poc_values().get("t_ink_colours"), 2.0)
+
+
+@tagged("post_install", "-at_install")
+class TestSectionSwitchWithoutFormulas(PocCommon):
+    def test_template_without_formulas_still_clears(self):
+        """Шаблон без нито една формула: изключената секция пак губи стойностите.
+
+        МУТАЦИЯ: почистването след изхода `if not lines and not
+        template.label_formula: continue` — стойността остава.
+        """
+        Param = self.env["sale.order.poc.param"]
+        switch = Param.create({"code": "t_nf_switch", "name": "On", "param_type": "boolean"})
+        value = Param.create({"code": "t_nf_value", "name": "Value", "param_type": "float"})
+        template = self.env["sale.order.poc.template"].create({
+            "code": "t_no_formula",
+            "name": "No Formula",
+            "line_ids": [
+                (0, 0, {"sequence": 1, "display_type": "line_section", "name": "Part"}),
+                (0, 0, {"sequence": 2, "param_id": switch.id, "section_switch": True}),
+                (0, 0, {"sequence": 3, "param_id": value.id}),
+            ],
+        })
+        product = self.env["product.product"].create({
+            "name": "No Formula Product", "type": "consu", "sale_ok": True,
+            "poc_template_id": template.id,
+        })
+        poc = self._make_poc(order=self._make_order(product=product),
+                             t_nf_switch=True, t_nf_value=5.0)
+        self.assertEqual(poc._poc_values().get("t_nf_value"), 5.0)
+        poc._poc_set_params({"t_nf_switch": False})
+        poc._poc_compute_derived()
+        self.assertFalse(poc._poc_values().get("t_nf_value"))

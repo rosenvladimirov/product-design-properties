@@ -4,6 +4,16 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.7.1] - 2026-10-18
+
+### Fixed
+
+- A switched-off section kept its values when the template had no formula
+  at all: the values were cleared only after the early exit for templates
+  without formulas.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.7.0] - 2026-10-18
 
 ### Added

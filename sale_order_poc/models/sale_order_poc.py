@@ -462,15 +462,9 @@ class SaleOrderPoc(models.Model):
             all_lines = self.env["sale.order.poc.template.line"].browse()
             for container in containers:
                 all_lines |= container.template_id.line_ids
-            lines = Template._poc_order_formula_lines(all_lines, poc.display_name)
-            if not lines and not template.label_formula:
-                continue
-            # всеки ред пише в своя контейнер: основният шаблон или аспектът
-            container_by_template = {
-                container.template_id: container for container in containers
-            }
             # изключена секция (превключвателят ѝ е „не“) губи стойностите
-            # си, изчислените също не се смятат
+            # си, изчислените също не се смятат. Преди изхода за шаблон без
+            # формули — иначе там изключената секция пазеше старите стойности
             switched_off = poc._poc_switched_off_codes()
             current = poc._poc_values()
             to_clear = {
@@ -478,6 +472,13 @@ class SaleOrderPoc(models.Model):
             }
             if to_clear:
                 poc.with_context(poc_system=True)._poc_set_params(to_clear)
+            lines = Template._poc_order_formula_lines(all_lines, poc.display_name)
+            if not lines and not template.label_formula:
+                continue
+            # всеки ред пише в своя контейнер: основният шаблон или аспектът
+            container_by_template = {
+                container.template_id: container for container in containers
+            }
             values = poc._poc_values()
             origins = {
                 container: dict(container.param_origins or {})
