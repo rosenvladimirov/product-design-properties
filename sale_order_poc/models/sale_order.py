@@ -27,6 +27,16 @@ class SaleOrder(models.Model):
             order._poc_copy_to(new_order)
         return new_orders
 
+    def _get_copiable_order_lines(self):
+        """Съпътстващите редове не се копират — ражда ги копието на POC-а.
+
+        Иначе копието на реда губи връзката си (``copy=False``), а
+        синхронизацията на новата конфигурация добавя втори същи ред.
+        """
+        return super()._get_copiable_order_lines().filtered(
+            lambda line: not line.poc_companion_of_id
+        )
+
     def _poc_copy_to(self, new_order):
         """Всеки ред с конфигурация получава копие ѝ, без лота.
 
@@ -40,7 +50,9 @@ class SaleOrder(models.Model):
                 and new_line.sequence == line.sequence
             )[:1]
             if match:
-                line.poc_id.copy({"sale_line_id": match.id})
+                new_poc = line.poc_id.copy({"sale_line_id": match.id})
+                # съпътстващите редове не са копирани — ражда ги копието
+                new_poc._poc_sync_companion_lines()
                 unmatched -= match
 
     def action_view_pocs(self):

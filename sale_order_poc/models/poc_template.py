@@ -309,6 +309,16 @@ class SaleOrderPocTemplateLine(models.Model):
         "logged on the configuration instead of an error.",
     )
 
+    # Превключвател на секцията си (Росен, 15.10.2026: „С печат“): изключен —
+    # секцията не се показва в касата и параметрите ѝ се изчистват при
+    # запис, за да не остане печат без отметка.
+    section_switch = fields.Boolean(
+        string="Switches the Section",
+        help="A yes/no parameter that switches its section: when it is off the "
+        "section is hidden in the Point of Sale and the other parameters of "
+        "the section are cleared on save.",
+    )
+
     _param_uniq = models.Constraint(
         "unique(template_id, param_id)",
         "A parameter can appear only once in a template.",
@@ -316,7 +326,7 @@ class SaleOrderPocTemplateLine(models.Model):
 
     @api.constrains(
         "display_type", "param_id", "formula", "required", "allow_manual",
-        "allow_fallback",
+        "allow_fallback", "section_switch",
     )
     def _check_line(self):
         engine = self.env["formula.engine.mixin"]
@@ -329,6 +339,14 @@ class SaleOrderPocTemplateLine(models.Model):
                 continue
             if not line.param_id:
                 raise ValidationError(self.env._("A template line needs a parameter."))
+            if line.section_switch and (line.param_type != "boolean" or line.formula):
+                raise ValidationError(
+                    self.env._(
+                        "Only a yes/no parameter entered by hand can switch a "
+                        "section (%(code)s).",
+                        code=line.param_id.code,
+                    )
+                )
             if line.formula:
                 if line.param_type == "table":
                     raise ValidationError(

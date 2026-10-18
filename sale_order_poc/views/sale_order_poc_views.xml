@@ -85,6 +85,13 @@
                         <page string="Parameters" name="params">
                             <field name="params" nolabel="1" colspan="2" columns="2"
                                    readonly="state == 'cancel' or (state == 'confirmed' and not can_edit_confirmed)"/>
+                            <group name="optional_products" string="Optional Products"
+                                   invisible="not allowed_optional_product_ids">
+                                <field name="allowed_optional_product_ids" invisible="1"/>
+                                <field name="optional_product_ids" widget="many2many_tags" nolabel="1" colspan="2"
+                                       options="{'no_create': True}"
+                                       readonly="state == 'cancel' or (state == 'confirmed' and not can_edit_confirmed)"/>
+                            </group>
                         </page>
                         <page string="Aspects" name="aspects"
                               invisible="not template_id">
