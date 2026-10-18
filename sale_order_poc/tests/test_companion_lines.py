@@ -101,7 +101,8 @@ class TestCompanionLines(PocCommon):
         self.assertFalse(self._companion(order))
 
     def test_deleting_the_configuration_removes_its_lines(self):
-        """МУТАЦИЯ: `ondelete="set null"` на `poc_companion_of_id`."""
+        """МУТАЦИЯ: махни `companion_line_ids.unlink()` от `unlink` И сложи
+        `ondelete="set null"` на `poc_companion_of_id` — редът остава."""
         poc = self._make_poc()
         order = poc.order_id
         self.wanted = [self._screen()]
@@ -138,3 +139,35 @@ class TestCompanionLines(PocCommon):
         self.assertFalse(poc2._poc_design_lot_ordered())
         poc2.with_context(poc_system=True).sudo().lot_id = poc1.lot_id
         self.assertTrue(poc2._poc_design_lot_ordered())
+
+    def test_deleting_the_configuration_recomputes_the_total(self):
+        """Изтритата конфигурация не оставя грешна сума в офертата.
+
+        МУТАЦИЯ: махни `companion_line_ids.unlink()` от `unlink` — каскадата
+        в базата трие реда, но сумата остава с него.
+        """
+        poc = self._make_poc()
+        order = poc.order_id
+        self.wanted = [self._screen()]
+        self._run(poc)
+        self.assertTrue(self._companion(order))
+        poc.unlink()
+        self.env.invalidate_all()
+        self.assertAlmostEqual(
+            order.amount_untaxed, sum(order.order_line.mapped("price_subtotal")))
+
+    def test_duplicate_key_is_removed(self):
+        """Два реда с един ключ — вторият се маха при следващото преизчисляване.
+
+        МУТАЦИЯ: махни `duplicates.unlink()` — двата реда остават.
+        """
+        poc = self._make_poc()
+        order = poc.order_id
+        self.wanted = [self._screen()]
+        self._run(poc)
+        first = self._companion(order)
+        first.copy({"order_id": order.id, "poc_companion_of_id": poc.id,
+                    "poc_companion_key": "screen"})
+        self.assertEqual(len(self._companion(order)), 2)
+        self._run(poc)
+        self.assertEqual(len(self._companion(order)), 1)

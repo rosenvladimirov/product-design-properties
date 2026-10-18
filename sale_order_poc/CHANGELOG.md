@@ -4,6 +4,21 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [19.0.1.7.2] - 2026-10-18
+
+### Fixed
+
+- A pricelist with a shown discount gave the discount twice on a companion
+  line (100 → 90 → 81): the line got the price after the discount and the
+  discount again. The price now comes from the line Odoo itself would make.
+- Deleting a configuration left a wrong total on the quotation: the
+  database removed its companion lines without recomputing the amounts.
+  They are now removed through the ORM first.
+- Two companion lines with the same key: the second is removed instead of
+  staying forever.
+
+*Assisted by Claude Code*
+
 ## [19.0.1.7.1] - 2026-10-18
 
 ### Fixed

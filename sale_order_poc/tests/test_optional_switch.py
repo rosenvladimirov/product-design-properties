@@ -72,6 +72,31 @@ class TestOptionalProducts(PocCommon):
         self.assertEqual(line.product_id, self.design)
         self.assertEqual(line.product_uom_qty, 1.0)
 
+    def test_shown_discount_is_applied_once(self):
+        """Ценоразпис с показана отстъпка: цената е ПРЕДИ нея, отстъпката — веднъж.
+
+        МУТАЦИЯ: `_poc_companion_price` през `pricelist._get_product_price`
+        (цената след отстъпката) — сумата става 81 вместо 90.
+        """
+        group = self.env.ref("sale.group_discount_per_so_line")
+        group.write({"user_ids": [(4, self.env.user.id)]})
+        pricelist = self.env["product.pricelist"].create({
+            "name": "TEST minus 10",
+            "item_ids": [(0, 0, {
+                "applied_on": "3_global",
+                "compute_price": "percentage",
+                "percent_price": 10.0,
+            })],
+        })
+        self.handle.list_price = 100.0
+        order = self._make_order(qty=1.0)
+        order.pricelist_id = pricelist
+        poc = self._make_poc(order=order)
+        poc.optional_product_ids = self.handle
+        poc._poc_compute_derived()
+        line = self._optional_lines(poc.order_id)
+        self.assertAlmostEqual(line.price_subtotal, 90.0)
+
     def test_only_the_products_optional_products_are_allowed(self):
         """Чужд продукт не може да е опционален за конфигурацията.
 

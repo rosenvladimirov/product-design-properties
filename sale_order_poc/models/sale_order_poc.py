@@ -596,10 +596,22 @@ class SaleOrderPoc(models.Model):
         return lines
 
     def _poc_companion_price(self, product, qty):
-        """Цената на допълнителен ред — по ценовата листа на офертата."""
+        """Цената на допълнителен ред — каквато ценоразписът дава на ред в офертата.
+
+        Не ``pricelist._get_product_price``: тя връща цената СЛЕД отстъпката,
+        а при правило с показана отстъпка редът носи цената ПРЕДИ нея и
+        процента отделно — отстъпката се прилагаше два пъти (100 → 90 → 81,
+        проверката на етап 3, 18.10.2026). Виртуален ред на същата оферта
+        дава точно цената, която Odoo би сложил.
+        """
         self.ensure_one()
-        pricelist = self.sudo().order_id.pricelist_id
-        return pricelist._get_product_price(product, qty) if pricelist else product.lst_price
+        order = self.sudo().order_id
+        if not order:
+            return product.lst_price
+        line = self.env["sale.order.line"].sudo().new(
+            {"order_id": order.id, "product_id": product.id, "product_uom_qty": qty}
+        )
+        return line.price_unit
 
     def _poc_switched_off_codes(self):
         """Кодовете в секции, чийто превключвател е „не“ (без самия превключвател)."""
@@ -639,9 +651,16 @@ class SaleOrderPoc(models.Model):
             if not main or main.order_id.state not in ("draft", "sent"):
                 continue
             wanted = {vals["key"]: vals for vals in poc._poc_companion_lines()}
-            existing = {
-                line.poc_companion_key: line for line in poc.sudo().companion_line_ids
-            }
+            existing = {}
+            duplicates = Line.browse()
+            for line in poc.sudo().companion_line_ids:
+                # два реда с един ключ (напр. едновременно преизчисляване):
+                # вторият иначе остава завинаги и излиза като втора екстра
+                if line.poc_companion_key in existing:
+                    duplicates |= line
+                else:
+                    existing[line.poc_companion_key] = line
+            duplicates.unlink()
             Line.browse(
                 [line.id for key, line in existing.items() if key not in wanted]
             ).unlink()
@@ -916,6 +935,9 @@ class SaleOrderPoc(models.Model):
             raise UserError(
                 self.env._("Only a draft production configuration can be deleted.")
             )
+        # съпътстващите редове — през ORM, преди каскадата в базата: иначе
+        # сумата на офертата не се преизчислява (проверката, 18.10.2026)
+        self.sudo().companion_line_ids.unlink()
         return super().unlink()
 
     # ── Към производството ───────────────────────────────────────────
