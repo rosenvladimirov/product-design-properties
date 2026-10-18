@@ -12,7 +12,7 @@
     "name": "Sale Order Production Configuration Drawing",
     "summary": "Product drawing of a production configuration, managed as data "
     "of the template: picture, SVG template, defaults and caption",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "category": "Sales/Sales",
     "author": "Rosen Vladimirov",
     "maintainers": ["rosen-vladimirov"],

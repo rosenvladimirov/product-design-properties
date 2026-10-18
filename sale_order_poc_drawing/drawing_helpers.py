@@ -190,6 +190,51 @@ def shade(color, k=0.85):
     return "#%02x%02x%02x" % tuple(max(0, min(255, c)) for c in channels)
 
 
+def image_on_face(href, face_pts, size=None, src_rect=None):
+    """Картинка върху стена — афинно, точно (SPEC § 3.8).
+
+    ``face_pts`` — горе-ляво, горе-дясно и долу-ляво на стената, гледана
+    отвън (3D или 2D точки). ``size`` — (ширина, височина) на стената в mm:
+    картината пази пропорциите си вътре в нея; без него се разтяга.
+    ``src_rect`` — (x, y, ширина, височина) от по-голяма картина (цялата
+    разгъвка, ``size`` е тогава размерът ѝ): показва се само тази част.
+
+    Връща речник за шаблона — ``transform``, ``href``, ``x``, ``y``,
+    ``width``, ``height``, ``aspect`` и ``clip`` (правоъгълник или None) —
+    или None без адрес. Шаблонът сам пише ``<g><image/></g>``, за да ескейпва
+    QWeb атрибутите.
+    """
+    if not href or not isinstance(href, str):
+        return None
+    (ex, ey), (rx, ry), (bx, by) = (_xy(point) for point in face_pts[:3])
+    if src_rect:
+        sx, sy, w, h = (num(part) for part in src_rect)
+        full_w, full_h = (num(part) for part in (size or (w, h)))
+        x, y, width, height, clip = -sx, -sy, full_w, full_h, (0.0, 0.0, w, h)
+        aspect = "none"
+    elif size:
+        w, h = num(size[0]), num(size[1])
+        x, y, width, height, clip = 0.0, 0.0, w, h, None
+        aspect = "xMidYMid meet"
+    else:
+        w = h = 1.0
+        x, y, width, height, clip = 0.0, 0.0, 1.0, 1.0, None
+        aspect = "none"
+    w, h = w or 1.0, h or 1.0
+    return {
+        "transform": "matrix(%.5f %.5f %.5f %.5f %.3f %.3f)" % (
+            (rx - ex) / w, (ry - ey) / w, (bx - ex) / h, (by - ey) / h, ex, ey),
+        "href": href,
+        "x": "%.1f" % x,
+        "y": "%.1f" % y,
+        "width": "%.1f" % width,
+        "height": "%.1f" % height,
+        "aspect": aspect,
+        "clip": clip and "M%.1f %.1fH%.1fV%.1fH%.1fZ" % (
+            clip[0], clip[1], clip[2], clip[3], clip[0]),
+    }
+
+
 def make_helpers(values):
     """Помощниците `d` за едно рендиране.
 
@@ -220,4 +265,5 @@ def make_helpers(values):
         stroke_width=stroke_width,
         shade=shade,
         color=color,
+        image_on_face=image_on_face,
     )

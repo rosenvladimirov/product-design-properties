@@ -264,3 +264,52 @@ class TestDrawing(PocCommon):
         self.assertEqual(copy.drawing_template_id, self.drawing)
         # продавачът чете библиотеката
         self.assertTrue(self.drawing.with_user(self.salesman).read(["svg"]))
+
+    def test_13_the_image_sits_exactly_on_the_face(self):
+        """Печатът върху стена (SPEC § 3.8, т. 11): матрицата праща ъглите на
+        стената (mm) в ъглите ѝ на рисунката; картината пази пропорциите си.
+
+        Мутация: размени ширината и височината в матрицата на `image_on_face`.
+        """
+        d = make_helpers({})
+        corners = d.box(400, 300, 250)
+        top_left, top_right, bottom_left = corners["B1"], corners["A1"], corners["B"]
+        image = d.image_on_face("x.png", [top_left, top_right, bottom_left], (400, 250))
+        a, b, c, e, f, g = map(float, re.search(r"matrix\(([^)]*)\)", image["transform"])
+                                .group(1).split())
+        for (u, w), point in (((0, 0), top_left), ((400, 0), top_right), ((0, 250), bottom_left)):
+            x, y = d.iso(*point)
+            self.assertAlmostEqual(a * u + c * w + f, x, places=2)
+            self.assertAlmostEqual(b * u + e * w + g, y, places=2)
+        self.assertEqual((image["width"], image["height"]), ("400.0", "250.0"))
+        self.assertEqual(image["aspect"], "xMidYMid meet")
+        self.assertIsNone(image["clip"])
+        self.assertIsNone(d.image_on_face(False, [top_left, top_right, bottom_left]))
+
+    def test_14_a_part_of_the_whole_die_line_is_clipped(self):
+        """Цялата разгъвка: само правоъгълникът на панела, изрязан (т. 12).
+
+        Мутация: `clip` винаги None в `image_on_face`.
+        """
+        d = make_helpers({})
+        image = d.image_on_face(
+            "blank.png", [(0, 0), (10, 0), (0, 5)], (1200, 600), src_rect=(300, 100, 400, 250))
+        self.assertEqual((image["x"], image["y"]), ("-300.0", "-100.0"))
+        self.assertEqual((image["width"], image["height"]), ("1200.0", "600.0"))
+        self.assertEqual(image["clip"], "M0.0 0.0H400.0V250.0H0.0Z")
+
+    def test_15_the_template_lays_the_image_with_escaped_address(self):
+        """Шаблонът пише `<image>` сам — QWeb ескейпва адреса от стойностите.
+
+        Мутация: махни `image_on_face` от `make_helpers`.
+        """
+        svg = """<svg xmlns="http://www.w3.org/2000/svg">
+            <t t-set="im" t-value="d.image_on_face(v.get('t_img'), [(0, 0), (10, 0), (0, 5)], (10, 5))"/>
+            <g t-if="im" t-att-transform="im['transform']"><image t-att-href="im['href']"
+                t-att-width="im['width']" t-att-height="im['height']"
+                t-att-preserveAspectRatio="im['aspect']"/></g></svg>"""
+        drawing = self.drawing.copy({"code": "t_img_face", "svg": svg})
+        out = str(drawing._render_svg({"t_img": '/x.png?a=1&b="2"'}))
+        self.assertIn('transform="matrix(1.00000 0.00000 0.00000 1.00000 0.000 0.000)"', out)
+        self.assertIn('href="/x.png?a=1&amp;b=&#34;2&#34;"', out)
+        self.assertNotIn("<image", str(drawing._render_svg({})))
