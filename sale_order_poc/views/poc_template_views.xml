@@ -85,6 +85,15 @@
                                 <field name="label_formula" widget="code" options="{'mode': 'python'}"/>
                             </group>
                         </page>
+                        <page string="Standard Products" name="alternatives" invisible="usage != 'main'">
+                            <group>
+                                <field name="alternative_size_codes" placeholder="box_l, box_w, box_d"/>
+                                <field name="alternative_tolerance"/>
+                                <field name="alternative_limit"/>
+                                <field name="alternative_domain" widget="domain"
+                                       options="{'model': 'product.product'}"/>
+                            </group>
+                        </page>
                         <page string="Quotation Text" name="sale_description">
                             <field name="sale_description" nolabel="1"
                                    placeholder="Box: {{ box_l }} × {{ box_w }} × {{ box_d }} mm"/>

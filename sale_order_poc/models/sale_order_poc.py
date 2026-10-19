@@ -585,6 +585,9 @@ class SaleOrderPoc(models.Model):
         """
         self.ensure_one()
         lines = []
+        if self.standard_product_id:
+            # готовият продукт е без сита, щанци и опции (ADR 0027)
+            return lines
         for product in self.optional_product_ids:
             qty = 1.0 if product.poc_optional_per_order else (self.product_uom_qty or 0.0)
             lines.append({
@@ -739,6 +742,9 @@ class SaleOrderPoc(models.Model):
             # POC; продавач може да пише POC на поръчка, която не може да чете
             line = poc.sudo().sale_line_id
             if not line or line.order_id.state not in ("draft", "sent"):
+                continue
+            if poc.standard_product_id:
+                # редът е готовият продукт — описанието е неговото (ADR 0027)
                 continue
             # на езика на клиента, както ядрото пише описанието на реда
             lang = line.order_id._get_lang()
@@ -970,7 +976,10 @@ class SaleOrderPoc(models.Model):
         Вика се от ``sale.order.line._action_launch_stock_rule``. Всичко е
         системен запис: продавач без права на мениджър също потвърждава.
         """
-        system = self.with_context(poc_system=True)
+        # избран стандартен продукт: нито задължителни, нито лот (ADR 0027)
+        system = self.filtered(lambda poc: not poc.standard_product_id).with_context(
+            poc_system=True
+        )
         system._poc_check_required()
         system._poc_compute_derived()
         system._poc_ensure_lot()

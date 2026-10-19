@@ -1506,3 +1506,135 @@ msgid ""
 msgstr ""
 "Избран като опционален продукт в конфигурацията, редът му е с количество 1, "
 "а не с количеството на артикула."
+
+#. module: sale_order_poc
+#. odoo-python
+#: code:addons/sale_order_poc/models/poc_standard.py:0
+msgid ""
+"%(poc)s: a standard product can be chosen or dropped only while the "
+"quotation is a draft."
+msgstr "%(poc)s: стандартен продукт се избира или маха само докато офертата е чернова."
+
+#. module: sale_order_poc
+#: model:ir.model.fields,help:sale_order_poc.field_sale_order_poc__standard_product_id
+msgid ""
+"A ready product chosen instead of making the configured one. The order line "
+"takes this product and its price; the configuration stays as the record of "
+"the request, without lot, matrix or extra lines."
+msgstr "Готов продукт, избран вместо да се произвежда конфигурираният. Редът в поръчката взима този продукт и цената му; конфигурацията остава като запис на искането, без партида, матрица и допълнителни редове."
+
+#. module: sale_order_poc
+#: model:ir.model.fields,help:sale_order_poc.field_sale_order_poc_template__alternative_tolerance
+msgid ""
+"A standard product is an alternative when each of its sizes is from the "
+"requested one up to this much larger."
+msgstr "Стандартният продукт е алтернатива, когато всяка негова мярка е от поисканата до толкова по-голяма."
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__alternative_enabled
+msgid "Alternative Enabled"
+msgstr "Търси алтернативи"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__alternative_limit
+msgid "Alternatives Shown"
+msgstr "Показани алтернативи"
+
+#. module: sale_order_poc
+#. odoo-python
+#: code:addons/sale_order_poc/models/poc_standard.py:0
+msgid "Back to the configured product: %s"
+msgstr "Обратно към конфигурирания продукт: %s"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__alternative_product_ids
+msgid "Close Standard Products"
+msgstr "Близки стандартни продукти"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,help:sale_order_poc.field_sale_order_poc_template__alternative_size_codes
+msgid ""
+"Codes of the parameters that give the size in mm, in the order length, "
+"width, height, separated by commas (e.g. box_l, box_w, box_d). Leave empty "
+"to look for no standard products."
+msgstr "Кодовете на параметрите с размера в мм, по ред дължина, ширина, височина, разделени със запетая (напр. box_l, box_w, box_d). Празно — без търсене на стандартни продукти."
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__configured_product_id
+msgid "Configured Product"
+msgstr "Конфигуриран продукт"
+
+#. module: sale_order_poc
+#: model:ir.model,name:sale_order_poc.model_product_attribute
+msgid "Product Attribute"
+msgstr "Продуктови атрибути"
+
+#. module: sale_order_poc
+#: model:ir.model,name:sale_order_poc.model_product_product
+msgid "Product Variant"
+msgstr "Продуктов вариант"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__alternative_size_codes
+msgid "Size Parameters"
+msgstr "Параметри на размера"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__alternative_tolerance
+msgid "Size Tolerance (%)"
+msgstr "Допуск по размера (%)"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_product_attribute__poc_size_unit
+msgid "Size Unit"
+msgstr "Единица за размер"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc__standard_product_id
+msgid "Standard Product"
+msgstr "Стандартен продукт"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,field_description:sale_order_poc.field_sale_order_poc_template__alternative_domain
+#: model_terms:ir.ui.view,arch_db:sale_order_poc.sale_order_poc_template_view_form
+#: model_terms:ir.ui.view,arch_db:sale_order_poc.sale_order_poc_view_form
+msgid "Standard Products"
+msgstr "Стандартен продукт"
+
+#. module: sale_order_poc
+#. odoo-python
+#: code:addons/sale_order_poc/models/poc_standard.py:0
+msgid "Standard product chosen instead of the configuration: %s"
+msgstr "Избран е стандартен продукт вместо конфигурацията: %s"
+
+#. module: sale_order_poc
+#: model:ir.model.fields,help:sale_order_poc.field_product_attribute__poc_size_unit
+msgid ""
+"The values of this attribute are sizes such as 40×30×25, in this unit unless"
+" the value names its own. Production configurations use them to find "
+"standard products close to the requested size."
+msgstr "Стойностите на този атрибут са размери като 40×30×25 — в тази единица, освен ако стойността не посочва своя. Конфигурациите на производството ги ползват, за да намерят стандартни продукти близо до поискания размер."
+
+#. module: sale_order_poc
+#: model:ir.model.fields,help:sale_order_poc.field_sale_order_poc_template__alternative_domain
+msgid "Which products may be offered instead of the configured one."
+msgstr "Кои продукти може да се предложат вместо конфигурирания."
+
+#. module: sale_order_poc
+#: model_terms:ir.ui.view,arch_db:sale_order_poc.sale_order_poc_template_view_form
+msgid "box_l, box_w, box_d"
+msgstr "box_l, box_w, box_d"
+
+#. module: sale_order_poc
+#: model:ir.model.fields.selection,name:sale_order_poc.selection__product_attribute__poc_size_unit__cm
+msgid "cm"
+msgstr "см"
+
+#. module: sale_order_poc
+#: model_terms:ir.ui.view,arch_db:sale_order_poc.sale_order_poc_view_form
+msgid ""
+"The order line sells the standard product; this configuration is kept as "
+"the record of the request. Clear the standard product to go back."
+msgstr ""
+"Редът в поръчката продава стандартния продукт; конфигурацията остава като "
+"запис на искането. Махнете стандартния продукт, за да се върнете."

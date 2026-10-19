@@ -19,3 +19,4 @@ from . import test_render
 from . import test_sale_description
 from . import test_companion_lines
 from . import test_optional_switch
+from . import test_standard_product

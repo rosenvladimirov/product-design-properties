@@ -12,7 +12,7 @@
     "name": "Sale Order Production Configuration",
     "summary": "Production configuration of a sale order line: parameters "
     "from templates, derived values, lot link",
-    "version": "19.0.1.7.2",
+    "version": "19.0.1.8.0",
     "category": "Sales/Sales",
     "author": "Rosen Vladimirov",
     "maintainers": ["rosen-vladimirov"],
@@ -33,6 +33,7 @@
         "views/sale_order_poc_views.xml",
         "views/sale_order_views.xml",
         "views/product_template_views.xml",
+        "views/product_attribute_views.xml",
         "views/stock_lot_views.xml",
         "views/menus.xml",
     ],

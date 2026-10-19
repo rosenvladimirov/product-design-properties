@@ -94,7 +94,8 @@ class SaleOrderLine(models.Model):
 
     def _prepare_procurement_values(self):
         values = super()._prepare_procurement_values()
-        if self.poc_id:
+        # при избран стандартен продукт POC е само история (ADR 0027)
+        if self.poc_id and not self.poc_id.standard_product_id:
             # пътуват по движенията като sale_line_id (stock.rule
             # _get_custom_move_fields) — ADR sale-order-poc/0007
             values["poc_id"] = self.poc_id.id

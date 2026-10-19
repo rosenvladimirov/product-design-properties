@@ -13,6 +13,7 @@ from . import poc_aspect
 from . import poc_line
 from . import poc_template
 from . import sale_order_poc
+from . import poc_standard
 from . import sale_order_line
 from . import sale_order
 from . import product_template

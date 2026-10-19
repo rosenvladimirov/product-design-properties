@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Rosen Vladimirov
+     License LGPL-3.0-or-later (https://www.gnu.org/licenses/lgpl-3.0.html) -->
+<odoo>
+    <!-- атрибутът с размер дава размера на готовите продукти (ADR sale-order-poc/0027) -->
+    <record id="product_attribute_view_form_inherit_sale_order_poc" model="ir.ui.view">
+        <field name="name">product.attribute.form.sale.order.poc</field>
+        <field name="model">product.attribute</field>
+        <field name="inherit_id" ref="product.product_attribute_view_form"/>
+        <field name="arch" type="xml">
+            <field name="create_variant" position="after">
+                <field name="poc_size_unit"/>
+            </field>
+        </field>
+    </record>
+</odoo>

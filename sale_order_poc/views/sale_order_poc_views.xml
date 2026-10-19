@@ -123,6 +123,29 @@
                                 </list>
                             </field>
                         </page>
+                        <!-- готовият продукт вместо изделието (ADR sale-order-poc/0027) -->
+                        <page string="Standard Products" name="standard"
+                              invisible="not alternative_enabled and not standard_product_id">
+                            <field name="alternative_enabled" invisible="1"/>
+                            <div class="alert alert-info" role="status" invisible="not standard_product_id">
+                                The order line sells the standard product; this configuration is kept as the record of the request. Clear the standard product to go back.
+                            </div>
+                            <group>
+                                <field name="standard_product_id"
+                                       domain="[('id', 'in', alternative_product_ids)]"
+                                       options="{'no_create': True}"
+                                       readonly="state != 'draft'"/>
+                                <field name="configured_product_id" invisible="not configured_product_id"/>
+                            </group>
+                            <field name="alternative_product_ids" nolabel="1" readonly="1">
+                                <list>
+                                    <field name="display_name" string="Product"/>
+                                    <field name="default_code" optional="show"/>
+                                    <field name="lst_price"/>
+                                    <field name="qty_available" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
                         <page string="Special Requirements" name="note">
                             <field name="note" nolabel="1"
                                    readonly="state == 'cancel' or (state == 'confirmed' and not can_edit_confirmed)"/>
