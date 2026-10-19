@@ -89,6 +89,45 @@
                         </t>
                     </div>
                 </section>
+                <!-- готовите продукти близо до размера (ADR sale-order-poc/0027) -->
+                <section t-if="state.data.standard" class="o_l10n_bg_poc_card o_l10n_bg_poc_standard">
+                    <div class="o_l10n_bg_poc_head">
+                        <span class="o_l10n_bg_poc_head_title">Standard Products</span>
+                        <button t-if="standardValue" class="btn btn-outline-secondary ms-auto o_l10n_bg_poc_standard_back"
+                                t-att-title="state.data.standard.configured"
+                                t-att-disabled="state.loading or !state.data.editable"
+                                t-on-click="() => this.chooseStandard(false)">
+                            <i class="fa fa-undo me-1"/>Back to the configuration
+                        </button>
+                    </div>
+                    <div t-if="standardValue" class="alert alert-info py-2 mb-2">
+                        The line sells the standard product; the configuration is kept as the record of the request.
+                    </div>
+                    <div t-if="!state.data.standard.options.length" class="o_l10n_bg_poc_label">
+                        No standard product within the tolerance of this size.
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <t t-foreach="state.data.standard.options" t-as="option" t-key="option.id">
+                            <button class="o_l10n_bg_poc_chip o_l10n_bg_poc_standard_option text-start"
+                                    t-att-class="{'active': standardValue === option.id}"
+                                    t-att-data-id="option.id"
+                                    t-att-disabled="state.loading or !state.data.editable"
+                                    t-on-click="() => this.chooseStandard(option.id)">
+                                <i t-attf-class="fa {{ standardValue === option.id ? 'fa-dot-circle-o' : 'fa-circle-o' }}"/>
+                                <span class="d-flex flex-column lh-sm">
+                                    <span class="fw-bold" t-esc="option.name"/>
+                                    <span class="o_l10n_bg_poc_label">
+                                        <t t-if="option.size" t-esc="option.size + ' mm · '"/>
+                                        <t t-esc="formatCurrency(option.price)"/>
+                                        <t t-if="option.qty_available !== null">
+                                            <t t-esc="' · ' + option.qty_available + ' '"/><span>on hand</span>
+                                        </t>
+                                    </span>
+                                </span>
+                            </button>
+                        </t>
+                    </div>
+                </section>
                 <!-- справките на вертикала — смятат се при натискане -->
                 <section t-foreach="state.data.reports or []" t-as="report" t-key="report.key"
                          class="o_l10n_bg_poc_card o_l10n_bg_poc_report" t-att-data-report="report.key">

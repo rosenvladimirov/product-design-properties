@@ -166,3 +166,28 @@ class TestPocPosTour(TestPointOfSaleHttpCommon):
         poc = self.env["sale.order.poc"].search([("partner_id", "=", self.buyer.id)])
         # прегледът не пише
         self.assertIsNone(poc._poc_values()["pos_width_mm"])
+
+    # Т-POC-5: готовият продукт вместо изделието (ADR sale-order-poc/0027).
+    # МУТАЦИЯ: `_applyProduct` не сменя продукта на реда — касата остава с изделието.
+    def test_tour_poc_standard(self):
+        if "standard_product_id" not in self.env["sale.order.poc"]._fields:
+            self.skipTest("sale_order_poc без стандартен продукт")
+        env = self.env
+        self.configured.product_tmpl_id.poc_template_id.sudo().alternative_size_codes = "pos_width_mm"
+        size = env["product.attribute"].sudo().create(
+            {"name": "TEST POS Size", "poc_size_unit": "cm", "create_variant": "always"})
+        value = env["product.attribute.value"].sudo().create(
+            {"name": "30×20", "attribute_id": size.id})
+        # НЕ е в касата: касата го зарежда сама
+        ready = env["product.template"].sudo().create({
+            "name": "Ready Bag (test)", "type": "consu", "sale_ok": True, "list_price": 1.5,
+            "available_in_pos": False,
+            "attribute_line_ids": [(0, 0, {"attribute_id": size.id, "value_ids": [(6, 0, value.ids)]})],
+        }).product_variant_id
+        self.main_pos_config.with_user(self.pos_user).open_ui()
+        self.start_pos_tour("sale_order_poc_pos_standard")
+        poc = env["sale.order.poc"].search([("partner_id", "=", self.buyer.id)])
+        self.assertFalse(poc.standard_product_id)
+        self.assertEqual(poc.sale_line_id.product_id, self.configured)
+        chosen = poc.message_ids.filtered(lambda m: ready.display_name in (m.body or ""))
+        self.assertTrue(chosen)

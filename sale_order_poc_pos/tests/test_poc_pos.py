@@ -214,6 +214,44 @@ class TestPocPos(B2bPosCommon):
         data = self.config.l10n_bg_poc_save(result["poc"]["id"], {"pos_print": False})
         self.assertIn(self._params(data)["pos_colours"]["value"], (None, False))
 
+    def test_the_standard_product_reaches_the_register(self):
+        """Готовите продукти идват в касата; изборът сменя артикула на реда и
+        запазването от касата с новия артикул го пази; False го връща.
+
+        МУТАЦИЯ: в `_l10n_bg_pos_write` без `__standard` — редът остава изделието.
+        """
+        if "standard_product_id" not in self.env["sale.order.poc"]._fields:
+            self.skipTest("sale_order_poc без стандартен продукт")
+        self.template.sudo().alternative_size_codes = "pos_width_mm"
+        size = self.env["product.attribute"].sudo().create(
+            {"name": "TEST POS Size", "poc_size_unit": "mm", "create_variant": "always"})
+        values = self.env["product.attribute.value"].sudo().create(
+            [{"name": n, "attribute_id": size.id} for n in ("300×200", "500×400")])
+        ready = self.env["product.template"].sudo().create({
+            "name": "Ready Bag", "type": "consu", "sale_ok": True, "list_price": 1.5,
+            "attribute_line_ids": [(0, 0, {"attribute_id": size.id, "value_ids": [(6, 0, values.ids)]})],
+        }).product_variant_ids.filtered(
+            lambda p: p.product_template_attribute_value_ids.name == "300×200")
+        self.open_new_session()
+        result = self.config.l10n_bg_poc_open(self._payload(self.configured), "line-1")
+        data = self.config.l10n_bg_poc_save(result["poc"]["id"], {"pos_width_mm": 290})
+        self.assertEqual([o["id"] for o in data["standard"]["options"]], ready.ids)
+        self.assertEqual(data["standard"]["options"][0]["size"], "300 × 200")
+        data = self.config.l10n_bg_poc_save(result["poc"]["id"], {"__standard": ready.id})
+        self.assertEqual(data["standard"]["value"], ready.id)
+        self.assertEqual(data["line"]["product_id"], ready.id)
+        self.assertEqual(data["line"]["price_unit"], 1.5)
+        so_line = self.env["sale.order.poc"].browse(data["id"]).sale_line_id
+        # касата запазва офертата вече с готовия продукт — остава
+        self.config.l10n_bg_b2b_save_quotation(
+            self._payload(ready, sale_order_id=result["quotation"]["id"]))
+        self.assertEqual(so_line.product_id, ready)
+        data = self.config.l10n_bg_poc_save(result["poc"]["id"], {"__standard": False})
+        self.assertFalse(data["standard"]["value"])
+        self.assertEqual(data["line"]["product_id"], self.configured.id)
+        with self.assertRaises(UserError):
+            self.config.l10n_bg_poc_save(result["poc"]["id"], {"__standard": self.product1.id})
+
     # ── Рисунката (sale_order_poc_drawing, О5) ──────────────────────
 
     def _drawing_template(self, svg=None):

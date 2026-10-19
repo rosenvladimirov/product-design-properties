@@ -159,3 +159,39 @@ msgstr "Първо запишете и пресметнете."
 #: code:addons/sale_order_poc_pos/models/pos_config.py:0
 msgid "Unknown report."
 msgstr "Непозната справка."
+
+#. module: sale_order_poc_pos
+#. odoo-javascript
+#: code:addons/sale_order_poc_pos/static/src/app/poc_editor/poc_editor.xml:0
+msgid "Standard Products"
+msgstr "Стандартни продукти"
+
+#. module: sale_order_poc_pos
+#. odoo-javascript
+#: code:addons/sale_order_poc_pos/static/src/app/poc_editor/poc_editor.xml:0
+msgid "Back to the configuration"
+msgstr "Обратно към изделието"
+
+#. module: sale_order_poc_pos
+#. odoo-javascript
+#: code:addons/sale_order_poc_pos/static/src/app/poc_editor/poc_editor.xml:0
+msgid "The line sells the standard product; the configuration is kept as the record of the request."
+msgstr "Редът продава стандартния продукт; конфигурацията остава като запис на искането."
+
+#. module: sale_order_poc_pos
+#. odoo-javascript
+#: code:addons/sale_order_poc_pos/static/src/app/poc_editor/poc_editor.xml:0
+msgid "No standard product within the tolerance of this size."
+msgstr "Няма стандартен продукт в допуска на този размер."
+
+#. module: sale_order_poc_pos
+#. odoo-javascript
+#: code:addons/sale_order_poc_pos/static/src/app/poc_editor/poc_editor.xml:0
+msgid "on hand"
+msgstr "налични"
+
+#. module: sale_order_poc_pos
+#. odoo-python
+#: code:addons/sale_order_poc_pos/models/sale_order_poc.py:0
+msgid "This product is not a standard alternative of %s."
+msgstr "Този продукт не е стандартна алтернатива на %s."

@@ -61,9 +61,20 @@ export class L10nBgPocEditor extends Component {
         return Boolean(
             line &&
                 !line.combo_parent_id &&
-                line.product_id?.product_tmpl_id?.l10n_bg_pos_has_poc &&
+                (line.product_id?.product_tmpl_id?.l10n_bg_pos_has_poc ||
+                    this.standardLines.has(line.uuid)) &&
                 this.order.getPartner()
         );
+    }
+
+    /**
+     * Редовете, на които е избран готов продукт: артикулът им вече няма
+     * шаблон, но конфигурацията е на същия ред — редакторът се отваря, за да
+     * може да се върне изделието (ADR sale-order-poc/0027). Помни се за сесията.
+     */
+    get standardLines() {
+        this.pos.l10nBgPocStandardLines ??= new Set();
+        return this.pos.l10nBgPocStandardLines;
     }
 
     get visible() {
@@ -87,6 +98,7 @@ export class L10nBgPocEditor extends Component {
             order.l10nBgApplyQuotation(result.quotation);
             if (this.state.uuid === uuid) {
                 this.state.data = result.poc;
+                await this._applyProduct(result.poc);
                 this._applyPrice(result.poc);
                 await this._applyCompanions(result.poc);
             }
@@ -116,6 +128,7 @@ export class L10nBgPocEditor extends Component {
             this.state.updates = {};
             // справките са по старите стойности — смятат се отново при поискване
             this.state.reports = {};
+            await this._applyProduct(result);
             this._applyPrice(result);
             await this._applyCompanions(result);
         } catch (error) {
@@ -124,6 +137,35 @@ export class L10nBgPocEditor extends Component {
             });
         } finally {
             this.state.loading = false;
+        }
+    }
+
+    /**
+     * Артикулът на реда в офертата → редът в касата: избраният готов продукт
+     * или пак изделието. Иначе следващото запазване на офертата би върнало
+     * артикула от касата.
+     */
+    async _applyProduct(data) {
+        const line = this.order?.lines.find((l) => l.uuid === data.line.uuid);
+        if (!line || !data.line.product_id) {
+            return;
+        }
+        if (data.standard?.value) {
+            this.standardLines.add(line.uuid);
+        } else {
+            this.standardLines.delete(line.uuid);
+        }
+        if (line.product_id?.id === data.line.product_id) {
+            return;
+        }
+        const Product = this.pos.models["product.product"];
+        if (!Product.get(data.line.product_id)) {
+            await this.pos.loadNewProducts([["id", "in", [data.line.product_tmpl_id]]]);
+        }
+        const product = Product.get(data.line.product_id);
+        if (product) {
+            line.product_id = product;
+            line.setFullProductName();
         }
     }
 
@@ -292,6 +334,21 @@ export class L10nBgPocEditor extends Component {
             current.push(id);
         }
         this.state.updates.__optional = current;
+    }
+
+    // ── готовият продукт вместо изделието (ADR sale-order-poc/0027) ──
+
+    get standardValue() {
+        return this.state.data?.standard?.value || false;
+    }
+
+    /** Изборът сменя реда веднага — запазва се с всичко въведено досега. */
+    async chooseStandard(id) {
+        if (!this.state.data?.editable || this.state.loading) {
+            return;
+        }
+        this.state.updates.__standard = id || false;
+        await this.compute();
     }
 
     // ── групите полета извън параметрите (тиражи, сравнение…) ──────

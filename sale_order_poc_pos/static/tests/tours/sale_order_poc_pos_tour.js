@@ -191,3 +191,57 @@ registry.category("web_tour.tours").add("sale_order_poc_pos_drawing", {
             },
         ].flat(),
 });
+
+// Готовият продукт вместо изделието: плочката сменя реда, „Обратно“ го връща
+// (ADR sale-order-poc/0027)
+registry.category("web_tour.tours").add("sale_order_poc_pos_standard", {
+    steps: () =>
+        [
+            Chrome.startPoS(),
+            Dialog.confirm("Open Register"),
+            {
+                content: "switch to Wholesale",
+                trigger: ".control-buttons .o_l10n_bg_wholesale_button",
+                run: "click",
+            },
+            ProductScreen.clickPartnerButton(),
+            ProductScreen.clickCustomer("ET Petrov Trade"),
+            ProductScreen.clickDisplayedProduct("Configured Bag"),
+            {
+                content: "width 290",
+                trigger: `${PARAM("pos_width_mm")} input`,
+                run: "edit 290",
+            },
+            {
+                content: "save and compute",
+                trigger: ".o_l10n_bg_poc_compute:enabled",
+                run: "click",
+            },
+            {
+                content: "choose the standard product",
+                trigger: ".o_l10n_bg_poc_standard_option:contains('Ready Bag (test)'):enabled",
+                run: "click",
+            },
+            {
+                content: "the line sells the standard product",
+                trigger: ".orderline:contains('Ready Bag (test)')",
+            },
+            {
+                content: "the editor stays open on the line",
+                trigger: ".o_l10n_bg_poc_editor .o_l10n_bg_poc_standard_option.active:contains('Ready Bag (test)')",
+            },
+            {
+                content: "back to the configured product",
+                trigger: ".o_l10n_bg_poc_standard_back:enabled",
+                run: "click",
+            },
+            {
+                content: "the line is the configured product again",
+                trigger: ".orderline:contains('Configured Bag')",
+            },
+            {
+                content: "no tile is chosen",
+                trigger: ".o_l10n_bg_poc_editor .o_l10n_bg_poc_standard:not(:has(.o_l10n_bg_poc_standard_option.active))",
+            },
+        ].flat(),
+});

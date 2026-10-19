@@ -11,6 +11,7 @@
 import datetime
 
 from odoo import fields, models
+from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
 
 # Колко записа най-много се предлагат за избор в касата (many2one/many2many)
@@ -21,6 +22,8 @@ L10N_BG_POS_PRICE_BASE_KEY = "__price_base"
 L10N_BG_POS_OPTIONAL_KEY = "__optional"
 # Ключът за полетата от групите извън параметрите (`_l10n_bg_pos_field_groups`)
 L10N_BG_POS_FIELDS_KEY = "__fields"
+# Ключът за готовия продукт вместо изделието (ADR sale-order-poc/0027)
+L10N_BG_POS_STANDARD_KEY = "__standard"
 # Видовете полета, които групите могат да носят
 L10N_BG_POS_FIELD_TYPES = ("float", "integer", "boolean")
 
@@ -126,6 +129,7 @@ class SaleOrderPoc(models.Model):
                 section for section in sections if section["params"] or section.get("switch")
             ],
             "optional": self._l10n_bg_pos_optional(),
+            "standard": self._l10n_bg_pos_standard(),
             "picture": self._l10n_bg_pos_picture() or False,
             "reports": self._l10n_bg_pos_reports(),
             "field_groups": self._l10n_bg_pos_field_groups_data(),
@@ -136,6 +140,9 @@ class SaleOrderPoc(models.Model):
                 "id": so_line.id,
                 "uuid": so_line.l10n_bg_pos_line_uuid,
                 "product": so_line.product_id.display_name,
+                # редът в касата следва артикула: готовият продукт го сменя
+                "product_id": so_line.product_id.id,
+                "product_tmpl_id": so_line.product_id.product_tmpl_id.id,
                 "qty": so_line.product_uom_qty,
                 "price_unit": so_line.price_unit,
                 "discount": so_line.discount,
@@ -290,6 +297,49 @@ class SaleOrderPoc(models.Model):
             "options": [{"id": p.id, "name": p.display_name} for p in allowed],
         }
 
+    def _l10n_bg_pos_standard(self):
+        """Готовите продукти близо до размера и избраният (ADR sale-order-poc/0027)."""
+        self.ensure_one()
+        if "standard_product_id" not in self._fields:
+            return None
+        chosen = self.standard_product_id
+        alternatives = self._poc_alternatives()
+        products = [c["product"] for c in alternatives]
+        sizes = {c["product"].id: c["size"] for c in alternatives}
+        if chosen and chosen not in products:
+            products.insert(0, chosen)
+            sizes[chosen.id] = chosen._poc_size_mm()
+        if not products and not self.alternative_enabled:
+            return None
+        return {
+            "value": chosen.id or False,
+            "configured": self.configured_product_id.display_name or "",
+            "options": [
+                {
+                    "id": product.id,
+                    "name": product.display_name,
+                    "size": " × ".join("%g" % round(v) for v in sizes.get(product.id) or []),
+                    "price": self._poc_companion_price(product, self.product_uom_qty or 1.0),
+                    "qty_available": product.qty_available if product.is_storable else None,
+                }
+                for product in products
+            ],
+        }
+
+    def _l10n_bg_pos_write_standard(self, product_id):
+        """Изборът от касата: само сред алтернативите (или избраният); False — обратно."""
+        self.ensure_one()
+        if not product_id:
+            if self.standard_product_id:
+                self.standard_product_id = False
+            return
+        allowed = self.alternative_product_ids | self.standard_product_id
+        product = allowed.filtered(lambda p: p.id == product_id)
+        if not product:
+            raise UserError(self.env._("This product is not a standard alternative of %s.", self.name))
+        if product != self.standard_product_id:
+            self.standard_product_id = product
+
     def _l10n_bg_pos_companion_prefix(self):
         """Началото на ключа на допълнителните редове на тази конфигурация."""
         self.ensure_one()
@@ -389,6 +439,7 @@ class SaleOrderPoc(models.Model):
         price_base = updates.pop(L10N_BG_POS_PRICE_BASE_KEY, None) if isinstance(updates, dict) else None
         optional = updates.pop(L10N_BG_POS_OPTIONAL_KEY, None) if isinstance(updates, dict) else None
         group_fields = updates.pop(L10N_BG_POS_FIELDS_KEY, None) if isinstance(updates, dict) else None
+        standard = updates.pop(L10N_BG_POS_STANDARD_KEY, None) if isinstance(updates, dict) else None
         if isinstance(group_fields, dict):
             self._l10n_bg_pos_write_fields(group_fields)
         if optional is not None and "optional_product_ids" in self._fields:
@@ -413,3 +464,6 @@ class SaleOrderPoc(models.Model):
                 clean[code] = value
         if clean:
             self._poc_set_params(clean)
+        # след параметрите: алтернативите са по новия размер
+        if standard is not None and "standard_product_id" in self._fields:
+            self._l10n_bg_pos_write_standard(standard if isinstance(standard, int) else False)
